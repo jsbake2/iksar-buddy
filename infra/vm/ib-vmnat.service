@@ -1,0 +1,23 @@
+[Unit]
+# Restores NAT/forward for the libvirt 'default' network (192.168.122.0/24) so
+# the iksar_buddy guest has internet egress. Needed because Docker owns the host
+# firewall and libvirt's own NAT rules for this subnet do not get installed
+# (libvirt nftables backend leaves no masquerade rule -> guest reaches LAN but
+# not the internet). These rules are additive and touch none of Docker's rules.
+#
+# Proper long-term fix (deferred, requires a network restart = guest blip):
+#   set firewall_backend=iptables in /etc/libvirt/network.conf, then
+#   virsh net-destroy default && virsh net-start default
+Description=iksar_buddy libvirt default-net NAT egress (Docker coexistence)
+After=docker.service libvirtd.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/bash -c 'iptables -t nat -C POSTROUTING -s 192.168.122.0/24 ! -d 192.168.122.0/24 -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s 192.168.122.0/24 ! -d 192.168.122.0/24 -j MASQUERADE'
+ExecStart=/usr/bin/bash -c 'iptables -C FORWARD -i virbr0 -j ACCEPT 2>/dev/null || iptables -I FORWARD -i virbr0 -j ACCEPT'
+ExecStart=/usr/bin/bash -c 'iptables -C FORWARD -o virbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || iptables -I FORWARD -o virbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT'
+
+[Install]
+WantedBy=multi-user.target
