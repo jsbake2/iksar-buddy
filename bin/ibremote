@@ -27,10 +27,10 @@ HOST="${IB_HOST:-10.0.0.16}"
 SSH_USER="${IB_SSH_USER:-jbaker}"
 RUSER="${IB_RUSER:-iksar}"
 RPASS="${IB_RPASS:-IksarBuddy1!}"
-# Force the RDP session to match the locked console resolution (1600x900) so the
+# Force the RDP session to match the locked console resolution (1920x1080) so the
 # EQ2 UI doesn't relayout between your RDP view and the console the bot captures.
-RDP_W="${IB_RDP_W:-1600}"
-RDP_H="${IB_RDP_H:-900}"
+RDP_W="${IB_RDP_W:-1920}"
+RDP_H="${IB_RDP_H:-1080}"
 
 MODE="rdp"; WANT=""; ALL=0
 while [ $# -gt 0 ]; do

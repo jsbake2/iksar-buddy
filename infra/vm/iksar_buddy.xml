@@ -114,11 +114,11 @@
     </graphics>
 
     <!-- virtio-gpu (not QXL): QXL/qxldod only offers 4:3 modes headless; virtio
-         advertises 1600x900 via the EDID <resolution> below (viogpudo driver). -->
+         advertises 1920x1080 via the EDID <resolution> below (viogpudo driver). -->
     <video>
       <model type="virtio" heads="1" primary="yes">
         <acceleration accel3d="no"/>
-        <resolution x="1600" y="900"/>
+        <resolution x="1920" y="1080"/>
       </model>
     </video>
 

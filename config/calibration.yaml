@@ -6,8 +6,8 @@
 #
 # Coordinates are absolute client-window pixels at the locked resolution.
 
-resolution: { w: 1600, h: 900 }  # LOCKED (virtio-gpu EDID). All coords below
-                                 # are absolute pixels at 1600x900.
+resolution: { w: 1920, h: 1080 }  # LOCKED (virtio-gpu EDID). All coords below
+                                 # are absolute pixels at 1920x1080.
 ui_scale: 1.0                    # FILL: locked in-game UI scale
 
 # Per-member HP bars: sample a horizontal scanline, fill-ratio = HP%.
