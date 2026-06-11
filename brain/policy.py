@@ -25,6 +25,9 @@ class Member:
     hp: float = 1.0          # 0..1 from pixel scanline
     ward: bool = True        # ward icon present
     dead: bool = False
+    power: float = 1.0       # 0..1 (display + future power-aware decisions)
+    detriments: list = field(default_factory=list)  # cell indices currently lit
+    cure: bool = False       # has >=1 CURABLE detriment (generic cure trigger)
 
 
 @dataclass

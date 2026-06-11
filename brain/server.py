@@ -112,15 +112,46 @@ class Brain:
         if "in_combat" in d:
             self.sm.on_combat_signal(bool(d["in_combat"]))
 
+        # Map each member's lit detriment cells to display type-labels. The 5
+        # cells are ASSUMED to correspond positionally to the 5 cure categories;
+        # curing is generic regardless, so this is display-only (owner can fix
+        # the order). `cure` is the real, type-agnostic trigger.
+        from .telemetry import CURE_TYPES, SLOT_ROLES
+        names = d.get("names", {})
+        present_slots = {m.slot for m in world.members}
+        member_rows = []
+        for slot in range(6):
+            m = world.member(slot)
+            present = slot in present_slots
+            dets = []
+            if m is not None:
+                for cell in (m.detriments or []):
+                    idx = cell.get("cell") if isinstance(cell, dict) else cell
+                    if isinstance(idx, int) and 0 <= idx < len(CURE_TYPES) \
+                            and (not isinstance(cell, dict) or not cell.get("ignored")):
+                        dets.append(CURE_TYPES[idx])
+            member_rows.append({
+                "slot": slot,
+                "name": names.get(str(slot), names.get(slot, "")),
+                "role": SLOT_ROLES[slot] if slot < len(SLOT_ROLES) else "",
+                "present": present,
+                "hp": (m.hp if m is not None else 1.0),
+                "ward": (m.ward if m is not None else True),
+                "dead": (m.dead if m is not None else False),
+                "power": (m.power if m is not None else 1.0),
+                "critical": bool(m is not None and m.hp < float(self.cfg.thresholds.get("tank_emergency_hp", 0.35))),
+                "detriments": dets,
+            })
+
         self.telemetry.update(
             state=self.sm.state.value,
             override=self.sm.override.value if self.sm.override else None,
-            members=[{"slot": m.slot, "hp": m.hp, "ward": m.ward, "dead": m.dead}
-                     for m in world.members],
-            own={"power": world.own_power, "casting": world.casting},
+            own={"power": world.own_power, "hp": d.get("own_hp", 1.0),
+                 "casting": world.casting},
             chat_focus={"safe": world.chat_safe,
                         "aborted_injections": d.get("aborted_injections", 0)},
         )
+        self.telemetry.set_members(member_rows)
 
         action = decide(world, self.cfg, self.sm.state)
         if action is not None:
