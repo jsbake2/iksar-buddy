@@ -44,24 +44,31 @@ def grab_column() -> dict[tuple[int, int], tuple[int, int, int]]:
     return pix
 
 
-def is_green(c): r, g, b = c; return g > 85 and g > r + 20 and g > b + 20
+HP_PWR_GAP = PWR_BASE - HP_BASE       # power bar sits this many px below HP (8)
+
 def is_blue(c):  r, g, b = c; return b > 100 and b > r + 20 and b > g
-def is_bright(c): r, g, b = c; return (r + g + b) > 90
+def is_bright(c): r, g, b = c; return (r + g + b) > 90   # lit bar vs dark-empty track
 
 
-def read_bar(pix, pred, y_hint) -> tuple[int, int] | None:
-    """Find the strongest `pred` row near y_hint, then fill% across the fixed
-    track. Returns (y, fill%) or None if the row never has enough color."""
+def fill_pct(pix, y) -> int:
+    """fill% = bright pixels across the fixed track at row y. Hue-agnostic, so it
+    counts the FILLED span whether it's green/yellow/red (EQ2 recolors HP bars as
+    they drop). The empty span is dark (black backdrop) and drops out."""
     width = X1 - X0
+    filled = sum(1 for x in range(X0, X1) if is_bright(pix.get((x, y), (0, 0, 0))))
+    return round(100 * filled / width)
+
+
+def find_power_row(pix, y_hint) -> int | None:
+    """Locate the slot's POWER bar row by blue. Power is hue-STABLE (never
+    recolors), so it's the reliable anchor even when a member is near death and
+    their HP bar has gone red. HP row is then a fixed offset above it."""
     best_y, best_n = None, 0
     for y in range(y_hint - SEARCH, y_hint + SEARCH + 1):
-        n = sum(1 for x in range(X0, X1) if pred(pix.get((x, y), (0, 0, 0))))
+        n = sum(1 for x in range(X0, X1) if is_blue(pix.get((x, y), (0, 0, 0))))
         if n > best_n:
             best_y, best_n = y, n
-    if best_y is None or best_n < 20:
-        return None
-    filled = sum(1 for x in range(X0, X1) if is_bright(pix.get((x, best_y), (0, 0, 0))))
-    return best_y, round(100 * filled / width)
+    return best_y if best_n >= 12 else None
 
 
 def read_group(pix=None) -> list[dict]:
@@ -69,15 +76,14 @@ def read_group(pix=None) -> list[dict]:
         pix = grab_column()
     out = []
     for slot in range(SLOTS):
-        hp = read_bar(pix, is_green, HP_BASE + PITCH * slot)
-        pw = read_bar(pix, is_blue, PWR_BASE + PITCH * slot)
-        if hp is None and pw is None:
+        pwr_y = find_power_row(pix, PWR_BASE + PITCH * slot)
+        if pwr_y is None:                       # no blue power bar => empty slot
             out.append({"slot": slot, "present": False})
-        else:
-            out.append({"slot": slot, "present": True,
-                        "hp": hp[1] if hp else None,
-                        "power": pw[1] if pw else None,
-                        "dead": hp is not None and hp[1] <= 1})
+            continue
+        hp_y = pwr_y - HP_PWR_GAP               # HP is the fixed-offset row above
+        hp = fill_pct(pix, hp_y)
+        out.append({"slot": slot, "present": True, "hp": hp,
+                    "power": fill_pct(pix, pwr_y), "dead": hp <= 1})
     return out
 
 
