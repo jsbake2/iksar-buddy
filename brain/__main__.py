@@ -45,12 +45,18 @@ async def _run(args: argparse.Namespace) -> None:
     uvi = uvicorn.Server(uvicorn.Config(app, host=args.host, port=args.web_port,
                                         log_level="warning", access_log=False))
 
+    tasks = [
+        transport.serve_forever(),
+        uvi.serve(),
+        _config_watcher(cfg, telemetry),
+    ]
+    if args.sim:
+        from .sim import run_sim
+        logging.getLogger("ib.brain").info("simulator enabled — synthetic telemetry")
+        tasks.append(run_sim(telemetry))
+
     async with transport:
-        await asyncio.gather(
-            transport.serve_forever(),
-            uvi.serve(),
-            _config_watcher(cfg, telemetry),
-        )
+        await asyncio.gather(*tasks)
 
 
 def main() -> None:
@@ -58,6 +64,8 @@ def main() -> None:
     p.add_argument("--host", default="0.0.0.0")
     p.add_argument("--port", type=int, default=8765, help="agent transport port")
     p.add_argument("--web-port", type=int, default=8080, help="dashboard port")
+    p.add_argument("--sim", action="store_true",
+                   help="run the telemetry simulator (demo without a real agent)")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args()
 
