@@ -6,9 +6,11 @@
     - q35 + UEFI (OVMF, secure-boot off) — firmware auto-selected by libvirt.
     - 8 GB RAM with virtio balloon so the host can reclaim under pressure
       (host is RAM-tight; Satisfactory + AI work share the box).
-    - 6 vCPUs, host-passthrough. NOT pinned yet — pin to P-cores after the
-      client UI is calibrated (Raptor Lake hybrid; PROJECT.md pinning note is
-      Ryzen-specific and doesn't apply verbatim).
+    - 8 vCPUs, host-passthrough, PINNED to P-core threads cpu0-7 (i7-13700K:
+      P-cores=cpu0-15 HT pairs, E-cores=cpu16-23). Guest topology 4c/2t maps
+      onto 4 physical P-cores. Emulator + iothread pinned to E-cores (cpu16-17)
+      so QEMU's own threads never preempt a vCPU. Leaves cpu8-23 (16 threads)
+      for the host's 4070 AI work + other VMs — do NOT widen the pin set.
     - OS disk on SATA (qcow2). virtio-blk would need a driver injected into
       WinPE; SATA is plenty for a 2004 client and keeps install trivial.
     - NIC is virtio — no in-box Win10 driver, so it's dead during OOBE
@@ -24,7 +26,18 @@
   <title>iksar_buddy</title>
   <memory unit="GiB">8</memory>
   <currentMemory unit="GiB">8</currentMemory>
-  <vcpu placement="static">6</vcpu>
+  <vcpu placement="static">8</vcpu>
+  <cputune>
+    <vcpupin vcpu="0" cpuset="0"/>
+    <vcpupin vcpu="1" cpuset="1"/>
+    <vcpupin vcpu="2" cpuset="2"/>
+    <vcpupin vcpu="3" cpuset="3"/>
+    <vcpupin vcpu="4" cpuset="4"/>
+    <vcpupin vcpu="5" cpuset="5"/>
+    <vcpupin vcpu="6" cpuset="6"/>
+    <vcpupin vcpu="7" cpuset="7"/>
+    <emulatorpin cpuset="16-17"/>
+  </cputune>
   <os firmware="efi">
     <type arch="x86_64" machine="q35">hvm</type>
     <firmware>
@@ -49,7 +62,7 @@
     <vmport state="off"/>
   </features>
   <cpu mode="host-passthrough" check="none" migratable="off">
-    <topology sockets="1" dies="1" cores="6" threads="1"/>
+    <topology sockets="1" dies="1" cores="4" threads="2"/>
   </cpu>
   <clock offset="localtime">
     <timer name="rtc" tickpolicy="catchup"/>
