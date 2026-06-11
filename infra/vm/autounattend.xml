@@ -64,7 +64,7 @@
           <InstallTo><DiskID>0</DiskID><PartitionID>3</PartitionID></InstallTo>
           <InstallFrom>
             <MetaData wcm:action="add">
-              <Key>/IMAGE/NAME</Key><Value>Windows 10 Pro</Value>
+              <Key>/IMAGE/NAME</Key><Value>Windows 10 Professional</Value>
             </MetaData>
           </InstallFrom>
         </OSImage>
