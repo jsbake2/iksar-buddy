@@ -27,6 +27,10 @@ HOST="${IB_HOST:-10.0.0.16}"
 SSH_USER="${IB_SSH_USER:-jbaker}"
 RUSER="${IB_RUSER:-iksar}"
 RPASS="${IB_RPASS:-IksarBuddy1!}"
+# Force the RDP session to match the locked console resolution (1600x900) so the
+# EQ2 UI doesn't relayout between your RDP view and the console the bot captures.
+RDP_W="${IB_RDP_W:-1600}"
+RDP_H="${IB_RDP_H:-900}"
 
 MODE="rdp"; WANT=""; ALL=0
 while [ $# -gt 0 ]; do
@@ -83,8 +87,8 @@ connect_rdp() {
   echo "[$vm] $ip  tunnel 127.0.0.1:$port -> $ip:3389"
   ssh -fN -o ExitOnForwardFailure=yes -L "${port}:${ip}:3389" "${SSH_USER}@${HOST}" || true
   local tpid; tpid=$(pgrep -f "L ${port}:${ip}:3389" | head -1 || true)
-  "$bin" /v:127.0.0.1:${port} /u:"$RUSER" /p:"$RPASS" /cert:ignore /dynamic-resolution +clipboard /title:"$vm" 2>/dev/null \
-    || "$bin" /v:127.0.0.1:${port} /u:"$RUSER" /p:"$RPASS" /cert-ignore /dynamic-resolution 2>/dev/null || true
+  "$bin" /v:127.0.0.1:${port} /u:"$RUSER" /p:"$RPASS" /cert:ignore /w:${RDP_W} /h:${RDP_H} +clipboard /title:"$vm" 2>/dev/null \
+    || "$bin" /v:127.0.0.1:${port} /u:"$RUSER" /p:"$RPASS" /cert-ignore /w:${RDP_W} /h:${RDP_H} 2>/dev/null || true
   [ -n "${tpid:-}" ] && kill "$tpid" 2>/dev/null || true
 }
 
