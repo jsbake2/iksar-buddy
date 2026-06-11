@@ -18,6 +18,10 @@ DOM = "iksar_buddy"
 PPM, PNG = "/tmp/bar.ppm", "/tmp/bar.png"
 # search box for the SELF player frame (top-left). Group frames are below it.
 FRAME = (0, 30, 160, 70)   # x, y, w, h
+# Fixed bar track (calibrated). The bar is fixed UI; only the FILL varies, so we
+# measure brightness across the WHOLE track, not just the colored span (else a
+# half-empty bar reads 100%). Re-derive these once at full HP if the UI moves.
+TRACK = (19, 128)          # x_lo, x_hi  (same for HP + power)
 
 
 def grab_region(x: int, y: int, w: int, h: int) -> dict[tuple[int, int], tuple[int, int, int]]:
@@ -40,33 +44,31 @@ def is_blue(c):  r, g, b = c; return b > 100 and b > r + 20 and b > g
 def is_bright(c): r, g, b = c; return (r + g + b) > 90    # filled vs dark-empty track
 
 
-def read_bar(pix, pred, y0, y1, x0, x1):
-    """Pick the strongest bar row in [y0,y1] for `pred`; return (y, x_lo, x_hi, fill%)."""
+def read_bar(pix, pred, y0, y1):
+    """Find the bar ROW by color (the row with the most `pred` pixels across the
+    fixed track), then fill% = bright pixels across the WHOLE track. Returns
+    (y, fill%) or None. Robust to partial fill: the depleted track is dark and
+    isn't counted, and the row is still the strongest even when low."""
+    tx0, tx1 = TRACK
     best_y, best_n = None, 0
     for y in range(y0, y1):
-        n = sum(1 for x in range(x0, x1) if pred(pix.get((x, y), (0, 0, 0))))
+        n = sum(1 for x in range(tx0, tx1) if pred(pix.get((x, y), (0, 0, 0))))
         if n > best_n:
             best_y, best_n = y, n
-    if best_y is None or best_n < 20:
+    if best_y is None or best_n < 12:
         return None
-    lit = [x for x in range(x0, x1) if pred(pix.get((x, best_y), (0, 0, 0)))]
-    lo, hi = min(lit), max(lit)            # at full, the lit span == the track
-    width = hi - lo + 1
-    filled = sum(1 for x in range(lo, hi + 1) if is_bright(pix.get((x, best_y), (0, 0, 0))))
-    return best_y, lo, hi, round(100 * filled / width)
+    width = tx1 - tx0
+    filled = sum(1 for x in range(tx0, tx1) if is_bright(pix.get((x, best_y), (0, 0, 0))))
+    return best_y, round(100 * filled / width)
 
 
 def main() -> None:
     x, y, w, h = FRAME
     pix = grab_region(x, y, w, h)
-    hp = read_bar(pix, is_green, y, y + h, x, x + w)
-    pw = read_bar(pix, is_blue, y, y + h, x, x + w)
+    hp = read_bar(pix, is_green, y, y + h)
+    pw = read_bar(pix, is_blue, y, y + h)
     for label, b in (("HP", hp), ("POWER", pw)):
-        if b:
-            by, lo, hi, pct = b
-            print(f"{label}: y={by} track=x[{lo}..{hi}] -> {pct}%")
-        else:
-            print(f"{label}: not found")
+        print(f"{label}: y={b[0]} -> {b[1]}%" if b else f"{label}: not found")
 
 
 if __name__ == "__main__":
