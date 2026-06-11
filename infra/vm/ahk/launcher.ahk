@@ -24,16 +24,9 @@ rgb(x, y) {
     c := PixelGetColor(x, y)
     return [(c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF]
 }
-isGold(x, y) {           ; EQ2 gold/amber button face (Accept ~182,103,22; Decline ~150,95,22)
-    p := rgb(x, y)
-    return (p[1] > 130 && p[1] - p[2] > 25 && p[2] - p[3] > 20)
-}
 isMaroon(x, y) {         ; EQ2 stock dark-red button face (e.g. char-select Play)
     p := rgb(x, y)
     return (p[1] > 30 && p[1] < 95 && p[2] < 22 && p[3] < 22)
-}
-isButton(x, y) {         ; a button face, either styling (gold or maroon)
-    return isGold(x, y) || isMaroon(x, y)
 }
 evclick(x, y, win := "") {
     if win
@@ -96,25 +89,10 @@ evclick(1715, 890, gw)            ; Play
 lg("entered world as Jenskin; loading")
 
 Sleep 50000                       ; world load (software render)
-lg("in-world; waiting for group invite (indefinite)")
+lg("in-world; host OCR (invite_accept.py) handles the group invite")
+lg("=== launcher done: in-world ===")
 
-; 5) wait for the invite dialog (both Accept+Decline gold), accept it
-Loop {
-    a := rgb(820, 595), d := rgb(1000, 595)
-    if (isButton(820, 595) && isButton(1000, 595)) {
-        lg("invite detected A=" a[1] "," a[2] "," a[3] " D=" d[1] "," d[2] "," d[3])
-        evclick(820, 595, gw)     ; Accept
-        Sleep 2500
-        if !(isButton(820, 595) && isButton(1000, 595)) {
-            lg("invite accepted")
-            break
-        }
-        lg("dialog still present; retrying")
-    } else {
-        ; heartbeat every ~30s so we can see it's alive + calibrate colors
-        if (Mod(A_TickCount // 1000, 30) = 0)
-            lg("waiting... A=" a[1] "," a[2] "," a[3] " D=" d[1] "," d[2] "," d[3])
-    }
-    Sleep 1000
-}
-lg("=== launcher done: in group ===")
+; NOTE: the group invite is accepted HOST-SIDE by invite_accept.py, which OCRs
+; the screen, gates on "invited ... group", and clicks the located "Accept"
+; word box (same self-locating approach as quest_accept.py). The guest has no
+; tesseract, so blind pixel-sampling here was fragile and is intentionally gone.
