@@ -28,6 +28,13 @@ isGold(x, y) {           ; EQ2 gold/tan button face
     p := rgb(x, y)
     return (p[1] > 150 && p[1] - p[2] > 25 && p[2] - p[3] > 20)
 }
+isMaroon(x, y) {         ; EQ2 stock dark-red button face (e.g. char-select Play)
+    p := rgb(x, y)
+    return (p[1] > 30 && p[1] < 95 && p[2] < 22 && p[3] < 22)
+}
+isButton(x, y) {         ; a button face, either styling (gold or maroon)
+    return isGold(x, y) || isMaroon(x, y)
+}
 evclick(x, y, win := "") {
     if win
         WinActivate(win)
@@ -75,8 +82,8 @@ if !gw {
     ExitApp
 }
 lg("game window up; waiting for char-select")
-Loop 120 {                        ; up to ~4 min for software-render load
-    if isGold(1715, 885)
+Loop 150 {                        ; up to ~5 min for software-render load
+    if isMaroon(1715, 895)        ; char-select Play button (dark-red face)
         break
     Sleep 2000
 }
@@ -85,26 +92,20 @@ lg("char-select ready")
 ; 4) select Jenskin (fixed slot) then click Play
 evclick(100, 884, gw)             ; Jenskin in the list
 Sleep 600
-evclick(1715, 885, gw)            ; Play
-lg("entered world as Jenskin; waiting to load")
+evclick(1715, 890, gw)            ; Play
+lg("entered world as Jenskin; loading")
 
-; wait until char-select is gone (Play button no longer gold), then settle
-Loop 60 {
-    if !isGold(1715, 885)
-        break
-    Sleep 2000
-}
-Sleep 8000
+Sleep 50000                       ; world load (software render)
 lg("in-world; waiting for group invite (indefinite)")
 
 ; 5) wait for the invite dialog (both Accept+Decline gold), accept it
 Loop {
     a := rgb(820, 595), d := rgb(1000, 595)
-    if (isGold(820, 595) && isGold(1000, 595)) {
+    if (isButton(820, 595) && isButton(1000, 595)) {
         lg("invite detected A=" a[1] "," a[2] "," a[3] " D=" d[1] "," d[2] "," d[3])
         evclick(820, 595, gw)     ; Accept
         Sleep 2500
-        if !(isGold(820, 595) && isGold(1000, 595)) {
+        if !(isButton(820, 595) && isButton(1000, 595)) {
             lg("invite accepted")
             break
         }
