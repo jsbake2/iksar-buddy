@@ -2,20 +2,21 @@
 """Per-member detriment (curable effect) detector for the group window.
 
 A Defiler's other job is curing. Each member frame has a row of 5 detriment
-cells under the bars; a hostile effect lights one up. We detect presence by
-sampling each cell's INTERIOR (not its tan border) against the black window
-backdrop: empty cell interior = near-black, filled = a bright icon.
+cells (the 5 categories: trauma/arcane/noxious/elemental/curse) under the bars;
+a hostile effect lights one up. We detect presence by sampling each cell's
+INTERIOR (not its tan border) against the black window backdrop: empty cell
+interior = near-black, filled = a bright icon.
 
 Geometry (derived live, anchored on the hue-stable blue power bar so it tracks
 the frame even when HP has gone red):
   detriment row y-center = power_y + ROW_DY
   5 cell centers at CELL_XC, sample a 12px interior box at each.
 
-Type classification (noxious/elemental/trauma/arcane/curse) is deferred: EQ2
-keys detriment TYPE to the icon border color, which needs a calibration pass
-with the owner applying one known type at a time. For now we report presence +
-the cell's dominant interior color so that map can be filled in. The avg color
-feeds CURE_COLORS once calibrated. Run: python3 detriment_read.py
+CURE POLICY (owner, current level): a single GENERIC cure clears any detriment
+type, so PRESENCE is the whole signal -> any lit cell on a member => cure that
+member. Type/cell index is NOT acted on yet; we still report it because the
+future "death curse" (a higher-level type cured separately) will key off it.
+No color->type map is needed until then. Run: python3 detriment_read.py
 """
 from __future__ import annotations
 import re
@@ -29,10 +30,6 @@ SEARCH = 4
 ROW_DY = 32                                   # detriment row center below power bar
 CELL_XC = [43, 66, 88, 112, 135]              # 5 cell centers (x)
 INSET = 6                                      # half-size of the interior sample box
-
-# CURE_COLORS: fill from a calibration pass (owner applies one type at a time).
-# Map a representative interior RGB -> cure type. Empty until calibrated.
-CURE_COLORS: dict[str, tuple[int, int, int]] = {}
 
 
 def grab() -> dict[tuple[int, int], tuple[int, int, int]]:
@@ -51,8 +48,30 @@ def grab() -> dict[tuple[int, int], tuple[int, int, int]]:
     return pix
 
 
+# UNCURABLE effects that still light a detriment cell (must NOT trigger a cure,
+# or the heal loop spins forever casting on something it can't clear). Revive
+# sickness after death is the known one -- it looks like a curse but won't cure.
+# Matched by nearest-color within IGNORE_TOL; fill the RGB from a capture pass.
+IGNORE_SIGNATURES: dict[str, tuple[int, int, int]] = {
+    # Red-cross icon on a dark purple bg, appears in a detriment cell after a
+    # death/revive. Captured live (avg interior RGB); distinctly DARK vs the
+    # bright active curses seen so far (e.g. pink curse ~(210,86,144)), which the
+    # 40-tol cleanly separates. If a real dark detriment ever collides, upgrade
+    # to icon-template matching (also needed for the future "death curse").
+    "revive_sickness": (103, 26, 61),
+}
+IGNORE_TOL = 40   # per-channel-ish distance (sqrt of sum-sq) for an ignore match
+
+
 def is_blue(c):  r, g, b = c; return b > 100 and b > r + 20 and b > g
 def is_bright(c): r, g, b = c; return (r + g + b) > 120   # lit icon vs black backdrop
+
+
+def is_ignored(rgb) -> str | None:
+    for name, ref in IGNORE_SIGNATURES.items():
+        if sum((a - b) ** 2 for a, b in zip(rgb, ref)) <= IGNORE_TOL ** 2:
+            return name
+    return None
 
 
 def power_row(pix, slot) -> int | None:
@@ -66,6 +85,9 @@ def power_row(pix, slot) -> int | None:
 
 
 def read_detriments(pix=None) -> list[dict]:
+    """Per present member: lit detriment cells, each flagged curable or ignored.
+    `cure` = True if the member has at least one CURABLE lit cell (the heal loop's
+    trigger). Ignored effects (revive sickness) are reported but don't set cure."""
     if pix is None:
         pix = grab()
     out = []
@@ -82,31 +104,22 @@ def read_detriments(pix=None) -> list[dict]:
             lit = [c for c in box if is_bright(c)]
             if len(lit) > 0.4 * len(box):            # interior is a lit icon
                 avg = tuple(sum(c[i] for c in lit) // len(lit) for i in range(3))
-                cells.append({"cell": ci, "rgb": avg,
-                              "type": classify(avg)})
-        out.append({"slot": slot, "detriments": cells})
+                ignored = is_ignored(avg)
+                cells.append({"cell": ci, "rgb": avg, "ignored": ignored})
+        cure = any(c["ignored"] is None for c in cells)
+        out.append({"slot": slot, "detriments": cells, "cure": cure})
     return out
-
-
-def classify(rgb) -> str | None:
-    """Nearest calibrated cure color, or None until CURE_COLORS is filled."""
-    if not CURE_COLORS:
-        return None
-    best, bd = None, 1e9
-    for name, ref in CURE_COLORS.items():
-        d = sum((a - b) ** 2 for a, b in zip(rgb, ref))
-        if d < bd:
-            best, bd = name, d
-    return best
 
 
 def main() -> None:
     for m in read_detriments():
-        if m["detriments"]:
-            for d in m["detriments"]:
-                print(f"slot {m['slot']} cell {d['cell']}: detriment rgb={d['rgb']} type={d['type']}")
-        else:
+        if not m["detriments"]:
             print(f"slot {m['slot']}: clean")
+            continue
+        for d in m["detriments"]:
+            tag = f"IGNORE({d['ignored']})" if d["ignored"] else "CURABLE"
+            print(f"slot {m['slot']} cell {d['cell']}: rgb={d['rgb']} {tag}")
+        print(f"  -> cure needed: {m['cure']}")
 
 
 if __name__ == "__main__":
