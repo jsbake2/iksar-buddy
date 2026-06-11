@@ -39,36 +39,51 @@ def grab_region(x: int, y: int, w: int, h: int) -> dict[tuple[int, int], tuple[i
     return pix
 
 
-def is_green(c): r, g, b = c; return g > 85 and g > r + 20 and g > b + 20
+HP_PWR_GAP = 8    # power bar sits this many px below HP in the self frame
+
 def is_blue(c):  r, g, b = c; return b > 100 and b > r + 20 and b > g
 def is_bright(c): r, g, b = c; return (r + g + b) > 90    # filled vs dark-empty track
 
 
-def read_bar(pix, pred, y0, y1):
-    """Find the bar ROW by color (the row with the most `pred` pixels across the
-    fixed track), then fill% = bright pixels across the WHOLE track. Returns
-    (y, fill%) or None. Robust to partial fill: the depleted track is dark and
-    isn't counted, and the row is still the strongest even when low."""
+def fill_pct(pix, y):
+    """fill% = bright pixels across the fixed track at row y. Hue-agnostic: the
+    filled span counts whether it's green/yellow/red (EQ2 recolors HP as it
+    drops); the depleted span is dark and drops out."""
+    tx0, tx1 = TRACK
+    width = tx1 - tx0
+    filled = sum(1 for x in range(tx0, tx1) if is_bright(pix.get((x, y), (0, 0, 0))))
+    return round(100 * filled / width)
+
+
+def find_power_row(pix, y0, y1):
+    """Locate the POWER bar row by blue (hue-STABLE anchor); the HP row is a
+    fixed offset above. Anchoring on power avoids the green-detect failure when
+    HP is low and the bar has gone red."""
     tx0, tx1 = TRACK
     best_y, best_n = None, 0
     for y in range(y0, y1):
-        n = sum(1 for x in range(tx0, tx1) if pred(pix.get((x, y), (0, 0, 0))))
+        n = sum(1 for x in range(tx0, tx1) if is_blue(pix.get((x, y), (0, 0, 0))))
         if n > best_n:
             best_y, best_n = y, n
-    if best_y is None or best_n < 12:
-        return None
-    width = tx1 - tx0
-    filled = sum(1 for x in range(tx0, tx1) if is_bright(pix.get((x, best_y), (0, 0, 0))))
-    return best_y, round(100 * filled / width)
+    return best_y if best_n >= 12 else None
+
+
+def read_self(pix=None):
+    """Returns (hp%, power%) or (None, None) if the power bar can't be found."""
+    if pix is None:
+        x, y, w, h = FRAME
+        pix = grab_region(x, y, w, h)
+    x, y, w, h = FRAME
+    pwr_y = find_power_row(pix, y, y + h)
+    if pwr_y is None:
+        return None, None
+    return fill_pct(pix, pwr_y - HP_PWR_GAP), fill_pct(pix, pwr_y)
 
 
 def main() -> None:
-    x, y, w, h = FRAME
-    pix = grab_region(x, y, w, h)
-    hp = read_bar(pix, is_green, y, y + h)
-    pw = read_bar(pix, is_blue, y, y + h)
-    for label, b in (("HP", hp), ("POWER", pw)):
-        print(f"{label}: y={b[0]} -> {b[1]}%" if b else f"{label}: not found")
+    hp, pw = read_self()
+    print(f"HP: {hp}%" if hp is not None else "HP: not found")
+    print(f"POWER: {pw}%" if pw is not None else "POWER: not found")
 
 
 if __name__ == "__main__":
