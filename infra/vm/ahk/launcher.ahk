@@ -24,9 +24,9 @@ rgb(x, y) {
     c := PixelGetColor(x, y)
     return [(c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF]
 }
-isGold(x, y) {           ; EQ2 gold/tan button face
+isGold(x, y) {           ; EQ2 gold/amber button face (Accept ~182,103,22; Decline ~150,95,22)
     p := rgb(x, y)
-    return (p[1] > 150 && p[1] - p[2] > 25 && p[2] - p[3] > 20)
+    return (p[1] > 130 && p[1] - p[2] > 25 && p[2] - p[3] > 20)
 }
 isMaroon(x, y) {         ; EQ2 stock dark-red button face (e.g. char-select Play)
     p := rgb(x, y)
