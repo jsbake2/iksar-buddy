@@ -10,10 +10,22 @@ resolution: { w: 1920, h: 1080 }  # LOCKED (virtio-gpu EDID). All coords below
                                  # are absolute pixels at 1920x1080.
 ui_scale: 1.0                    # FILL: locked in-game UI scale
 
-# Per-member HP bars: sample a horizontal scanline, fill-ratio = HP%.
-# One entry per group slot (0=self/healer .. 5).
-hp_bars:
-  # - { slot: 0, x0: 0, x1: 0, y: 0, empty_rgb: [.,.,.], full_rgb: [.,.,.] }
+# Per-member HP/power bars in the stacked GROUP window (left column).
+# SELF-LOCATING: agent finds each bar row by color within its slot band; the
+# numbers below are the derived geometry, not load-bearing magic. Measured live
+# from a 2-member group (Jenskin slot0 + Foxyman slot1); pitch confirmed 75px.
+#   HP row    y = base_y + pitch*slot   (green)
+#   power row y = base_y + 8  + pitch*slot (blue, 8px under HP)
+#   track     x = x0..x1 (fixed); fill% = bright px in track / (x1-x0)
+group_bars:
+  x0: 33
+  x1: 139
+  hp_base_y: 120      # slot-0 HP row
+  pwr_base_y: 128     # slot-0 power row
+  pitch: 75           # vertical px between consecutive member frames
+  slots: 6            # extrapolate base_y + pitch*slot for slots 0..5
+  hp_fill: green
+  pwr_fill: blue
 
 # Self HP + power bars (own frame, top-left). fill% = (bright pixels in the
 # track) / (x1-x0); the depleted portion goes dark and drops out of the count.
