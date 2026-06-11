@@ -113,8 +113,13 @@
       <image compression="off"/>
     </graphics>
 
+    <!-- virtio-gpu (not QXL): QXL/qxldod only offers 4:3 modes headless; virtio
+         advertises 1600x900 via the EDID <resolution> below (viogpudo driver). -->
     <video>
-      <model type="qxl" ram="65536" vram="65536" vgamem="16384" heads="1" primary="yes"/>
+      <model type="virtio" heads="1" primary="yes">
+        <acceleration accel3d="no"/>
+        <resolution x="1600" y="900"/>
+      </model>
     </video>
 
     <rng model="virtio">

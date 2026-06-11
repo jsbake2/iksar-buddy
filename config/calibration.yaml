@@ -6,9 +6,9 @@
 #
 # Coordinates are absolute client-window pixels at the locked resolution.
 
-resolution: { w: 1600, h: 900 }  # TARGET (16:9, DarkUI-friendly). Pending the
-                                 # QXL->virtio-gpu video switch + reboot to apply.
-ui_scale: 1.0                    # FILL: locked UI scale
+resolution: { w: 1600, h: 900 }  # LOCKED (virtio-gpu EDID). All coords below
+                                 # are absolute pixels at 1600x900.
+ui_scale: 1.0                    # FILL: locked in-game UI scale
 
 # Per-member HP bars: sample a horizontal scanline, fill-ratio = HP%.
 # One entry per group slot (0=self/healer .. 5).
