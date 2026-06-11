@@ -15,8 +15,13 @@ ui_scale: 1.0                    # FILL: locked in-game UI scale
 hp_bars:
   # - { slot: 0, x0: 0, x1: 0, y: 0, empty_rgb: [.,.,.], full_rgb: [.,.,.] }
 
-# Own power bar (don't cast OOM).
-power_bar:   { x0: 0, x1: 0, y: 0 }
+# Self HP + power bars (own frame, top-left). fill% = (bright pixels in the
+# track) / (x1-x0); the depleted portion goes dark and drops out of the count.
+# The agent auto-finds the bar row by color (green HP / blue power) within the
+# frame region, so y is a hint, not load-bearing. Validated full=100% solo;
+# confirm partial-fill behavior in combat.
+self_hp_bar: { x0: 19, x1: 128, y: 38, fill: green }
+power_bar:   { x0: 19, x1: 128, y: 46, fill: blue }
 
 # Cast bar: presence => mid-cast, don't double-cast.
 cast_bar:    { x0: 0, x1: 0, y: 0, active_rgb: [0, 0, 0] }
