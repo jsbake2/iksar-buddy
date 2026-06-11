@@ -1,0 +1,31 @@
+# Decision thresholds + priority lists (owner-tunable, hot-reloaded).
+
+# HP fractions (0.0-1.0) read from pixel scanlines.
+tank_emergency_hp: 0.35     # below this, through wards -> direct heal (rare path)
+routine_hp:        0.90     # cosmetic / dashboard banding
+
+# Ward maintenance (the heartbeat).
+ward_refresh_lead_ms: 1500  # refresh ward this long before expected expiry
+ward_absent_recast:   true  # recast immediately if ward icon absent
+
+# Group ward.
+group_ward_on_ae: true      # cast group ward when AE-incoming signal present
+
+# Rez loop.
+rez_wait_for_inzone_s: 30   # bot dead: wait this long for an in-zone rez before self-revive at stone
+rez_priority:               # bot alive, others dead: rez order by role. Tank ALWAYS first.
+  - tank
+  - healer
+  - support
+  - dps
+
+# Cure handling: order to resolve when multiple detriments are pending.
+cure_priority:
+  - noxious
+  - elemental
+  - trauma
+  - arcane
+  - curse
+
+# Loop cadence.
+decision_hz: 12             # sense->decide->act loop rate (pixels carry it; 10-15 plenty)

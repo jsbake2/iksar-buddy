@@ -1,0 +1,74 @@
+/* ib dashboard — layout + multiple themes (PROJECT.md §7). Theme = CSS vars. */
+:root[data-theme="midnight"] {
+  --bg:#0b0f1a; --panel:#141a2b; --line:#243049; --fg:#e6ecff; --muted:#7e8bb0;
+  --accent:#5b8cff; --good:#37d39b; --warn:#ffb454; --bad:#ff5b6e; --ward:#7cc7ff;
+}
+:root[data-theme="grafana"] {
+  --bg:#111217; --panel:#181b1f; --line:#2c3235; --fg:#d8d9da; --muted:#8e9097;
+  --accent:#ff7900; --good:#73bf69; --warn:#f2cc0c; --bad:#f2495c; --ward:#5794f2;
+}
+:root[data-theme="amber"] {
+  --bg:#1a1206; --panel:#241a0b; --line:#3d2e12; --fg:#ffd9a0; --muted:#b08a52;
+  --accent:#ffae3b; --good:#9bd649; --warn:#ffd24a; --bad:#ff6a4a; --ward:#ffcf8a;
+}
+:root[data-theme="paper"] {
+  --bg:#eef1f6; --panel:#ffffff; --line:#d6dbe6; --fg:#1c2433; --muted:#5f6b85;
+  --accent:#2f6bff; --good:#1aa37a; --warn:#c98a00; --bad:#d6334a; --ward:#2f8fd6;
+}
+:root[data-theme="defiler"] {
+  --bg:#0c0a14; --panel:#17122a; --line:#2a2347; --fg:#e7deff; --muted:#9a8cc7;
+  --accent:#a06bff; --good:#52d6a8; --warn:#e0b34a; --bad:#ff5c8a; --ward:#9d7bff;
+}
+
+* { box-sizing:border-box; }
+body { margin:0; font:14px/1.45 ui-sans-serif,system-ui,Segoe UI,Roboto,sans-serif;
+  background:var(--bg); color:var(--fg); }
+.bar { display:flex; align-items:center; gap:14px; padding:12px 18px;
+  background:var(--panel); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5; }
+.brand { font-weight:800; font-size:20px; letter-spacing:.5px; display:flex; align-items:center; gap:8px; }
+.dot { width:10px; height:10px; border-radius:50%; background:var(--bad); box-shadow:0 0 8px var(--bad); }
+.dot.on { background:var(--good); box-shadow:0 0 8px var(--good); }
+.state { font-weight:700; padding:3px 12px; border-radius:999px; background:var(--bg);
+  border:1px solid var(--line); color:var(--accent); }
+.spacer { flex:1; }
+.theme { color:var(--muted); font-size:12px; }
+.theme select { background:var(--bg); color:var(--fg); border:1px solid var(--line);
+  border-radius:6px; padding:4px 8px; margin-left:6px; }
+
+.alarm { margin:0; padding:12px 18px; background:var(--bad); color:#fff; font-weight:800;
+  text-align:center; letter-spacing:.4px; }
+.alarm.hidden { display:none; }
+
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; padding:16px; max-width:1280px; margin:0 auto; }
+.panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.panel h2 { margin:0 0 12px; font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+
+.members { display:flex; flex-direction:column; gap:10px; }
+.member { display:grid; grid-template-columns:64px 1fr 44px; align-items:center; gap:10px; }
+.member .name { color:var(--muted); font-size:12px; }
+.bars { display:flex; flex-direction:column; gap:3px; }
+.track { height:12px; background:var(--bg); border-radius:6px; overflow:hidden; border:1px solid var(--line); }
+.fill { height:100%; width:0; background:var(--good); transition:width .2s, background .2s; }
+.fill.ward { background:var(--ward); height:6px; }
+.member .pct { text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); font-size:12px; }
+.dead .fill { background:var(--bad); }
+
+.metric span { color:var(--muted); font-size:12px; }
+.metric .track { margin-top:4px; }
+.fill.power { background:var(--accent); }
+.kv { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dashed var(--line); }
+.kv:last-child { border-bottom:none; }
+.kv span { color:var(--muted); }
+
+.controls { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+button { background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:8px;
+  padding:7px 11px; font-weight:600; cursor:pointer; }
+button:hover { border-color:var(--accent); }
+button.ghost { color:var(--muted); }
+button.danger { background:var(--bad); border-color:var(--bad); color:#fff; }
+
+.events { list-style:none; margin:0; padding:0; max-height:240px; overflow:auto; font-variant-numeric:tabular-nums; }
+.events li { display:flex; gap:10px; padding:4px 0; border-bottom:1px solid var(--line); font-size:13px; }
+.events .t { color:var(--muted); }
+.events .k { color:var(--accent); min-width:64px; }
+@media (max-width:860px){ .grid{ grid-template-columns:1fr 1fr; } }

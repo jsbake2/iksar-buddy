@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" data-theme="midnight">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ib</title>
+  <link rel="stylesheet" href="themes.css" />
+</head>
+<body>
+  <header class="bar">
+    <div class="brand">ib<span class="dot" id="conn" title="agent link"></span></div>
+    <div class="state" id="state">OOC</div>
+    <div class="spacer"></div>
+    <label class="theme">
+      theme
+      <select id="theme">
+        <option value="midnight">midnight</option>
+        <option value="grafana">grafana</option>
+        <option value="amber">amber</option>
+        <option value="paper">paper</option>
+        <option value="defiler">defiler</option>
+      </select>
+    </label>
+  </header>
+
+  <div id="chatAlarm" class="alarm hidden">
+    CHAT-FOCUS UNSAFE — injection blocked (aborted: <span id="aborted">0</span>)
+  </div>
+
+  <main class="grid">
+    <section class="panel" style="grid-column: span 2">
+      <h2>Group</h2>
+      <div id="members" class="members"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Self</h2>
+      <div class="metric"><span>Power</span><div class="track"><div id="power" class="fill"></div></div></div>
+      <div class="kv"><span>Casting</span><b id="casting">—</b></div>
+    </section>
+
+    <section class="panel">
+      <h2>Sensors</h2>
+      <div class="kv"><span>Agent latency</span><b id="latency">—</b></div>
+      <div class="kv"><span>Capture Hz</span><b id="hz">—</b></div>
+      <div class="kv"><span>OCR conf</span><b id="ocr">—</b></div>
+      <div class="kv"><span>Log fresh</span><b id="logfresh">—</b></div>
+      <div class="kv"><span>Aborted inject</span><b id="aborted2">0</b></div>
+    </section>
+
+    <section class="panel">
+      <h2>Manual control</h2>
+      <div class="controls">
+        <button data-ov="force_combat">force combat</button>
+        <button data-ov="force_ooc">force OOC</button>
+        <button data-ov="force_follow">force follow</button>
+        <button data-ov="force_rez">force rez</button>
+        <button data-ov="clear" class="ghost">clear override</button>
+      </div>
+      <div class="controls">
+        <button data-ctl="pause">pause</button>
+        <button data-ctl="resume">resume</button>
+        <button data-ctl="estop" class="danger">EMERGENCY STOP</button>
+      </div>
+      <div class="kv"><span>Override</span><b id="override">none</b></div>
+    </section>
+
+    <section class="panel" style="grid-column: 1 / -1">
+      <h2>Events</h2>
+      <ul id="events" class="events"></ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

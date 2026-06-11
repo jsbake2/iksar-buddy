@@ -1,0 +1,43 @@
+# Screen geometry / sensor regions (OWNER-OWNED, versioned with the VM snapshot).
+#
+# EVERYTHING here derives from the locked client resolution + UI scale. Fix
+# those first (PROJECT.md §12), then fill these by reading pixel coords off a
+# calibration screenshot. Until then these are placeholders.
+#
+# Coordinates are absolute client-window pixels at the locked resolution.
+
+resolution: { w: 0, h: 0 }     # FILL: locked windowed resolution
+ui_scale: 1.0                  # FILL: locked UI scale
+
+# Per-member HP bars: sample a horizontal scanline, fill-ratio = HP%.
+# One entry per group slot (0=self/healer .. 5).
+hp_bars:
+  # - { slot: 0, x0: 0, x1: 0, y: 0, empty_rgb: [.,.,.], full_rgb: [.,.,.] }
+
+# Own power bar (don't cast OOM).
+power_bar:   { x0: 0, x1: 0, y: 0 }
+
+# Cast bar: presence => mid-cast, don't double-cast.
+cast_bar:    { x0: 0, x1: 0, y: 0, active_rgb: [0, 0, 0] }
+
+# Ward / buff icon presence (heartbeat: ward up?).
+ward_icon:   { x: 0, y: 0, present_rgb: [0, 0, 0], tol: 12 }
+
+# Chat-Safety Guard: the chat INPUT bar region. If the "input active"
+# fingerprint is present, focus is NOT on the game world -> fail closed.
+chat_input:  { x0: 0, x1: 0, y0: 0, y1: 0, active_rgb: [0, 0, 0], tol: 10 }
+
+# Filtered chat window (OCR target: large font, black bg, high-contrast text).
+chat_ocr:    { x0: 0, x1: 0, y0: 0, y1: 0 }
+
+# Launcher fingerprints: a small region + expected color that uniquely
+# identifies each screen (login / char-select / in-world / invite dialog).
+fingerprints:
+  login_screen:    { x: 0, y: 0, rgb: [0, 0, 0], tol: 12 }
+  char_select:     { x: 0, y: 0, rgb: [0, 0, 0], tol: 12 }
+  in_world:        { x: 0, y: 0, rgb: [0, 0, 0], tol: 12 }
+  invite_dialog:   { x: 0, y: 0, rgb: [0, 0, 0], tol: 12 }
+  rez_prompt:      { x: 0, y: 0, rgb: [0, 0, 0], tol: 12 }
+
+# Char-select slot for Jenskin (fixed coords once known).
+char_slot: { x: 0, y: 0 }

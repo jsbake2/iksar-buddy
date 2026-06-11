@@ -1,0 +1,38 @@
+# Ability -> keybind map (OWNER-OWNED, SME fills this).
+#
+# The code references abilities by ROLE, never by hardcoded spell name. You map
+# each role to the hotbar key the Defiler will press. Keyspace hygiene
+# (PROJECT.md §6.2): avoid any key EQ2 treats as a chat/reply trigger
+# (Enter, /, ', etc.). Prefer F-keys / number row with a modifier.
+#
+# Character: Jenskin (Defiler) on Woushi. Fill keys after leveling.
+
+healer: defiler
+
+abilities:
+  # The heartbeat: single-target ward on the tank. Refresh on fade/depletion.
+  ward:            { key: "",  cast_ms: 1000, recast_s: 0,  desc: "tank ward" }
+  group_ward:      { key: "",  cast_ms: 1500, recast_s: 0,  desc: "group ward (AE incoming)" }
+  direct_heal:     { key: "",  cast_ms: 1500, recast_s: 0,  desc: "emergency direct heal" }
+
+  # Cures, by detrimental type (priority order set in thresholds.yaml).
+  cure_noxious:    { key: "",  cast_ms: 500,  recast_s: 0,  desc: "cure noxious" }
+  cure_elemental:  { key: "",  cast_ms: 500,  recast_s: 0,  desc: "cure elemental" }
+  cure_trauma:     { key: "",  cast_ms: 500,  recast_s: 0,  desc: "cure trauma" }
+  cure_arcane:     { key: "",  cast_ms: 500,  recast_s: 0,  desc: "cure arcane" }
+  cure_curse:      { key: "",  cast_ms: 500,  recast_s: 0,  desc: "cure curse" }
+
+  debuff:          { key: "",  cast_ms: 1000, recast_s: 0,  desc: "incoming-target debuff/slow" }
+  rez:             { key: "",  cast_ms: 6000, recast_s: 0,  desc: "resurrect a dead member" }
+
+# Bound in-game social macros (fired as hotkeys, NEVER typed as /-commands —
+# PROJECT.md §6.2). Map these to keys bound to /-macros inside EQ2.
+macros:
+  follow_tank:     { key: "", desc: "macro: /follow <tank>" }
+  accept_invite:   { key: "", desc: "macro: accept group invite dialog" }
+  accept_rez:      { key: "", desc: "macro: accept incoming rez/revive prompt" }
+  loc:             { key: "", desc: "macro: /loc (position fix, used by movement stretch)" }
+
+# Group slot -> targeting key (F-keys target group members incl. dead).
+group_target_keys: ["", "", "", "", "", ""]   # slot0=self.. slot5
+tank_slot: 0
