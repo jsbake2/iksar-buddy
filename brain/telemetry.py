@@ -1,10 +1,31 @@
 """Telemetry hub: holds the latest world/health snapshot and fans out updates
-to dashboard websocket subscribers."""
+to dashboard websocket subscribers.
+
+The data model is informed by the prior two-box healer (sensed per-member HP at
+standard+critical thresholds, per-member detriments nox/ele/tra/arc/curse, self
+mana-gate, group size, a recent-command history) and the Defiler ward loop.
+"""
 from __future__ import annotations
 
 import asyncio
 import time
 from typing import Any
+
+CURE_TYPES = ["noxious", "elemental", "trauma", "arcane", "curse"]
+SLOT_ROLES = ["healer", "tank", "support", "support", "dps", "dps"]  # default labels
+
+
+def _member(slot: int) -> dict[str, Any]:
+    return {
+        "slot": slot,
+        "name": "",
+        "present": False,
+        "hp": 1.0,          # 0..1
+        "critical": False,  # below the critical threshold (rare path)
+        "ward": True,       # ward icon present
+        "dead": False,
+        "detriments": [],   # subset of CURE_TYPES currently afflicting this member
+    }
 
 
 class Telemetry:
@@ -13,17 +34,21 @@ class Telemetry:
         self.snapshot: dict[str, Any] = {
             "state": "OOC",
             "override": None,
+            "running": False,        # heal loop armed?
+            "group_size": 0,
             "agent": {"connected": False, "latency_ms": None, "capture_hz": None,
                       "ocr_conf": None, "log_fresh_s": None},
-            "chat_focus": {"safe": None, "aborted_injections": 0},
-            "members": [],          # [{slot, hp, ward}]
-            "own": {"power": None, "casting": None},
-            "events": [],           # rolling cast/cure/rez event stream
+            "chat_focus": {"safe": None, "aborted_injections": 0, "alarms": 0},
+            "members": [_member(i) for i in range(6)],
+            "own": {"power": 1.0, "casting": False, "mana_gated": False},
+            "events": [],            # rolling cast/cure/rez/control event stream
+            "vm": {"name": "iksar_buddy", "running": None, "ip": None},
             "updated": time.time(),
         }
 
+    # -- pub/sub -----------------------------------------------------------
     def subscribe(self) -> asyncio.Queue:
-        q: asyncio.Queue = asyncio.Queue(maxsize=32)
+        q: asyncio.Queue = asyncio.Queue(maxsize=64)
         self._subscribers.add(q)
         return q
 
@@ -35,10 +60,16 @@ class Telemetry:
         self.snapshot["updated"] = time.time()
         self._broadcast()
 
+    def set_members(self, members: list[dict[str, Any]]) -> None:
+        self.snapshot["members"] = members
+        self.snapshot["group_size"] = sum(1 for m in members if m.get("present"))
+        self.snapshot["updated"] = time.time()
+        self._broadcast()
+
     def push_event(self, kind: str, detail: str) -> None:
         evs = self.snapshot["events"]
         evs.append({"ts": time.time(), "kind": kind, "detail": detail})
-        del evs[:-100]  # keep last 100
+        del evs[:-120]
         self._broadcast()
 
     def _broadcast(self) -> None:
