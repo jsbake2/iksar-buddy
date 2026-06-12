@@ -18,11 +18,14 @@ def test_color_predicates():
     assert hs.is_icon((50, 50, 50)) and not hs.is_icon((30, 30, 30))       # >120 sum
 
 
-def test_ignore_signature_revive_sickness():
-    # exact + within-tolerance match -> ignored; far color -> not
-    assert hs.is_ignored((103, 26, 61)) == "revive_sickness"
-    assert hs.is_ignored((120, 40, 75)) == "revive_sickness"     # within 40
-    assert hs.is_ignored((210, 86, 144)) is None                 # a real pink curse
+def test_ignore_signature_mechanism(monkeypatch):
+    # Rez sickness is NOT color-matched (its icon color varies per death -> handled
+    # contextually in host_agent). IGNORE_SIGNATURES is empty by default, but the
+    # mechanism still works for any genuinely stable-color uncurable.
+    assert hs.is_ignored((103, 26, 61)) is None            # nothing matched now
+    monkeypatch.setitem(hs.IGNORE_SIGNATURES, "demo", (100, 100, 100))
+    assert hs.is_ignored((100, 100, 100)) == "demo"
+    assert hs.is_ignored((130, 130, 130)) is None          # outside tol
 
 
 # ---- helpers to synthesize a group frame ----------------------------------
@@ -99,20 +102,20 @@ def _fill_cell(pix, row_y, cell_idx, color):
             pix[(x, y)] = color
 
 
-def test_detriment_curable_and_ignored():
+def test_detriment_curable_at_sensor_level():
+    # The sensor reports ANY lit cell as curable (ignored=None). Rez sickness is
+    # NOT excluded here by color -- it's suppressed contextually in the agent.
     s = HostSensor()
+    row_y = hs.PWR_BASE + hs.ROW_DY
     pix = {}
-    pwr_y = hs.PWR_BASE
-    row_y = pwr_y + hs.ROW_DY
-    _fill_cell(pix, row_y, 0, (200, 60, 60))      # a real (bright) curse
+    _fill_cell(pix, row_y, 0, (200, 60, 60))         # a real bright curse
     cells, cure = s._detriments(pix, row_y)
-    assert cure is True and any(c["ignored"] is None for c in cells)
+    assert cure is True and cells[0]["ignored"] is None
 
     pix2 = {}
-    _fill_cell(pix2, row_y, 1, (103, 26, 61))     # revive sickness -> ignored
+    _fill_cell(pix2, row_y, 1, (141, 40, 91))        # rez-sickness-colored cell
     cells2, cure2 = s._detriments(pix2, row_y)
-    assert cure2 is False
-    assert cells2 and cells2[0]["ignored"] == "revive_sickness"
+    assert cure2 is True and cells2[0]["ignored"] is None  # agent suppresses, not sensor
 
 
 def test_empty_detriment_row_no_cure():
