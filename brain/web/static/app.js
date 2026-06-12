@@ -365,6 +365,12 @@ if (liveImg) {
 }
 const consoleBtn = $("consoleBtn");
 if (consoleBtn) consoleBtn.onclick = openConsole;
+const spiceRestartBtn = $("spiceRestartBtn");
+if (spiceRestartBtn) spiceRestartBtn.onclick = () => {
+  spiceRestartBtn.disabled = true;
+  fetch("/api/spice/restart", { method: "POST" })
+    .finally(() => setTimeout(() => { spiceRestartBtn.disabled = false; }, 2500));
+};
 
 // ---- websocket with auto-reconnect ---------------------------------------
 function connect() {

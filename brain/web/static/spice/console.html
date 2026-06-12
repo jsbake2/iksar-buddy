@@ -19,4 +19,13 @@ function agent(){msg.style.display="none";}
 try{ sc=new SpiceHtml5.SpiceMainConn({uri:uri,screen_id:"spice-screen",message_id:"message-div",password:"",onerror:err,onagent:agent}); msg.textContent="linking "+uri; }
 catch(e){err(e);}
 window.addEventListener("resize",()=>{try{SpiceHtml5.handle_resize();}catch(_){}});
+// Keep keyboard focus on the SPICE canvas. spice-html5 only sends keys when the
+// canvas itself is focused; clicking/returning to the window can drop that focus
+// (then "keys don't pass through"). Refocus on any pointer interaction + on
+// window focus, and once the canvas first appears.
+const screen=document.getElementById("spice-screen");
+function focusCanvas(){const cv=screen.querySelector("canvas"); if(cv){if(!cv.hasAttribute("tabindex"))cv.setAttribute("tabindex","0"); cv.focus();}}
+screen.addEventListener("mousedown",()=>setTimeout(focusCanvas,0));
+window.addEventListener("focus",()=>setTimeout(focusCanvas,0));
+let _f=setInterval(()=>{if(screen.querySelector("canvas")){focusCanvas();clearInterval(_f);}},300);
 </script></body></html>

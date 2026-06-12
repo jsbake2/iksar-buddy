@@ -194,6 +194,22 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         await brain.apply_override(ov)
         return {"ok": True, "override": ov.value}
 
+    @app.post("/api/spice/restart")
+    async def spice_restart():
+        """Bounce the in-browser console tunnel (websockify -> VM SPICE) if keys/
+        input stop passing through. Doesn't touch the VM or the bot."""
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                "sudo", "-n", "systemctl", "restart", "ib-spice.service",
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT)
+            out = (await proc.communicate())[0].decode(errors="replace")
+            ok = proc.returncode == 0
+        except Exception as e:  # pragma: no cover
+            return JSONResponse({"error": str(e)}, status_code=500)
+        telemetry.push_event("control",
+                             "console tunnel restarted" if ok else f"console restart failed: {out[:80]}")
+        return {"ok": ok}
+
     @app.post("/api/combat/reset")
     async def combat_reset():
         """Unstick combat: clear any latched override, force OOC now, and tell the
