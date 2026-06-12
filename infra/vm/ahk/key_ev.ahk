@@ -6,20 +6,36 @@
 ; "Mod+Key" (Ctrl+1, Alt+=). A "pause_<seconds>" element waits (for cast times in
 ; pre-pull / buff combos). EQ2 only registers legacy Event-mode input.
 SendMode "Event"
-SetKeyDelay 30, 30
+SetKeyDelay 40, 40
 SetTitleMatchMode 2
 
-toAhk(spec) {
+; Send one spec ("Alt+7", "Ctrl+1", "F2", "Space", "4"). Modifiers are held
+; EXPLICITLY with pauses -- the compact Send("!7") releases too fast for EQ2 to
+; register the combo in Event mode, which is why modified keys weren't firing.
+sendKey(spec) {
     parts := StrSplit(Trim(spec, " `t`r`n"), "+")
     key := parts[parts.Length]
-    mods := ""
+    mods := []
     Loop parts.Length - 1 {
         m := StrLower(Trim(parts[A_Index]))
-        mods .= (m = "ctrl") ? "^" : (m = "alt") ? "!" : (m = "shift") ? "+" : ""
+        if (m = "ctrl")
+            mods.Push("Ctrl")
+        else if (m = "alt")
+            mods.Push("Alt")
+        else if (m = "shift")
+            mods.Push("Shift")
     }
     if (StrLen(key) > 1)          ; named keys (F2, Space, ...) need braces
         key := "{" key "}"
-    return mods key
+    for m in mods
+        Send("{" m " down}")
+    if (mods.Length)
+        Sleep 60
+    Send(key)
+    if (mods.Length)
+        Sleep 60
+    for m in mods
+        Send("{" m " up}")
 }
 
 if !WinExist("EverQuest II")
@@ -35,7 +51,7 @@ for part in StrSplit(seq, ",") {
         Sleep(Round(Number(SubStr(k, 7)) * 1000))
         continue
     }
-    Send(toAhk(k))
+    sendKey(k)
     Sleep 110
 }
 FileAppend("ev-keys [" seq "] @" A_Now "`n", "C:\ib\key.logf")
