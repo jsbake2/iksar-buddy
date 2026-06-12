@@ -37,8 +37,13 @@ ROW_DY = 32                         # detriment row center below the power row
 CELL_XC = [43, 66, 88, 112, 135]    # 5 detriment cell centers (x)
 INSET = 6
 
-# Uncurable effects that still light a detriment cell (must NOT trigger a cure).
-IGNORE_SIGNATURES = {"revive_sickness": (103, 26, 61)}
+# Uncurable effects detectable by a STABLE color signature. Revive sickness is
+# NOT here: its icon average color + cell vary wildly per death (software:103,26,61
+# / gpu:191,87,71 cell2 / gpu:141,40,91 cell1 -- likely an animated icon), so
+# color matching is unreliable. Rez sickness is handled CONTEXTUALLY in
+# host_agent (a member that just died->revived has cure suppressed for the rez
+# window). Add entries here only for uncurables with a genuinely stable color.
+IGNORE_SIGNATURES: dict[str, tuple[int, int, int]] = {}
 IGNORE_TOL = 40
 
 # Chat-input TEXT area (bottom-left): tightened to exclude the left chat icon and

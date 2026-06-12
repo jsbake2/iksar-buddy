@@ -123,8 +123,12 @@ class Brain:
         for slot in range(6):
             m = world.member(slot)
             present = slot in present_slots
+            rez_sick = bool(m is not None and getattr(m, "rez_sick", False))
             dets = []
-            if m is not None:
+            # rez-sick members DO have lit cells, but they're uncurable revive
+            # sickness -- don't show them as cure-type detriments (that read as
+            # "cursed"); the rez badge conveys the state instead.
+            if m is not None and not rez_sick:
                 for cell in (m.detriments or []):
                     idx = cell.get("cell") if isinstance(cell, dict) else cell
                     if isinstance(idx, int) and 0 <= idx < len(CURE_TYPES) \
@@ -141,6 +145,7 @@ class Brain:
                 "power": (m.power if m is not None else 1.0),
                 "critical": bool(m is not None and m.hp < float(self.cfg.thresholds.get("tank_emergency_hp", 0.35))),
                 "detriments": dets,
+                "rez_sick": rez_sick,
             })
 
         cf = d.get("chat_focus") or {}

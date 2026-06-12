@@ -37,6 +37,11 @@ NAMES = {0: "Jenskin", 1: "Robskin"}
 DOM = "iksar_buddy"
 NVSMI = r"C:\Windows\System32\nvidia-smi.exe"
 
+# Seconds after a revive during which a member's detriments are treated as
+# (uncurable) revive sickness and do NOT trigger a cure. Observed ~80s at low
+# level; generous default covers it. Tunable per the owner's SME knowledge.
+REZ_WINDOW = 240.0
+
 
 def _poll_gpu() -> dict:
     """Run nvidia-smi IN the guest (the 4070 is passed through, so the host can't
@@ -73,6 +78,8 @@ class HostAgent:
         self._t0 = time.time()
         self._gpu = {}
         self._gpu_ts = 0.0
+        self._dead_prev = {}        # slot -> was-dead last cycle
+        self._revived_at = {}       # slot -> time of last dead->alive transition
 
     async def run(self) -> None:
         while True:
@@ -121,20 +128,42 @@ class HostAgent:
             elif msg.type in (proto.WELCOME, proto.CONFIG, proto.PING):
                 log.debug("brain msg %s", msg.type)
 
+    def _rez_suppressed(self, raw_members) -> set:
+        """Track death->revive transitions; return slots currently within the
+        post-revive window (their detriments = revive sickness, don't cure)."""
+        now = time.time()
+        suppressed = set()
+        for m in raw_members:
+            slot = m["slot"]
+            dead = bool(m.get("dead", False))
+            if self._dead_prev.get(slot) and not dead:     # just revived
+                self._revived_at[slot] = now
+            self._dead_prev[slot] = dead
+            if now - self._revived_at.get(slot, -1e9) < REZ_WINDOW:
+                suppressed.add(slot)
+        return suppressed
+
     def _to_event(self, world: dict) -> dict:
         own = world.get("own") or {}
+        raw = world.get("members", [])
+        suppressed = self._rez_suppressed(raw)
         members = []
         cure_needed = False
-        for m in world.get("members", []):
-            cure_needed = cure_needed or m.get("cure", False)
+        for m in raw:
+            slot = m["slot"]
+            # rez-sickness suppression: a just-revived member's detriments are
+            # uncurable revive sickness, so never trigger a cure on them.
+            cure = m.get("cure", False) and slot not in suppressed
+            cure_needed = cure_needed or cure
             members.append({
-                "slot": m["slot"],
+                "slot": slot,
                 "hp": (m["hp"] or 0) / 100.0,
                 "power": (m["power"] or 0) / 100.0,
                 "ward": True,                  # ward sensing not built yet
                 "dead": m.get("dead", False),
                 "detriments": m.get("detriments", []),
-                "cure": m.get("cure", False),
+                "cure": cure,
+                "rez_sick": slot in suppressed,
             })
         # Real fail-closed chat-safety (host_sensor.chat_safety). Until the
         # chat-active fingerprint is calibrated, safe=False -> nothing would ever

@@ -28,6 +28,7 @@ class Member:
     power: float = 1.0       # 0..1 (display + future power-aware decisions)
     detriments: list = field(default_factory=list)  # cell indices currently lit
     cure: bool = False       # has >=1 CURABLE detriment (generic cure trigger)
+    rez_sick: bool = False   # within post-revive window; detriments are uncurable
 
 
 @dataclass
