@@ -398,6 +398,7 @@ button.launch:hover { filter:brightness(1.08); }
   border:1px solid var(--line); }
 .fdot.ok { color:var(--bg); background:var(--good); border-color:var(--good); }
 .fdot.bad { color:#fff; background:var(--bad); border-color:var(--bad); animation:alarmPulse 1s infinite; }
+.fdot.combat { color:#fff; background:var(--crit); border-color:var(--crit); }
 .fdot-btn { cursor:pointer; font:inherit; line-height:1; }
 .fdot-btn:hover { filter:brightness(1.15); border-color:var(--accent); }
 #fArm:not(.ok) { color:#fff; background:color-mix(in srgb,var(--bad) 65%,#000); border-color:var(--bad); }

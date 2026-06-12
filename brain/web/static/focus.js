@@ -99,6 +99,14 @@ function applyState(s) {
   ch.classList.toggle("ok", state.chat_safe === true);
   ch.classList.toggle("bad", state.chat_safe === false);
   ch.textContent = state.chat_safe === false ? "chat busy" : "chat ok";
+  // combat state (+ a manual override marker if one is latched)
+  const st = $("fState");
+  const sm = s.state || "OOC", ov = s.override;
+  const combat = sm === "IN_COMBAT" || sm === "WIPE_RECOVERY" || sm === "REZ_LOOP";
+  st.classList.toggle("combat", combat);
+  st.classList.toggle("ok", !combat && !ov);
+  st.textContent = (ov ? "⏚ " : "") + (sm === "IN_COMBAT" ? "in combat"
+    : sm === "REZ_LOOP" ? "rez" : sm === "WIPE_RECOVERY" ? "wipe" : "ooc");
   // buttons that can't fire (disarmed / no role present) look dimmed
   document.querySelectorAll(".fbtn").forEach((b) => {
     const c = BY_ID[b.dataset.id];
