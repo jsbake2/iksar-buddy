@@ -360,8 +360,8 @@ function openConsole() {
     "ibconsole", "width=1300,height=820,menubar=no,toolbar=no,location=no");
 }
 if (liveImg) {
-  liveImg.title = "click to open the interactive SPICE console";
-  liveImg.onclick = openConsole;
+  liveImg.title = "click to open the native SPICE console";
+  liveImg.onclick = () => { window.location.href = "ibconsole://open"; };
 }
 const consoleBtn = $("consoleBtn");
 if (consoleBtn) consoleBtn.onclick = openConsole;

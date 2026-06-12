@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=ib console
+Exec=/home/jbaker/.local/bin/ib-console-handler %u
+Terminal=false
+NoDisplay=true
+MimeType=x-scheme-handler/ibconsole;

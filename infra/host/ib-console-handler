@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Launched by the ibconsole:// scheme (dashboard button). Opens the native SPICE
+# console. Logs to /tmp so we can see failures when launched from the browser.
+exec /home/jbaker/.local/bin/ib-console >>/tmp/ib-console.log 2>&1
