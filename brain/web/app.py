@@ -48,6 +48,7 @@ _OVERRIDES = {
 # Per-member manual actions -> ability role. Cure is GENERIC now, so every cure_*
 # button maps to the one 'cure'; rez targets the member (revive button per slot).
 _MEMBER_ACTIONS = {"heal": "direct_heal", "ward": "ward", "rez": "rez",
+                   "follow": "follow",
                    **{f"cure_{c}": "cure" for c in CURE_TYPES}}
 # Group / utility actions (no per-member slot). Maps the dashboard button to the
 # ability role; the agent resolves the role -> key from the keymap.
@@ -56,8 +57,6 @@ _GROUP_ACTIONS = {
     "emergency_heal": "emergency_heal", "emergency_ward": "emergency_ward",
     "follow": "follow", "stop_follow": "stop_follow", "rez": "rez",
     "debuff": "debuff", "call_home": "call_home",
-    "buff_tank": "buff_tank", "buff_dps": "buff_dps", "buff_self": "buff_self",
-    "buff1": "buff1", "buff2": "buff2",
     "jump": "jump", "sow": "sow", "hail": "hail", "collect": "collect",
     "gather": "gather", "evac": "evac", "pre_pull": "pre_pull",
 }
@@ -164,8 +163,40 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
                          target_slot=slot, manual=True, reason=f"manual {action} on {name}")
         return {"ok": True, "action": action, "slot": slot}
 
+    # buff_* buttons resolve the right group slot from slot_roles, so the agent
+    # targets that member's F-key BEFORE casting (single-target buffs land on the
+    # intended player instead of whatever happens to be targeted).
+    _BUFF_TARGET_ROLE = {"buff_tank": "tank", "buff_dps": "dps", "buff_self": "healer"}
+
+    def _slot_for_role(want: str):
+        am = brain.cfg.ability_map
+        roles = am.get("slot_roles") or []
+        if want == "tank":
+            return am.get("tank_slot", roles.index("tank") if "tank" in roles else 0)
+        if want == "healer":
+            return roles.index("healer") if "healer" in roles else 0
+        return roles.index(want) if want in roles else None  # first dps
+
     @app.post("/api/act/{action}")
     async def act_group(action: str):
+        # combined buff: fire buff1 then buff2 as one sequence (pause covers cast).
+        if action == "buff":
+            keys = [k for k in (brain.cfg.key_for("buff1"), brain.cfg.key_for("buff2"))
+                    if k and k != "none"]
+            if not keys:
+                return JSONResponse({"error": "no buff keys mapped"}, status_code=400)
+            telemetry.push_event("manual", "buff (1+2)")
+            await brain.send("command", role="buff", key=",pause_1.5,".join(keys),
+                             target_slot=None, manual=True, reason="manual buff combo")
+            return {"ok": True, "action": action}
+        # targeted buffs: pick the member, target their F-key, then cast.
+        if action in _BUFF_TARGET_ROLE:
+            slot = _slot_for_role(_BUFF_TARGET_ROLE[action])
+            key = brain.cfg.key_for(action)
+            telemetry.push_event("manual", f"{action.replace('_', ' ')} -> slot {slot}")
+            await brain.send("command", role=action, key=key,
+                             target_slot=slot, manual=True, reason=f"manual {action}")
+            return {"ok": True, "action": action, "slot": slot}
         role = _GROUP_ACTIONS.get(action)
         if role is None:
             return JSONResponse({"error": "unknown group action"}, status_code=400)
@@ -214,15 +245,18 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         return {"ok": True, "stop": "started"}
 
     # Dialog accepts: run the host-side OCR-and-click helper ONCE on click (no
-    # background watching). repair is not built yet.
-    _ACCEPT = {"invite": "invite_accept.py", "quest": "quest_accept.py",
-               "revive": "revive_accept.py"}
+    # background watching). Each entry is the helper's argv. quest passes --accept
+    # so the manual button accepts whatever quest is shown (the policy allowlist is
+    # for autonomous use only, which isn't wired).
+    _ACCEPT = {"invite": ["invite_accept.py"],
+               "quest": ["quest_accept.py", "--accept"],
+               "revive": ["revive_accept.py"]}
 
-    async def _run_helper(script: str, label: str):
-        path = str(Path.home() / "ib-build" / script)
+    async def _run_helper(argv: list, label: str):
+        path = str(Path.home() / "ib-build" / argv[0])
         try:
             proc = await asyncio.create_subprocess_exec(
-                "python3", path, stdout=asyncio.subprocess.PIPE,
+                "python3", path, *argv[1:], stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT)
         except Exception as e:  # pragma: no cover
             telemetry.push_event("accept", f"{label}: {e}"); return
@@ -232,12 +266,11 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
 
     @app.post("/api/accept/{what}")
     async def accept(what: str):
-        script = _ACCEPT.get(what)
-        if script is None:
-            return JSONResponse({"error": "unknown accept (repair not built yet)"
-                                 if what == "repair" else "unknown accept"}, status_code=400)
+        argv = _ACCEPT.get(what)
+        if argv is None:
+            return JSONResponse({"error": "unknown accept"}, status_code=400)
         telemetry.push_event("accept", f"accept {what} requested")
-        asyncio.create_task(_run_helper(script, f"accept {what}"))
+        asyncio.create_task(_run_helper(argv, f"accept {what}"))
         return {"ok": True, "accept": what}
 
     @app.post("/api/nudge/{d}")

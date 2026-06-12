@@ -110,6 +110,10 @@ def decide(text: str) -> tuple[str, str | None]:
 
 def main() -> None:
     dry = "--dry" in sys.argv
+    # --accept = MANUAL mode (the dashboard button). The owner explicitly chose to
+    # accept whatever quest is on screen, so bypass the allow/deny policy gate.
+    # The policy only governs autonomous use (none wired right now).
+    force_accept = "--accept" in sys.argv
     grab()
     words = ocr_words()
 
@@ -127,7 +131,7 @@ def main() -> None:
     gate_text = " ".join(w[0] for w in sorted(band, key=lambda w: (w[2], w[1])))
     last_y = max(w[2] + w[4] for w in band)
 
-    action, rule = decide(gate_text)
+    action, rule = ("accept", "manual button") if force_accept else decide(gate_text)
 
     # find the Accept/Decline button row by gold detection below the text
     bx_accept = bx_decline = by = None

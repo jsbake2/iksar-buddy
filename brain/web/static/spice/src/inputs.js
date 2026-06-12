@@ -190,6 +190,23 @@ function handle_keyup(e)
     e.preventDefault();
 }
 
+function handle_blur(e)
+{
+    // Focus left the canvas. A modifier that was down may never deliver its keyup
+    // here (Alt+Tab, Alt opening the browser menu, clicking the dashboard), which
+    // strands that modifier "held" in the guest -- the stuck-Alt bug that makes
+    // the console unusable. Force every modifier UP so the guest can't be left
+    // holding one; states reset to -1 so the next real event re-syncs.
+    var sc = this.sc;
+    if (!(sc && sc.inputs && sc.inputs.state === "ready"))
+        return;
+    update_modifier(false, KeyNames.KEY_ShiftL, sc);
+    update_modifier(false, KeyNames.KEY_Alt, sc);
+    update_modifier(false, KeyNames.KEY_LCtrl, sc);
+    update_modifier(false, 0xE0B5, sc);
+    Shift_state = Ctrl_state = Alt_state = Meta_state = -1;
+}
+
 function sendCtrlAltDel(sc)
 {
     if (sc && sc.inputs && sc.inputs.state === "ready"){
@@ -294,5 +311,6 @@ export {
   handle_mousewheel,
   handle_keydown,
   handle_keyup,
+  handle_blur,
   sendCtrlAltDel,
 };

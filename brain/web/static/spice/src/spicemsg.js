@@ -1053,11 +1053,18 @@ function SpiceMsgcMousePosition(sc, e)
     this.buttons_state = sc.buttons_state;
     if (e)
     {
-        this.x = e.offsetX;
-        this.y = e.offsetY;
+        // The canvas is CSS-stretched to fill the window, but its intrinsic
+        // buffer is the guest resolution. offsetX/Y are in DISPLAYED pixels, so
+        // scale them back to guest pixels or every click lands offset (which
+        // made clicks hit the chat bar instead of the button you aimed at).
+        var cv = e.target;
+        var sx = (cv && cv.clientWidth) ? cv.width / cv.clientWidth : 1;
+        var sy = (cv && cv.clientHeight) ? cv.height / cv.clientHeight : 1;
+        this.x = Math.round(e.offsetX * sx);
+        this.y = Math.round(e.offsetY * sy);
 
-        sc.mousex = e.offsetX;
-        sc.mousey = e.offsetY;
+        sc.mousex = this.x;
+        sc.mousey = this.y;
     }
     else
     {
@@ -1090,16 +1097,20 @@ function SpiceMsgcMouseMotion(sc, e)
     this.buttons_state = sc.buttons_state;
     if (e)
     {
-        this.x = e.offsetX;
-        this.y = e.offsetY;
+        // scale displayed pixels -> guest pixels (see SpiceMsgcMousePosition)
+        var cv = e.target;
+        var sx = (cv && cv.clientWidth) ? cv.width / cv.clientWidth : 1;
+        var sy = (cv && cv.clientHeight) ? cv.height / cv.clientHeight : 1;
+        this.x = Math.round(e.offsetX * sx);
+        this.y = Math.round(e.offsetY * sy);
 
         if (sc.mousex !== undefined)
         {
             this.x -= sc.mousex;
             this.y -= sc.mousey;
         }
-        sc.mousex = e.offsetX;
-        sc.mousey = e.offsetY;
+        sc.mousex = Math.round(e.offsetX * sx);
+        sc.mousey = Math.round(e.offsetY * sy);
     }
     else
     {

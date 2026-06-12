@@ -9,6 +9,13 @@ SendMode "Event"
 SetKeyDelay 40, 40
 SetTitleMatchMode 2
 
+; Belt-and-suspenders: on any clean exit, release modifiers so we never leave one
+; held in the guest (pairs with the start-of-run clear below for the kill case).
+OnExit(ReleaseMods)
+ReleaseMods(*) {
+    Send("{Alt up}{Ctrl up}{Shift up}{LWin up}")
+}
+
 ; Send one spec ("Alt+7", "Ctrl+1", "F2", "Space", "4"). Modifiers are held
 ; EXPLICITLY with pauses -- the compact Send("!7") releases too fast for EQ2 to
 ; register the combo in Event mode, which is why modified keys weren't firing.
@@ -42,6 +49,12 @@ if !WinExist("EverQuest II")
     ExitApp
 WinActivate("EverQuest II")
 Sleep 250
+; Clear any modifier stranded by a prior instance that #SingleInstance Force
+; killed mid-combo (between {Mod down} and {Mod up}). Without this, an interrupted
+; Alt+= / Ctrl+N injection leaves Alt/Ctrl "held" in the guest -- which shows up
+; as stuck-Alt in the SPICE console and breaks in-game input until cleared.
+Send("{Alt up}{Ctrl up}{Shift up}{LWin up}")
+Sleep 20
 seq := Trim(FileRead("C:\ib\keys.txt"), " `t`r`n")
 for part in StrSplit(seq, ",") {
     k := Trim(part, " `t`r`n")

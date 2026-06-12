@@ -250,7 +250,8 @@ function buildMemberEl(slot) {
   el.innerHTML =
     `<div class="id"><div class="nm"></div>` +
       `<select class="rl-sel" title="group role (tank is targeted by the loop)">` +
-        ROLES.map((r) => `<option value="${r}">${r}</option>`).join("") + `</select></div>` +
+        ROLES.map((r) => `<option value="${r}">${r}</option>`).join("") + `</select>` +
+      `<button class="mfollow" title="target this member (F#) and autofollow them">follow</button></div>` +
     `<div class="barwrap">` +
       `<div class="hp"><div class="crit-band"></div>` +
         `<div class="fill"></div><span class="hp-txt"></span></div>` +
@@ -262,6 +263,7 @@ function buildMemberEl(slot) {
     `</div>`;
   const sel = el.querySelector(".rl-sel");
   sel.onchange = () => post(`/api/role/${slot}/${sel.value}`);
+  el.querySelector(".mfollow").onclick = () => post(`/api/act/follow/${slot}`);
   return el;
 }
 function renderMembers(members) {
@@ -277,6 +279,8 @@ function renderMembers(members) {
     el.querySelector(".nm").textContent = name;
     const sel = el.querySelector(".rl-sel");
     if (document.activeElement !== sel && m.role && sel.value !== m.role) sel.value = m.role;
+    // no point following yourself -- hide the follow button on the healer slot
+    el.querySelector(".mfollow").style.display = m.role === "healer" ? "none" : "";
     el.querySelector(".hp").classList.toggle("crit", crit);
     el.querySelector(".fill").style.width = hpP + "%";
     el.querySelector(".hp-txt").textContent = m.dead ? "DEAD" : hpP + "%";

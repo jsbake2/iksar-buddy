@@ -43,7 +43,7 @@
 
   <main class="grid">
     <!-- LIVE VIEW -->
-    <section class="panel span-2 live-panel">
+    <section class="panel span-2 live-panel" style="order:1">
       <h2>Live view <span class="sub" id="liveAge">—</span></h2>
       <div class="live-wrap">
         <img id="liveFrame" class="live-frame" alt="live VM view" />
@@ -52,24 +52,42 @@
           <span class="ov-chip" id="ovGpu">GPU —</span>
           <span class="ov-chip" id="ovLoad">load —</span>
         </div>
-        <span class="live-rdp-hint">⤢ click for console</span>
+        <span class="live-console-hint">⤢ click for console</span>
+      </div>
+    </section>
+
+    <!-- STATE & RUN -->
+    <section class="panel span-2 staterun-panel" style="order:3">
+      <h2>State &amp; run</h2>
+      <div class="sbtns">
+        <button data-ov="force_ooc">force OOC</button>
+        <button data-ov="force_follow">force follow</button>
+        <button data-ov="force_rez">force rez</button>
+        <button data-ov="clear" class="ghost">clear override</button>
+      </div>
+      <div class="run-row">
+        <button data-ctl="resume" class="arm" id="armBtn">▶ ARM</button>
+        <button data-ctl="pause" class="ghost">⏸ disarm</button>
+        <button data-ctl="estop" class="danger">EMERGENCY STOP</button>
+        <button id="launchBtn" class="launch">▶ Launch Bot</button>
+        <button id="stopBtn" class="stopbot">⏻ Stop Bot</button>
       </div>
     </section>
 
     <!-- GROUP -->
-    <section class="panel span-2 group-panel">
+    <section class="panel span-2 group-panel" style="order:4">
       <h2>Group <span class="sub" id="groupSize">0/6</span></h2>
       <div id="members" class="members"></div>
     </section>
 
     <!-- GROUP HP HISTORY -->
-    <section class="panel span-2 graph-panel">
+    <section class="panel span-2 graph-panel" style="order:8">
       <h2>Group HP — recent <span class="sub" id="graphLegend"></span></h2>
       <canvas id="hpGraph" class="hp-graph" width="640" height="150"></canvas>
     </section>
 
     <!-- SELF -->
-    <section class="panel">
+    <section class="panel" style="order:5">
       <h2>Self <span class="sub">Defiler</span></h2>
       <div class="metric">
         <div class="metric-head"><span>Power</span><b id="powerPct">—</b></div>
@@ -86,7 +104,7 @@
     </section>
 
     <!-- SENSORS -->
-    <section class="panel">
+    <section class="panel" style="order:6">
       <h2>Sensors</h2>
       <div class="sensors">
         <div class="sensor"><span>latency</span><b id="latency">—</b><div class="bar-mini"><i id="latBar"></i></div></div>
@@ -101,7 +119,7 @@
     </section>
 
     <!-- MANUAL CONTROL -->
-    <section class="panel span-2 control-panel">
+    <section class="panel span-2 control-panel" style="order:2">
       <h2>Manual control</h2>
 
       <div class="ctl-grid" id="actionGrid"></div>
@@ -113,7 +131,6 @@
           <h3>Movement</h3>
           <div class="sbtns">
             <button data-group="jump">jump</button>
-            <button data-group="follow">follow</button>
             <button data-group="stop_follow">stop follow</button>
           </div>
           <div class="nudge-pad" title="tap-hold ~0.3s">
@@ -130,8 +147,7 @@
             <button data-group="buff_tank">buff tank</button>
             <button data-group="buff_self">buff self</button>
             <button data-group="buff_dps">buff dps</button>
-            <button data-group="buff1">buff 1</button>
-            <button data-group="buff2">buff 2</button>
+            <button data-group="buff">buff</button>
           </div>
         </div>
 
@@ -161,7 +177,6 @@
             <button data-accept="revive">accept revive</button>
             <button data-accept="quest">accept quest</button>
             <button data-accept="invite">accept invite</button>
-            <button data-accept="repair">repair armor</button>
           </div>
         </div>
 
@@ -177,27 +192,10 @@
           </div>
         </div>
       </div>
-
-      <div class="ctl-sec system-sec">
-        <h3>State &amp; run</h3>
-        <div class="sbtns">
-          <button data-ov="force_ooc">force OOC</button>
-          <button data-ov="force_follow">force follow</button>
-          <button data-ov="force_rez">force rez</button>
-          <button data-ov="clear" class="ghost">clear override</button>
-        </div>
-        <div class="run-row">
-          <button data-ctl="resume" class="arm" id="armBtn">▶ ARM</button>
-          <button data-ctl="pause" class="ghost">⏸ disarm</button>
-          <button data-ctl="estop" class="danger">EMERGENCY STOP</button>
-          <button id="launchBtn" class="launch">▶ Launch Bot</button>
-          <button id="stopBtn" class="stopbot">⏻ Stop Bot</button>
-        </div>
-      </div>
     </section>
 
     <!-- STATUS -->
-    <section class="panel">
+    <section class="panel" style="order:7">
       <h2>Status</h2>
       <div class="kv"><span>state machine</span><b id="stateK">—</b></div>
       <div class="kv"><span>override</span><b id="override">none</b></div>
@@ -208,7 +206,7 @@
     </section>
 
     <!-- EVENT STREAM -->
-    <section class="panel events-panel">
+    <section class="panel events-panel" style="order:9">
       <h2>Event stream</h2>
       <ul id="events" class="events"></ul>
     </section>
