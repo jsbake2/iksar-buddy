@@ -49,7 +49,7 @@ _OVERRIDES = {
 # Per-member manual actions -> ability role. Cure is GENERIC now, so every cure_*
 # button maps to the one 'cure'; rez targets the member (revive button per slot).
 _MEMBER_ACTIONS = {"heal": "direct_heal", "ward": "ward", "rez": "rez",
-                   "follow": "follow",
+                   "follow": "follow", "cure": "cure",
                    **{f"cure_{c}": "cure" for c in CURE_TYPES}}
 # Group / utility actions (no per-member slot). Maps the dashboard button to the
 # ability role; the agent resolves the role -> key from the keymap.

@@ -50,6 +50,9 @@ if (stopBtn) stopBtn.onclick = () => {
 const focusBtn = $("focusBtn");
 if (focusBtn) focusBtn.onclick = () =>
   window.open("focus.html", "ibfocus", "width=430,height=600,menubar=no,toolbar=no,location=no,status=no");
+const groupBtn = $("groupBtn");
+if (groupBtn) groupBtn.onclick = () =>
+  window.open("group.html", "ibgroup", "width=480,height=640,menubar=no,toolbar=no,location=no,status=no");
 
 // ---- build the per-member action grid (modernized action_list) ------------
 let gridBuilt = false;
