@@ -1,0 +1,11 @@
+[Unit]
+Description=ib SPICE TCP proxy (LAN -> VM SPICE 5900 for native remote-viewer)
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/socat TCP-LISTEN:5950,fork,reuseaddr,bind=0.0.0.0 TCP:127.0.0.1:5900
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
