@@ -410,14 +410,15 @@ button.launch:hover { filter:brightness(1.08); }
   transition:transform .06s, box-shadow .12s, filter .12s; }
 .fbtn:hover { filter:brightness(1.1); border-color:color-mix(in srgb,var(--accent) 50%,var(--line)); }
 .fbtn:active { transform:translateY(2px); }
-.fbtn.danger { color:var(--bad); border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }
+.fbtn.danger { background:linear-gradient(color-mix(in srgb,var(--bad) 60%,#000),color-mix(in srgb,var(--bad) 38%,#000));
+  border-color:var(--bad); color:#fff; }
 .fbtn.big { grid-column:1 / -1; min-height:56px; font-size:16px; letter-spacing:1px;
   background:linear-gradient(color-mix(in srgb,var(--accent) 24%,var(--panel)),var(--panel2));
   border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); color:var(--accent2); }
 .fbtn.big.danger { background:linear-gradient(color-mix(in srgb,var(--bad) 32%,var(--panel)),var(--panel2));
   border-color:var(--bad); color:#fff; }
 .fbtn.disabled { opacity:.4; filter:grayscale(.5); }
-.fb-label { position:relative; z-index:1; text-shadow:0 1px 2px rgba(0,0,0,.55); }
+.fb-label { text-shadow:0 1px 2px rgba(0,0,0,.55); }
 .fbtn.fired { box-shadow:0 0 0 2px var(--good), 0 4px 14px -8px var(--good); filter:brightness(1.25); }
 .fb-flash { position:absolute; bottom:5px; left:0; right:0; text-align:center;
   font-size:9px; font-weight:600; letter-spacing:.5px; text-transform:uppercase;
@@ -425,8 +426,8 @@ button.launch:hover { filter:brightness(1.08); }
 .fbtn.fired .fb-flash { opacity:.95; }
 
 /* editor drawer */
-.focus-editor { position:fixed; inset:auto 0 0 0; max-height:70vh; overflow:auto;
-  background:var(--panel); border-top:2px solid var(--accent); padding:10px 12px 14px;
+.focus-editor { position:fixed; inset:auto 0 0 0; max-height:70vh; overflow:auto; z-index:50;
+  background:var(--bg); border-top:2px solid var(--accent); padding:10px 12px 14px;
   box-shadow:0 -12px 30px -16px #000; }
 .ed-head { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:8px; }
 .ed-hint { color:var(--faint); text-transform:none; letter-spacing:0; margin-left:8px; }

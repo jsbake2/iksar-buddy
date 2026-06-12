@@ -127,6 +127,13 @@ function fire(c, btn) {
   fetch(url, { method: "POST" }).catch(() => {});
   flash(btn, msg);
 }
+// readable text (black/white) for a given #rrggbb background, by luminance
+function textOn(hex) {
+  const c = hex.replace("#", "");
+  if (c.length < 6) return "#fff";
+  const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55 ? "#10131a" : "#fff";
+}
 function flash(btn, msg) {
   btn.classList.add("fired");
   const t = btn.querySelector(".fb-flash"); if (t) { t.textContent = msg; }
@@ -147,7 +154,7 @@ function render() {
     if (col) {                       // custom color overrides the theme gradient
       b.style.background = `linear-gradient(${col}, color-mix(in srgb, ${col} 55%, #000))`;
       b.style.borderColor = `color-mix(in srgb, ${col} 75%, #000)`;
-      b.style.color = "#fff";
+      b.style.color = textOn(col);   // black or white, whichever is readable
     }
     b.innerHTML = `<span class="fb-label">${c.label}</span><span class="fb-flash"></span>`;
     b.onclick = () => fire(c, b);
