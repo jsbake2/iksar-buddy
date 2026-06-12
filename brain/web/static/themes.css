@@ -396,6 +396,9 @@ button.launch:hover { filter:brightness(1.08); }
   border:1px solid var(--line); }
 .fdot.ok { color:var(--bg); background:var(--good); border-color:var(--good); }
 .fdot.bad { color:#fff; background:var(--bad); border-color:var(--bad); animation:alarmPulse 1s infinite; }
+.fdot-btn { cursor:pointer; font:inherit; line-height:1; }
+.fdot-btn:hover { filter:brightness(1.15); border-color:var(--accent); }
+#fArm:not(.ok) { color:#fff; background:color-mix(in srgb,var(--bad) 65%,#000); border-color:var(--bad); }
 .focus-spacer { flex:1; }
 .focus-edit { background:var(--panel2); color:var(--muted); border:1px solid var(--line);
   border-radius:7px; padding:5px 10px; cursor:pointer; font-size:14px; }

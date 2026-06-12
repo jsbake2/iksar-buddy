@@ -79,6 +79,10 @@ $("theme").onchange = () => {
 
 // ---- live state ----------------------------------------------------------
 let state = { running: false, chat_safe: null, roleSlot: {} };
+// the arm chip is the on/off button: tap to arm/disarm the bot
+const armChip = $("fArm");
+if (armChip) armChip.onclick = () =>
+  fetch(`/api/control/${state.running ? "pause" : "resume"}`, { method: "POST" }).catch(() => {});
 function applyState(s) {
   state.running = !!s.running;
   const cf = s.chat_focus || {};
