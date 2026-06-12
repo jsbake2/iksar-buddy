@@ -41,6 +41,12 @@ NVSMI = r"C:\Windows\System32\nvidia-smi.exe"
 # (uncurable) revive sickness and do NOT trigger a cure. Observed ~80s at low
 # level; generous default covers it. Tunable per the owner's SME knowledge.
 REZ_WINDOW = 240.0
+# Combat detection: no in-game combat flag is sensed, so infer it from HP. Any
+# group member (or the healer) losing more than COMBAT_HP_DROP of health between
+# cycles = took damage = in combat; it stays "in combat" until COMBAT_DECAY_S of
+# no further hits. Healing raises HP (positive delta) and is ignored.
+COMBAT_HP_DROP = 0.02
+COMBAT_DECAY_S = 6.0
 
 # Chat-safety blink hysteresis: any sign of an active chat input (text OR the
 # cursor's lit phase) latches "chat busy" for this long, so a cursor blinking
@@ -87,6 +93,8 @@ class HostAgent:
         self._dead_prev = {}        # slot -> was-dead last cycle
         self._revived_at = {}       # slot -> time of last dead->alive transition
         self._chat_busy_until = 0.0  # chat-safety blink hysteresis deadline
+        self._prev_hp = {}          # slot -> last hp (0..1); "own" key for the healer
+        self._combat_until = 0.0    # in-combat decays to OOC this many seconds after last hit
         self._armed = False         # injection master switch (off until owner arms)
         self._chat_safe = False     # latest chat-safety verdict (the inject gate)
         self._aborted = 0           # injections aborted because chat was unsafe
@@ -246,6 +254,18 @@ class HostAgent:
         game_present = bool(safety.get("game_present"))
         raw_active = safety.get("chat_active")          # True / False / None
         now = time.time()
+
+        # Infer combat from HP drops (no in-game combat flag is sensed). Compare
+        # each present member + the healer to last cycle; a drop past the threshold
+        # = took damage = combat, latched for COMBAT_DECAY_S.
+        cur_hp = {m["slot"]: (m["hp"] or 0) / 100.0 for m in raw}
+        cur_hp["own"] = (own.get("hp") or 0) / 100.0
+        for k, hp in cur_hp.items():
+            prev = self._prev_hp.get(k)
+            if prev is not None and prev - hp >= COMBAT_HP_DROP and hp > 0.01:
+                self._combat_until = now + COMBAT_DECAY_S
+        self._prev_hp = cur_hp
+        in_combat = now < self._combat_until
         if raw_active is True or raw_active is None:
             self._chat_busy_until = now + CHAT_HYSTERESIS_S
         chat_busy = now < self._chat_busy_until
@@ -257,6 +277,7 @@ class HostAgent:
             "own_power": (own.get("power") or 0) / 100.0,
             "own_hp": (own.get("hp") or 0) / 100.0,
             "casting": False,                  # cast-bar sensing not built yet
+            "in_combat": in_combat,            # inferred from HP drops (no game flag)
             "pending_cures": ["generic"] if cure_needed else [],
             "chat_safe": chat_safe,
             "chat_focus": {"game_present": game_present, "chat_active": chat_busy},
