@@ -194,6 +194,17 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         await brain.apply_override(ov)
         return {"ok": True, "override": ov.value}
 
+    @app.post("/api/combat/reset")
+    async def combat_reset():
+        """Unstick combat: clear any latched override, force OOC now, and tell the
+        agent to discard the combat lines it has already seen. Auto-detection then
+        resumes on the next NEW combat line -- no babysitting an override."""
+        await brain.apply_override(None)
+        brain.sm.on_combat_signal(False)
+        await brain.send("command", role="_reset_combat", key="", target_slot=None)
+        telemetry.push_event("control", "combat reset (unstick)")
+        return {"ok": True}
+
     @app.post("/api/act/{action}/{slot}")
     async def act_member(action: str, slot: int):
         role = _MEMBER_ACTIONS.get(action)

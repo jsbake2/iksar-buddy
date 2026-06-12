@@ -40,6 +40,8 @@ document.querySelectorAll("[data-ctl]").forEach((b) => (b.onclick = () => post(`
 document.querySelectorAll("[data-group]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.group}`)));
 document.querySelectorAll("[data-accept]").forEach((b) => (b.onclick = () => post(`/api/accept/${b.dataset.accept}`)));
 document.querySelectorAll("[data-nudge]").forEach((b) => (b.onclick = () => post(`/api/nudge/${b.dataset.nudge}`)));
+const resetCombatBtn = $("resetCombatBtn");
+if (resetCombatBtn) resetCombatBtn.onclick = () => post("/api/combat/reset");
 $("launchBtn").onclick = () => post("/api/launch");
 const stopBtn = $("stopBtn");
 if (stopBtn) stopBtn.onclick = () => {

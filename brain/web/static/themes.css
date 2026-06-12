@@ -229,8 +229,9 @@ body {
   color:var(--fg); transition:filter .1s, transform .06s; }
 .big-combat:hover { filter:brightness(1.12); }
 .big-combat:active { transform:translateY(2px); }
-.big-combat.start { background:color-mix(in srgb,var(--good) 22%,var(--panel2)); border-color:var(--good); color:var(--good); }
-.big-combat.stop { flex:1.4; background:color-mix(in srgb,var(--bad) 26%,var(--panel2)); border-color:var(--bad); color:#fff; }
+.big-combat.reset { flex:2; background:color-mix(in srgb,var(--accent) 26%,var(--panel2)); border-color:var(--accent); color:var(--accent2); font-size:19px; }
+.big-combat.start { flex:.8; background:color-mix(in srgb,var(--good) 20%,var(--panel2)); border-color:var(--good); color:var(--good); font-size:13px; }
+.big-combat.stop { flex:.8; background:color-mix(in srgb,var(--bad) 22%,var(--panel2)); border-color:var(--bad); color:#fff; font-size:13px; }
 .big-combat.auto { flex:.7; color:var(--muted); font-size:13px; }
 .tune-row { display:flex; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap; }
 .tune { display:flex; align-items:center; gap:6px; font-size:11px; text-transform:uppercase;

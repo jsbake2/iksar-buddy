@@ -256,6 +256,12 @@ class HostAgent:
             self._armed = True; log.info("ARMED"); return
         if role in ("_pause", "_estop"):
             self._armed = False; log.info("DISARMED (%s)", role); return
+        if role == "_reset_combat":
+            # Force OOC NOW and discard all combat lines seen so far. _last_combat_epoch
+            # already tracks the newest line, so auto-detection stays quiet until a
+            # genuinely NEW combat line appears -- i.e. it unsticks but keeps auto.
+            self._combat_until = 0.0
+            log.info("COMBAT RESET (forced OOC; auto resumes on next new combat)"); return
 
         key = (data.get("key") or "").strip()
         target = data.get("target_slot")

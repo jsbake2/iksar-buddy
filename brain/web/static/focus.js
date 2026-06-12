@@ -31,8 +31,9 @@ const CATALOG = [
   { id: "hail", label: "Hail", kind: "group", action: "hail" },
   { id: "collect", label: "Collect", kind: "group", action: "collect" },
   { id: "evac", label: "Evac", kind: "group", action: "evac", danger: 1 },
-  { id: "stop_combat", label: "⏹ STOP COMBAT", kind: "override", action: "force_ooc", big: 1, danger: 1, hot: 1 },
-  { id: "start_combat", label: "⚔ START COMBAT", kind: "override", action: "force_combat", big: 1, hot: 1 },
+  { id: "reset_combat", label: "⟲ RESET COMBAT", kind: "post", path: "/api/combat/reset", big: 1, hot: 1 },
+  { id: "force_in", label: "⚔ Force In Combat", kind: "override", action: "force_combat", hot: 1 },
+  { id: "force_out", label: "⏹ Force OOC", kind: "override", action: "force_ooc", danger: 1, hot: 1 },
   { id: "auto_combat", label: "↻ Auto (clear override)", kind: "override", action: "clear", hot: 1 },
   { id: "reengage", label: "⚔ RE-ENGAGE", kind: "group", action: "attack", big: 1, hot: 1 },
   { id: "debuff", label: "Debuff", kind: "group", action: "debuff" },
@@ -48,7 +49,7 @@ const LS = "ib-focus-layout-v1";
 // Buttons added after the first release. Each is merged into an existing saved
 // layout ONCE (tracked in `ensured`) so the owner gets them without a reset, but
 // a later manual delete still sticks.
-const ENSURE = ["stop_combat", "start_combat", "auto_combat", "follow_tank", "follow_dps", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage"];
+const ENSURE = ["reset_combat", "force_in", "force_out", "auto_combat", "follow_tank", "follow_dps", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage"];
 function loadLayout() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
@@ -99,8 +100,8 @@ function applyState(s) {
     const c = BY_ID[b.dataset.id];
     if (!c) return;
     const missing = c.kind === "role" && state.roleSlot[c.role] === undefined;
-    // override buttons (start/stop combat) control state, not injection -> always live
-    const dis = c.kind === "override" ? false : (!state.running || missing);
+    // override/reset buttons control state, not injection -> always live
+    const dis = (c.kind === "override" || c.kind === "post") ? false : (!state.running || missing);
     b.classList.toggle("disabled", dis);
   });
 }
@@ -116,6 +117,9 @@ function fire(c, btn) {
   } else if (c.kind === "override") {
     url = `/api/override/${c.action}`;          // state control: works disarmed
     msg = "set";
+  } else if (c.kind === "post") {
+    url = c.path;                                // raw endpoint (e.g. combat reset)
+    msg = "ok";
   } else {
     url = `/api/act/${c.action}`;
     msg = state.running ? "sent" : "disarmed";
