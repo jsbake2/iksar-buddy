@@ -130,7 +130,16 @@ class Brain:
         )
         # coarse combat signal feeds the state machine (override may suppress).
         if "in_combat" in d:
-            self.sm.on_combat_signal(bool(d["in_combat"]))
+            entered = self.sm.on_combat_signal(bool(d["in_combat"]))
+            # On the OOC->IN_COMBAT edge, assist once: press the attack key (mode
+            # auto -> needs the bot armed; the agent also gates on chat-safe).
+            if entered and self.sm.state == State.IN_COMBAT:
+                akey = self.cfg.key_for("attack")
+                if akey and akey != "none":
+                    await self.send("command", role="attack", key=akey,
+                                    target_slot=None, manual=False,
+                                    reason="combat start -> assist")
+                    log.info("combat start: assist (attack '%s')", akey)
 
         # Map each member's lit detriment cells to display type-labels. The 5
         # cells are ASSUMED to correspond positionally to the 5 cure categories;

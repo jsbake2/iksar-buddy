@@ -1,5 +1,10 @@
 #Requires AutoHotkey v2.0
-#SingleInstance Force
+; Ignore (not Force): if an injection is already running, a new one exits instead
+; of KILLING the running one mid-combo. Force aborted in-flight presses whenever
+; the auto-loop and a manual button (or rapid mashing) overlapped, so neither
+; landed -- e.g. mashed Ctrl+7 never completed. The agent also time-locks injects
+; so they don't overlap in the first place; this is the safety net.
+#SingleInstance Ignore
 ; Event-mode key injection for EQ2 (deployed to C:\ib\key_ev.ahk, fired by the
 ; 'ibkey' scheduled task). Reads C:\ib\keys.txt: a comma-separated SEQUENCE of
 ; key specs, e.g. "F2,4" = target group member F2 then press 4. Modifier form is

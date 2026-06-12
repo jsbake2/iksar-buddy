@@ -17,11 +17,11 @@ const CATALOG = [
   { id: "group_cure", label: "Group Cure", kind: "group", action: "group_cure" },
   { id: "emergency_heal", label: "Emerg Heal", kind: "group", action: "emergency_heal", danger: 1 },
   { id: "emergency_ward", label: "Emerg Ward", kind: "group", action: "emergency_ward", danger: 1 },
-  { id: "buff_tank", label: "Buff Tank", kind: "group", action: "buff_tank" },
-  { id: "buff_dps", label: "Buff DPS", kind: "group", action: "buff_dps" },
-  { id: "buff_self", label: "Buff Self", kind: "group", action: "buff_self" },
-  { id: "buff1", label: "Buff 1", kind: "group", action: "buff1" },
-  { id: "buff2", label: "Buff 2", kind: "group", action: "buff2" },
+  { id: "buff_tank", label: "Buff Tank", kind: "group", action: "buff_tank", hot: 1 },
+  { id: "buff_dps", label: "Buff DPS", kind: "group", action: "buff_dps", hot: 1 },
+  { id: "buff_self", label: "Buff Self", kind: "group", action: "buff_self", hot: 1 },
+  { id: "buff", label: "Buff", kind: "group", action: "buff", hot: 1 },
+  { id: "follow_tank", label: "Follow Tank", kind: "role", action: "follow", role: "tank", hot: 1 },
   { id: "follow", label: "Follow", kind: "group", action: "follow" },
   { id: "stop_follow", label: "Stop Follow", kind: "group", action: "stop_follow" },
   { id: "call_home", label: "Call Home", kind: "group", action: "call_home" },
@@ -38,9 +38,23 @@ const DEFAULT = CATALOG.filter((c) => c.hot).map((c) => c.id);
 
 // ---- persisted layout (per browser) --------------------------------------
 const LS = "ib-focus-layout-v1";
+// Buttons added after the first release. Each is merged into an existing saved
+// layout ONCE (tracked in `ensured`) so the owner gets them without a reset, but
+// a later manual delete still sticks.
+const ENSURE = ["follow_tank", "buff_self", "buff_tank", "buff_dps", "buff"];
 function loadLayout() {
-  try { const s = JSON.parse(localStorage.getItem(LS)); if (s && s.ids) return s; } catch (_) {}
-  return { ids: DEFAULT.slice(), cols: 3 };
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
+  if (!s || !Array.isArray(s.ids)) return { ids: DEFAULT.slice(), cols: 3, ensured: ENSURE.slice() };
+  s.ids = s.ids.filter((id) => BY_ID[id]);          // drop retired actions (e.g. buff1/buff2)
+  const ensured = new Set(s.ensured || []);
+  for (const id of ENSURE) {
+    if (!ensured.has(id)) { if (!s.ids.includes(id)) s.ids.push(id); ensured.add(id); }
+  }
+  s.ensured = [...ensured];
+  if (typeof s.cols !== "number") s.cols = 3;
+  localStorage.setItem(LS, JSON.stringify(s));        // persist the migration
+  return s;
 }
 function saveLayout() { localStorage.setItem(LS, JSON.stringify(layout)); }
 let layout = loadLayout();
@@ -151,8 +165,17 @@ function renderEditor() {
 }
 $("cols").value = String(layout.cols);
 $("cols").onchange = () => { layout.cols = parseInt($("cols").value, 10); saveLayout(); render(); };
-$("editBtn").onclick = () => { $("editor").hidden = false; renderEditor(); };
-$("doneBtn").onclick = () => { $("editor").hidden = true; };
+const editBtn = $("editBtn");
+function toggleEditor(force) {
+  const ed = $("editor");
+  const open = force !== undefined ? force : ed.hidden;   // hidden -> open it
+  ed.hidden = !open;
+  editBtn.classList.toggle("active", open);
+  editBtn.textContent = open ? "✕" : "⚙";   // gear toggles to a close X
+  if (open) renderEditor();
+}
+editBtn.onclick = () => toggleEditor();          // same button toggles on/off
+const doneBtn = $("doneBtn"); if (doneBtn) doneBtn.onclick = () => toggleEditor(false);
 
 // ---- websocket (live status) ---------------------------------------------
 function connect() {
