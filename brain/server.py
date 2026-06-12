@@ -19,6 +19,22 @@ from .telemetry import Telemetry
 
 log = logging.getLogger("ib.brain.server")
 
+# Cast/cooldown throttle. Without cast-bar sensing the loop re-decides every
+# sensor cycle (~0.5s) and would re-issue the SAME action while it's still casting
+# or before the screenshot reflects the result -- the "cured once then cast it 4
+# more times" bug. GLOBAL_GCD caps how often ANY command goes out; the per-action
+# cooldown blocks repeating the SAME (action,target) until it has had time to land
+# and show. A DIFFERENT action (e.g. a heal after a cure) is NOT blocked, so
+# healing is never starved. Values are land+sensor-lag estimates; tune per spell.
+GLOBAL_GCD_S = 0.9
+ACTION_COOLDOWN_S = {
+    "cure": 2.5, "group_cure": 2.5,
+    "ward": 5.0, "group_ward": 5.0,
+    "group_heal": 2.0, "direct_heal": 1.6, "critical_heal": 1.4,
+    "emergency_heal": 1.0, "emergency_ward": 1.2,
+}
+DEFAULT_COOLDOWN_S = 1.5
+
 
 class Brain:
     def __init__(self, cfg: Config, telemetry: Telemetry) -> None:
@@ -27,6 +43,8 @@ class Brain:
         self.sm = StateMachine()
         self._agent: asyncio.StreamWriter | None = None
         self._seq = 0
+        self._next_action_at = 0.0   # global min-gap deadline between commands
+        self._cooldowns: dict = {}   # (role, target_slot) -> earliest repeat time
 
     # -- outbound ----------------------------------------------------------
     async def send(self, type_: str, **data) -> None:
@@ -167,7 +185,15 @@ class Brain:
 
         action = decide(world, self.cfg, self.sm.state)
         if action is not None:
-            await self.push_command(action)
+            now = time.time()
+            key = (action.role, action.target_slot)
+            if now >= self._next_action_at and now >= self._cooldowns.get(key, 0.0):
+                await self.push_command(action)
+                self._next_action_at = now + GLOBAL_GCD_S
+                self._cooldowns[key] = now + ACTION_COOLDOWN_S.get(
+                    action.role, DEFAULT_COOLDOWN_S)
+            else:
+                log.debug("throttled %s slot%s", action.role, action.target_slot)
 
 
 async def serve(brain: Brain, host: str, port: int) -> asyncio.AbstractServer:
