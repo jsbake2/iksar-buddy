@@ -46,7 +46,7 @@ _GROUP_ACTIONS = {
     "buff_tank": "buff_tank", "buff_dps": "buff_dps", "buff_self": "buff_self",
     "buff1": "buff1", "buff2": "buff2",
     "jump": "jump", "sow": "sow", "hail": "hail", "collect": "collect",
-    "evac": "evac", "pre_pull": "pre_pull",
+    "gather": "gather", "evac": "evac", "pre_pull": "pre_pull",
 }
 
 

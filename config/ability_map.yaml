@@ -41,7 +41,8 @@ abilities:
   call_home:       { key: "Alt+-",  mode: manual, desc: "Call of the Overlord / call to home" }
   hail:            { key: "",       mode: manual, desc: "hail NPC (quest turn-ins / interaction)" }
   jump:            { key: "",       mode: manual, desc: "jump (un-stick / pathing)" }
-  collect:         { key: "",       mode: manual, desc: "collect / harvest node" }
+  collect:         { key: "",       mode: manual, desc: "collect a collection shiny" }
+  gather:          { key: "",       mode: manual, desc: "gather / harvest a resource node (big button)" }
   sow:             { key: "",       mode: manual, desc: "speed buff (SoW / totem) on the group" }
   evac:            { key: "",       mode: manual, desc: "emergency evac / GTFO" }
   pre_pull:        { key: "",       mode: manual, desc: "pre-pull routine (debuff incoming + ward up)" }
