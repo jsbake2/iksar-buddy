@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><title>ib console</title>
+<link rel="stylesheet" href="spice.css">
+<style>html,body{margin:0;background:#000;height:100%;overflow:hidden}
+#spice-area{width:100vw;height:100vh}#spice-screen{width:100%;height:100%}
+#msg{position:fixed;top:8px;left:8px;color:#9af;font:12px monospace;z-index:9}</style></head>
+<body>
+<div id="msg">connecting…</div>
+<div id="spice-area"><div id="spice-screen" class="spice-screen"></div></div>
+<div id="message-div" style="display:none"></div>
+<script type="module">
+import * as SpiceHtml5 from "./src/main.js";
+const qv=(n,d)=>{const m=new RegExp("[?&]"+n+"=([^&#]*)").exec(location.search);return m?decodeURIComponent(m[1]):d;};
+const host=qv("host",location.hostname), port=qv("port","5959");
+const uri="ws://"+host+":"+port;
+const msg=document.getElementById("msg");
+let sc;
+function err(e){msg.textContent="error: "+(e&&e.toString?e.toString():e);console.log("spice error",e);}
+function agent(){msg.style.display="none";}
+try{ sc=new SpiceHtml5.SpiceMainConn({uri:uri,screen_id:"spice-screen",message_id:"message-div",password:"",onerror:err,onagent:agent}); msg.textContent="linking "+uri; }
+catch(e){err(e);}
+window.addEventListener("resize",()=>{try{SpiceHtml5.handle_resize();}catch(_){}});
+</script></body></html>

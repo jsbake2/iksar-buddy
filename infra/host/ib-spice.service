@@ -1,0 +1,20 @@
+# /etc/systemd/system/ib-spice.service
+# websockify bridge for the in-browser SPICE console: WS :5959 (LAN, via ufw) ->
+# the VM's SPICE on 127.0.0.1:5900. The dashboard's console.html (spice-html5)
+# connects to ws://<host>:5959. SPICE is a PASSIVE view of the console, so the
+# bot keeps running while you interact (unlike RDP, which detaches the console).
+# ufw: allow from 10.0.0.0/24 to any port 5959 proto tcp. NOTE: the VM's SPICE
+# has no password, so the bridge is unauthenticated -- LAN-only via ufw.
+[Unit]
+Description=ib SPICE websocket bridge (web console)
+After=network-online.target
+
+[Service]
+Type=simple
+User=jbaker
+ExecStart=/home/jbaker/ib-app/.venv/bin/python -m websockify 0.0.0.0:5959 127.0.0.1:5900
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

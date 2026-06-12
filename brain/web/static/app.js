@@ -325,17 +325,20 @@ function refreshFrame() {
 setInterval(refreshFrame, 1200);
 refreshFrame();
 
-// Click the live view to open an RDP session into the VM (ib-rdp:// handler ->
-// ibremote). RDP attaches the console to the remote view, so the live feed +
-// sensors blank until you disconnect -- warn first.
-if (liveImg) {
-  liveImg.title = "click to open RDP into the VM";
-  liveImg.onclick = () => {
-    if (confirm("Open RDP into the VM?\n\nThe console attaches to your RDP session, so this live view and the bot's sensors will go blank until you disconnect.")) {
-      window.location.href = "ib-rdp://connect";
-    }
-  };
+// Click the live view to open the in-browser SPICE console -- a full interactive
+// view of the VM that does NOT detach the console (unlike RDP), so the bot keeps
+// running while you click/type. Pops a window connecting through the websockify
+// bridge (ib-spice.service) to the VM's SPICE.
+function openConsole() {
+  window.open(`/spice/console.html?host=${location.hostname}&port=5959`,
+    "ibconsole", "width=1300,height=820,menubar=no,toolbar=no,location=no");
 }
+if (liveImg) {
+  liveImg.title = "click to open the interactive SPICE console";
+  liveImg.onclick = openConsole;
+}
+const consoleBtn = $("consoleBtn");
+if (consoleBtn) consoleBtn.onclick = openConsole;
 
 // ---- websocket with auto-reconnect ---------------------------------------
 function connect() {
