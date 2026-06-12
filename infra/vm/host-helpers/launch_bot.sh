@@ -37,11 +37,6 @@ for i in $(seq 1 120); do
   if echo "$line" | grep -qi "in-world"; then echo "in-world"; break; fi
   sleep 3
 done
-
-echo "watching for group invite (up to ~2 min)"
-for i in $(seq 1 40); do
-  out=$(python3 "$HOME/ib-build/invite_accept.py" 2>/dev/null)
-  if echo "$out" | grep -q "CLICKED Accept"; then echo "group invite accepted"; exit 0; fi
-  sleep 3
-done
-echo "no invite within the window (in-world, solo)"
+# No invite watching here -- the dashboard "accept invite" button runs it on
+# demand (instant), so we don't poll for minutes.
+echo "in-world; use the 'accept invite' button when the invite arrives"

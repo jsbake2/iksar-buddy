@@ -161,7 +161,7 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         name = next((m.get("name") for m in members if m.get("slot") == slot), None) or f"slot{slot}"
         telemetry.push_event("manual", f"{action} -> {name}")
         await brain.send("command", role=role, key=brain.cfg.key_for(role),
-                         target_slot=slot, reason=f"manual {action} on {name}")
+                         target_slot=slot, manual=True, reason=f"manual {action} on {name}")
         return {"ok": True, "action": action, "slot": slot}
 
     @app.post("/api/act/{action}")
@@ -171,7 +171,7 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             return JSONResponse({"error": "unknown group action"}, status_code=400)
         telemetry.push_event("manual", action.replace("_", " "))
         await brain.send("command", role=role, key=brain.cfg.key_for(role),
-                         target_slot=None, reason=f"manual {action}")
+                         target_slot=None, manual=True, reason=f"manual {action}")
         return {"ok": True, "action": action}
 
     async def _run_bot_script(name: str, *args: str):
@@ -212,6 +212,42 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": False})
         asyncio.create_task(_go())
         return {"ok": True, "stop": "started"}
+
+    # Dialog accepts: run the host-side OCR-and-click helper ONCE on click (no
+    # background watching). repair is not built yet.
+    _ACCEPT = {"invite": "invite_accept.py", "quest": "quest_accept.py",
+               "revive": "revive_accept.py"}
+
+    async def _run_helper(script: str, label: str):
+        path = str(Path.home() / "ib-build" / script)
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                "python3", path, stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT)
+        except Exception as e:  # pragma: no cover
+            telemetry.push_event("accept", f"{label}: {e}"); return
+        out = (await proc.communicate())[0].decode(errors="replace")
+        last = next((l for l in reversed(out.splitlines()) if l.strip()), "")
+        telemetry.push_event("accept", f"{label}: {last[:80]}")
+
+    @app.post("/api/accept/{what}")
+    async def accept(what: str):
+        script = _ACCEPT.get(what)
+        if script is None:
+            return JSONResponse({"error": "unknown accept (repair not built yet)"
+                                 if what == "repair" else "unknown accept"}, status_code=400)
+        telemetry.push_event("accept", f"accept {what} requested")
+        asyncio.create_task(_run_helper(script, f"accept {what}"))
+        return {"ok": True, "accept": what}
+
+    @app.post("/api/nudge/{d}")
+    async def nudge(d: str):
+        """Tap-hold a movement key (~0.3s) -- WASD nudge buttons."""
+        if d not in ("w", "a", "s", "d"):
+            return JSONResponse({"error": "bad direction"}, status_code=400)
+        await brain.send("command", role=f"nudge_{d}", key=f"hold_{d}_0.3",
+                         target_slot=None, manual=True, reason=f"nudge {d}")
+        return {"ok": True, "nudge": d}
 
     @app.post("/api/control/{name}")
     async def control(name: str):

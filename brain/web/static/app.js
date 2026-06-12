@@ -23,6 +23,8 @@ function post(url) { fetch(url, { method: "POST" }).catch(() => {}); }
 document.querySelectorAll("[data-ov]").forEach((b) => (b.onclick = () => post(`/api/override/${b.dataset.ov}`)));
 document.querySelectorAll("[data-ctl]").forEach((b) => (b.onclick = () => post(`/api/control/${b.dataset.ctl}`)));
 document.querySelectorAll("[data-group]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.group}`)));
+document.querySelectorAll("[data-accept]").forEach((b) => (b.onclick = () => post(`/api/accept/${b.dataset.accept}`)));
+document.querySelectorAll("[data-nudge]").forEach((b) => (b.onclick = () => post(`/api/nudge/${b.dataset.nudge}`)));
 $("launchBtn").onclick = () => post("/api/launch");
 const stopBtn = $("stopBtn");
 if (stopBtn) stopBtn.onclick = () => {

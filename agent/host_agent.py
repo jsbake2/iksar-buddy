@@ -153,9 +153,13 @@ class HostAgent:
 
         key = (data.get("key") or "").strip()
         target = data.get("target_slot")
-        if not self._armed:
-            log.info("COMMAND (disarmed, not injected): %s", role); return
-        # THE INVIOLABLE GATE: never press a key unless chat is provably safe.
+        manual = bool(data.get("manual"))
+        # MANUAL button presses are explicit owner intent -> no arm needed. Only
+        # the AUTO loop's commands require the bot to be armed.
+        if not manual and not self._armed:
+            log.info("COMMAND (disarmed auto, not injected): %s", role); return
+        # THE INVIOLABLE GATE (manual + auto): never press a key unless chat is
+        # provably safe -- a stray key in chat is the dead giveaway.
         if not self._chat_safe:
             self._aborted += 1
             log.warning("COMMAND ABORTED (chat unsafe): %s", role); return

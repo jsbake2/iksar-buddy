@@ -51,6 +51,15 @@ for part in StrSplit(seq, ",") {
         Sleep(Round(Number(SubStr(k, 7)) * 1000))
         continue
     }
+    if (SubStr(k, 1, 5) = "hold_") {         ; "hold_w_0.3" -> hold w for 0.3s (WASD nudge)
+        p := StrSplit(SubStr(k, 6), "_")
+        hk := p[1]
+        dur := p.Length > 1 ? Number(p[2]) : 0.3
+        Send("{" hk " down}")
+        Sleep(Round(dur * 1000))
+        Send("{" hk " up}")
+        continue
+    }
     sendKey(k)
     Sleep 110
 }

@@ -413,3 +413,30 @@ button.launch:hover { filter:brightness(1.08); }
 .stopbot { background:var(--panel2); color:var(--bad); border:1px solid color-mix(in srgb,var(--bad) 55%,var(--line));
   border-radius:9px; padding:9px 16px; font-weight:800; letter-spacing:.5px; cursor:pointer; }
 .stopbot:hover { background:var(--bad); color:#fff; }
+
+/* ===== manual-control sections (standardized) =========================== */
+.ctl-sections { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:12px 0; }
+.ctl-sec { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+.ctl-sec h3 { margin:0 0 9px; font-size:10px; text-transform:uppercase; letter-spacing:1.2px; color:var(--accent2); }
+.sbtns { display:flex; flex-wrap:wrap; gap:6px; }
+.sbtns button { flex:1 1 calc(50% - 3px); min-width:92px; min-height:38px; padding:8px;
+  font-size:12px; font-weight:600; border-radius:8px; cursor:pointer; color:var(--fg);
+  background:var(--panel); border:1px solid var(--line); transition:.1s; }
+.sbtns button:hover { border-color:var(--accent); filter:brightness(1.08); }
+.sbtns button:active { transform:translateY(1px); }
+.sbtns button.emer { color:var(--bad); border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }
+.sbtns button.ghost { color:var(--muted); }
+.system-sec { margin-top:4px; }
+.system-sec .run-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+
+/* WASD nudge pad */
+.nudge-pad { display:grid; grid-template-columns:repeat(3,42px); grid-template-rows:42px 42px;
+  gap:4px; margin-top:11px; justify-content:center; }
+.nudge { font-weight:800; font-size:13px; border-radius:8px; cursor:pointer;
+  background:var(--panel); border:1px solid var(--line); color:var(--fg); }
+.nudge:hover { border-color:var(--accent); }
+.nudge:active { transform:translateY(1px); background:var(--accent); color:var(--bg); }
+.nudge-w { grid-column:2; grid-row:1; }
+.nudge-a { grid-column:1; grid-row:2; }
+.nudge-s { grid-column:2; grid-row:2; }
+.nudge-d { grid-column:3; grid-row:2; }
