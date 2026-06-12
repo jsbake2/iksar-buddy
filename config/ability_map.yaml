@@ -20,8 +20,14 @@ abilities:
   debuff:          { key: "3",      mode: manual, desc: "debuff/slow incoming target (auto later w/ power)" }
 
   # --- heals / wards (single-target; targeted via group_target_keys) ---
-  direct_heal:     { key: "4",      mode: auto,   cast_ms: 1500, desc: "direct heal" }
+  # The prior tool healed in TIERS by HP deficit: standard heal when hurt,
+  # CRITICAL (bigger) heal when low, EMERGENCY when dire. Mana-aware: critical/
+  # emergency fire regardless of power; standard heals skip when low on power.
+  direct_heal:     { key: "4",      mode: auto,   cast_ms: 1500, desc: "standard single-target heal" }
+  critical_heal:   { key: "",       mode: auto,   cast_ms: 1500, desc: "bigger heal for CRITICAL hp (skill not learned yet)" }
+  emergency_heal:  { key: "",       mode: auto,   cast_ms: 800,  desc: "emergency heal, cancels current cast (skill not learned yet)" }
   ward:            { key: "5",      mode: auto,   cast_ms: 1000, desc: "tank ward (heartbeat) -- spell not learned yet, wired ahead" }
+  emergency_ward:  { key: "",       mode: auto,   cast_ms: 800,  desc: "emergency ward (skill not learned yet)" }
 
   # --- cure (GENERIC: one cure clears any detriment type; see detriment work) ---
   cure:            { key: "0",      mode: auto,   cast_ms: 500,  desc: "GENERIC cure (any detriment type)" }
@@ -29,9 +35,17 @@ abilities:
   # --- revive (per-member: target via F-key, then cast) ---
   rez:             { key: "Ctrl+1", mode: manual, cast_ms: 6000, desc: "revive a dead member (target via group_target_keys first)" }
 
-  # --- utility / movement ---
+  # --- utility / movement (from the prior tool; fill the keys your toon has) ---
   follow:          { key: "Alt+=",  mode: manual, desc: "auto-follow toggle" }
+  stop_follow:     { key: "",       mode: manual, desc: "stop following (prior tool used bare '=')" }
   call_home:       { key: "Alt+-",  mode: manual, desc: "Call of the Overlord / call to home" }
+  hail:            { key: "",       mode: manual, desc: "hail NPC (quest turn-ins / interaction)" }
+  jump:            { key: "",       mode: manual, desc: "jump (un-stick / pathing)" }
+  collect:         { key: "",       mode: manual, desc: "collect / harvest node" }
+  sow:             { key: "",       mode: manual, desc: "speed buff (SoW / totem) on the group" }
+  evac:            { key: "",       mode: manual, desc: "emergency evac / GTFO" }
+  pre_pull:        { key: "",       mode: manual, desc: "pre-pull routine (debuff incoming + ward up)" }
+  item_use:        { key: "",       mode: manual, desc: "use item (totem / temp buff)" }
 
   # --- buffs (manual for now; auto on prepull later) ---
   buff1:           { key: "Alt+5",  mode: manual, desc: "buff key 1" }
