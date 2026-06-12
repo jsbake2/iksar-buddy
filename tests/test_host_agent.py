@@ -58,3 +58,31 @@ def test_to_event_suppresses_cure_for_rez_sick(monkeypatch):
     # slot 1 never died -> a real curse still triggers a cure
     assert by[1]["cure"] is True and by[1]["rez_sick"] is False
     assert ev["pending_cures"] == ["generic"]   # only the real curse counts
+
+
+def test_chat_safety_hysteresis(monkeypatch):
+    a = _agent()
+    clock = [100.0]
+    monkeypatch.setattr(ha.time, "time", lambda: clock[0])
+    monkeypatch.setattr(a, "_poll_gpu", lambda: {}, raising=False)
+
+    def ev(game, chat):
+        return {"members": [], "own": {"hp": 100, "power": 100},
+                "chat_safety": {"game_present": game, "chat_active": chat}}
+
+    # clear chat + game present -> safe
+    assert a._to_event(ev(True, False))["chat_safe"] is True
+    # chat active -> unsafe, latches busy
+    assert a._to_event(ev(True, True))["chat_safe"] is False
+    # within the hysteresis window, even though raw is clear -> still busy
+    clock[0] += ha.CHAT_HYSTERESIS_S - 0.5
+    out = a._to_event(ev(True, False))
+    assert out["chat_safe"] is False and out["chat_focus"]["chat_active"] is True
+    # past the window -> safe again
+    clock[0] += 1.0
+    assert a._to_event(ev(True, False))["chat_safe"] is True
+    # read failure (None) -> fail closed (and re-latches)
+    assert a._to_event(ev(True, None))["chat_safe"] is False
+    # game not showing -> never safe
+    clock[0] += ha.CHAT_HYSTERESIS_S + 1
+    assert a._to_event(ev(False, False))["chat_safe"] is False

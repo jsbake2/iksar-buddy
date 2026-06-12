@@ -166,8 +166,10 @@ function render(s) {
   $("vmDot").classList.toggle("on", !!vm.running);
 
   // ---- chat safety banner (§6.2) ----
+  // Only alarm when the bot is ARMED and chat is unsafe -- a disarmed (sense-only)
+  // bot isn't injecting, so a red "INJECTION BLOCKED" banner would be noise.
   const cf = s.chat_focus || {};
-  $("chatAlarm").hidden = cf.safe !== false;
+  $("chatAlarm").hidden = !(s.running && cf.safe === false);
   $("aborted").textContent = cf.aborted_injections ?? 0;
 
   // ---- self ----
@@ -209,8 +211,10 @@ function render(s) {
   runK.textContent = s.running ? "armed" : "disarmed";
   runK.className = s.running ? "good" : "";
   const chatK = $("chatK");
-  chatK.textContent = cf.safe === false ? "UNSAFE" : cf.safe === true ? "safe" : "—";
-  chatK.className = cf.safe === false ? "bad" : cf.safe === true ? "good" : "";
+  // Calm + informative: chat input active vs clear (the actual detection), and
+  // whether the guard would allow a press.
+  chatK.textContent = cf.chat_active ? "chat active" : cf.safe ? "clear" : "—";
+  chatK.className = cf.chat_active ? "warn" : cf.safe ? "good" : "";
   $("vmK").textContent = vm.running ? `running ${vm.ip || ""}`.trim() : "off";
 
   // ---- group members ----

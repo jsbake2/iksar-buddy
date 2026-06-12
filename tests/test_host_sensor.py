@@ -124,20 +124,11 @@ def test_empty_detriment_row_no_cure():
     assert cells == [] and cure is False
 
 
-# ---- chat-safety guard ----------------------------------------------------
-def test_chat_safety_fails_closed_until_calibrated(monkeypatch):
+# ---- chat-safety guard (sensor reports RAW signals; verdict is in the agent) --
+def test_chat_safety_reports_raw_signals(monkeypatch):
     s = HostSensor()
-    # even with the game present and chat reading inactive, the guard must stay
-    # unsafe while the detector is uncalibrated (the inviolable fail-closed rule).
     monkeypatch.setattr(s, "_chat_active", lambda *a, **k: False)
-    assert hs.CHAT_GUARD_CALIBRATED is False
-    safety = s.chat_safety(pix={}, power=100)
-    assert safety["game_present"] is True
-    assert safety["safe"] is False
+    assert s.chat_safety(pix={}, power=100) == {"game_present": True, "chat_active": False}
 
-
-def test_chat_safety_unsafe_when_no_game(monkeypatch):
-    s = HostSensor()
-    monkeypatch.setattr(s, "_chat_active", lambda *a, **k: None)
-    safety = s.chat_safety(pix={}, power=None)    # power None => not in-world
-    assert safety["game_present"] is False and safety["safe"] is False
+    monkeypatch.setattr(s, "_chat_active", lambda *a, **k: True)
+    assert s.chat_safety(pix={}, power=None) == {"game_present": False, "chat_active": True}

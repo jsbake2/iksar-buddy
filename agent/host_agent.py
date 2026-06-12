@@ -42,6 +42,12 @@ NVSMI = r"C:\Windows\System32\nvidia-smi.exe"
 # level; generous default covers it. Tunable per the owner's SME knowledge.
 REZ_WINDOW = 240.0
 
+# Chat-safety blink hysteresis: any sign of an active chat input (text OR the
+# cursor's lit phase) latches "chat busy" for this long, so a cursor blinking
+# ~1Hz keeps an open-but-empty chat input flagged unsafe the whole time. A clear
+# (black) line for longer than this reads safe.
+CHAT_HYSTERESIS_S = 3.0
+
 
 def _poll_gpu() -> dict:
     """Run nvidia-smi IN the guest (the 4070 is passed through, so the host can't
@@ -80,6 +86,7 @@ class HostAgent:
         self._gpu_ts = 0.0
         self._dead_prev = {}        # slot -> was-dead last cycle
         self._revived_at = {}       # slot -> time of last dead->alive transition
+        self._chat_busy_until = 0.0  # chat-safety blink hysteresis deadline
 
     async def run(self) -> None:
         while True:
@@ -165,10 +172,17 @@ class HostAgent:
                 "cure": cure,
                 "rez_sick": slot in suppressed,
             })
-        # Real fail-closed chat-safety (host_sensor.chat_safety). Until the
-        # chat-active fingerprint is calibrated, safe=False -> nothing would ever
-        # inject even if act were enabled. Surfaced to the dashboard either way.
+        # Chat-safety with blink hysteresis. raw chat_active True (text/cursor) OR
+        # None (read failure) latches "busy" for CHAT_HYSTERESIS_S. safe only when
+        # the game HUD is showing AND the chat line has been clear past the latch.
         safety = world.get("chat_safety") or {}
+        game_present = bool(safety.get("game_present"))
+        raw_active = safety.get("chat_active")          # True / False / None
+        now = time.time()
+        if raw_active is True or raw_active is None:
+            self._chat_busy_until = now + CHAT_HYSTERESIS_S
+        chat_busy = now < self._chat_busy_until
+        chat_safe = game_present and not chat_busy
         return {
             "members": members,
             "names": {str(k): v for k, v in NAMES.items()},
@@ -176,9 +190,8 @@ class HostAgent:
             "own_hp": (own.get("hp") or 0) / 100.0,
             "casting": False,                  # cast-bar sensing not built yet
             "pending_cures": ["generic"] if cure_needed else [],
-            "chat_safe": bool(safety.get("safe", False)),
-            "chat_focus": {"game_present": safety.get("game_present"),
-                           "chat_active": safety.get("chat_active")},
+            "chat_safe": chat_safe,
+            "chat_focus": {"game_present": game_present, "chat_active": chat_busy},
             "host": {"load": round(os.getloadavg()[0], 2), **self._gpu},
         }
 

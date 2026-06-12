@@ -48,15 +48,13 @@ IGNORE_TOL = 40
 
 # Chat-input TEXT area (bottom-left): tightened to exclude the left chat icon and
 # the gold hotbar border that contaminated a wider box. Measured in this region:
-# idle/empty = 0 bright px, a line of typed text ~150 -> clean. Threshold 25 also
-# catches a few characters and likely the cursor's lit phase.
-# CALIBRATION GAP (why the guard is still fail-closed): an active-but-EMPTY input
-# is only a blinking cursor -- caught when lit, missed when dark, so the owner
-# must (a) confirm the empty-active look and (b) we add blink HYSTERESIS (latch
-# unsafe for ~3s after any hit) before flipping CHAT_GUARD_CALIBRATED true.
+# idle/empty = 0 bright px, a line of typed text ~150. Threshold 25 catches a few
+# characters and the cursor's lit phase. A clear (black) line => not active.
+# The blinking-cursor gap (an active-but-EMPTY input is dark between blinks) is
+# covered by blink HYSTERESIS in host_agent: any hit latches "busy" for ~3s, so a
+# cursor blinking ~1Hz keeps the line latched busy the whole time it's open.
 CHAT_INPUT = (50, 1019, 208, 22)        # x, y, w, h
 CHAT_BRIGHT_THRESH = 25                  # bright-px count above which = active
-CHAT_GUARD_CALIBRATED = False
 
 
 def _sh(*a) -> subprocess.CompletedProcess:
@@ -167,25 +165,13 @@ class HostSensor:
 
     # -- chat-safety guard (PROJECT.md §Chat-Safety; the INVIOLABLE invariant) --
     def chat_safety(self, pix, power) -> dict:
-        """Fail-CLOSED focus check. `safe` is True ONLY when we can prove focus is
-        on the game world AND the chat input is not active -- otherwise injection
-        must never happen (a stray macro typed into chat is the dead giveaway).
-
-        - game_present: the player's own power bar was located, i.e. the in-world
-          HUD is showing (not desktop/login/loading/alt-tabbed). Fully automatic.
-        - chat_active: whether the chat INPUT line is focused for typing. Needs a
-          calibrated fingerprint of the active chat bar (owner activates chat once
-          so we capture CHAT_INPUT region + active color). UNTIL calibrated this
-          returns None, which forces safe=False -- correct fail-closed behavior.
-
-        safe = game_present AND chat_active is False. None (uncalibrated) -> unsafe.
-        """
-        game_present = power is not None
-        chat_active = self._chat_active()           # True / False / None
-        # safe ONLY if proven: game showing, chat not active, AND the chat-active
-        # detector validated for the empty-cursor case. Fail closed otherwise.
-        safe = bool(game_present) and chat_active is False and CHAT_GUARD_CALIBRATED
-        return {"game_present": game_present, "chat_active": chat_active, "safe": safe}
+        """RAW chat-focus signals. The final `safe` verdict + blink-hysteresis live
+        in host_agent (stateful). Here we only report:
+        - game_present: own power bar located => the in-world HUD is showing.
+        - chat_active : the chat INPUT line holds text/cursor (bright pixels in the
+          CHAT_INPUT region). False when the line is clear (black). None on a read
+          failure (-> the agent treats that as busy, fail-closed)."""
+        return {"game_present": power is not None, "chat_active": self._chat_active()}
 
     def _chat_active(self, ppm: str = PPM):
         """True if the chat input line holds content (typed text reliably; the
