@@ -117,6 +117,7 @@ class HostAgent:
         self._chat_busy_until = 0.0  # chat-safety blink hysteresis deadline
         self._prev_hp = {}          # slot -> last hp (0..1); "own" key for the healer
         self._combat_until = 0.0    # in-combat decays to OOC this many seconds after last hit
+        self._last_combat_epoch = None  # highest combat-line epoch already acted on (no re-use)
         self._armed = False         # injection master switch (off until owner arms)
         self._chat_safe = False     # latest chat-safety verdict (the inject gate)
         self._aborted = 0           # injections aborted because chat was unsafe
@@ -198,11 +199,17 @@ class HostAgent:
                 ep = int(m.group(1))
                 if newest is None or ep > newest:
                     newest = ep
-        if newest is not None:
-            age = now_guest - newest
-            if age <= COMBAT_DECAY_S:
-                # stay in combat until that hit is COMBAT_DECAY_S old (host clock)
-                self._combat_until = time.time() + max(0.0, COMBAT_DECAY_S - age)
+        if newest is None:
+            return
+        # Use each combat line ONCE: only trip on a line newer than the highest we
+        # have already acted on. Re-reading the same 250-line tail can't re-enter
+        # combat off stale lines (the "re-enters combat for no reason" bug). First
+        # poll just baselines so pre-existing log content never trips.
+        first = self._last_combat_epoch is None
+        is_new = (not first) and newest > self._last_combat_epoch
+        self._last_combat_epoch = max(self._last_combat_epoch or 0, newest)
+        if is_new and now_guest - newest <= COMBAT_DECAY_S:
+            self._combat_until = time.time() + max(0.0, COMBAT_DECAY_S - (now_guest - newest))
 
     def _guest_read(self, ps: str) -> str | None:
         """Run a PowerShell command in the guest and return its stdout (guest-exec
