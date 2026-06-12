@@ -275,3 +275,5 @@ button.launch:hover { filter:brightness(1.08); }
   border:1px solid var(--line); backdrop-filter:blur(3px); }
 #ovState { color:var(--accent2); }
 .live-panel h2 .sub { color:var(--good); }
+.hp-graph { width:100%; height:150px; display:block; }
+.graph-panel h2 .sub span { font-weight:600; margin-right:2px; }

@@ -87,6 +87,47 @@ function drawSpark(val) {
   ctx.strokeStyle = accent; ctx.lineWidth = 1.5; ctx.stroke();
 }
 
+// ---- group HP history graph -----------------------------------------------
+const hpHist = {};                 // slot -> [hp 0..1, ...]
+const HP_LINE = ["#37d39b", "#5b8cff", "#ffb454", "#ff5b6e", "#8ab4ff", "#a06bff"];
+function pushHpHistory(members) {
+  members.forEach((m) => {
+    if (!m.present) return;
+    (hpHist[m.slot] = hpHist[m.slot] || []).push(m.hp ?? 0);
+    if (hpHist[m.slot].length > 120) hpHist[m.slot].shift();
+  });
+}
+function drawHpGraph(members) {
+  const cv = $("hpGraph"); if (!cv) return;
+  const ctx = cv.getContext("2d");
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  const css = getComputedStyle(document.documentElement);
+  const grid = css.getPropertyValue("--line").trim() || "#223049";
+  // horizontal gridlines at 25/50/75/100%
+  ctx.strokeStyle = grid; ctx.lineWidth = 1;
+  [0.25, 0.5, 0.75, 1].forEach((f) => {
+    const y = H - f * (H - 6) - 3;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  });
+  const present = members.filter((m) => m.present);
+  present.forEach((m, i) => {
+    const h = hpHist[m.slot] || [];
+    if (h.length < 2) return;
+    ctx.beginPath();
+    h.forEach((v, j) => {
+      const x = (j / (h.length - 1)) * W;
+      const y = H - Math.max(0, Math.min(1, v)) * (H - 6) - 3;
+      j ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.strokeStyle = HP_LINE[m.slot % HP_LINE.length];
+    ctx.lineWidth = 2; ctx.stroke();
+  });
+  const legend = $("graphLegend");
+  if (legend) legend.innerHTML = present.map((m) =>
+    `<span style="color:${HP_LINE[m.slot % HP_LINE.length]}">${m.name || "slot" + m.slot}</span>`).join("  ");
+}
+
 // ---- sensor bar coloring --------------------------------------------------
 function setBar(id, ratio, { invert = false, warn = 0.6, bad = 0.85 } = {}) {
   const el = $(id);
@@ -175,6 +216,8 @@ function render(s) {
   // ---- group members ----
   const members = s.members || [];
   renderMembers(members);
+  pushHpHistory(members);
+  drawHpGraph(members);
   if (!gridBuilt || members.length) maybeRebuildGrid(members);
 
   // ---- events ----
