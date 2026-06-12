@@ -351,3 +351,60 @@ button.launch:hover { filter:brightness(1.08); }
   color:var(--bg); background:var(--good); border:none; transition:.12s; }
 .big-gather:hover { filter:brightness(1.08); }
 .big-gather:active { transform:translateY(1px); }
+
+/* ===== focus pop-out window ============================================== */
+.focus-body { margin:0; padding:0; min-height:100vh;
+  background:linear-gradient(var(--bg2),var(--bg)); color:var(--fg);
+  font:13px/1.4 ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif; user-select:none; }
+.focus-bar { display:flex; align-items:center; gap:10px; padding:8px 12px;
+  background:color-mix(in srgb,var(--panel) 90%,transparent); border-bottom:1px solid var(--line);
+  position:sticky; top:0; backdrop-filter:blur(6px); z-index:5; }
+.focus-brand { font-weight:800; letter-spacing:1px;
+  background:linear-gradient(120deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.focus-dots { display:flex; gap:6px; }
+.fdot { font-size:9px; font-weight:800; letter-spacing:.6px; text-transform:uppercase;
+  padding:3px 7px; border-radius:6px; color:var(--faint); background:var(--panel2);
+  border:1px solid var(--line); }
+.fdot.ok { color:var(--bg); background:var(--good); border-color:var(--good); }
+.fdot.bad { color:#fff; background:var(--bad); border-color:var(--bad); animation:alarmPulse 1s infinite; }
+.focus-spacer { flex:1; }
+.focus-edit { background:var(--panel2); color:var(--muted); border:1px solid var(--line);
+  border-radius:7px; padding:5px 10px; cursor:pointer; font-size:14px; }
+.focus-edit:hover { color:var(--fg); border-color:var(--accent); }
+.focus-edit.done { color:var(--bg); background:var(--good); border-color:var(--good); font-weight:700; }
+
+.focus-grid { display:grid; gap:8px; padding:10px; }
+.fbtn { position:relative; min-height:62px; border-radius:12px; cursor:pointer;
+  border:1px solid var(--line); color:var(--fg); font-weight:800; font-size:14px;
+  letter-spacing:.4px; background:linear-gradient(var(--panel),var(--panel2));
+  box-shadow:0 4px 14px -10px #000, 0 1px 0 color-mix(in srgb,var(--fg) 6%,transparent) inset;
+  transition:transform .06s, box-shadow .12s, filter .12s; }
+.fbtn:hover { filter:brightness(1.1); border-color:color-mix(in srgb,var(--accent) 50%,var(--line)); }
+.fbtn:active { transform:translateY(2px); }
+.fbtn.danger { color:var(--bad); border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }
+.fbtn.disabled { opacity:.4; filter:grayscale(.5); }
+.fbtn.fired { box-shadow:0 0 0 2px var(--good), 0 4px 14px -8px var(--good); filter:brightness(1.25); }
+.fb-flash { position:absolute; bottom:5px; left:0; right:0; text-align:center;
+  font-size:9px; font-weight:600; letter-spacing:.5px; text-transform:uppercase;
+  color:var(--good); opacity:0; transition:opacity .1s; }
+.fbtn.fired .fb-flash { opacity:.95; }
+
+/* editor drawer */
+.focus-editor { position:fixed; inset:auto 0 0 0; max-height:70vh; overflow:auto;
+  background:var(--panel); border-top:2px solid var(--accent); padding:10px 12px 14px;
+  box-shadow:0 -12px 30px -16px #000; }
+.ed-head { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:8px; }
+.ed-hint { color:var(--faint); text-transform:none; letter-spacing:0; margin-left:8px; }
+.ed-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:3px; }
+.ed-item { display:flex; align-items:center; gap:9px; padding:6px 8px; border-radius:8px;
+  background:var(--panel2); border:1px solid var(--line); cursor:grab; }
+.ed-item.drag { opacity:.5; }
+.ed-grip { color:var(--faint); cursor:grab; }
+.ed-name { font-weight:600; }
+.ed-kind { margin-left:auto; font-size:9px; text-transform:uppercase; color:var(--accent2); letter-spacing:.5px; }
+.ed-actions { display:flex; align-items:center; gap:14px; margin-top:12px; }
+.ed-cols { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.ed-cols select, .focus-editor .theme select { background:var(--panel2); color:var(--fg);
+  border:1px solid var(--line); border-radius:6px; padding:4px 7px; }
+.focus-editor .ed-actions .done { margin-left:auto; }

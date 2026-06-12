@@ -24,6 +24,9 @@ document.querySelectorAll("[data-ov]").forEach((b) => (b.onclick = () => post(`/
 document.querySelectorAll("[data-ctl]").forEach((b) => (b.onclick = () => post(`/api/control/${b.dataset.ctl}`)));
 document.querySelectorAll("[data-group]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.group}`)));
 $("launchBtn").onclick = () => post("/api/launch");
+const focusBtn = $("focusBtn");
+if (focusBtn) focusBtn.onclick = () =>
+  window.open("focus.html", "ibfocus", "width=430,height=600,menubar=no,toolbar=no,location=no,status=no");
 
 // ---- build the per-member action grid (modernized action_list) ------------
 let gridBuilt = false;

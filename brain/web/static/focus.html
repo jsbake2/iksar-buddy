@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="midnight">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ib · focus</title>
+  <link rel="stylesheet" href="themes.css" />
+</head>
+<body class="focus-body">
+  <header class="focus-bar">
+    <span class="focus-brand">ib focus</span>
+    <span class="focus-dots">
+      <span class="fdot" id="fArm" title="armed">arm</span>
+      <span class="fdot" id="fChat" title="chat-safe">chat</span>
+    </span>
+    <span class="focus-spacer"></span>
+    <button class="focus-edit" id="editBtn" title="configure buttons">⚙</button>
+  </header>
+
+  <main class="focus-grid" id="grid"></main>
+
+  <!-- edit drawer: pick + reorder the buttons -->
+  <section class="focus-editor" id="editor" hidden>
+    <div class="ed-head">configure <span class="ed-hint">check to show · drag to reorder</span></div>
+    <ul class="ed-list" id="edList"></ul>
+    <div class="ed-actions">
+      <label class="ed-cols">cols
+        <select id="cols"><option>2</option><option selected>3</option><option>4</option></select>
+      </label>
+      <label class="theme"><span>theme</span>
+        <select id="theme">
+          <option value="midnight">midnight</option><option value="grafana">grafana</option>
+          <option value="amber">amber</option><option value="paper">paper</option>
+          <option value="defiler">defiler</option><option value="iksar">iksar</option>
+        </select>
+      </label>
+      <button class="focus-edit done" id="doneBtn">done</button>
+    </div>
+  </section>
+
+  <script src="focus.js"></script>
+</body>
+</html>
