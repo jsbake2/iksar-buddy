@@ -22,6 +22,7 @@ const CATALOG = [
   { id: "buff_self", label: "Buff Self", kind: "group", action: "buff_self", hot: 1 },
   { id: "buff", label: "Buff", kind: "group", action: "buff", hot: 1 },
   { id: "follow_tank", label: "Follow Tank", kind: "role", action: "follow", role: "tank", hot: 1 },
+  { id: "follow_dps", label: "Follow DPS", kind: "role", action: "follow", role: "dps", hot: 1 },
   { id: "follow", label: "Follow", kind: "group", action: "follow" },
   { id: "stop_follow", label: "Stop Follow", kind: "group", action: "stop_follow" },
   { id: "call_home", label: "Call Home", kind: "group", action: "call_home" },
@@ -44,7 +45,7 @@ const LS = "ib-focus-layout-v1";
 // Buttons added after the first release. Each is merged into an existing saved
 // layout ONCE (tracked in `ensured`) so the owner gets them without a reset, but
 // a later manual delete still sticks.
-const ENSURE = ["follow_tank", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage"];
+const ENSURE = ["follow_tank", "follow_dps", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage"];
 function loadLayout() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
