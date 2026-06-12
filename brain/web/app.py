@@ -9,7 +9,8 @@ import subprocess
 import time
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import yaml
+from fastapi import Body, FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
@@ -76,6 +77,34 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             return Response(status_code=503)
         return Response(content=_frame_cache["data"], media_type="image/jpeg",
                         headers={"Cache-Control": "no-store"})
+
+    # ---- keybind map: read + edit from the web (self-service config) --------
+    _KEYMAP_HEADER = (
+        "# Ability -> keybind map (OWNER-OWNED). Edited from the dashboard keymap\n"
+        "# page or by hand. Roles are referenced by the code; you map each to a key.\n"
+        "# Key format: bare ('4','f2') or 'Mod+Key' ('Ctrl+1','Alt+='). mode: auto =\n"
+        "# the loop may fire it; manual = dashboard button only. Keep keys off chat\n"
+        "# triggers (Enter, /, ', ...).\n\n"
+    )
+
+    @app.get("/api/keymap")
+    async def get_keymap():
+        return brain.cfg.ability_map
+
+    @app.post("/api/keymap")
+    async def post_keymap(payload: dict = Body(...)):
+        if not isinstance(payload.get("abilities"), dict):
+            return JSONResponse({"error": "missing abilities"}, status_code=400)
+        path = brain.cfg.config_dir / "ability_map.yaml"
+        try:
+            body = yaml.safe_dump(payload, sort_keys=False, default_flow_style=False,
+                                  allow_unicode=True)
+            path.write_text(_KEYMAP_HEADER + body, encoding="utf-8")
+            brain.cfg.reload_if_changed()
+        except Exception as e:  # pragma: no cover
+            return JSONResponse({"error": str(e)}, status_code=500)
+        telemetry.push_event("config", "keymap saved")
+        return {"ok": True}
 
     @app.post("/api/override/{name}")
     async def override(name: str):

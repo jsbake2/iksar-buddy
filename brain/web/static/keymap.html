@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" data-theme="midnight">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ib · keymap</title>
+  <link rel="stylesheet" href="themes.css" />
+</head>
+<body>
+  <header class="bar">
+    <div class="brand"><span class="mark">ib</span><span class="km-title">keymap</span></div>
+    <a class="km-back" href="/">← dashboard</a>
+    <div class="spacer"></div>
+    <span class="km-status" id="status"></span>
+    <label class="theme"><span>theme</span>
+      <select id="theme">
+        <option value="midnight">midnight</option><option value="grafana">grafana</option>
+        <option value="amber">amber</option><option value="paper">paper</option>
+        <option value="defiler">defiler</option><option value="iksar">iksar</option>
+      </select>
+    </label>
+  </header>
+
+  <main class="km-main">
+    <section class="panel">
+      <h2>Abilities <span class="sub">role → key the Defiler presses</span></h2>
+      <p class="km-hint">Key format: a bare key (<code>4</code>, <code>f2</code>) or
+        <code>Mod+Key</code> (<code>Ctrl+1</code>, <code>Alt+=</code>). Empty = unmapped.
+        <b>mode</b>: <i>auto</i> = the loop may fire it; <i>manual</i> = dashboard button only.</p>
+      <div class="km-table" id="abilities"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Group targeting <span class="sub">key that targets each group slot</span></h2>
+      <p class="km-hint">To act on a member (heal / ward / cure / revive) the agent taps
+        this key to TARGET them, then the ability key. EQ2 default: F1 self, F2–F6 members.</p>
+      <div class="km-targets" id="targets"></div>
+      <div class="km-tank">
+        <label>tank slot <input type="number" id="tankSlot" min="0" max="5" /></label>
+      </div>
+    </section>
+
+    <div class="km-actions">
+      <button id="save" class="launch">Save keymap</button>
+      <button id="reload" class="ghost">Reload</button>
+      <span class="km-status" id="status2"></span>
+    </div>
+  </main>
+
+  <script src="keymap.js"></script>
+</body>
+</html>
