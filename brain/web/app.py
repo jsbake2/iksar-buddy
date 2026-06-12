@@ -174,13 +174,44 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
                          target_slot=None, reason=f"manual {action}")
         return {"ok": True, "action": action}
 
+    async def _run_bot_script(name: str, *args: str):
+        """Run a host orchestration script (~/ib-build/<name>) in the background,
+        streaming each output line to the dashboard event stream."""
+        path = str(Path.home() / "ib-build" / name)
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                "bash", path, *args,
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT)
+        except Exception as e:  # pragma: no cover
+            telemetry.push_event("bot", f"failed to start {name}: {e}")
+            return None
+        async for raw in proc.stdout:
+            line = raw.decode(errors="replace").rstrip()
+            if line:
+                telemetry.push_event("bot", line)
+        await proc.wait()
+        return proc.returncode
+
     @app.post("/api/launch")
     async def launch():
-        # Future: host virsh-start -> agent launcher boots the client into group.
-        # For now stub the telemetry so the dashboard button is wired end-to-end.
+        """Launch Bot: start the VM and drive it into the world + invite watch."""
         telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": True})
-        telemetry.push_event("control", "launch requested (host virsh start stub)")
-        return {"ok": True, "launch": "requested"}
+        telemetry.push_event("control", "Launch Bot")
+        asyncio.create_task(_run_bot_script("launch_bot.sh"))
+        return {"ok": True, "launch": "started"}
+
+    @app.post("/api/stop")
+    async def stop():
+        """Stop Bot: press the camp key (clean logout) then shut down the VM."""
+        camp = brain.cfg.key_for("camp") or "none"
+        camp_wait = str(int(brain.cfg.threshold("camp_wait_s", 25)))
+        telemetry.push_event("control", "Stop Bot (camp + shutdown)")
+
+        async def _go():
+            await _run_bot_script("stop_bot.sh", camp, camp_wait)
+            telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": False})
+        asyncio.create_task(_go())
+        return {"ok": True, "stop": "started"}
 
     @app.post("/api/control/{name}")
     async def control(name: str):

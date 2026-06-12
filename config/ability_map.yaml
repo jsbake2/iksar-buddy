@@ -46,6 +46,7 @@ abilities:
   sow:             { key: "",       mode: manual, desc: "speed buff (SoW / totem) on the group" }
   evac:            { key: "",       mode: manual, desc: "emergency evac / GTFO" }
   pre_pull:        { key: "",       mode: manual, desc: "pre-pull routine (debuff incoming + ward up)" }
+  camp:            { key: "",       mode: manual, desc: "camp/exit macro (a key bound to /camp desktop) -- pressed by Stop Bot before VM shutdown" }
   item_use:        { key: "",       mode: manual, desc: "use item (totem / temp buff)" }
 
   # --- buffs (manual for now; auto on prepull later) ---

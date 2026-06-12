@@ -24,6 +24,10 @@ document.querySelectorAll("[data-ov]").forEach((b) => (b.onclick = () => post(`/
 document.querySelectorAll("[data-ctl]").forEach((b) => (b.onclick = () => post(`/api/control/${b.dataset.ctl}`)));
 document.querySelectorAll("[data-group]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.group}`)));
 $("launchBtn").onclick = () => post("/api/launch");
+const stopBtn = $("stopBtn");
+if (stopBtn) stopBtn.onclick = () => {
+  if (confirm("Stop Bot?\n\nPresses your camp key for a clean logout, waits out the countdown, then shuts down the VM.")) post("/api/stop");
+};
 const focusBtn = $("focusBtn");
 if (focusBtn) focusBtn.onclick = () =>
   window.open("focus.html", "ibfocus", "width=430,height=600,menubar=no,toolbar=no,location=no,status=no");
