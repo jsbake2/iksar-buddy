@@ -56,9 +56,11 @@ EQ2_LOG = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
            r"\EverQuest II\logs\Wuoshi\eq2log_Jenskin.txt")
 COMBAT_LOG_POLL_S = 2.0
 # Lines that only appear during combat (heals/regen/buffs deliberately excluded).
+# Real format is "<X> hits <Y> for 35 piercing damage" (NOT "points of ...").
 COMBAT_RE = re.compile(
-    r"points of \w+ damage|scores a hit on|\bis hit by\b|"
-    r"tries to .*? but (?:misses|fails|is)|multi[- ]?attack|flurr", re.I)
+    r"for \d+ \w+ damage|points of \w+ damage|scores a hit on|"
+    r"tries to .*? but (?:misses|fails)|\bparries\b|\bripostes\b|"
+    r"multi[- ]?attack|flurr", re.I)
 
 # Chat-safety blink hysteresis: any sign of an active chat input (text OR the
 # cursor's lit phase) latches "chat busy" for this long, so a cursor blinking
