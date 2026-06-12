@@ -41,6 +41,18 @@ INSET = 6
 IGNORE_SIGNATURES = {"revive_sickness": (103, 26, 61)}
 IGNORE_TOL = 40
 
+# Chat-input TEXT area (bottom-left): tightened to exclude the left chat icon and
+# the gold hotbar border that contaminated a wider box. Measured in this region:
+# idle/empty = 0 bright px, a line of typed text ~150 -> clean. Threshold 25 also
+# catches a few characters and likely the cursor's lit phase.
+# CALIBRATION GAP (why the guard is still fail-closed): an active-but-EMPTY input
+# is only a blinking cursor -- caught when lit, missed when dark, so the owner
+# must (a) confirm the empty-active look and (b) we add blink HYSTERESIS (latch
+# unsafe for ~3s after any hit) before flipping CHAT_GUARD_CALIBRATED true.
+CHAT_INPUT = (50, 1019, 208, 22)        # x, y, w, h
+CHAT_BRIGHT_THRESH = 25                  # bright-px count above which = active
+CHAT_GUARD_CALIBRATED = False
+
 
 def _sh(*a) -> subprocess.CompletedProcess:
     return subprocess.run(list(a), capture_output=True, text=True)
@@ -164,15 +176,24 @@ class HostSensor:
         safe = game_present AND chat_active is False. None (uncalibrated) -> unsafe.
         """
         game_present = power is not None
-        chat_active = self._chat_active(pix)        # True / False / None
-        safe = bool(game_present) and chat_active is False
+        chat_active = self._chat_active()           # True / False / None
+        # safe ONLY if proven: game showing, chat not active, AND the chat-active
+        # detector validated for the empty-cursor case. Fail closed otherwise.
+        safe = bool(game_present) and chat_active is False and CHAT_GUARD_CALIBRATED
         return {"game_present": game_present, "chat_active": chat_active, "safe": safe}
 
-    def _chat_active(self, pix):
-        """Detect the active chat-input fingerprint. CALIBRATION NEEDED: capture
-        the chat bar's active-vs-idle look (region + color) with the owner. Returns
-        None until then so the guard fails closed. Wire CHAT_INPUT + the test here."""
-        return None
+    def _chat_active(self, ppm: str = PPM):
+        """True if the chat input line holds content (typed text reliably; the
+        blinking-cursor-only case is the calibration gap noted at CHAT_INPUT).
+        Counts bright pixels in the input region. None on read failure."""
+        x, y, w, h = CHAT_INPUT
+        r = _sh("magick", ppm, "-crop", f"{w}x{h}+{x}+{y}", "+repage",
+                "-colorspace", "Gray", "-threshold", "60%",
+                "-format", "%[fx:mean*w*h]", "info:")
+        try:
+            return int(float(r.stdout.strip())) > CHAT_BRIGHT_THRESH
+        except (ValueError, AttributeError):
+            return None
 
 
 if __name__ == "__main__":
