@@ -61,12 +61,14 @@ COMBAT_RE = re.compile(
     r"for \d+ \w+ damage|points of \w+ damage|scores a hit on|"
     r"tries to .*? but (?:misses|fails)|\bparries\b|\bripostes\b|"
     r"multi[- ]?attack|flurr", re.I)
-# CRUCIAL: Jenskin's log captures the WHOLE zone's combat (other players fighting
-# nearby), so a combat line only counts as OUR combat if it names a group member
-# (the tank or the healer). Without this the bot reads "in combat" off zone spam
-# and never cleanly leaves it. Built from NAMES (see below).
+# CRUCIAL: a combat line only counts as OUR combat if it names a group member
+# OTHER THAN the bot itself (Jenskin = slot 0). Two reasons: (1) Jenskin's log
+# captures the whole zone's combat, so we must filter to the group; (2) the bot's
+# OWN assist makes Jenskin attack, which would generate "Jenskin hits..." lines
+# that self-sustain combat forever (the "still spamming after combat" bug). The
+# tank (Robskin) is the true combat signal -- he fights iff there's real combat.
 NAME_RE = re.compile(
-    r"\b(" + "|".join(re.escape(n) for n in NAMES.values()) + r")\b")
+    r"\b(" + "|".join(re.escape(n) for s, n in NAMES.items() if s != 0) + r")\b")
 
 # Chat-safety blink hysteresis: any sign of an active chat input (text OR the
 # cursor's lit phase) latches "chat busy" for this long, so a cursor blinking

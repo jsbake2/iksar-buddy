@@ -37,18 +37,29 @@ sendKey(spec) {
         else if (m = "shift")
             mods.Push("Shift")
     }
-    ; Press with explicit key down/up and deliberate gaps. EQ2 (Event mode)
-    ; intermittently drops a modifier if the key arrives too soon after the
-    ; modifier-down (the "Ctrl+7 fired as just 7" bug), so we hold the modifier,
-    ; let it settle, tap the key, then release -- using SendEvent so this is
-    ; independent of SendMode. Works for single ("7") and named ("F2") keys alike.
+    ; Release any modifier we DON'T want for this key, right before pressing it.
+    ; A stuck Alt (e.g. latched in the guest by the SPICE console swallowing an
+    ; Alt-up) would otherwise turn a bare "1" into "Alt+1". Doing it here -- not
+    ; just once at script start -- closes the gap before the keypress.
+    for mm in ["Alt", "Ctrl", "Shift", "LWin"] {
+        keep := false
+        for m in mods
+            if (m = mm)
+                keep := true
+        if (!keep)
+            SendEvent("{" mm " up}")
+    }
+    ; named keys (F2, Space) need braces; single chars (incl. "=", "+") are sent
+    ; as-is -- the "{= down}" key-event form is invalid and would crash AHK.
+    keySpec := (StrLen(key) > 1) ? "{" key "}" : key
+    ; Hold the wanted modifiers explicitly with a settle gap (EQ2 Event mode drops
+    ; a modifier if the key arrives too soon -- the "Ctrl+7 fired as just 7" bug),
+    ; tap the key, then release. SendEvent = Event mode regardless of SendMode.
     for m in mods
         SendEvent("{" m " down}")
     if (mods.Length)
         Sleep 90
-    SendEvent("{" key " down}")
-    Sleep 50
-    SendEvent("{" key " up}")
+    SendEvent(keySpec)
     if (mods.Length)
         Sleep 90
     for m in mods
