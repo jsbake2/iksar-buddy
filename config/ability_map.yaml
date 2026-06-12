@@ -61,10 +61,9 @@ abilities:
   group_ward:      { key: "9",      mode: auto,   cast_ms: 1500, desc: "group ward (AE incoming)" }
   group_cure:      { key: "none",   mode: auto,   cast_ms: 800,  desc: "no dedicated group cure -> single-target cure (0) per member" }
 
-# In-game social macros (fired as hotkeys, NEVER typed as /-commands). Map to keys
-# bound to /-macros inside EQ2.
-macros:
-  accept_rez:      { key: "", desc: "accept an incoming rez prompt on Jenskin -- TO BUILD host-side (OCR the rez dialog + click Accept, like invite_accept.py)" }
+# (Dialog accepts -- revive accept, armor repair, group invite, quest accept --
+# are NOT keybinds. They're host-side OCR-and-click captures, like
+# host-helpers/invite_accept.py / revive_accept.py.)
 
 # Group slot -> targeting key. To act on a specific member (heal/ward/cure/revive),
 # the agent taps this key to TARGET them, then the ability key. EQ2 default
