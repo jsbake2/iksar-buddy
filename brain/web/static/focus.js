@@ -31,6 +31,9 @@ const CATALOG = [
   { id: "hail", label: "Hail", kind: "group", action: "hail" },
   { id: "collect", label: "Collect", kind: "group", action: "collect" },
   { id: "evac", label: "Evac", kind: "group", action: "evac", danger: 1 },
+  { id: "stop_combat", label: "⏹ STOP COMBAT", kind: "override", action: "force_ooc", big: 1, danger: 1, hot: 1 },
+  { id: "start_combat", label: "⚔ START COMBAT", kind: "override", action: "force_combat", big: 1, hot: 1 },
+  { id: "auto_combat", label: "↻ Auto (clear override)", kind: "override", action: "clear", hot: 1 },
   { id: "reengage", label: "⚔ RE-ENGAGE", kind: "group", action: "attack", big: 1, hot: 1 },
   { id: "debuff", label: "Debuff", kind: "group", action: "debuff" },
   { id: "spell_attack", label: "Spell Atk", kind: "group", action: "spell_attack", hot: 1 },
@@ -45,7 +48,7 @@ const LS = "ib-focus-layout-v1";
 // Buttons added after the first release. Each is merged into an existing saved
 // layout ONCE (tracked in `ensured`) so the owner gets them without a reset, but
 // a later manual delete still sticks.
-const ENSURE = ["follow_tank", "follow_dps", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage"];
+const ENSURE = ["stop_combat", "start_combat", "auto_combat", "follow_tank", "follow_dps", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage"];
 function loadLayout() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
@@ -94,21 +97,31 @@ function applyState(s) {
   // buttons that can't fire (disarmed / no role present) look dimmed
   document.querySelectorAll(".fbtn").forEach((b) => {
     const c = BY_ID[b.dataset.id];
+    if (!c) return;
     const missing = c.kind === "role" && state.roleSlot[c.role] === undefined;
-    b.classList.toggle("disabled", !state.running || missing);
+    // override buttons (start/stop combat) control state, not injection -> always live
+    const dis = c.kind === "override" ? false : (!state.running || missing);
+    b.classList.toggle("disabled", dis);
   });
 }
 
 // ---- fire ----------------------------------------------------------------
 function fire(c, btn) {
-  let url;
+  let url, msg;
   if (c.kind === "role") {
     const slot = state.roleSlot[c.role];
     if (slot === undefined) { flash(btn, "no " + c.role); return; }
     url = `/api/act/${c.action}/${slot}`;
-  } else url = `/api/act/${c.action}`;
+    msg = state.running ? "sent" : "disarmed";
+  } else if (c.kind === "override") {
+    url = `/api/override/${c.action}`;          // state control: works disarmed
+    msg = "set";
+  } else {
+    url = `/api/act/${c.action}`;
+    msg = state.running ? "sent" : "disarmed";
+  }
   fetch(url, { method: "POST" }).catch(() => {});
-  flash(btn, state.running ? "sent" : "disarmed");
+  flash(btn, msg);
 }
 function flash(btn, msg) {
   btn.classList.add("fired");
