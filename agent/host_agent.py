@@ -221,6 +221,10 @@ class HostAgent:
             # uncurable revive sickness, so never trigger a cure on them.
             cure = m.get("cure", False) and slot not in suppressed
             cure_needed = cure_needed or cure
+            # rez_sick is for DISPLAY: only true while the member is in the window
+            # AND actually shows a detriment icon. So the badge clears the moment
+            # the sickness icon wears off, not when the 4-min window finally ends.
+            rez_sick = slot in suppressed and bool(m.get("detriments"))
             members.append({
                 "slot": slot,
                 "hp": (m["hp"] or 0) / 100.0,
@@ -229,7 +233,7 @@ class HostAgent:
                 "dead": m.get("dead", False),
                 "detriments": m.get("detriments", []),
                 "cure": cure,
-                "rez_sick": slot in suppressed,
+                "rez_sick": rez_sick,
             })
         # Chat-safety with blink hysteresis. raw chat_active True (text/cursor) OR
         # None (read failure) latches "busy" for CHAT_HYSTERESIS_S. safe only when
