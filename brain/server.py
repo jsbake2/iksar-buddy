@@ -211,17 +211,10 @@ class Brain:
                     action.role, DEFAULT_COOLDOWN_S)
             else:
                 log.debug("throttled %s slot%s", action.role, action.target_slot)
-        # No heal/cure needed this cycle -> fill the gap with a periodic re-assist
-        # while in combat (press attack so we engage the tank's current target).
-        elif (self.sm.state == State.IN_COMBAT and self.sm.override is None
-              and now - self._last_assist >= ASSIST_INTERVAL_S
-              and now >= self._next_action_at):
-            akey = self.cfg.key_for("attack")
-            if akey and akey != "none":
-                await self.send("command", role="attack", key=akey,
-                                target_slot=None, manual=False, reason="periodic assist")
-                self._last_assist = now
-                self._next_action_at = now + GLOBAL_GCD_S
+        # NOTE: no timer-based re-assist. "1" is an auto-attack TOGGLE, so pressing
+        # it on a timer flips auto-attack on/off and -- when it lands on a dead
+        # target between mobs -- makes EQ2 spam "not allowed to attack" every
+        # second. We assist ONCE on the combat-start edge (live target) instead.
 
 
 async def serve(brain: Brain, host: str, port: int) -> asyncio.AbstractServer:
