@@ -374,8 +374,8 @@ button.launch:hover { filter:brightness(1.08); }
 .member.rezsick .dets .det.on { opacity:.35; }   /* dim the (uncurable) rez detriment */
 
 /* big easy-click gather button */
-.big-gather { width:100%; padding:16px; margin:6px 0 4px; border-radius:10px;
-  font-size:18px; font-weight:800; letter-spacing:2px; cursor:pointer;
+.big-gather { display:inline-block; padding:8px 22px; margin:4px 0; border-radius:9px;
+  font-size:13px; font-weight:800; letter-spacing:1.2px; cursor:pointer;
   color:var(--bg); background:var(--good); border:none; transition:.12s; }
 .big-gather:hover { filter:brightness(1.08); }
 .big-gather:active { transform:translateY(1px); }
