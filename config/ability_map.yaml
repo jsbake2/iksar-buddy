@@ -18,6 +18,7 @@ abilities:
   attack:          { key: "1",      mode: auto,   desc: "send pet + assist; fired once on combat start" }
   spell_attack:    { key: "2",      mode: manual, desc: "offensive nuke (power-hungry; manual only)" }
   debuff:          { key: "3",      mode: manual, desc: "debuff/slow incoming target (auto later w/ power)" }
+  deaggro:         { key: "=",      mode: manual, desc: "de-aggro / drop threat" }
 
   # --- heals / wards (single-target; targeted via group_target_keys) ---
   # The prior tool healed in TIERS by HP deficit: standard heal when hurt,

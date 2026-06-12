@@ -37,6 +37,11 @@ for i in $(seq 1 120); do
   if echo "$line" | grep -qi "in-world"; then echo "in-world"; break; fi
   sleep 3
 done
+# Ensure combat logging is ON (the combat-detection signal). EQ2 doesn't reliably
+# persist it, so force it on every launch while we're in-world and out of combat.
+echo "ensuring combat logging is on"
+bash "$HOME/ib-build/ensure_logging.sh" 2>&1 | sed 's/^/  log: /'
+
 # No invite watching here -- the dashboard "accept invite" button runs it on
 # demand (instant), so we don't poll for minutes.
 echo "in-world; use the 'accept invite' button when the invite arrives"

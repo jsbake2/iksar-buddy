@@ -56,7 +56,7 @@ _GROUP_ACTIONS = {
     "group_heal": "group_heal", "group_ward": "group_ward", "group_cure": "cure",
     "emergency_heal": "emergency_heal", "emergency_ward": "emergency_ward",
     "follow": "follow", "stop_follow": "stop_follow", "rez": "rez",
-    "debuff": "debuff", "call_home": "call_home",
+    "debuff": "debuff", "deaggro": "deaggro", "call_home": "call_home",
     "jump": "jump", "sow": "sow", "hail": "hail", "collect": "collect",
     "gather": "gather", "evac": "evac", "pre_pull": "pre_pull",
 }
