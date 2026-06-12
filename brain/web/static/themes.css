@@ -417,6 +417,11 @@ button.launch:hover { filter:brightness(1.08); }
 .ed-grip { color:var(--faint); cursor:grab; }
 .ed-name { font-weight:600; }
 .ed-kind { margin-left:auto; font-size:9px; text-transform:uppercase; color:var(--accent2); letter-spacing:.5px; }
+.ed-color { width:30px; height:24px; padding:0; border:1px solid var(--line); border-radius:6px;
+  background:none; cursor:pointer; }
+.ed-colreset { width:26px; height:24px; padding:0; border:1px solid var(--line); border-radius:6px;
+  background:var(--panel2); color:var(--muted); cursor:pointer; font-size:12px; }
+.ed-colreset:hover { color:var(--fg); border-color:var(--accent); }
 .ed-actions { display:flex; align-items:center; gap:14px; margin-top:12px; }
 .ed-cols { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
 .ed-cols select, .focus-editor .theme select { background:var(--panel2); color:var(--fg);

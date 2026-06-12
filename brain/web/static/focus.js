@@ -48,7 +48,7 @@ const ENSURE = ["follow_tank", "buff_self", "buff_tank", "buff_dps", "buff", "sp
 function loadLayout() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
-  if (!s || !Array.isArray(s.ids)) return { ids: DEFAULT.slice(), cols: 3, ensured: ENSURE.slice() };
+  if (!s || !Array.isArray(s.ids)) return { ids: DEFAULT.slice(), cols: 3, ensured: ENSURE.slice(), colors: {} };
   s.ids = s.ids.filter((id) => BY_ID[id]);          // drop retired actions (e.g. buff1/buff2)
   const ensured = new Set(s.ensured || []);
   for (const id of ENSURE) {
@@ -56,6 +56,7 @@ function loadLayout() {
   }
   s.ensured = [...ensured];
   if (typeof s.cols !== "number") s.cols = 3;
+  if (!s.colors || typeof s.colors !== "object") s.colors = {};   // per-button custom colors
   localStorage.setItem(LS, JSON.stringify(s));        // persist the migration
   return s;
 }
@@ -121,6 +122,12 @@ function render() {
     const b = document.createElement("button");
     b.className = "fbtn" + (c.danger ? " danger" : "") + (c.big ? " big" : "");
     b.dataset.id = id;
+    const col = (layout.colors || {})[id];
+    if (col) {                       // custom color overrides the theme gradient
+      b.style.background = `linear-gradient(${col}, color-mix(in srgb, ${col} 55%, #000))`;
+      b.style.borderColor = `color-mix(in srgb, ${col} 75%, #000)`;
+      b.style.color = "#fff";
+    }
     b.innerHTML = `<span class="fb-label">${c.label}</span><span class="fb-flash"></span>`;
     b.onclick = () => fire(c, b);
     grid.appendChild(b);
@@ -139,14 +146,25 @@ function renderEditor() {
     const on = layout.ids.includes(id);
     const li = document.createElement("li");
     li.className = "ed-item"; li.draggable = true; li.dataset.id = id;
+    const col = (layout.colors || {})[id] || "#3a4150";
     li.innerHTML = `<span class="ed-grip">⋮⋮</span>` +
-      `<input type="checkbox" ${on ? "checked" : ""} />` +
+      `<input type="checkbox" class="ed-on" ${on ? "checked" : ""} />` +
       `<span class="ed-name">${c.label}</span>` +
-      `<span class="ed-kind">${c.kind === "role" ? c.role : ""}</span>`;
-    li.querySelector("input").onchange = (e) => {
+      `<span class="ed-kind">${c.kind === "role" ? c.role : ""}</span>` +
+      `<input type="color" class="ed-color" value="${col}" title="button color" />` +
+      `<button class="ed-colreset" title="reset color">↺</button>`;
+    li.querySelector(".ed-on").onchange = (e) => {
       if (e.target.checked) { if (!layout.ids.includes(id)) layout.ids.push(id); }
       else layout.ids = layout.ids.filter((x) => x !== id);
       saveLayout(); render();
+    };
+    li.querySelector(".ed-color").oninput = (e) => {
+      (layout.colors = layout.colors || {})[id] = e.target.value;
+      saveLayout(); render();
+    };
+    li.querySelector(".ed-colreset").onclick = () => {
+      if (layout.colors) delete layout.colors[id];
+      saveLayout(); render(); renderEditor();
     };
     // drag reorder
     li.addEventListener("dragstart", (e) => { e.dataTransfer.setData("id", id); li.classList.add("drag"); });
