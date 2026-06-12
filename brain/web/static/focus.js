@@ -80,7 +80,10 @@ function applyState(s) {
   const cf = s.chat_focus || {};
   state.chat_safe = cf.safe;
   state.roleSlot = {};
-  (s.members || []).forEach((m) => { if (m.present && m.role) state.roleSlot[m.role] = m.slot; });
+  // first present member of each role wins (e.g. Follow DPS -> the first of the 4 dps)
+  (s.members || []).forEach((m) => {
+    if (m.present && m.role && state.roleSlot[m.role] === undefined) state.roleSlot[m.role] = m.slot;
+  });
   const arm = $("fArm");
   arm.classList.toggle("ok", state.running);
   arm.textContent = state.running ? "● armed" : "○ off";
