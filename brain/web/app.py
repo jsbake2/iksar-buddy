@@ -32,21 +32,19 @@ _OVERRIDES = {
     "force_rez": Override.FORCE_REZ,
 }
 
-# Per-member manual actions (modernized from the prior tool's action_list):
-# heal / ward / cure_<type>. Each maps to an ability role the agent resolves.
-_MEMBER_ACTIONS = {"heal": "direct_heal", "ward": "ward",
-                   **{f"cure_{c}": f"cure_{c}" for c in CURE_TYPES}}
-# Group + emergency actions (no per-member slot).
+# Per-member manual actions -> ability role. Cure is GENERIC now, so every cure_*
+# button maps to the one 'cure'; rez targets the member (revive button per slot).
+_MEMBER_ACTIONS = {"heal": "direct_heal", "ward": "ward", "rez": "rez",
+                   **{f"cure_{c}": "cure" for c in CURE_TYPES}}
+# Group / utility actions (no per-member slot). Maps the dashboard button to the
+# ability role; the agent resolves the role -> key from the keymap.
 _GROUP_ACTIONS = {
-    "group_heal": "group_heal",
-    "group_ward": "group_ward",
-    "group_cure": "group_cure",
-    "emergency_heal": "emergency_heal",
-    "emergency_ward": "emergency_ward",
-    "follow": "follow",
-    "rez": "rez",
-    "debuff": "debuff",
-    "buff": "buff",
+    "group_heal": "group_heal", "group_ward": "group_ward", "group_cure": "cure",
+    "emergency_heal": "emergency_heal", "emergency_ward": "emergency_ward",
+    "follow": "follow", "stop_follow": "stop_follow", "rez": "rez",
+    "debuff": "debuff", "buff": "buff_self", "call_home": "call_home",
+    "jump": "jump", "sow": "sow", "hail": "hail", "collect": "collect",
+    "evac": "evac", "pre_pull": "pre_pull",
 }
 
 
@@ -147,8 +145,8 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         members = telemetry.snapshot.get("members", [])
         name = next((m.get("name") for m in members if m.get("slot") == slot), None) or f"slot{slot}"
         telemetry.push_event("manual", f"{action} -> {name}")
-        await brain.send("command", role=role, key="", target_slot=slot,
-                         reason=f"manual {action} on {name}")
+        await brain.send("command", role=role, key=brain.cfg.key_for(role),
+                         target_slot=slot, reason=f"manual {action} on {name}")
         return {"ok": True, "action": action, "slot": slot}
 
     @app.post("/api/act/{action}")
@@ -157,8 +155,8 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         if role is None:
             return JSONResponse({"error": "unknown group action"}, status_code=400)
         telemetry.push_event("manual", action.replace("_", " "))
-        await brain.send("command", role=role, key="", target_slot=None,
-                         reason=f"manual {action}")
+        await brain.send("command", role=role, key=brain.cfg.key_for(role),
+                         target_slot=None, reason=f"manual {action}")
         return {"ok": True, "action": action}
 
     @app.post("/api/launch")

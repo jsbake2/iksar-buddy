@@ -33,7 +33,7 @@ function buildGrid(members) {
   const head = document.createElement("div");
   head.className = "ctl-row head";
   head.innerHTML = `<span>member</span><span>heal</span><span>ward</span>` +
-    CURES.map((c) => `<span>${CURE_ABBR[c]}</span>`).join("");
+    CURES.map((c) => `<span>${CURE_ABBR[c]}</span>`).join("") + `<span>rez</span>`;
   grid.appendChild(head);
 
   members.forEach((m) => {
@@ -47,7 +47,8 @@ function buildGrid(members) {
     row.innerHTML =
       `<div class="who">${name}<small>${role}</small></div>` +
       `<button class="act heal" data-act="heal" data-slot="${m.slot}">heal</button>` +
-      `<button class="act ward" data-act="ward" data-slot="${m.slot}">ward</button>` + cures;
+      `<button class="act ward" data-act="ward" data-slot="${m.slot}">ward</button>` + cures +
+      `<button class="act rez" data-act="rez" data-slot="${m.slot}">rez</button>`;
     grid.appendChild(row);
   });
 
@@ -153,6 +154,8 @@ function render(s) {
   const armed = $("armed");
   armed.textContent = s.running ? "armed" : "disarmed";
   armed.classList.toggle("on", !!s.running);
+  const armBtn = $("armBtn");
+  if (armBtn) { armBtn.classList.toggle("on", !!s.running); armBtn.textContent = s.running ? "▶ ARMED" : "▶ ARM"; }
 
   // ---- live-view overlay chips ----
   const host = s.host || {};

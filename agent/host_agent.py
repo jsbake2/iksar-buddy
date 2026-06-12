@@ -87,6 +87,11 @@ class HostAgent:
         self._dead_prev = {}        # slot -> was-dead last cycle
         self._revived_at = {}       # slot -> time of last dead->alive transition
         self._chat_busy_until = 0.0  # chat-safety blink hysteresis deadline
+        self._armed = False         # injection master switch (off until owner arms)
+        self._chat_safe = False     # latest chat-safety verdict (the inject gate)
+        self._aborted = 0           # injections aborted because chat was unsafe
+        self._group_target_keys = []  # slot -> F-key (from CONFIG)
+        self._injecting = False     # serialize injects (don't overlap key sequences)
 
     async def run(self) -> None:
         while True:
@@ -94,8 +99,8 @@ class HostAgent:
                 reader, writer = await asyncio.open_connection(self.host, self.port)
                 log.info("connected to brain %s:%d", self.host, self.port)
                 await proto.write_message(writer, Message(proto.HELLO, {
-                    "agent": "host_sensor", "capabilities": ["bars", "detriments"],
-                    "inject": False}))
+                    "agent": "host_sensor", "capabilities": ["bars", "detriments", "inject"],
+                    "inject": True}))
                 await asyncio.gather(self._sense_loop(writer), self._recv_loop(reader))
             except (ConnectionError, OSError) as e:
                 log.warning("brain link down (%s); retrying in 2s", e)
@@ -120,20 +125,74 @@ class HostAgent:
             if t - last_hb >= 2.0:
                 hz = self._cycles / max(1e-6, time.time() - self._t0)
                 await proto.write_message(writer, Message(proto.HEARTBEAT, {
-                    "capture_hz": round(hz, 2), "ocr_conf": None, "log_fresh_s": None}))
+                    "capture_hz": round(hz, 2), "ocr_conf": None, "log_fresh_s": None,
+                    "armed": self._armed}))
                 last_hb = t
             await asyncio.sleep(max(0, self.period - (time.time() - t)))
 
     async def _recv_loop(self, reader: asyncio.StreamReader) -> None:
+        loop = asyncio.get_running_loop()
         while True:
             msg = await proto.read_message(reader)
-            if msg.type == proto.COMMAND:
-                # ACT DISABLED: log only. See module docstring before enabling.
-                log.info("COMMAND (not injected): role=%s key=%s target=%s reason=%s",
-                         msg.data.get("role"), msg.data.get("key"),
-                         msg.data.get("target_slot"), msg.data.get("reason"))
-            elif msg.type in (proto.WELCOME, proto.CONFIG, proto.PING):
+            if msg.type == proto.CONFIG:
+                am = msg.data.get("ability_map") or {}
+                self._group_target_keys = am.get("group_target_keys") or []
+                log.info("config: %d target keys", len(self._group_target_keys))
+            elif msg.type == proto.COMMAND:
+                await self._on_command(msg.data, loop)
+            elif msg.type in (proto.WELCOME, proto.PING):
                 log.debug("brain msg %s", msg.type)
+
+    async def _on_command(self, data: dict, loop) -> None:
+        role = data.get("role", "")
+        # control verbs (pause/resume/estop) toggle the injection master switch.
+        if role == "_resume":
+            self._armed = True; log.info("ARMED"); return
+        if role in ("_pause", "_estop"):
+            self._armed = False; log.info("DISARMED (%s)", role); return
+
+        key = (data.get("key") or "").strip()
+        target = data.get("target_slot")
+        if not self._armed:
+            log.info("COMMAND (disarmed, not injected): %s", role); return
+        # THE INVIOLABLE GATE: never press a key unless chat is provably safe.
+        if not self._chat_safe:
+            self._aborted += 1
+            log.warning("COMMAND ABORTED (chat unsafe): %s", role); return
+        if not key or key == "none":
+            log.info("COMMAND %s has no key", role); return
+        if self._injecting:
+            log.info("COMMAND %s dropped (inject busy)", role); return
+
+        # build the key sequence: target F-key (if a slot) then the ability key.
+        seq = []
+        if isinstance(target, int) and 0 <= target < len(self._group_target_keys):
+            tk = (self._group_target_keys[target] or "").strip()
+            if tk:
+                seq.append(tk)
+        seq.append(key)
+        self._injecting = True
+        try:
+            await loop.run_in_executor(None, self._inject, ",".join(seq), role)
+        finally:
+            self._injecting = False
+
+    def _inject(self, seq: str, role: str) -> None:
+        """Write the key sequence to the guest and fire the Event-mode AHK task.
+        Re-checks nothing here (the chat gate already passed in _on_command); keep
+        the window between gate and press tiny by injecting immediately."""
+        ps = (f"Set-Content C:\\ib\\keys.txt '{seq}' -NoNewline; "
+              f"Start-ScheduledTask -TaskName ibkey")
+        try:
+            subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
+                            "qemu-agent-command", DOM,
+                            json.dumps({"execute": "guest-exec", "arguments": {
+                                "path": "powershell.exe",
+                                "arg": ["-NoProfile", "-Command", ps]}})],
+                           capture_output=True, timeout=8)
+            log.info("INJECTED %s -> [%s]", role, seq)
+        except Exception as e:  # pragma: no cover
+            log.warning("inject failed: %s", e)
 
     def _rez_suppressed(self, raw_members) -> set:
         """Track death->revive transitions; return slots currently within the
@@ -183,6 +242,7 @@ class HostAgent:
             self._chat_busy_until = now + CHAT_HYSTERESIS_S
         chat_busy = now < self._chat_busy_until
         chat_safe = game_present and not chat_busy
+        self._chat_safe = chat_safe            # the inject gate reads this
         return {
             "members": members,
             "names": {str(k): v for k, v in NAMES.items()},
@@ -192,6 +252,7 @@ class HostAgent:
             "pending_cures": ["generic"] if cure_needed else [],
             "chat_safe": chat_safe,
             "chat_focus": {"game_present": game_present, "chat_active": chat_busy},
+            "aborted_injections": self._aborted,
             "host": {"load": round(os.getloadavg()[0], 2), **self._gpu},
         }
 

@@ -89,6 +89,8 @@ class Brain:
                 "ocr_conf": msg.data.get("ocr_conf"),
                 "log_fresh_s": msg.data.get("log_fresh_s"),
             })
+            if "armed" in msg.data:           # injection master switch state
+                self.telemetry.update(running=bool(msg.data["armed"]))
         elif msg.type == proto.STATE_EVENT:
             await self._on_state_event(msg)
         elif msg.type == proto.LOG:

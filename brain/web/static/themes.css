@@ -145,11 +145,13 @@ body {
   color:var(--fg); text-shadow:0 1px 2px #000a; }
 
 .ward-row { display:flex; align-items:center; gap:6px; }
-.ward { flex:1; height:5px; border-radius:3px; background:var(--bg); border:1px solid var(--line); overflow:hidden; }
-.ward i { display:block; height:100%; width:0; background:var(--ward); transition:width .25s; }
-.ward.up i { width:100%; }
+/* scoped to .ward-row so the member-panel ward INDICATOR styling doesn't bleed
+   into the manual-control ward BUTTON (.act.ward), which broke its render. */
+.ward-row .ward { flex:1; height:5px; border-radius:3px; background:var(--bg); border:1px solid var(--line); overflow:hidden; }
+.ward-row .ward i { display:block; height:100%; width:0; background:var(--ward); transition:width .25s; }
+.ward-row .ward.up i { width:100%; }
 .ward-lbl { font-size:9px; letter-spacing:.5px; color:var(--faint); text-transform:uppercase; min-width:30px; }
-.ward.up + .ward-lbl, .ward-row .ward.up ~ .ward-lbl { color:var(--ward); }
+.ward-row .ward.up ~ .ward-lbl { color:var(--ward); }
 
 .dets { display:flex; gap:4px; }
 .det { width:24px; height:22px; border-radius:6px; display:grid; place-items:center;
@@ -197,7 +199,7 @@ body {
 
 /* ---- manual control ---- */
 .ctl-grid { display:grid; gap:7px; }
-.ctl-row { display:grid; grid-template-columns:120px repeat(7,1fr); gap:6px; align-items:center; }
+.ctl-row { display:grid; grid-template-columns:120px repeat(8,1fr); gap:6px; align-items:center; }
 .ctl-row.head { color:var(--faint); font-size:10px; text-transform:uppercase; letter-spacing:.6px; }
 .ctl-row .who { font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ctl-row .who small { display:block; font-weight:500; font-size:9px; color:var(--muted); text-transform:uppercase; }
@@ -261,7 +263,14 @@ button.launch:hover { filter:brightness(1.08); }
 .events .k[data-k="rez"] { color:var(--accent2); }
 
 @media (max-width:1080px){ .grid{ grid-template-columns:1fr 1fr; } .span-2{ grid-column:1 / -1; } }
-@media (max-width:680px){ .grid{ grid-template-columns:1fr; } .ctl-row{ grid-template-columns:100px repeat(7,1fr); } }
+@media (max-width:680px){ .grid{ grid-template-columns:1fr; } .ctl-row{ grid-template-columns:100px repeat(8,1fr); } }
+
+/* arm button + per-member rez */
+.act.rez { border-left:3px solid var(--bad); }
+.arm { background:var(--panel2); border:1px solid var(--good); color:var(--good);
+  border-radius:8px; padding:9px 16px; font-weight:700; cursor:pointer; letter-spacing:.5px; }
+.arm:hover { background:color-mix(in srgb, var(--good) 14%, var(--panel2)); }
+.arm.on { background:var(--good); color:var(--bg); border-color:var(--good); }
 
 /* ---- live VM view panel -------------------------------------------------- */
 .live-wrap { position:relative; width:100%; aspect-ratio:16/9; border-radius:8px;
