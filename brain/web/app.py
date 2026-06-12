@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import re
 import shutil
 import subprocess
 import time
@@ -118,6 +119,47 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             return JSONResponse({"error": str(e)}, status_code=500)
         telemetry.push_event("config", "keymap saved")
         return {"ok": True}
+
+    # --- live-tunable numeric thresholds (edited from the dashboard) ----------
+    # Allowed keys -> (caster, min, max). Edits patch thresholds.yaml in place
+    # (comments preserved) and hot-reload.
+    _TUNABLES = {
+        "ward_heartbeat_s": (float, 0.0, 60.0),
+        "hp_standard": (float, 0.0, 1.0),
+        "mana_floor": (float, 0.0, 1.0),
+    }
+
+    @app.get("/api/tunables")
+    async def get_tunables():
+        return {k: brain.cfg.threshold(k) for k in _TUNABLES}
+
+    @app.post("/api/tunables")
+    async def post_tunables(payload: dict = Body(...)):
+        path = brain.cfg.config_dir / "thresholds.yaml"
+        try:
+            text = path.read_text(encoding="utf-8")
+            applied = {}
+            for k, (cast, lo, hi) in _TUNABLES.items():
+                if k not in payload:
+                    continue
+                try:
+                    v = max(lo, min(hi, cast(payload[k])))
+                except (ValueError, TypeError):
+                    continue
+                if cast is float:
+                    v = round(v, 3)
+                pat = re.compile(rf"^(\s*{re.escape(k)}:\s*)(\S+)(.*)$", re.M)
+                if pat.search(text):
+                    text = pat.sub(lambda m: f"{m.group(1)}{v}{m.group(3)}", text, count=1)
+                else:
+                    text = text.rstrip() + f"\n{k}: {v}\n"
+                applied[k] = v
+            _save_config(path, text)
+            brain.cfg.reload_if_changed()
+        except Exception as e:  # pragma: no cover
+            return JSONResponse({"error": str(e)}, status_code=500)
+        telemetry.push_event("config", "tuning: " + ", ".join(f"{k}={v}" for k, v in applied.items()))
+        return {"ok": True, "applied": applied}
 
     @app.post("/api/role/{slot}/{role}")
     async def set_role(slot: int, role: str):

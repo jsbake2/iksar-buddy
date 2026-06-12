@@ -11,6 +11,8 @@ tank_emergency_hp: 0.35     # legacy / dashboard banding
 routine_hp:        0.90     # cosmetic / dashboard banding
 
 # Ward maintenance (the heartbeat).
+ward_heartbeat_s:     7.0   # recast tank ward every N s IN COMBAT (set just above the
+                            # spell's recast; 0 = off). Tunable from the dashboard.
 ward_refresh_lead_ms: 1500  # refresh ward this long before expected expiry
 ward_absent_recast:   true  # recast immediately if ward icon absent
 

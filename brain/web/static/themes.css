@@ -223,6 +223,13 @@ body {
 .act.cure[data-c="arcane"]   { border-left-color:#a060d9; }
 .act.cure[data-c="curse"]    { border-left-color:#caa030; }
 .group-row, .util-row, .state-row, .run-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.tune-row { display:flex; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap; }
+.tune { display:flex; align-items:center; gap:6px; font-size:11px; text-transform:uppercase;
+  letter-spacing:.6px; color:var(--muted); font-weight:700; }
+.tune input { width:62px; background:var(--panel2); color:var(--fg); border:1px solid var(--line);
+  border-radius:7px; padding:5px 7px; font-size:13px; text-align:right; }
+.tune input:focus { outline:none; border-color:var(--accent); }
+.tune-hint { font-size:10px; color:var(--faint); }
 .act.group { flex:1; padding:9px; background:var(--panel2); }
 .act.emer { flex:1; padding:9px; background:color-mix(in srgb,var(--bad) 14%,var(--bg));
   border-color:color-mix(in srgb,var(--bad) 40%,var(--line)); color:var(--bad); font-weight:800; }

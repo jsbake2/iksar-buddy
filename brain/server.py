@@ -52,6 +52,7 @@ class Brain:
         self._next_action_at = 0.0   # global min-gap deadline between commands
         self._cooldowns: dict = {}   # (role, target_slot) -> earliest repeat time
         self._last_assist = 0.0      # last time we pressed attack (combat re-assist)
+        self._last_ward = 0.0        # last time we recast the tank ward (heartbeat)
 
     # -- outbound ----------------------------------------------------------
     async def send(self, type_: str, **data) -> None:
@@ -211,10 +212,22 @@ class Brain:
                     action.role, DEFAULT_COOLDOWN_S)
             else:
                 log.debug("throttled %s slot%s", action.role, action.target_slot)
-        # NOTE: no timer-based re-assist. "1" is an auto-attack TOGGLE, so pressing
-        # it on a timer flips auto-attack on/off and -- when it lands on a dead
-        # target between mobs -- makes EQ2 spam "not allowed to attack" every
-        # second. We assist ONCE on the combat-start edge (live target) instead.
+        # Ward heartbeat: with no ward-bar sensing, recast the tank ward on a timer
+        # while IN_COMBAT (a Defiler's core mitigation). Only in the gaps (no heal/
+        # cure due) and only in combat -- if end-of-combat detection were loose this
+        # would burn mana, which is why combat-end is kept tight. Interval is owner-
+        # tunable (ward_heartbeat_s); 0/absent disables it.
+        else:
+            hb = float(self.cfg.threshold("ward_heartbeat_s", 0) or 0)
+            wkey = self.cfg.key_for("ward")
+            if (hb > 0 and wkey and wkey != "none"
+                    and self.sm.state == State.IN_COMBAT and self.sm.override is None
+                    and now >= self._next_action_at and now - self._last_ward >= hb):
+                tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
+                await self.send("command", role="ward", key=wkey, target_slot=tank_slot,
+                                manual=False, reason="ward heartbeat")
+                self._last_ward = now
+                self._next_action_at = now + GLOBAL_GCD_S
 
 
 async def serve(brain: Brain, host: str, port: int) -> asyncio.AbstractServer:

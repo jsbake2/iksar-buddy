@@ -19,6 +19,21 @@ themeSel.onchange = () => {
 
 // ---- action helpers -------------------------------------------------------
 function post(url) { fetch(url, { method: "POST" }).catch(() => {}); }
+function postJSON(url, body) {
+  fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body) }).catch(() => {});
+}
+// live tunables (ward heartbeat). Load current value, save on change.
+const wardHb = document.getElementById("wardHb");
+if (wardHb) {
+  fetch("/api/tunables").then((r) => r.json()).then((t) => {
+    if (t && t.ward_heartbeat_s != null) wardHb.value = t.ward_heartbeat_s;
+  }).catch(() => {});
+  wardHb.onchange = () => {
+    const v = parseFloat(wardHb.value);
+    if (!isNaN(v)) postJSON("/api/tunables", { ward_heartbeat_s: v });
+  };
+}
 
 document.querySelectorAll("[data-ov]").forEach((b) => (b.onclick = () => post(`/api/override/${b.dataset.ov}`)));
 document.querySelectorAll("[data-ctl]").forEach((b) => (b.onclick = () => post(`/api/control/${b.dataset.ctl}`)));
