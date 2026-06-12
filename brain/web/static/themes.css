@@ -394,6 +394,9 @@ button.launch:hover { filter:brightness(1.08); }
 .fbtn:hover { filter:brightness(1.1); border-color:color-mix(in srgb,var(--accent) 50%,var(--line)); }
 .fbtn:active { transform:translateY(2px); }
 .fbtn.danger { color:var(--bad); border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }
+.fbtn.big { grid-column:1 / -1; min-height:88px; font-size:21px; letter-spacing:1px;
+  background:linear-gradient(color-mix(in srgb,var(--accent) 24%,var(--panel)),var(--panel2));
+  border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); color:var(--accent2); }
 .fbtn.disabled { opacity:.4; filter:grayscale(.5); }
 .fbtn.fired { box-shadow:0 0 0 2px var(--good), 0 4px 14px -8px var(--good); filter:brightness(1.25); }
 .fb-flash { position:absolute; bottom:5px; left:0; right:0; text-align:center;

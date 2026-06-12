@@ -30,6 +30,7 @@ const CATALOG = [
   { id: "hail", label: "Hail", kind: "group", action: "hail" },
   { id: "collect", label: "Collect", kind: "group", action: "collect" },
   { id: "evac", label: "Evac", kind: "group", action: "evac", danger: 1 },
+  { id: "reengage", label: "⚔ RE-ENGAGE", kind: "group", action: "attack", big: 1, hot: 1 },
   { id: "debuff", label: "Debuff", kind: "group", action: "debuff" },
   { id: "spell_attack", label: "Spell Atk", kind: "group", action: "spell_attack", hot: 1 },
   { id: "deaggro", label: "De-aggro", kind: "group", action: "deaggro" },
@@ -43,7 +44,7 @@ const LS = "ib-focus-layout-v1";
 // Buttons added after the first release. Each is merged into an existing saved
 // layout ONCE (tracked in `ensured`) so the owner gets them without a reset, but
 // a later manual delete still sticks.
-const ENSURE = ["follow_tank", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack"];
+const ENSURE = ["follow_tank", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage"];
 function loadLayout() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
@@ -118,7 +119,7 @@ function render() {
   layout.ids.forEach((id) => {
     const c = BY_ID[id]; if (!c) return;
     const b = document.createElement("button");
-    b.className = "fbtn" + (c.danger ? " danger" : "");
+    b.className = "fbtn" + (c.danger ? " danger" : "") + (c.big ? " big" : "");
     b.dataset.id = id;
     b.innerHTML = `<span class="fb-label">${c.label}</span><span class="fb-flash"></span>`;
     b.onclick = () => fire(c, b);
