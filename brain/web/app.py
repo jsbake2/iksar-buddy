@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -24,6 +25,18 @@ STATIC = Path(__file__).resolve().parent / "static"
 # so the dashboard shows the real game with NO extra screenshot cost.
 FRAME_PPM = "/tmp/ib_sensor.ppm"
 _frame_cache: dict = {"ts": 0.0, "data": b""}
+
+
+def _save_config(path: Path, text: str) -> None:
+    """Persist owner config safely: back up the previous version (.bak) and write
+    ATOMICALLY (tmp + rename) so a crash or partial write can't corrupt or lose
+    it. The config dir itself lives OUTSIDE the code-deploy path (IB_CONFIG_DIR)
+    so deploys never clobber owner edits."""
+    if path.exists():
+        shutil.copy2(path, path.with_suffix(path.suffix + ".bak"))
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    tmp.replace(path)
 
 _OVERRIDES = {
     "force_combat": Override.FORCE_COMBAT,
@@ -99,7 +112,7 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         try:
             body = yaml.safe_dump(payload, sort_keys=False, default_flow_style=False,
                                   allow_unicode=True)
-            path.write_text(_KEYMAP_HEADER + body, encoding="utf-8")
+            _save_config(path, _KEYMAP_HEADER + body)
             brain.cfg.reload_if_changed()
         except Exception as e:  # pragma: no cover
             return JSONResponse({"error": str(e)}, status_code=500)
@@ -120,8 +133,8 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         am["tank_slot"] = roles.index("tank") if "tank" in roles else am.get("tank_slot", 0)
         path = brain.cfg.config_dir / "ability_map.yaml"
         try:
-            path.write_text(_KEYMAP_HEADER + yaml.safe_dump(am, sort_keys=False,
-                            default_flow_style=False, allow_unicode=True), encoding="utf-8")
+            _save_config(path, _KEYMAP_HEADER + yaml.safe_dump(am, sort_keys=False,
+                         default_flow_style=False, allow_unicode=True))
             brain.cfg.reload_if_changed()
         except Exception as e:  # pragma: no cover
             return JSONResponse({"error": str(e)}, status_code=500)
