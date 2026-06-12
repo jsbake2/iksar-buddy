@@ -144,7 +144,35 @@ class HostSensor:
         pix = self._crop(0, 26, 160, PWR_BASE + PITCH * SLOTS + ROW_DY + 20)
         hp, power = self.read_self(pix)
         members = self.read_members(pix)
-        return {"own": {"hp": hp, "power": power}, "members": members}
+        safety = self.chat_safety(pix, power)
+        return {"own": {"hp": hp, "power": power}, "members": members,
+                "chat_safety": safety}
+
+    # -- chat-safety guard (PROJECT.md §Chat-Safety; the INVIOLABLE invariant) --
+    def chat_safety(self, pix, power) -> dict:
+        """Fail-CLOSED focus check. `safe` is True ONLY when we can prove focus is
+        on the game world AND the chat input is not active -- otherwise injection
+        must never happen (a stray macro typed into chat is the dead giveaway).
+
+        - game_present: the player's own power bar was located, i.e. the in-world
+          HUD is showing (not desktop/login/loading/alt-tabbed). Fully automatic.
+        - chat_active: whether the chat INPUT line is focused for typing. Needs a
+          calibrated fingerprint of the active chat bar (owner activates chat once
+          so we capture CHAT_INPUT region + active color). UNTIL calibrated this
+          returns None, which forces safe=False -- correct fail-closed behavior.
+
+        safe = game_present AND chat_active is False. None (uncalibrated) -> unsafe.
+        """
+        game_present = power is not None
+        chat_active = self._chat_active(pix)        # True / False / None
+        safe = bool(game_present) and chat_active is False
+        return {"game_present": game_present, "chat_active": chat_active, "safe": safe}
+
+    def _chat_active(self, pix):
+        """Detect the active chat-input fingerprint. CALIBRATION NEEDED: capture
+        the chat bar's active-vs-idle look (region + color) with the owner. Returns
+        None until then so the guard fails closed. Wire CHAT_INPUT + the test here."""
+        return None
 
 
 if __name__ == "__main__":

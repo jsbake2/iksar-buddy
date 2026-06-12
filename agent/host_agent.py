@@ -95,6 +95,10 @@ class HostAgent:
                 "detriments": m.get("detriments", []),
                 "cure": m.get("cure", False),
             })
+        # Real fail-closed chat-safety (host_sensor.chat_safety). Until the
+        # chat-active fingerprint is calibrated, safe=False -> nothing would ever
+        # inject even if act were enabled. Surfaced to the dashboard either way.
+        safety = world.get("chat_safety") or {}
         return {
             "members": members,
             "names": {str(k): v for k, v in NAMES.items()},
@@ -102,7 +106,9 @@ class HostAgent:
             "own_hp": (own.get("hp") or 0) / 100.0,
             "casting": False,                  # cast-bar sensing not built yet
             "pending_cures": ["generic"] if cure_needed else [],
-            "chat_safe": True,                 # act disabled; real guard before inject
+            "chat_safe": bool(safety.get("safe", False)),
+            "chat_focus": {"game_present": safety.get("game_present"),
+                           "chat_active": safety.get("chat_active")},
         }
 
 
