@@ -34,6 +34,12 @@ ACTION_COOLDOWN_S = {
     "emergency_heal": 1.0, "emergency_ward": 1.2,
 }
 DEFAULT_COOLDOWN_S = 1.5
+# Re-press the attack key every few seconds while in combat so the bot keeps
+# assisting onto whatever the tank retargets. Only fires in the GAPS (when no
+# heal/cure is needed this cycle) so it never steals a cast from healing. It only
+# runs in IN_COMBAT, so it stops the moment combat-detection clears -- which is
+# why group-name-filtered combat detection (crisp end-of-combat) matters here.
+ASSIST_INTERVAL_S = 3.0
 
 
 class Brain:
@@ -45,6 +51,7 @@ class Brain:
         self._seq = 0
         self._next_action_at = 0.0   # global min-gap deadline between commands
         self._cooldowns: dict = {}   # (role, target_slot) -> earliest repeat time
+        self._last_assist = 0.0      # last time we pressed attack (combat re-assist)
 
     # -- outbound ----------------------------------------------------------
     async def send(self, type_: str, **data) -> None:
@@ -139,6 +146,7 @@ class Brain:
                     await self.send("command", role="attack", key=akey,
                                     target_slot=None, manual=False,
                                     reason="combat start -> assist")
+                    self._last_assist = time.time()
                     log.info("combat start: assist (attack '%s')", akey)
 
         # Map each member's lit detriment cells to display type-labels. The 5
@@ -193,8 +201,8 @@ class Brain:
         self.telemetry.set_members(member_rows)
 
         action = decide(world, self.cfg, self.sm.state)
+        now = time.time()
         if action is not None:
-            now = time.time()
             key = (action.role, action.target_slot)
             if now >= self._next_action_at and now >= self._cooldowns.get(key, 0.0):
                 await self.push_command(action)
@@ -203,6 +211,17 @@ class Brain:
                     action.role, DEFAULT_COOLDOWN_S)
             else:
                 log.debug("throttled %s slot%s", action.role, action.target_slot)
+        # No heal/cure needed this cycle -> fill the gap with a periodic re-assist
+        # while in combat (press attack so we engage the tank's current target).
+        elif (self.sm.state == State.IN_COMBAT and self.sm.override is None
+              and now - self._last_assist >= ASSIST_INTERVAL_S
+              and now >= self._next_action_at):
+            akey = self.cfg.key_for("attack")
+            if akey and akey != "none":
+                await self.send("command", role="attack", key=akey,
+                                target_slot=None, manual=False, reason="periodic assist")
+                self._last_assist = now
+                self._next_action_at = now + GLOBAL_GCD_S
 
 
 async def serve(brain: Brain, host: str, port: int) -> asyncio.AbstractServer:

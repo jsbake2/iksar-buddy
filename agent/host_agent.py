@@ -47,7 +47,7 @@ REZ_WINDOW = 240.0
 # cycles = took damage = in combat; it stays "in combat" until COMBAT_DECAY_S of
 # no further hits. Healing raises HP (positive delta) and is ignored.
 COMBAT_HP_DROP = 0.02
-COMBAT_DECAY_S = 6.0
+COMBAT_DECAY_S = 5.0
 # Primary combat signal: the EQ2 chat log (Jenskin's client). Robskin always
 # attacks in combat, so his damage lines are a clean trigger; mob->group damage
 # and misses count too. HP-delta above is the fallback for when someone pulls
@@ -61,6 +61,12 @@ COMBAT_RE = re.compile(
     r"for \d+ \w+ damage|points of \w+ damage|scores a hit on|"
     r"tries to .*? but (?:misses|fails)|\bparries\b|\bripostes\b|"
     r"multi[- ]?attack|flurr", re.I)
+# CRUCIAL: Jenskin's log captures the WHOLE zone's combat (other players fighting
+# nearby), so a combat line only counts as OUR combat if it names a group member
+# (the tank or the healer). Without this the bot reads "in combat" off zone spam
+# and never cleanly leaves it. Built from NAMES (see below).
+NAME_RE = re.compile(
+    r"\b(" + "|".join(re.escape(n) for n in NAMES.values()) + r")\b")
 
 # Chat-safety blink hysteresis: any sign of an active chat input (text OR the
 # cursor's lit phase) latches "chat busy" for this long, so a cursor blinking
@@ -181,7 +187,9 @@ class HostAgent:
         else:
             new = lines
         self._log_last = lines[-1]
-        if not first and any(COMBAT_RE.search(ln) for ln in new):
+        # Our combat = a combat line that also names a group member (filters out
+        # the rest of the zone's combat spam, which this log also captures).
+        if not first and any(COMBAT_RE.search(ln) and NAME_RE.search(ln) for ln in new):
             self._combat_until = time.time() + COMBAT_DECAY_S
 
     def _guest_read(self, ps: str) -> str | None:
