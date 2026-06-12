@@ -54,7 +54,7 @@ COMBAT_DECAY_S = 5.0
 # without Robskin / the log read lags. Path is per server+character.
 EQ2_LOG = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
            r"\EverQuest II\logs\Wuoshi\eq2log_Jenskin.txt")
-COMBAT_LOG_POLL_S = 2.0
+COMBAT_LOG_POLL_S = 1.0
 # Lines that only appear during combat (heals/regen/buffs deliberately excluded).
 # Real format is "<X> hits <Y> for 35 piercing damage" (NOT "points of ...").
 COMBAT_RE = re.compile(
@@ -115,7 +115,6 @@ class HostAgent:
         self._chat_busy_until = 0.0  # chat-safety blink hysteresis deadline
         self._prev_hp = {}          # slot -> last hp (0..1); "own" key for the healer
         self._combat_until = 0.0    # in-combat decays to OOC this many seconds after last hit
-        self._log_last = ""         # last EQ2-log line processed (combat-log tailer)
         self._armed = False         # injection master switch (off until owner arms)
         self._chat_safe = False     # latest chat-safety verdict (the inject gate)
         self._aborted = 0           # injections aborted because chat was unsafe
@@ -161,36 +160,47 @@ class HostAgent:
             await asyncio.sleep(max(0, self.period - (time.time() - t)))
 
     async def _combat_log_loop(self) -> None:
-        """Poll the tail of Jenskin's EQ2 chat log; trip combat on damage lines.
-        Independent of the brain link so combat state is tracked even disarmed."""
+        """Trip combat on RECENT group-named damage lines in Jenskin's EQ2 log.
+        Each line is "(epoch)[date] text"; we read the guest's current epoch in the
+        SAME call (the guest clock differs from the host's) and compare, so a hit
+        counts only if it happened within COMBAT_DECAY_S. The group-name filter
+        ignores the rest of the zone's combat spam. Runs even while disarmed."""
         loop = asyncio.get_running_loop()
-        ps = (f"if (Test-Path -LiteralPath '{EQ2_LOG}') "
-              f"{{ Get-Content -LiteralPath '{EQ2_LOG}' -Tail 40 }}")
+        ps = (
+            "Write-Output ('NOW=' + [int][double]::Parse((Get-Date -UFormat %s))); "
+            f"if (Test-Path -LiteralPath '{EQ2_LOG}') "
+            f"{{ Get-Content -LiteralPath '{EQ2_LOG}' -Tail 250 }}")
         while True:
             try:
                 out = await loop.run_in_executor(None, self._guest_read, ps)
                 if out:
-                    self._scan_combat_lines(out.splitlines())
+                    self._scan_combat_lines(out)
             except Exception as e:  # never let this loop die
                 log.debug("combat-log poll error: %s", e)
             await asyncio.sleep(COMBAT_LOG_POLL_S)
 
-    def _scan_combat_lines(self, lines: list) -> None:
-        lines = [ln for ln in lines if ln.strip()]
-        if not lines:
+    def _scan_combat_lines(self, out: str) -> None:
+        lines = out.splitlines()
+        if not lines or not lines[0].startswith("NOW="):
             return
-        first = self._log_last == ""          # first poll: baseline only, don't trip
-        # process only lines newer than the last one we saw last poll
-        if self._log_last and self._log_last in lines:
-            idx = len(lines) - 1 - lines[::-1].index(self._log_last)
-            new = lines[idx + 1:]
-        else:
-            new = lines
-        self._log_last = lines[-1]
-        # Our combat = a combat line that also names a group member (filters out
-        # the rest of the zone's combat spam, which this log also captures).
-        if not first and any(COMBAT_RE.search(ln) and NAME_RE.search(ln) for ln in new):
-            self._combat_until = time.time() + COMBAT_DECAY_S
+        try:
+            now_guest = int(lines[0][4:])
+        except ValueError:
+            return
+        # newest GROUP combat line (names a member + a combat action); ignore the
+        # rest of the zone's combat. Recency is measured in the guest's own clock.
+        newest = None
+        for ln in lines[1:]:
+            m = re.match(r"\((\d+)\)", ln)
+            if m and COMBAT_RE.search(ln) and NAME_RE.search(ln):
+                ep = int(m.group(1))
+                if newest is None or ep > newest:
+                    newest = ep
+        if newest is not None:
+            age = now_guest - newest
+            if age <= COMBAT_DECAY_S:
+                # stay in combat until that hit is COMBAT_DECAY_S old (host clock)
+                self._combat_until = time.time() + max(0.0, COMBAT_DECAY_S - age)
 
     def _guest_read(self, ps: str) -> str | None:
         """Run a PowerShell command in the guest and return its stdout (guest-exec
