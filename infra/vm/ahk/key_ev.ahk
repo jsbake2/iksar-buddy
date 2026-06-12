@@ -32,17 +32,22 @@ sendKey(spec) {
         else if (m = "shift")
             mods.Push("Shift")
     }
-    if (StrLen(key) > 1)          ; named keys (F2, Space, ...) need braces
-        key := "{" key "}"
+    ; Press with explicit key down/up and deliberate gaps. EQ2 (Event mode)
+    ; intermittently drops a modifier if the key arrives too soon after the
+    ; modifier-down (the "Ctrl+7 fired as just 7" bug), so we hold the modifier,
+    ; let it settle, tap the key, then release -- using SendEvent so this is
+    ; independent of SendMode. Works for single ("7") and named ("F2") keys alike.
     for m in mods
-        Send("{" m " down}")
+        SendEvent("{" m " down}")
     if (mods.Length)
-        Sleep 60
-    Send(key)
+        Sleep 90
+    SendEvent("{" key " down}")
+    Sleep 50
+    SendEvent("{" key " up}")
     if (mods.Length)
-        Sleep 60
+        Sleep 90
     for m in mods
-        Send("{" m " up}")
+        SendEvent("{" m " up}")
 }
 
 if !WinExist("EverQuest II")
@@ -54,7 +59,7 @@ Sleep 250
 ; Alt+= / Ctrl+N injection leaves Alt/Ctrl "held" in the guest -- which shows up
 ; as stuck-Alt in the SPICE console and breaks in-game input until cleared.
 Send("{Alt up}{Ctrl up}{Shift up}{LWin up}")
-Sleep 20
+Sleep 80   ; let the clear settle so its {Ctrl up} can't bleed into a Ctrl+ combo
 seq := Trim(FileRead("C:\ib\keys.txt"), " `t`r`n")
 for part in StrSplit(seq, ",") {
     k := Trim(part, " `t`r`n")
