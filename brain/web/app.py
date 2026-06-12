@@ -106,6 +106,28 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         telemetry.push_event("config", "keymap saved")
         return {"ok": True}
 
+    @app.post("/api/role/{slot}/{role}")
+    async def set_role(slot: int, role: str):
+        """Assign a group slot's role from the dashboard. tank_slot is DERIVED
+        from wherever 'tank' lands so the loop targets the right F-key even when
+        the tank isn't in slot 1. Persists + hot-reloads."""
+        if not (0 <= slot < 6) or role not in ("healer", "tank", "dps", "support", "none"):
+            return JSONResponse({"error": "bad slot/role"}, status_code=400)
+        am = brain.cfg.ability_map
+        roles = list((am.get("slot_roles") or []) + [""] * 6)[:6]
+        roles[slot] = role
+        am["slot_roles"] = roles
+        am["tank_slot"] = roles.index("tank") if "tank" in roles else am.get("tank_slot", 0)
+        path = brain.cfg.config_dir / "ability_map.yaml"
+        try:
+            path.write_text(_KEYMAP_HEADER + yaml.safe_dump(am, sort_keys=False,
+                            default_flow_style=False, allow_unicode=True), encoding="utf-8")
+            brain.cfg.reload_if_changed()
+        except Exception as e:  # pragma: no cover
+            return JSONResponse({"error": str(e)}, status_code=500)
+        telemetry.push_event("config", f"slot {slot} role -> {role}")
+        return {"ok": True, "slot_roles": roles, "tank_slot": am["tank_slot"]}
+
     @app.post("/api/override/{name}")
     async def override(name: str):
         if name == "clear":

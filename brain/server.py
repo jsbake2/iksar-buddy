@@ -118,6 +118,7 @@ class Brain:
         # the order). `cure` is the real, type-agnostic trigger.
         from .telemetry import CURE_TYPES, SLOT_ROLES
         names = d.get("names", {})
+        slot_roles = self.cfg.ability_map.get("slot_roles") or SLOT_ROLES
         present_slots = {m.slot for m in world.members}
         member_rows = []
         for slot in range(6):
@@ -137,7 +138,7 @@ class Brain:
             member_rows.append({
                 "slot": slot,
                 "name": names.get(str(slot), names.get(slot, "")),
-                "role": SLOT_ROLES[slot] if slot < len(SLOT_ROLES) else "",
+                "role": slot_roles[slot] if slot < len(slot_roles) else "",
                 "present": present,
                 "hp": (m.hp if m is not None else 1.0),
                 "ward": (m.ward if m is not None else True),

@@ -51,7 +51,12 @@ macros:
   accept_rez:      { key: "", desc: "accept an incoming rez prompt on Jenskin -- TO BUILD host-side (OCR the rez dialog + click Accept, like invite_accept.py)" }
 
 # Group slot -> targeting key. To act on a specific member (heal/ward/cure/revive),
-# the agent taps this key to TARGET them, then the ability key. PROPOSED EQ2
-# default (F1=self, F2..F6=members) -- CONFIRM this matches your group order.
+# the agent taps this key to TARGET them, then the ability key. EQ2 default
+# (F1=self, F2..F6=members) confirmed by owner.
 group_target_keys: ["F1", "F2", "F3", "F4", "F5", "F6"]   # slot0=self(Jenskin)..slot5
-tank_slot: 1   # Robskin (SK) is slot 1; Jenskin (healer) is slot 0
+
+# Role per group slot, set from the dashboard (the tank isn't always slot 1).
+# tank_slot is DERIVED from wherever "tank" sits, so the loop targets the tank's
+# F-key correctly regardless of group order. Roles: healer/tank/dps/support.
+slot_roles: ["healer", "tank", "dps", "dps", "support", "support"]
+tank_slot: 1   # derived from slot_roles (index of "tank"); kept for convenience

@@ -224,36 +224,52 @@ function render(s) {
   renderEvents(s.events || []);
 }
 
+const ROLES = ["healer", "tank", "dps", "support", "none"];
 const memberEls = {};
+// Build the static skeleton ONCE per slot (so the role <select> survives the ~1Hz
+// re-render and can be opened); subsequent frames only update dynamic fields.
+function buildMemberEl(slot) {
+  const el = document.createElement("div");
+  el.dataset.slot = slot;
+  el.innerHTML =
+    `<div class="id"><div class="nm"></div>` +
+      `<select class="rl-sel" title="group role (tank is targeted by the loop)">` +
+        ROLES.map((r) => `<option value="${r}">${r}</option>`).join("") + `</select></div>` +
+    `<div class="barwrap">` +
+      `<div class="hp"><div class="crit-band"></div>` +
+        `<div class="fill"></div><span class="hp-txt"></span></div>` +
+      `<div class="ward-row"><div class="ward"><i></i></div><span class="ward-lbl"></span></div>` +
+    `</div>` +
+    `<div class="dets">` +
+      CURES.map((c) => `<span class="det" data-d="${c}">${CURE_ABBR[c]}</span>`).join("") +
+      `<span class="rez-badge">rez sick</span>` +
+    `</div>`;
+  const sel = el.querySelector(".rl-sel");
+  sel.onchange = () => post(`/api/role/${slot}/${sel.value}`);
+  return el;
+}
 function renderMembers(members) {
   const box = $("members");
   members.forEach((m) => {
     let el = memberEls[m.slot];
-    if (!el) {
-      el = document.createElement("div");
-      el.dataset.slot = m.slot;
-      box.appendChild(el);
-      memberEls[m.slot] = el;
-    }
+    if (!el) { el = buildMemberEl(m.slot); memberEls[m.slot] = el; box.appendChild(el); }
     const name = m.name || FALLBACK_NAMES[m.slot] || `slot${m.slot}`;
-    const role = m.role || "";
     const hpP = pct(m.hp);
     const crit = !!m.critical;
-    el.className = "member" + (m.dead ? " dead" : "") + (!m.present ? " absent" : "") + (crit ? " critical" : "");
-    el.innerHTML =
-      `<div class="id"><div class="nm">${name}</div><div class="rl">${role}</div></div>` +
-      `<div class="barwrap">` +
-        `<div class="hp${crit ? " crit" : ""}"><div class="crit-band"></div>` +
-          `<div class="fill" style="width:${hpP}%"></div><span class="hp-txt">${m.dead ? "DEAD" : hpP + "%"}</span></div>` +
-        `<div class="ward-row"><div class="ward${m.ward ? " up" : ""}"><i></i></div>` +
-          `<span class="ward-lbl">${m.ward ? "ward" : "no ward"}</span></div>` +
-      `</div>` +
-      `<div class="dets">` +
-        CURES.map((c) => {
-          const on = (m.detriments || []).includes(c);
-          return `<span class="det${on ? " on" : ""}" data-d="${c}">${CURE_ABBR[c]}</span>`;
-        }).join("") +
-      `</div>`;
+    el.className = "member" + (m.dead ? " dead" : "") + (!m.present ? " absent" : "") +
+      (crit ? " critical" : "") + (m.rez_sick ? " rezsick" : "");
+    el.querySelector(".nm").textContent = name;
+    const sel = el.querySelector(".rl-sel");
+    if (document.activeElement !== sel && m.role && sel.value !== m.role) sel.value = m.role;
+    el.querySelector(".hp").classList.toggle("crit", crit);
+    el.querySelector(".fill").style.width = hpP + "%";
+    el.querySelector(".hp-txt").textContent = m.dead ? "DEAD" : hpP + "%";
+    const ward = el.querySelector(".ward");
+    ward.classList.toggle("up", !!m.ward);
+    el.querySelector(".ward-lbl").textContent = m.ward ? "ward" : "no ward";
+    CURES.forEach((c) => {
+      el.querySelector(`.det[data-d="${c}"]`).classList.toggle("on", (m.detriments || []).includes(c));
+    });
   });
 }
 

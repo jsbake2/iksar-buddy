@@ -324,3 +324,14 @@ button.launch:hover { filter:brightness(1.08); }
 .km-status { font-size:12px; }
 .km-status.good { color:var(--good); }
 .km-status.bad { color:var(--bad); }
+
+/* member role selector + rez-sick badge */
+.rl-sel { background:var(--panel2); border:1px solid var(--line); color:var(--muted);
+  border-radius:5px; padding:2px 6px; font-size:10px; text-transform:uppercase;
+  letter-spacing:.6px; cursor:pointer; max-width:84px; }
+.rl-sel:hover { color:var(--fg); border-color:var(--accent); }
+.rez-badge { display:none; font-size:9px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.5px; color:var(--bg); background:var(--warn); border-radius:4px;
+  padding:2px 6px; }
+.member.rezsick .rez-badge { display:inline-block; }
+.member.rezsick .dets .det.on { opacity:.35; }   /* dim the (uncurable) rez detriment */
