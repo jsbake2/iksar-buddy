@@ -295,6 +295,18 @@ function refreshFrame() {
 setInterval(refreshFrame, 1200);
 refreshFrame();
 
+// Click the live view to open an RDP session into the VM (ib-rdp:// handler ->
+// ibremote). RDP attaches the console to the remote view, so the live feed +
+// sensors blank until you disconnect -- warn first.
+if (liveImg) {
+  liveImg.title = "click to open RDP into the VM";
+  liveImg.onclick = () => {
+    if (confirm("Open RDP into the VM?\n\nThe console attaches to your RDP session, so this live view and the bot's sensors will go blank until you disconnect.")) {
+      window.location.href = "ib-rdp://connect";
+    }
+  };
+}
+
 // ---- websocket with auto-reconnect ---------------------------------------
 function connect() {
   const proto = location.protocol === "https:" ? "wss" : "ws";

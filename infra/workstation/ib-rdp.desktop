@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ib RDP
+Comment=Open an RDP session into the iksar_buddy VM (via ibremote)
+Exec=/home/jbaker/.local/bin/ib-rdp-handler %u
+Terminal=false
+NoDisplay=true
+MimeType=x-scheme-handler/ib-rdp;

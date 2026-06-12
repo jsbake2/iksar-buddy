@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# URL-scheme handler for ib-rdp:// — lets the dashboard's live-view open an RDP
+# session into the VM with one click. The browser invokes this with the URI as
+# $1 (which we ignore); we just run the existing secure ibremote (SSH-tunneled
+# xfreerdp, no LAN exposure of the guest's 3389).
+#
+# Registered via infra/workstation/ib-rdp.desktop. Install:
+#   ln -sf "$PWD/bin/ib-rdp-handler" ~/.local/bin/ib-rdp-handler
+#   cp infra/workstation/ib-rdp.desktop ~/.local/share/applications/
+#   update-desktop-database ~/.local/share/applications
+#   xdg-mime default ib-rdp.desktop x-scheme-handler/ib-rdp
+#
+# NOTE: RDP attaches the iksar session to the remote view, so the VM console the
+# bot captures goes blank until you disconnect (single-session Windows). The
+# dashboard warns before launching.
+set -euo pipefail
+REPO="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+VM="${IB_VM:-iksar_buddy}"
+exec "$REPO/bin/ibremote" "$VM"
