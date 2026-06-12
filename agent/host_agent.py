@@ -21,6 +21,7 @@ import base64
 import json
 import logging
 import os
+import re
 import subprocess
 import time
 
@@ -47,6 +48,17 @@ REZ_WINDOW = 240.0
 # no further hits. Healing raises HP (positive delta) and is ignored.
 COMBAT_HP_DROP = 0.02
 COMBAT_DECAY_S = 6.0
+# Primary combat signal: the EQ2 chat log (Jenskin's client). Robskin always
+# attacks in combat, so his damage lines are a clean trigger; mob->group damage
+# and misses count too. HP-delta above is the fallback for when someone pulls
+# without Robskin / the log read lags. Path is per server+character.
+EQ2_LOG = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
+           r"\EverQuest II\logs\Wuoshi\eq2log_Jenskin.txt")
+COMBAT_LOG_POLL_S = 2.0
+# Lines that only appear during combat (heals/regen/buffs deliberately excluded).
+COMBAT_RE = re.compile(
+    r"points of \w+ damage|scores a hit on|\bis hit by\b|"
+    r"tries to .*? but (?:misses|fails|is)|multi[- ]?attack|flurr", re.I)
 
 # Chat-safety blink hysteresis: any sign of an active chat input (text OR the
 # cursor's lit phase) latches "chat busy" for this long, so a cursor blinking
@@ -95,6 +107,7 @@ class HostAgent:
         self._chat_busy_until = 0.0  # chat-safety blink hysteresis deadline
         self._prev_hp = {}          # slot -> last hp (0..1); "own" key for the healer
         self._combat_until = 0.0    # in-combat decays to OOC this many seconds after last hit
+        self._log_last = ""         # last EQ2-log line processed (combat-log tailer)
         self._armed = False         # injection master switch (off until owner arms)
         self._chat_safe = False     # latest chat-safety verdict (the inject gate)
         self._aborted = 0           # injections aborted because chat was unsafe
@@ -102,6 +115,7 @@ class HostAgent:
         self._injecting = False     # serialize injects (don't overlap key sequences)
 
     async def run(self) -> None:
+        asyncio.create_task(self._combat_log_loop())   # runs independent of brain link
         while True:
             try:
                 reader, writer = await asyncio.open_connection(self.host, self.port)
@@ -137,6 +151,61 @@ class HostAgent:
                     "armed": self._armed}))
                 last_hb = t
             await asyncio.sleep(max(0, self.period - (time.time() - t)))
+
+    async def _combat_log_loop(self) -> None:
+        """Poll the tail of Jenskin's EQ2 chat log; trip combat on damage lines.
+        Independent of the brain link so combat state is tracked even disarmed."""
+        loop = asyncio.get_running_loop()
+        ps = (f"if (Test-Path -LiteralPath '{EQ2_LOG}') "
+              f"{{ Get-Content -LiteralPath '{EQ2_LOG}' -Tail 40 }}")
+        while True:
+            try:
+                out = await loop.run_in_executor(None, self._guest_read, ps)
+                if out:
+                    self._scan_combat_lines(out.splitlines())
+            except Exception as e:  # never let this loop die
+                log.debug("combat-log poll error: %s", e)
+            await asyncio.sleep(COMBAT_LOG_POLL_S)
+
+    def _scan_combat_lines(self, lines: list) -> None:
+        lines = [ln for ln in lines if ln.strip()]
+        if not lines:
+            return
+        first = self._log_last == ""          # first poll: baseline only, don't trip
+        # process only lines newer than the last one we saw last poll
+        if self._log_last and self._log_last in lines:
+            idx = len(lines) - 1 - lines[::-1].index(self._log_last)
+            new = lines[idx + 1:]
+        else:
+            new = lines
+        self._log_last = lines[-1]
+        if not first and any(COMBAT_RE.search(ln) for ln in new):
+            self._combat_until = time.time() + COMBAT_DECAY_S
+
+    def _guest_read(self, ps: str) -> str | None:
+        """Run a PowerShell command in the guest and return its stdout (guest-exec
+        with output capture). Synchronous; call via run_in_executor."""
+        base = ["sudo", "-n", "virsh", "-c", "qemu:///system", "qemu-agent-command", DOM]
+        try:
+            r = subprocess.run(base + [json.dumps({"execute": "guest-exec", "arguments": {
+                "path": "powershell.exe",
+                "arg": ["-NoProfile", "-NonInteractive", "-Command", ps],
+                "capture-output": True}})], capture_output=True, text=True, timeout=8)
+            pid = json.loads(r.stdout)["return"]["pid"]
+        except Exception:
+            return None
+        for _ in range(30):
+            try:
+                s = subprocess.run(base + [json.dumps({"execute": "guest-exec-status",
+                                   "arguments": {"pid": pid}})],
+                                   capture_output=True, text=True, timeout=8)
+                st = json.loads(s.stdout)["return"]
+            except Exception:
+                return None
+            if st.get("exited"):
+                return base64.b64decode(st.get("out-data", "")).decode(errors="replace")
+            time.sleep(0.15)
+        return None
 
     async def _recv_loop(self, reader: asyncio.StreamReader) -> None:
         loop = asyncio.get_running_loop()
