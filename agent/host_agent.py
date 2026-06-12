@@ -17,7 +17,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import base64
+import json
 import logging
+import os
+import subprocess
 import time
 
 from shared import protocol as proto
@@ -30,6 +34,35 @@ log = logging.getLogger("ib.agent.host")
 # slot -> character name (until OCR of the frame labels lands)
 NAMES = {0: "Jenskin", 1: "Robskin"}
 
+DOM = "iksar_buddy"
+NVSMI = r"C:\Windows\System32\nvidia-smi.exe"
+
+
+def _poll_gpu() -> dict:
+    """Run nvidia-smi IN the guest (the 4070 is passed through, so the host can't
+    see it) via the qemu guest agent. Returns {} on any failure. Blocking; call
+    from an executor and throttle (it's a ~1s guest round-trip)."""
+    def virsh(cmd):
+        r = subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
+                            "qemu-agent-command", DOM, json.dumps(cmd)],
+                           capture_output=True, text=True, timeout=8)
+        return json.loads(r.stdout)["return"]
+    try:
+        pid = virsh({"execute": "guest-exec", "arguments": {
+            "path": NVSMI, "capture-output": True,
+            "arg": ["--query-gpu=utilization.gpu,memory.used,temperature.gpu",
+                    "--format=csv,noheader,nounits"]}})["pid"]
+        for _ in range(10):
+            st = virsh({"execute": "guest-exec-status", "arguments": {"pid": pid}})
+            if st.get("exited"):
+                out = base64.b64decode(st.get("out-data", "")).decode(errors="replace")
+                util, mem, temp = (p.strip() for p in out.split(",")[:3])
+                return {"gpu_util": int(util), "gpu_mem_mb": int(mem), "gpu_temp": int(temp)}
+            time.sleep(0.3)
+    except Exception:
+        pass
+    return {}
+
 
 class HostAgent:
     def __init__(self, host: str, port: int, hz: float = 2.0) -> None:
@@ -38,6 +71,8 @@ class HostAgent:
         self.sensor = HostSensor()
         self._cycles = 0
         self._t0 = time.time()
+        self._gpu = {}
+        self._gpu_ts = 0.0
 
     async def run(self) -> None:
         while True:
@@ -58,6 +93,12 @@ class HostAgent:
         while True:
             t = time.time()
             world = await loop.run_in_executor(None, self.sensor.read_world)
+            # refresh GPU stats every ~12s (guest round-trip; don't do per cycle)
+            if t - self._gpu_ts >= 12.0:
+                self._gpu_ts = t
+                g = await loop.run_in_executor(None, _poll_gpu)
+                if g:
+                    self._gpu = g
             if world is not None:
                 await proto.write_message(writer, Message(proto.STATE_EVENT,
                                                           self._to_event(world)))
@@ -109,6 +150,7 @@ class HostAgent:
             "chat_safe": bool(safety.get("safe", False)),
             "chat_focus": {"game_present": safety.get("game_present"),
                            "chat_active": safety.get("chat_active")},
+            "host": {"load": round(os.getloadavg()[0], 2), **self._gpu},
         }
 
 

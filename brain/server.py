@@ -143,13 +143,17 @@ class Brain:
                 "detriments": dets,
             })
 
+        cf = d.get("chat_focus") or {}
         self.telemetry.update(
             state=self.sm.state.value,
             override=self.sm.override.value if self.sm.override else None,
             own={"power": world.own_power, "hp": d.get("own_hp", 1.0),
                  "casting": world.casting},
             chat_focus={"safe": world.chat_safe,
+                        "game_present": cf.get("game_present"),
+                        "chat_active": cf.get("chat_active"),
                         "aborted_injections": d.get("aborted_injections", 0)},
+            host=d.get("host", {}),
         )
         self.telemetry.set_members(member_rows)
 

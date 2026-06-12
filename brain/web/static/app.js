@@ -113,6 +113,12 @@ function render(s) {
   armed.textContent = s.running ? "armed" : "disarmed";
   armed.classList.toggle("on", !!s.running);
 
+  // ---- live-view overlay chips ----
+  const host = s.host || {};
+  if ($("ovState")) $("ovState").textContent = state;
+  if ($("ovGpu")) $("ovGpu").textContent = host.gpu_util == null ? "GPU —" : `GPU ${host.gpu_util}%`;
+  if ($("ovLoad")) $("ovLoad").textContent = host.load == null ? "load —" : `load ${host.load}`;
+
   // ---- vm ----
   const vm = s.vm || {};
   $("vmName").textContent = vm.name || "iksar_buddy";
@@ -228,6 +234,23 @@ function renderEvents(events) {
   });
   lastEventTs = latest;
 }
+
+// ---- live VM frame --------------------------------------------------------
+// Reload the JPEG endpoint on a timer (brain caches ~0.7s). Only swap when the
+// new image has actually decoded, so we never show a broken-image flash; pause
+// while the tab is hidden to save bandwidth.
+const liveImg = $("liveFrame");
+let liveLoading = false;
+function refreshFrame() {
+  if (document.hidden || liveLoading || !liveImg) return;
+  liveLoading = true;
+  const probe = new Image();
+  probe.onload = () => { liveImg.src = probe.src; liveLoading = false; if ($("liveAge")) $("liveAge").textContent = "live"; };
+  probe.onerror = () => { liveLoading = false; if ($("liveAge")) $("liveAge").textContent = "no signal"; };
+  probe.src = "/api/frame.jpg?t=" + Date.now();
+}
+setInterval(refreshFrame, 1200);
+refreshFrame();
 
 // ---- websocket with auto-reconnect ---------------------------------------
 function connect() {

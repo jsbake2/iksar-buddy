@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import subprocess
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from ..server import Brain
@@ -16,6 +18,11 @@ from ..state import Override
 from ..telemetry import CURE_TYPES, Telemetry
 
 STATIC = Path(__file__).resolve().parent / "static"
+# The host sensor agent writes the latest VM framebuffer here every cycle
+# (host_sensor.PPM). We serve it as a JPEG for the dashboard's live-view panel,
+# so the dashboard shows the real game with NO extra screenshot cost.
+FRAME_PPM = "/tmp/ib_sensor.ppm"
+_frame_cache: dict = {"ts": 0.0, "data": b""}
 
 _OVERRIDES = {
     "force_combat": Override.FORCE_COMBAT,
@@ -48,6 +55,27 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     @app.get("/api/snapshot")
     async def snapshot():
         return telemetry.snapshot
+
+    @app.get("/api/frame.jpg")
+    async def frame():
+        """Live VM view: the agent's latest framebuffer as a downscaled JPEG.
+        Cached ~0.7s (the agent only refreshes ~1Hz) so rapid <img> reloads are
+        cheap. Returns 503 until the first frame exists."""
+        now = time.time()
+        if now - _frame_cache["ts"] > 0.7:
+            try:
+                out = await asyncio.get_running_loop().run_in_executor(
+                    None, lambda: subprocess.run(
+                        ["magick", FRAME_PPM, "-scale", "960", "-quality", "70", "jpg:-"],
+                        capture_output=True, timeout=4).stdout)
+                if out:
+                    _frame_cache.update(ts=now, data=out)
+            except Exception:
+                pass
+        if not _frame_cache["data"]:
+            return Response(status_code=503)
+        return Response(content=_frame_cache["data"], media_type="image/jpeg",
+                        headers={"Cache-Control": "no-store"})
 
     @app.post("/api/override/{name}")
     async def override(name: str):

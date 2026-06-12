@@ -39,6 +39,19 @@
   </div>
 
   <main class="grid">
+    <!-- LIVE VIEW -->
+    <section class="panel span-2 live-panel">
+      <h2>Live view <span class="sub" id="liveAge">—</span></h2>
+      <div class="live-wrap">
+        <img id="liveFrame" class="live-frame" alt="live VM view" />
+        <div class="live-overlay">
+          <span class="ov-chip" id="ovState">OOC</span>
+          <span class="ov-chip" id="ovGpu">GPU —</span>
+          <span class="ov-chip" id="ovLoad">load —</span>
+        </div>
+      </div>
+    </section>
+
     <!-- GROUP -->
     <section class="panel span-2 group-panel">
       <h2>Group <span class="sub" id="groupSize">0/6</span></h2>

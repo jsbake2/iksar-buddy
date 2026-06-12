@@ -43,6 +43,7 @@ class Telemetry:
             "own": {"power": 1.0, "casting": False, "mana_gated": False},
             "events": [],            # rolling cast/cure/rez/control event stream
             "vm": {"name": "iksar_buddy", "running": None, "ip": None},
+            "host": {},              # host load + passed-through 4070 stats
             "updated": time.time(),
         }
 
