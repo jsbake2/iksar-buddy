@@ -24,7 +24,7 @@ abilities:
   ward:            { key: "5",      mode: auto,   cast_ms: 1000, desc: "tank ward (heartbeat) -- spell not learned yet, wired ahead" }
 
   # --- cure (GENERIC: one cure clears any detriment type; see detriment work) ---
-  cure:            { key: "",       mode: auto,   cast_ms: 500,  desc: "GENERIC cure -- NEED KEY" }
+  cure:            { key: "0",      mode: auto,   cast_ms: 500,  desc: "GENERIC cure (any detriment type)" }
 
   # --- revive (per-member: target via F-key, then cast) ---
   rez:             { key: "Ctrl+1", mode: manual, cast_ms: 6000, desc: "revive a dead member (target via group_target_keys first)" }
@@ -40,15 +40,15 @@ abilities:
   buff_dps:        { key: "Alt+8",  mode: manual, desc: "buff: DPS" }
   buff_self:       { key: "Alt+9",  mode: manual, desc: "buff: self" }
 
-  # --- group versions: NEED KEYS (or set 'none' -> we single-target each member) ---
-  group_heal:      { key: "",       mode: auto,   cast_ms: 1500, desc: "group heal -- NEED KEY or 'none'" }
-  group_ward:      { key: "",       mode: auto,   cast_ms: 1500, desc: "group ward (AE incoming) -- NEED KEY or 'none'" }
-  group_cure:      { key: "",       mode: auto,   cast_ms: 800,  desc: "group cure -- NEED KEY or 'none'" }
+  # --- group versions ('none' -> single-target each member with the base key) ---
+  group_heal:      { key: "8",      mode: auto,   cast_ms: 1500, desc: "group heal" }
+  group_ward:      { key: "9",      mode: auto,   cast_ms: 1500, desc: "group ward (AE incoming)" }
+  group_cure:      { key: "none",   mode: auto,   cast_ms: 800,  desc: "no dedicated group cure -> single-target cure (0) per member" }
 
 # In-game social macros (fired as hotkeys, NEVER typed as /-commands). Map to keys
 # bound to /-macros inside EQ2.
 macros:
-  accept_rez:      { key: "", desc: "macro: accept an incoming rez prompt on Jenskin -- NEED if anyone rezzes her" }
+  accept_rez:      { key: "", desc: "accept an incoming rez prompt on Jenskin -- TO BUILD host-side (OCR the rez dialog + click Accept, like invite_accept.py)" }
 
 # Group slot -> targeting key. To act on a specific member (heal/ward/cure/revive),
 # the agent taps this key to TARGET them, then the ability key. PROPOSED EQ2
