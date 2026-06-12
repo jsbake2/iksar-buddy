@@ -1,0 +1,18 @@
+# /etc/systemd/system/ib-agent.service
+# ib host-side sensor agent: virsh-screenshot capture -> brain over loopback.
+# Pinned to E-cores (18-23) so it never contends with the VM's pinned P-cores.
+[Unit]
+Description=ib host sensor agent
+After=ib-brain.service libvirtd.service
+Wants=ib-brain.service
+
+[Service]
+Type=simple
+User=jbaker
+WorkingDirectory=/home/jbaker/ib-app
+ExecStart=/usr/bin/taskset -c 18-23 /home/jbaker/ib-app/.venv/bin/python -m agent.host_agent --brain 127.0.0.1:8765 --hz 1
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -140,5 +140,18 @@
     </rng>
 
     <memballoon model="virtio"/>
+
+    <!-- RTX 4070 passthrough (GPU + HD-audio function). The host reserves these
+         for vfio at boot (see infra/host/PASSTHROUGH.md), so 'managed' finds them
+         already on vfio-pci. EQ2 renders on the 4070 (per-app GpuPreference=2) and
+         DWM composites the result back to the virtio-gpu display above -- so SPICE
+         and `virsh screenshot` (the bot's host-side sensors) still see the game.
+         The 4070 audio is passed too so the GPU's HDMI-audio enumerates cleanly. -->
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source><address domain="0x0000" bus="0x01" slot="0x00" function="0x0"/></source>
+    </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source><address domain="0x0000" bus="0x01" slot="0x00" function="0x1"/></source>
+    </hostdev>
   </devices>
 </domain>
