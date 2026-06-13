@@ -28,6 +28,19 @@ function post(url, body) {
 const botEls = {};          // id -> { root, refs..., uiMode, queueSig }
 const tpl = $("botTpl");
 
+// tradeskill -> character mapping (from class_chars config); the dropdown shows
+// "alchemist (Foxyman)" and the bot's character is derived from the chosen class.
+let classChars = {};
+let allTrades = [];
+const tradeLabel = (t) => (classChars[t] ? `${t} (${classChars[t]})` : t);
+function refreshTradeOptions() {
+  Object.values(botEls).forEach((refs) => {
+    const cur = refs.trade.value;
+    refs.trade.innerHTML = allTrades.map((t) => `<option value="${t}">${tradeLabel(t)}</option>`).join("");
+    if (cur) refs.trade.value = cur;
+  });
+}
+
 function buildBotPanel(bot, tradeClasses) {
   const root = tpl.content.firstElementChild.cloneNode(true);
   root.dataset.bot = bot.id;
@@ -38,9 +51,9 @@ function buildBotPanel(bot, tradeClasses) {
   q(".bot-char").textContent = bot.character || "—";
   q(".bot-dom").textContent = bot.dom || "—";
 
-  // trade-class options
+  // trade-class options — label shows the mapped character "alchemist (Foxyman)"
   const trade = q(".bot-trade");
-  trade.innerHTML = tradeClasses.map((t) => `<option value="${t}">${t}</option>`).join("");
+  trade.innerHTML = tradeClasses.map((t) => `<option value="${t}">${tradeLabel(t)}</option>`).join("");
 
   const refs = {
     root,
@@ -53,7 +66,6 @@ function buildBotPanel(bot, tradeClasses) {
     paneSingle: q(".pane-single"),
     paneWrit: q(".pane-writ"),
     trade,
-    character: q(".bot-character"),
     recipe: q(".bot-recipe"),
     count: q(".bot-count"),
     ocr: q(".bot-ocr"),
@@ -91,7 +103,6 @@ function buildBotPanel(bot, tradeClasses) {
     post(`/api/bot/${id}/config`, { mode: refs.uiMode });
   }));
   refs.trade.onchange = () => post(`/api/bot/${id}/config`, { trade_class: refs.trade.value });
-  refs.character.onchange = () => post(`/api/bot/${id}/config`, { character: refs.character.value.trim() });
   refs.recipe.onchange = () => post(`/api/bot/${id}/config`, { recipe: refs.recipe.value });
   refs.count.onchange = () => post(`/api/bot/${id}/config`, { count: parseInt(refs.count.value) || 1 });
   refs.ocr.onclick = () => post(`/api/bot/${id}/ocr`);
@@ -111,7 +122,6 @@ function buildBotPanel(bot, tradeClasses) {
 
   // initial input values
   if (bot.trade_class) refs.trade.value = bot.trade_class;
-  if (bot.character) refs.character.value = bot.character;
   applyMode(refs);
   $("bots").appendChild(root);
   return refs;
@@ -171,11 +181,8 @@ function updateBotPanel(refs, bot) {
   // trade class (don't clobber an open dropdown)
   if (document.activeElement !== refs.trade && bot.trade_class && refs.trade.value !== bot.trade_class)
     refs.trade.value = bot.trade_class;
-  // character (header + field, don't clobber while typing)
-  const ch = bot.character || "";
-  if (refs.charName) refs.charName.textContent = ch || "—";
-  if (document.activeElement !== refs.character && ch && refs.character.value !== ch)
-    refs.character.value = ch;
+  // header shows the character derived from the chosen trade class
+  if (refs.charName) refs.charName.textContent = classChars[bot.trade_class] || "—";
   // recipe / count only when not focused
   if (document.activeElement !== refs.recipe && bot.recipe && refs.uiMode === "single")
     if (!refs.recipe.value) refs.recipe.placeholder = bot.recipe;
@@ -247,10 +254,15 @@ let built = false;
 function render(s) {
   const order = s.order || [];
   const bots = s.bots || {};
-  const trades = s.trade_classes || [];
+  allTrades = s.trade_classes || allTrades;
+  const cc = s.class_chars || {};
+  const ccChanged = JSON.stringify(cc) !== JSON.stringify(classChars);
+  classChars = cc;
   if (!built && order.length) {
-    order.forEach((id) => buildBotPanel(bots[id], trades));
+    order.forEach((id) => buildBotPanel(bots[id], allTrades));
     built = true;
+  } else if (ccChanged) {
+    refreshTradeOptions();
   }
   order.forEach((id) => {
     const refs = botEls[id];

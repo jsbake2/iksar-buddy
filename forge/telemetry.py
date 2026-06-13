@@ -48,12 +48,18 @@ DEFAULT_BOT: dict[str, Any] = {
 
 
 class ForgeTelemetry:
-    def __init__(self, trade_classes: list[str] | None = None) -> None:
+    def __init__(self, trade_classes: list[str] | None = None,
+                 class_chars: dict | None = None) -> None:
         self._bots: dict[str, dict] = {}
         self._order: list[str] = []
         self._events: list[dict] = []
         self._trade_classes = trade_classes or []
+        self._class_chars = class_chars or {}     # tradeskill -> character
         self._subs: set[asyncio.Queue] = set()
+
+    def set_class_chars(self, mapping: dict) -> None:
+        self._class_chars = mapping or {}
+        self._publish()
 
     # -- bot registry ------------------------------------------------------
     def add_bot(self, cfg: dict) -> None:
@@ -98,6 +104,7 @@ class ForgeTelemetry:
             "order": self._order,
             "events": self._events,
             "trade_classes": self._trade_classes,
+            "class_chars": self._class_chars,
             "ts": time.time(),
         }
 

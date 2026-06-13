@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" data-theme="iksar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ib · forge — characters</title>
+  <link rel="stylesheet" href="themes.css" />
+  <link rel="stylesheet" href="forge.css" />
+  <style>
+    .cc-main { max-width:680px; margin:18px auto; padding:0 18px; display:flex; flex-direction:column; gap:14px; }
+    .cc-row { display:grid; grid-template-columns:200px 1fr; gap:14px; align-items:center;
+      padding:9px 10px; border-bottom:1px solid var(--grid); }
+    .cc-row.head { color:var(--faint); font-size:10px; text-transform:uppercase; letter-spacing:1.2px;
+      border-bottom:1px solid var(--line); }
+    .cc-class { font-weight:700; text-transform:capitalize; }
+    .cc-in { background:var(--panel2); border:1px solid var(--line); color:var(--fg);
+      border-radius:7px; padding:8px 10px; font-size:14px; width:100%; }
+    .cc-in:focus { outline:none; border-color:var(--accent); }
+    .cc-actions { display:flex; align-items:center; gap:14px; padding:8px 10px 30px; }
+    .cc-status { font-size:13px; }
+    .cc-status.good { color:var(--good); } .cc-status.bad { color:var(--bad); }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <div class="brand"><span class="mark">ib</span><span class="sub-mark">forge</span></div>
+    <span class="fg-tagline">characters — map each tradeskill class to its toon</span>
+    <a class="km-back" href="/">← back</a>
+    <div class="spacer"></div>
+    <label class="theme"><span>theme</span>
+      <select id="theme">
+        <option value="iksar">iksar</option><option value="midnight">midnight</option>
+        <option value="grafana">grafana</option><option value="amber">amber</option>
+        <option value="paper">paper</option><option value="defiler">defiler</option>
+      </select>
+    </label>
+  </header>
+  <main class="cc-main">
+    <p class="km-hint">Forge selects this character at char-select when you pick the class.
+      The bot's trade-class dropdown shows <code>alchemist (Foxyman)</code>. Leave a class blank
+      if no crafter has it yet.</p>
+    <div id="tbl"></div>
+    <div class="cc-actions">
+      <button id="save" class="launch">Save</button>
+      <span class="cc-status" id="status"></span>
+    </div>
+  </main>
+  <script src="chars.js"></script>
+</body>
+</html>

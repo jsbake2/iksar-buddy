@@ -28,11 +28,12 @@ LAUNCHER_LOG = r"C:\ib\launcher.log"
 
 class ForgeController:
     def __init__(self, tele: ForgeTelemetry, stations: dict, craft_profile: dict,
-                 profile_dir: Path, characters: dict) -> None:
+                 profile_dir: Path, characters: dict, class_chars: dict | None = None) -> None:
         self.t = tele
         self.cfg_profile = craft_profile
         self.profile_dir = profile_dir
         self.chars = characters or {}
+        self.class_chars = class_chars or {}      # tradeskill -> character
         self.lock = AccountLock()
         self.guests: dict[str, Guest] = {}
         self.workers: dict[str, CraftWorker] = {}
@@ -45,14 +46,22 @@ class ForgeController:
             self.workers[bid] = CraftWorker(g, craft_profile, profile_dir, tele, bid)
             self.stations[bid] = bot
 
-    # -- interlock helpers -------------------------------------------------
+    # -- character / interlock helpers -------------------------------------
+    def _char_for(self, bid: str) -> str:
+        """The character a bot uses = the toon mapped to its chosen trade class
+        (class_chars). Falls back to an explicit station character if set."""
+        b = self.t.bot(bid) or {}
+        tc = b.get("trade_class") or ""
+        return (self.class_chars.get(tc) or self.stations.get(bid, {}).get("character") or "").strip()
+
     def _account(self, bid: str) -> str:
-        char = (self.stations.get(bid, {}).get("character") or "")
-        return self.chars.get(char, {}).get("account", "")
+        return self.chars.get(self._char_for(bid), {}).get("account", "")
 
     def _holder(self, bid: str) -> str:
-        s = self.stations.get(bid, {})
-        return f"forge:{s.get('dom', bid)}:{s.get('character') or '?'}"
+        return f"forge:{self.stations.get(bid, {}).get('dom', bid)}:{self._char_for(bid) or '?'}"
+
+    def set_class_chars(self, mapping: dict) -> None:
+        self.class_chars = mapping or {}
 
     def _acquire(self, bid: str) -> bool:
         acct = self._account(bid)
@@ -199,7 +208,7 @@ class ForgeController:
         if not self._acquire(bot_id):
             return
         loop = asyncio.get_running_loop()
-        char = s.get("character") or ""
+        char = self._char_for(bot_id)
         self.t.update_bot(bot_id, state="launching", vm_running=True)
         self.t.push_event(bot_id, "launch", f"power on {g.dom} -> login {char or '?'}")
         if not await loop.run_in_executor(None, g.start_vm):

@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
+import yaml
 from fastapi import Body, FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -14,6 +15,7 @@ from ..sim import ForgeSim
 from ..telemetry import ForgeTelemetry
 
 STATIC = Path(__file__).resolve().parent / "static"
+CLASS_CHARS_PATH = Path(__file__).resolve().parent.parent.parent / "config" / "forge" / "class_chars.yaml"
 
 
 def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
@@ -36,6 +38,29 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
             return Response(status_code=503)
         return Response(content=data, media_type="image/jpeg",
                         headers={"Cache-Control": "no-store"})
+
+    @app.get("/api/classchars")
+    async def get_classchars():
+        return {"class_chars": tele.snapshot.get("class_chars", {}),
+                "trade_classes": tele.snapshot.get("trade_classes", [])}
+
+    @app.post("/api/classchars")
+    async def post_classchars(payload: dict = Body(...)):
+        mapping = payload.get("class_chars")
+        if not isinstance(mapping, dict):
+            return JSONResponse({"error": "missing class_chars"}, status_code=400)
+        mapping = {str(k): str(v).strip() for k, v in mapping.items()}
+        try:
+            CLASS_CHARS_PATH.write_text(
+                "# Tradeskill class -> character (edited from the dashboard).\n"
+                + yaml.safe_dump({"class_chars": mapping}, sort_keys=True, allow_unicode=True),
+                encoding="utf-8")
+        except OSError as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        tele.set_class_chars(mapping)
+        if hasattr(sim, "set_class_chars"):
+            sim.set_class_chars(mapping)
+        return {"ok": True, "class_chars": mapping}
 
     @app.post("/api/bot/{bot_id}/enable")
     async def enable(bot_id: str, payload: dict = Body(default={})):
