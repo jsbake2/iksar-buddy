@@ -44,6 +44,15 @@ const CATALOG = [
 const BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
 const DEFAULT = CATALOG.filter((c) => c.hot).map((c) => c.id);
 
+// ward->hot 1:1 by active healer profile (Defiler wards vs Fury HoTs).
+let maintRole = "ward";
+const MAINT_MAP = {
+  ward_tank:      { ward: { label: "Ward Tank", action: "ward" },               hot: { label: "HoT Tank", action: "hot" } },
+  group_ward:     { ward: { label: "Group Ward", action: "group_ward" },         hot: { label: "Group HoT", action: "group_hot" } },
+  emergency_ward: { ward: { label: "Emerg Ward", action: "emergency_ward" },     hot: { label: "Emerg HoT", action: "emergency_hot" } },
+};
+const resolved = (c) => (MAINT_MAP[c.id] ? { ...c, ...MAINT_MAP[c.id][maintRole] } : c);
+
 // ---- persisted layout (per browser) --------------------------------------
 const LS = "ib-focus-layout-v1";
 // Buttons added after the first release. Each is merged into an existing saved
@@ -84,6 +93,9 @@ const armChip = $("fArm");
 if (armChip) armChip.onclick = () =>
   fetch(`/api/control/${state.running ? "pause" : "resume"}`, { method: "POST" }).catch(() => {});
 function applyState(s) {
+  // ward->hot relabel on profile change (re-render once; maintRole then stable)
+  const mr = (s.profile || {}).maint_role || "ward";
+  if (mr !== maintRole) { maintRole = mr; render(); }
   state.running = !!s.running;
   const cf = s.chat_focus || {};
   state.chat_safe = cf.safe;
@@ -158,7 +170,7 @@ function render() {
   grid.style.gridTemplateColumns = `repeat(${layout.cols}, 1fr)`;
   grid.innerHTML = "";
   layout.ids.forEach((id) => {
-    const c = BY_ID[id]; if (!c) return;
+    const c = resolved(BY_ID[id]); if (!BY_ID[id]) return;
     const b = document.createElement("button");
     b.className = "fbtn" + (c.danger ? " danger" : "") + (c.big ? " big" : "");
     b.dataset.id = id;

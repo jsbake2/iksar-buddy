@@ -85,9 +85,9 @@
         <button id="stopBtn" class="stopbot">⏻ Stop Bot</button>
       </div>
       <div class="tune-row">
-        <label class="tune">ward recast
+        <label class="tune"><span class="maint-word">ward</span> recast
           <input type="number" id="wardHb" min="0" max="60" step="0.1" /><span>s</span></label>
-        <span class="tune-hint">recast tank ward this often in combat · 0 = off</span>
+        <span class="tune-hint">recast tank <span class="maint-word">ward</span> this often in combat · 0 = off</span>
       </div>
     </section>
 
@@ -182,10 +182,10 @@
           <h3>Heals</h3>
           <div class="sbtns">
             <button data-group="group_heal">group heal</button>
-            <button data-group="group_ward">group ward</button>
+            <button data-group="group_ward" data-maint="group">group ward</button>
             <button data-group="group_cure">group cure</button>
             <button data-group="emergency_heal" class="emer">emergency heal</button>
-            <button data-group="emergency_ward" class="emer">emergency ward</button>
+            <button data-group="emergency_ward" data-maint="emergency" class="emer">emergency ward</button>
           </div>
         </div>
 

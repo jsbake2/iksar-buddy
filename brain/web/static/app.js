@@ -8,6 +8,11 @@ const CURES = ["noxious", "elemental", "trauma", "arcane", "curse"];
 const CURE_ABBR = { noxious: "nox", elemental: "ele", trauma: "tra", arcane: "arc", curse: "cur" };
 const FALLBACK_NAMES = ["self", "slot1", "slot2", "slot3", "slot4", "slot5"];
 
+// Maintenance role follows the active profile: 'ward' (Defiler) or 'hot' (Fury).
+// 1:1 — every ward/group-ward label + action becomes hot/group-hot for a Fury.
+let maintRole = "ward";
+let groupMaintRole = "group_ward";
+
 // ---- theme persistence ----------------------------------------------------
 const themeSel = $("theme");
 const savedTheme = localStorage.getItem("ib-theme");
@@ -49,6 +54,17 @@ function renderProfile(p) {
   }
   if (document.activeElement !== profileSel && p.active) profileSel.value = p.active;
   if (p.healer && $("selfClass")) $("selfClass").textContent = cap(p.healer);
+  // 1:1 ward->hot relabel + repoint when the profile's maintenance role changes
+  if (p.maint_role && p.maint_role !== maintRole) {
+    maintRole = p.maint_role;
+    groupMaintRole = p.group_maint_role || "group_" + maintRole;
+    gridSig = "";                       // force per-member grid rebuild w/ new label
+    const gb = document.querySelector('[data-maint="group"]');
+    if (gb) { gb.dataset.group = groupMaintRole; gb.textContent = "group " + maintRole; }
+    const eb = document.querySelector('[data-maint="emergency"]');
+    if (eb) { eb.dataset.group = "emergency_" + maintRole; eb.textContent = "emergency " + maintRole; }
+    document.querySelectorAll(".maint-word").forEach((el) => (el.textContent = maintRole));
+  }
 }
 if (profileSel) profileSel.onchange = () => {
   if (confirm(`Switch healer profile to ${cap(profileSel.value)}?\n\nThis swaps the character + keymap (Defiler wards vs Fury HoTs).`))
@@ -81,7 +97,7 @@ function buildGrid(members) {
   grid.innerHTML = "";
   const head = document.createElement("div");
   head.className = "ctl-row head";
-  head.innerHTML = `<span>member</span><span>heal</span><span>ward</span>` +
+  head.innerHTML = `<span>member</span><span>heal</span><span>${maintRole}</span>` +
     CURES.map((c) => `<span>${CURE_ABBR[c]}</span>`).join("") + `<span>rez</span>`;
   grid.appendChild(head);
 
@@ -96,7 +112,7 @@ function buildGrid(members) {
     row.innerHTML =
       `<div class="who">${name}<small>${role}</small></div>` +
       `<button class="act heal" data-act="heal" data-slot="${m.slot}">heal</button>` +
-      `<button class="act ward" data-act="ward" data-slot="${m.slot}">ward</button>` + cures +
+      `<button class="act ward" data-act="${maintRole}" data-slot="${m.slot}">${maintRole}</button>` + cures +
       `<button class="act rez" data-act="rez" data-slot="${m.slot}">rez</button>`;
     grid.appendChild(row);
   });
@@ -191,6 +207,8 @@ function setBar(id, ratio, { invert = false, warn = 0.6, bad = 0.85 } = {}) {
 // ---- render ---------------------------------------------------------------
 let lastEventTs = 0;
 function render(s) {
+  // profile FIRST: sets maintRole so the per-member grid builds with ward/hot right
+  renderProfile(s.profile);
   // ---- header / state ----
   const state = s.state || "—";
   $("state").textContent = state;
@@ -276,9 +294,6 @@ function render(s) {
   drawHpGraph(members);
   if (!gridBuilt || members.length) maybeRebuildGrid(members);
 
-  // ---- profile selector ----
-  renderProfile(s.profile);
-
   // ---- events ----
   renderEvents(s.events || []);
 }
@@ -329,7 +344,7 @@ function renderMembers(members) {
     el.querySelector(".hp-txt").textContent = m.dead ? "DEAD" : hpP + "%";
     const ward = el.querySelector(".ward");
     ward.classList.toggle("up", !!m.ward);
-    el.querySelector(".ward-lbl").textContent = m.ward ? "ward" : "no ward";
+    el.querySelector(".ward-lbl").textContent = m.ward ? maintRole : "no " + maintRole;
     CURES.forEach((c) => {
       el.querySelector(`.det[data-d="${c}"]`).classList.toggle("on", (m.detriments || []).includes(c));
     });

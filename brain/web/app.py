@@ -48,13 +48,14 @@ _OVERRIDES = {
 
 # Per-member manual actions -> ability role. Cure is GENERIC now, so every cure_*
 # button maps to the one 'cure'; rez targets the member (revive button per slot).
-_MEMBER_ACTIONS = {"heal": "direct_heal", "ward": "ward", "rez": "rez",
+_MEMBER_ACTIONS = {"heal": "direct_heal", "ward": "ward", "hot": "hot", "rez": "rez",
                    "follow": "follow", "cure": "cure",
                    **{f"cure_{c}": "cure" for c in CURE_TYPES}}
 # Group / utility actions (no per-member slot). Maps the dashboard button to the
 # ability role; the agent resolves the role -> key from the keymap.
 _GROUP_ACTIONS = {
     "group_heal": "group_heal", "group_ward": "group_ward", "group_cure": "cure",
+    "hot": "hot", "group_hot": "group_hot", "emergency_hot": "emergency_hot",
     "emergency_heal": "emergency_heal", "emergency_ward": "emergency_ward",
     "follow": "follow", "stop_follow": "stop_follow", "rez": "rez",
     "attack": "attack", "spell_attack": "spell_attack",
@@ -71,6 +72,8 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         return {"active": brain.cfg.active_profile,
                 "available": brain.cfg.list_profiles(),
                 "healer": brain.cfg.healer_class,
+                "maint_role": brain.cfg.maint_role,                 # ward | hot
+                "group_maint_role": brain.cfg.group_maint_role,     # group_ward | group_hot
                 "names": {str(k): v for k, v in brain.cfg.names.items()}}
 
     # seed the dashboard with the current profile

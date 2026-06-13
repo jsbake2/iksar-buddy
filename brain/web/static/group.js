@@ -3,7 +3,9 @@
 "use strict";
 const $ = (id) => document.getElementById(id);
 const pct = (v) => Math.round((v ?? 0) * 100);
+const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const FALLBACK_NAMES = ["self", "slot1", "slot2", "slot3", "slot4", "slot5"];
+let maintRole = "ward";   // 'ward' (Defiler) | 'hot' (Fury) — from the active profile
 
 // Per-member buttons. action -> POST /api/act/<action>/<slot> (manual; the agent
 // targets that member's F-key then casts). Cure is generic.
@@ -42,7 +44,11 @@ function cardFor(slot) {
     `<span class="gm-hp"></span></div>` +
     `<div class="gm-bar"><i></i></div>` +
     `<div class="gm-btns">` +
-    BTNS.map((b) => `<button class="gm-act ${b.cls}" data-act="${b.act}" data-slot="${slot}">${b.label}</button>`).join("") +
+    BTNS.map((b) => {
+      const act = b.act === "ward" ? maintRole : b.act;
+      const label = b.act === "ward" ? cap(maintRole) : b.label;
+      return `<button class="gm-act ${b.cls}" data-act="${act}" data-slot="${slot}">${label}</button>`;
+    }).join("") +
     `</div>`;
   el.querySelectorAll("[data-act]").forEach((b) => {
     b.onclick = () => post(`/api/act/${b.dataset.act}/${slot}`, b);
@@ -52,6 +58,14 @@ function cardFor(slot) {
 
 function render(s) {
   running = !!s.running;
+  // ward->hot 1:1 for a Fury profile (relabel existing cards + use it for new ones)
+  const mr = (s.profile || {}).maint_role || "ward";
+  if (mr !== maintRole) {
+    maintRole = mr;
+    document.querySelectorAll(".gm-act.b-ward").forEach((b) => {
+      b.dataset.act = mr; b.textContent = cap(mr);
+    });
+  }
   const cf = s.chat_focus || {};
   const arm = $("fArm");
   arm.classList.toggle("ok", running);
