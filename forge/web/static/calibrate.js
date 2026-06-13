@@ -40,6 +40,8 @@ const frame = $("frame");
 function loadFrame() {
   if (bot) frame.src = `/api/bot/${bot}/calibframe.jpg?t=${Date.now()}`;
 }
+frame.onerror = () => flash("no VM screen — launch a crafter to the crafting window, then ↻ refresh", false);
+frame.onload = () => { const s = $("status"); if (s.classList.contains("bad")) s.textContent = ""; };
 function toGuest(e) {
   const r = frame.getBoundingClientRect();
   const sx = frame.naturalWidth / r.width;
