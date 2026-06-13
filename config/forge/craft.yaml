@@ -1,0 +1,88 @@
+# Forge craft calibration + kit profile (FORGE.md §4, §7). ONE profile serves both
+# crafter VMs (identical clones). The LOGIC that reads these is built; the NUMBERS
+# below are placeholders — fill them during in-game capture (FORGE.md "in-game
+# capturing later"). Everything is for a fixed 1920x1080 guest. Anything marked
+# CALIBRATE is a guess and will be measured live.
+#
+# Coordinate convention: [x, y] guest pixels. color: [r, g, b]. region: {x,y,w,h}.
+
+# --- crafting reaction arts -> hotbar keys -----------------------------------
+# In EQ2 crafting you spam "progress" arts normally; switch to "durability" arts
+# when durability dips; and when a reaction EVENT icon pops, press the specific
+# counter art that answers it. Owner (SME) maps these to the actual hotbar keys.
+arts:
+  progress:   ["1", "2", "3"]      # CALIBRATE: keys that push progress
+  durability: ["4", "5", "6"]      # CALIBRATE: keys that recover durability
+  # reaction-event template name -> counter-art key. Template files live under
+  # templates/reactions/<name>.png (captured live). CALIBRATE both.
+  reactions:
+    react1: "1"
+    react2: "2"
+    react3: "3"
+
+# --- durability/progress mode pixel ------------------------------------------
+# One pixel that reads the "progress/high" color when in progress mode; otherwise
+# we run durability arts. CALIBRATE loc+color.
+durability_mode:
+  location: [1590, 324]            # CALIBRATE
+  progress_color: [21, 190, 33]    # CALIBRATE (green = progress mode)
+  tolerance: 12
+
+# --- power (mana) gate -------------------------------------------------------
+# Pixel that's the "ok" color when power is sufficient; below it we pause, fire
+# the power ability, and wait. CALIBRATE.
+power:
+  location: [123, 71]              # CALIBRATE
+  ok_color: [114, 114, 241]        # CALIBRATE (blue = power ok)
+  tolerance: 14
+  ability_key: ""                  # OWNER: key/macro that restores power (blank = just wait)
+
+# --- begin / retry buttons (craft-loop heartbeat) ----------------------------
+# Begin starts the next craft; Retry repeats the current recipe. Detect by a pixel
+# fingerprint (fast); click region center to press. CALIBRATE.
+begin:
+  pixel: {location: [985, 827], color: [112, 165, 59], tolerance: 14}   # CALIBRATE
+  click: [985, 827]                                                     # CALIBRATE
+retry:
+  pixel: {location: [1473, 828], color: [112, 165, 59], tolerance: 12}  # CALIBRATE
+  click: [1473, 828]                                                    # CALIBRATE
+
+# --- reaction-event region (fast poll, template match) -----------------------
+reaction:
+  region: {x: 1246, y: 427, w: 66, h: 60}   # CALIBRATE: where event icons appear
+  templates_dir: "templates/reactions"       # relative to config/forge/
+  confidence: 0.80
+  poll_hz: 6                                  # how often to sample (FORGE.md §4.1)
+
+# --- recipe selection (writ/single: search the recipe book) ------------------
+# Clicks to clear the search, focus it, then select the first result, then refocus
+# the craft window. type_text handles the recipe name (parens via shift+9/0).
+recipe_select:
+  clear_click:  [1191, 269]        # CALIBRATE (the small X)
+  search_click: [954, 267]         # CALIBRATE (search box)
+  result_click: [880, 348]         # CALIBRATE (first result)
+  focus_click:  [1317, 512]        # CALIBRATE (a craft-window reaction button = keeps focus)
+
+# Click here before pressing arts so keys land in the CRAFT WINDOW, not the
+# hotbar/chat (FORGE.md §5 focus discipline). Usually == recipe_select.focus_click.
+craft_focus_click: [1317, 512]     # CALIBRATE
+
+# --- chat-safety (the inviolable invariant, PROJECT.md §6.2) ------------------
+# Sample this region; if it holds typed text / a cursor, chat input is open and we
+# must NOT inject. CALIBRATE for the crafter UI's chat bar.
+chat_input:
+  region: {x: 50, y: 1019, w: 208, h: 22}   # CALIBRATE
+  bright_threshold: 25
+
+# --- journal OCR region (writs) ----------------------------------------------
+journal_ocr:
+  region: {x: 1500, y: 360, w: 360, h: 220}  # CALIBRATE: quest-journal writ text
+  scale_percent: 150
+  tesseract_psm: 4
+
+# --- timings (seconds) -------------------------------------------------------
+timings:
+  art_interval: 0.85       # gap between art presses in a craft cycle
+  post_select: 0.5         # wait after selecting a recipe
+  post_begin: 0.5          # wait after clicking Begin/Retry
+  power_wait: 1.0          # poll interval while waiting for power

@@ -30,6 +30,13 @@
   <currentMemory unit='KiB'>6291456</currentMemory>
   <vcpu placement='static'>6</vcpu>
   <cputune>
+    <!-- Hard CPU ceiling: GPU-less EQ2 software-renders on the CPU and pegs every
+         vCPU it has. global_quota/period caps the WHOLE VM (vcpus+emulator) to
+         ~2 cores so a crafter can never hammer the host. The real cure is capping
+         EQ2's framerate in-game (esp. background FPS ~5) — this is the safety belt.
+         Applied live+config 2026-06-13; carries to clones (iksar_buddy3). -->
+    <global_period>100000</global_period>
+    <global_quota>200000</global_quota>
     <vcpupin vcpu='0' cpuset='8'/>
     <vcpupin vcpu='1' cpuset='9'/>
     <vcpupin vcpu='2' cpuset='10'/>
