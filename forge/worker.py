@@ -120,48 +120,85 @@ class CraftWorker:
             await self._ex(self.guest.click, loc[0], loc[1])
             await asyncio.sleep(0.1)
 
-    # -- one craft cycle (reactions + arts until complete) -----------------
+    async def _recover_mana(self) -> None:
+        """Between crafts: if mana is low, press the keymap mana-recover hotkey."""
+        mk = (self.keymap.get("mana_recover") or "").strip()
+        if not mk:
+            return
+        await self._ex(self.guest.grab)
+        if await self._ex(sensors.power_ok, self.guest, self.cfg):
+            return
+        self.t.push_log(self.id, "low mana between crafts -> recover")
+        await self._press(mk, "mana recover")
+        await asyncio.sleep(float(self.cfg.get("timings", {}).get("post_begin", 0.5)))
+
+    # -- counter check (highest priority, breaks any sequence) -------------
+    async def _counter(self, mode: str) -> bool:
+        """If a counter is showing in the watch area, press its key (durability or
+        progress version for the current mode) and return True. The counter icon is
+        identical to one of the captured reference buttons; we match -> counter #."""
+        n = await self._ex(sensors.reaction_event, self.guest, self.cfg, self._ref_buttons)
+        if not n:
+            return False
+        key = self._counter_key(mode, n)
+        if key:
+            await self._press(key, f"counter{n}:{mode}")
+            self.t.update_bot(self.id, reactions=self.t.bot(self.id)["reactions"] + 1)
+            self.t.push_log(self.id, f"counter#{n} ({mode}) -> {key}")
+        return True
+
+    # -- one craft cycle ----------------------------------------------------
     async def _craft_cycle(self) -> bool:
-        """Run arts (reacting to events) until the craft completes (Begin/Retry
-        reappears). Returns True on completion, False if stopped."""
+        """Counter-FIRST loop until the craft completes. When no counter is up, send
+        the filler sequence (1-2-3 in durability mode / 4-5-6 in progress mode) then
+        an interruptible pause (longer when mana is low). Both the sequence and the
+        pause break IMMEDIATELY the instant a counter appears. Returns True on
+        completion, False if stopped."""
         timings = self.cfg.get("timings", {})
+        poll = max(0.05, 1.0 / float((self.cfg.get("reaction", {}) or {}).get("poll_hz", 6)))
         await self._focus_craft()
-        # capture the 3 reaction-button references FRESH for THIS craft (no saved
-        # library) — works for any class, including random quest crafts.
+        # capture the reaction-button references FRESH for THIS craft (no saved lib)
         self._ref_buttons = await self._ex(sensors.capture_buttons, self.guest, self.cfg)
         got = sum(1 for b in self._ref_buttons if b is not None)
         if got:
             self.t.push_log(self.id, f"captured {got} reaction-button references")
+        self.t.update_bot(self.id, state="crafting")
+
         while not self._stop.is_set():
             await self._wait_unpaused()
             if self._stop.is_set():
                 return False
             await self._ex(self.guest.grab)
-            # power gate
-            if not await self._ex(sensors.power_ok, self.guest, self.cfg):
-                self.t.update_bot(self.id, state="waiting_power", power_gated=True)
-                pkey = (self.cfg.get("power", {}) or {}).get("ability_key")
-                if pkey:
-                    await self._press(pkey, "power")
-                await asyncio.sleep(timings.get("power_wait", 1.0))
-                continue
-            self.t.update_bot(self.id, state="crafting", power_gated=False)
-            # current craft mode (durability vs progress) decides which art set
             mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
             self.t.update_bot(self.id, durability_mode=mode)
-            # counter EVENT (#1/#2/#3)? match the watch region vs the in-memory
-            # references; press the keymap key for (mode, counter#)
-            counter = await self._ex(sensors.reaction_event, self.guest, self.cfg, self._ref_buttons)
-            if counter:
-                key = self._counter_key(mode, counter)
-                if key:
-                    await self._press(key, f"counter{counter}:{mode}")
-                    self.t.update_bot(self.id, reactions=self.t.bot(self.id)["reactions"] + 1)
-                    self.t.push_log(self.id, f"counter#{counter} ({mode}) -> {key}")
-            # complete?
+            if await self._counter(mode):          # counter has priority
+                continue
             if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
                 return True
-            await asyncio.sleep(timings.get("art_interval", 0.85))
+            # filler: send this mode's 3 arts, breaking the instant a counter shows
+            broke = False
+            for key in self._arts(mode):
+                await self._ex(self.guest.grab)
+                if await self._counter(mode):
+                    broke = True
+                    break
+                await self._press(key, f"art:{mode}")
+                await asyncio.sleep(timings.get("art_interval", 0.3))
+            if broke:
+                continue
+            # interruptible pause — longer when mana is low; break on a counter
+            ok = await self._ex(sensors.power_ok, self.guest, self.cfg)
+            self.t.update_bot(self.id, power_gated=not ok)
+            dur = float(timings.get("pause_low_mana", 2.5) if not ok else timings.get("pause", 0.8))
+            waited = 0.0
+            while waited < dur and not self._stop.is_set():
+                await self._ex(self.guest.grab)
+                if await self._counter(mode):
+                    break
+                if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
+                    return True
+                await asyncio.sleep(poll)
+                waited += poll
         return False
 
     async def _craft_recipe(self, name: str, count: int, trade_class: str,
@@ -197,6 +234,8 @@ class CraftWorker:
                 self.t.update_bot(self.id, count={"done": done, "total": count},
                                   crafts_done=self.t.bot(self.id)["crafts_done"] + 1)
                 self.t.push_event(self.id, "craft", f"{name} {done}/{count}")
+                if done < count:
+                    await self._recover_mana()      # between crafts: recover mana if low
         return done
 
     # -- job runner --------------------------------------------------------

@@ -21,6 +21,7 @@ function renderGrid(arts) {
 
 fetch("/api/forgekeymap").then((r) => r.json()).then((d) => {
   $("camp").value = d.camp || "/camp";
+  $("mana").value = d.mana_recover || "";
   renderGrid(d.arts || {});
 }).catch(() => renderGrid({}));
 
@@ -30,6 +31,7 @@ $("save").onclick = () => {
   fetch("/api/forgekeymap", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ camp: $("camp").value.trim() || "/camp",
+                           mana_recover: $("mana").value.trim(),
                            arts: { durability: dur, progress: prog } }),
   }).then((r) => r.json()).then((d) => {
     const s = $("status");

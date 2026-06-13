@@ -5,6 +5,10 @@
 #       char-select. Forge then OCR-selects the bot's character and Plays back in.
 camp: "/camp"
 
+# mana_recover: hotkey pressed BETWEEN crafts to recover mana when it's low
+# (a meditate/drink/totem bound key). Blank = nothing.
+mana_recover: ""
+
 # Crafting reaction arts. When a counter EVENT (#1/#2/#3) appears, press the key
 # for the current craft MODE. Defaults are 1-6:
 #   durability: counter#1=1  counter#2=2  counter#3=3

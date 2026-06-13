@@ -124,6 +124,7 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
     @app.post("/api/forgekeymap")
     async def post_keymap(payload: dict = Body(...)):
         km = {"camp": str(payload.get("camp", "/camp")).strip() or "/camp",
+              "mana_recover": str(payload.get("mana_recover", "")).strip(),
               "arts": {
                   "durability": [str(k) for k in (payload.get("arts", {}).get("durability") or [])][:3],
                   "progress": [str(k) for k in (payload.get("arts", {}).get("progress") or [])][:3]}}

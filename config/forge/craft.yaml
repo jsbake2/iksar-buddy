@@ -93,7 +93,8 @@ journal_ocr:
 
 # --- timings (seconds) -------------------------------------------------------
 timings:
-  art_interval: 0.85       # gap between art presses in a craft cycle
+  art_interval: 0.3        # gap between the 1-2-3 / 4-5-6 filler presses
+  pause: 0.8               # pause after a filler sequence (interruptible by a counter)
+  pause_low_mana: 2.5      # longer pause when mana is low (still interruptible)
   post_select: 0.5         # wait after selecting a recipe
   post_begin: 0.5          # wait after clicking Begin/Retry
-  power_wait: 1.0          # poll interval while waiting for power
