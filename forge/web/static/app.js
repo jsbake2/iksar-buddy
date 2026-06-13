@@ -258,6 +258,32 @@ $("allStop").onclick = () => {
   if (confirm("Stop ALL bots?")) Object.keys(botEls).forEach((id) => post(`/api/bot/${id}/stop`));
 };
 
+// ---- live VM screen per bot -----------------------------------------------
+// Poll each bot's frame endpoint; swap the panel background only once the new
+// JPEG decodes (no broken-image flash). 503 (VM not grabbable) -> keep "no signal".
+const frameLoading = {};
+function refreshFrames() {
+  if (document.hidden) return;
+  Object.keys(botEls).forEach((id) => {
+    if (frameLoading[id]) return;
+    const refs = botEls[id];
+    if (!refs || !refs.live) return;
+    frameLoading[id] = true;
+    const probe = new Image();
+    probe.onload = () => {
+      refs.live.style.backgroundImage = `url(${probe.src})`;
+      refs.live.classList.add("has-img");
+      frameLoading[id] = false;
+    };
+    probe.onerror = () => {
+      refs.live.classList.remove("has-img");
+      frameLoading[id] = false;
+    };
+    probe.src = `/api/bot/${id}/frame.jpg?t=${Date.now()}`;
+  });
+}
+setInterval(refreshFrames, 1500);
+
 // ---- websocket with auto-reconnect ---------------------------------------
 function connect() {
   const proto = location.protocol === "https:" ? "wss" : "ws";

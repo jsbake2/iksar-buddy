@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import subprocess
 import time
 from functools import partial
 from pathlib import Path
@@ -36,6 +37,7 @@ class ForgeController:
         self.guests: dict[str, Guest] = {}
         self.workers: dict[str, CraftWorker] = {}
         self.stations: dict[str, dict] = {}
+        self._frames: dict[str, tuple[float, bytes]] = {}   # bot_id -> (ts, jpeg)
         for bot in stations.get("bots", []):
             bid = bot["id"]
             g = Guest(bot["dom"], bot.get("width", 1920), bot.get("height", 1080))
@@ -163,6 +165,28 @@ class ForgeController:
         self.t.update_bot(bot_id, mode="writ", queue=queue)
         self.t.push_event(bot_id, "log", f"log: {len(queue)} recipes")
 
+    # -- live VM screen (dashboard thumbnail) ------------------------------
+    def frame_jpeg(self, bot_id: str) -> bytes:
+        """One virsh screenshot of the bot's VM as a downscaled JPEG. Cached ~1s so
+        rapid <img> reloads from two panels are cheap. b'' if the VM isn't grabbable."""
+        g = self.guests.get(bot_id)
+        if not g:
+            return b""
+        ts, data = self._frames.get(bot_id, (0.0, b""))
+        now = time.time()
+        if now - ts < 1.0 and data:
+            return data
+        if not g.grab():
+            return b""
+        try:
+            out = subprocess.run(["magick", g.ppm, "-scale", "640", "-quality", "65", "jpg:-"],
+                                 capture_output=True, timeout=4).stdout
+        except (OSError, subprocess.SubprocessError):
+            return b""
+        if out:
+            self._frames[bot_id] = (now, out)
+        return out
+
     # -- launch / switch (login automation, FORGE.md §5.5) ----------------
     def launch(self, bot_id: str) -> None:
         asyncio.create_task(self._launch(bot_id))
@@ -188,6 +212,10 @@ class ForgeController:
         if char:
             await loop.run_in_executor(None, g.exec_ps,
                                        f"Set-Content C:\\ib\\target_char.txt '{char}' -NoNewline", False)
+        # clear the launcher log FIRST so we wait for THIS run's char-select, not a
+        # stale "char-select ready" from a prior launch (the "jumped to in-world" bug)
+        await loop.run_in_executor(None, g.exec_ps, 'Set-Content C:\\ib\\launcher.log ""', False)
+        await asyncio.sleep(1)
         await loop.run_in_executor(None, g.exec_ps, "Start-ScheduledTask -TaskName ibrun", False)
         # poll launcher.log for char-select, then host-side OCR pick
         ready = False

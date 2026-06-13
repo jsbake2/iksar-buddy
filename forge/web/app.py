@@ -3,10 +3,11 @@ telemetry over websocket, exposing per-bot craft controls. Backend is mocked
 (forge/sim.py) for now; the HTTP/ws contract is what the real workers will fill."""
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 from fastapi import Body, FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from ..sim import ForgeSim
@@ -24,6 +25,17 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
     @app.get("/api/snapshot")
     async def snapshot():
         return tele.snapshot
+
+    @app.get("/api/bot/{bot_id}/frame.jpg")
+    async def frame(bot_id: str):
+        """Live VM screen for a bot's panel (live backend only). 503 until grabbable."""
+        if not _bot_ok(bot_id) or not hasattr(sim, "frame_jpeg"):
+            return Response(status_code=503)
+        data = await asyncio.get_running_loop().run_in_executor(None, sim.frame_jpeg, bot_id)
+        if not data:
+            return Response(status_code=503)
+        return Response(content=data, media_type="image/jpeg",
+                        headers={"Cache-Control": "no-store"})
 
     @app.post("/api/bot/{bot_id}/enable")
     async def enable(bot_id: str, payload: dict = Body(default={})):
