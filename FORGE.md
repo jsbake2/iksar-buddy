@@ -92,11 +92,31 @@ SME; stated per CLAUDE.md "inform, don't ask").
 
 ## 3. The two-VM problem (the real infra work)
 
-**Decisions locked (2026-06-13):** run on the **live server `10.0.0.16`**; clone
-`iksar_buddy` → `iksar_buddy2`; clone is **GPU-less**; **no more AI workloads** on the
-server (CLAUDE.md/PROJECT.md "keep 4070 for AI" is now stale — but it's still one card,
-so the clone can't share it). The two bots = `iksar_buddy` (keeps the 4070) +
-`iksar_buddy2` (software render).
+**Decisions locked (2026-06-13):** run on the **live server `10.0.0.16`**. Crafting
+uses **two DEDICATED crafter VMs, never the healer VM** (owner's call — the crafter UI
+differs and sharing the healer VM clouds things up):
+- `iksar_buddy` — healer only; keeps the 4070; untouched by crafting.
+- `iksar_buddy2` — crafter VM 1 (clone of the healer image, creds set 2026-06-13).
+  Owner dials in the in-game crafting UI here.
+- `iksar_buddy3` — crafter VM 2 = a clone of `iksar_buddy2` AFTER its UI is set (so the
+  UI carries over), owner sets its login.
+
+Both crafter VMs are **GPU-less** — only the healer gets the 4070 (one card; **no more
+AI workloads** on the server, so CLAUDE.md/PROJECT.md "keep 4070 for AI" is stale, but
+it's still a single card that can't be shared).
+
+### Account interlock (mandatory — the cross-tool catch)
+An EQ2 account can't be logged in twice at once. The healer and the two crafters may
+draw on the same accounts, so **the healer bot and Forge must share an account lock**:
+- A host-side **account-lock registry** (a small shared state file under `~/ib-data/`,
+  read/written by both the healer brain and Forge). Keyed by EQ2 account name.
+- Before any VM logs an account in (healer launch OR crafter launch/switch), acquire
+  that account's lock; **release on camp/logout**. If the lock is held elsewhere, refuse
+  the launch and surface why on the dashboard.
+- Each bot/healer declares its `account` (config). character→account mapping lets the
+  tool know which lock a given toon needs. Corroborate with the in-game
+  "already logged in / disconnect?" prompt as a backstop.
+This is the one piece that spans both tools; everything else stays cleanly separate.
 
 Live server facts (measured):
 - `iksar_buddy` is **running** (the live healer). Disk `iksar_buddy.qcow2` = **81 G**;

@@ -1,27 +1,36 @@
-# Forge crafting bots (FORGE.md §7). Two bot slots; each binds to a guest VM and
-# an EQ2 character. enabled=false hides/parks a slot. Owner-owned, hot-reloadable.
+# Forge crafting bots (FORGE.md §3, §7). Two DEDICATED crafter VMs — never the
+# healer VM (iksar_buddy). Crafter VMs are GPU-less (only the healer gets the 4070).
+# Owner-owned, hot-reloadable.
 #
-# Both VMs are identical clones, so one calibration profile (craft.yaml) serves
-# both. character = which crafter to select at char-select (OCR-and-click; each
-# account will hold 2 crafters, see FORGE.md §5.5).
+#   Crafter VM 1 = iksar_buddy2  (cloned + creds set 2026-06-13; UI being dialed in)
+#   Crafter VM 2 = iksar_buddy3  (a clone of #1 AFTER the UI is set; owner sets login)
+#
+# ACCOUNT INTERLOCK (the catch): an EQ2 account can't be logged in twice. Each bot
+# declares the `account` it uses; before a bot logs in, Forge acquires that account's
+# host-side lock (shared with the healer brain). If the healer (or the other crafter)
+# already holds that account, the launch is refused with a clear reason. So set
+# `account` to match whatever the healer uses when they overlap. character = which
+# crafter to select at char-select (OCR-and-click; each account may hold 2 crafters).
 
 bots:
   - id: A
-    label: "Bot A"
-    dom: iksar_buddy
-    character: Jenskin
-    spice_port: 5900
-    width: 1920
-    height: 1080
-    enabled: true
-  - id: B
-    label: "Bot B"
+    label: "Crafter 1"
     dom: iksar_buddy2
-    character: Robskin
+    character: ""          # OWNER: crafter toon on this VM's account
+    account: ""            # OWNER: EQ2 account name (interlock key)
     spice_port: 5910
     width: 1920
     height: 1080
     enabled: true
+  - id: B
+    label: "Crafter 2"
+    dom: iksar_buddy3       # not created yet — clone of iksar_buddy2 once UI is set
+    character: ""
+    account: ""
+    spice_port: 5920
+    width: 1920
+    height: 1080
+    enabled: false
 
 # EQ2 tradeskill classes (owner picks per craft run).
 trade_classes:
