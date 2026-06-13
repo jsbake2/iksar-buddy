@@ -1,0 +1,174 @@
+<!--
+  libvirt domain for the iksar_buddy2 guest — the CRAFTING clone (FORGE.md §3).
+  Opsec (§7.5): domain name "iksar_buddy2" — nothing reads "eq2"/"bot".
+
+  Made by reflink-cloning iksar_buddy.qcow2 (btrfs CoW, instant) on the live
+  server 10.0.0.16, 2026-06-13. Differs from iksar_buddy.xml in exactly the ways
+  a second, GPU-less, lighter guest must:
+
+    - NO <hostdev> — the 4070 stays with iksar_buddy (one card, can't share). The
+      craft UI is static 2D; virtio-gpu software/WARP render at 1920x1080 is plenty.
+      (If EQ2 was set to force the 4070 via per-app GpuPreference=2, clear it in the
+      guest — no card to honor it.)
+    - 6 GB RAM / 6 vCPU pinned cpu8-13, emulatorpin 18-19 (iksar_buddy holds cpu0-7
+      / emul 16-17). Host RAM is tight: healer 8G + this 6G ≈ 14G of 29G.
+    - own disk /var/lib/libvirt/images/iksar_buddy2.qcow2, own nvram
+      iksar_buddy2_VARS.fd (copied from the healer's so the Windows EFI boot entry
+      survives), fresh UUID, MAC 52:54:00:f1:47:c2.
+    - SPICE pinned to 5910 (autoport off) so it never steals the healer's 5900
+      (ib-console expects 5900). A future ib-console2 tunnels 5910.
+    - autostart OFF — start on demand for craft sessions, don't compete on host boot.
+
+  NOTE: byte-identical clone => same Windows hostname ("IB") + same EQ2 login as the
+  healer until the owner sets the 2nd EQ2 login (and optionally renames the host to
+  avoid NetBIOS clashes). Different IP via the new MAC (DHCP gave 192.168.122.9).
+-->
+<domain type='kvm'>
+  <name>iksar_buddy2</name>
+  <title>iksar_buddy2</title>
+  <memory unit='KiB'>6291456</memory>
+  <currentMemory unit='KiB'>6291456</currentMemory>
+  <vcpu placement='static'>6</vcpu>
+  <cputune>
+    <vcpupin vcpu='0' cpuset='8'/>
+    <vcpupin vcpu='1' cpuset='9'/>
+    <vcpupin vcpu='2' cpuset='10'/>
+    <vcpupin vcpu='3' cpuset='11'/>
+    <vcpupin vcpu='4' cpuset='12'/>
+    <vcpupin vcpu='5' cpuset='13'/>
+    <emulatorpin cpuset='18-19'/>
+  </cputune>
+  <os firmware='efi'>
+    <type arch='x86_64' machine='pc-q35-11.0'>hvm</type>
+    <firmware>
+      <feature enabled='no' name='enrolled-keys'/>
+      <feature enabled='no' name='secure-boot'/>
+    </firmware>
+    <loader readonly='yes' type='pflash' format='raw'>/usr/share/edk2/x64/OVMF_CODE.4m.fd</loader>
+    <nvram template='/usr/share/edk2/x64/OVMF_VARS.4m.fd' templateFormat='raw' format='raw'>/var/lib/libvirt/qemu/nvram/iksar_buddy2_VARS.fd</nvram>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <hyperv mode='custom'>
+      <relaxed state='on'/>
+      <vapic state='on'/>
+      <spinlocks state='on' retries='8191'/>
+      <vpindex state='on'/>
+      <runtime state='on'/>
+      <synic state='on'/>
+      <stimer state='on'/>
+      <frequencies state='on'/>
+    </hyperv>
+    <vmport state='off'/>
+  </features>
+  <cpu mode='host-passthrough' check='none' migratable='off'>
+    <topology sockets='1' dies='1' clusters='1' cores='3' threads='2'/>
+  </cpu>
+  <clock offset='localtime'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='hpet' present='no'/>
+    <timer name='hypervclock' present='yes'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <pm>
+    <suspend-to-mem enabled='no'/>
+    <suspend-to-disk enabled='no'/>
+  </pm>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' discard='unmap'/>
+      <source file='/var/lib/libvirt/images/iksar_buddy2.qcow2'/>
+      <target dev='sda' bus='sata'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+    </disk>
+    <controller type='sata' index='0'>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x1f' function='0x2'/>
+    </controller>
+    <controller type='usb' index='0' model='qemu-xhci' ports='8'>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
+    </controller>
+    <controller type='virtio-serial' index='0'>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x00' function='0x0'/>
+    </controller>
+    <controller type='pci' index='0' model='pcie-root'/>
+    <controller type='pci' index='1' model='pcie-root-port'>
+      <model name='pcie-root-port'/>
+      <target chassis='1' port='0x10'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0' multifunction='on'/>
+    </controller>
+    <controller type='pci' index='2' model='pcie-root-port'>
+      <model name='pcie-root-port'/>
+      <target chassis='2' port='0x11'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x1'/>
+    </controller>
+    <controller type='pci' index='3' model='pcie-root-port'>
+      <model name='pcie-root-port'/>
+      <target chassis='3' port='0x12'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x2'/>
+    </controller>
+    <controller type='pci' index='4' model='pcie-root-port'>
+      <model name='pcie-root-port'/>
+      <target chassis='4' port='0x13'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x3'/>
+    </controller>
+    <controller type='pci' index='5' model='pcie-root-port'>
+      <model name='pcie-root-port'/>
+      <target chassis='5' port='0x14'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x4'/>
+    </controller>
+    <controller type='pci' index='6' model='pcie-root-port'>
+      <model name='pcie-root-port'/>
+      <target chassis='6' port='0x15'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x5'/>
+    </controller>
+    <controller type='pci' index='7' model='pcie-root-port'>
+      <model name='pcie-root-port'/>
+      <target chassis='7' port='0x16'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x6'/>
+    </controller>
+    <interface type='network'>
+      <mac address='52:54:00:f1:47:c2'/>
+      <source network='default'/>
+      <model type='virtio'/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+    </interface>
+    <channel type='unix'>
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+      <address type='virtio-serial' controller='0' bus='0' port='1'/>
+    </channel>
+    <input type='tablet' bus='usb'>
+      <address type='usb' bus='0' port='1'/>
+    </input>
+    <input type='keyboard' bus='usb'>
+      <address type='usb' bus='0' port='2'/>
+    </input>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <graphics type='spice' port='5910' autoport='no' listen='127.0.0.1'>
+      <listen type='address' address='127.0.0.1'/>
+      <image compression='off'/>
+    </graphics>
+    <audio id='1' type='spice'/>
+    <video>
+      <model type='virtio' heads='1' primary='yes'>
+        <acceleration accel3d='no'/>
+        <resolution x='1920' y='1080'/>
+      </model>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0'/>
+    </video>
+    <watchdog model='itco' action='reset'/>
+    <memballoon model='virtio'>
+      <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
+    </memballoon>
+    <rng model='virtio'>
+      <backend model='random'>/dev/urandom</backend>
+      <address type='pci' domain='0x0000' bus='0x05' slot='0x00' function='0x0'/>
+    </rng>
+  </devices>
+</domain>
