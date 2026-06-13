@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en" data-theme="iksar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ib · forge</title>
+  <link rel="stylesheet" href="themes.css" />
+  <link rel="stylesheet" href="forge.css" />
+</head>
+<body>
+  <!-- top bar -->
+  <header class="bar">
+    <div class="brand">
+      <span class="mark">ib</span><span class="sub-mark">forge</span>
+      <span class="dot" id="conn" title="dashboard link"></span>
+    </div>
+    <div class="fg-tagline">crafting control · 2 bots</div>
+    <div class="spacer"></div>
+    <button class="km-link" id="allLaunch" title="launch every enabled bot">▶ launch all</button>
+    <button class="km-link danger-link" id="allStop" title="stop every bot">⏹ stop all</button>
+    <label class="theme">
+      <span>theme</span>
+      <select id="theme">
+        <option value="iksar">iksar</option>
+        <option value="midnight">midnight</option>
+        <option value="grafana">grafana</option>
+        <option value="amber">amber</option>
+        <option value="paper">paper</option>
+        <option value="defiler">defiler</option>
+      </select>
+    </label>
+  </header>
+
+  <!-- two bot panels side by side -->
+  <main class="forge-main">
+    <div class="bots" id="bots"></div>
+
+    <!-- shared event stream across both bots -->
+    <section class="panel events-panel">
+      <h2>Event stream <span class="sub" id="evCount"></span></h2>
+      <ul id="events" class="events"></ul>
+    </section>
+  </main>
+
+  <!-- ===== per-bot panel template ===== -->
+  <template id="botTpl">
+    <section class="panel bot-panel" data-bot>
+      <!-- header: name / vm / state / enable -->
+      <div class="bot-head">
+        <div class="bot-id">
+          <span class="bot-name"></span>
+          <span class="bot-meta"><span class="bot-char"></span> · <span class="bot-dom"></span></span>
+        </div>
+        <span class="state-pill bot-state">off</span>
+        <span class="spacer"></span>
+        <button class="bot-console km-link" title="open the native SPICE console for this bot">⧉</button>
+        <label class="switch" title="enable / park this bot">
+          <input type="checkbox" class="bot-enable" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- live thumbnail -->
+      <div class="bot-live">
+        <div class="bot-live-frame">
+          <span class="bot-live-hint">⤢ console</span>
+        </div>
+      </div>
+
+      <!-- mode tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab" data-mode="single">Single craft</button>
+        <button class="mode-tab" data-mode="writ">Writ / batch</button>
+      </div>
+
+      <!-- shared: trade class -->
+      <div class="field-row">
+        <label>Trade class</label>
+        <select class="bot-trade"></select>
+      </div>
+
+      <!-- SINGLE pane -->
+      <div class="pane pane-single">
+        <div class="field-row">
+          <label>Recipe</label>
+          <input type="text" class="bot-recipe" placeholder="leave blank = currently loaded recipe" />
+        </div>
+        <div class="field-row">
+          <label>Quantity</label>
+          <input type="number" class="bot-count" min="1" max="9999" value="10" />
+        </div>
+      </div>
+
+      <!-- WRIT pane -->
+      <div class="pane pane-writ" hidden>
+        <div class="writ-sources">
+          <button class="src-btn bot-ocr" title="OCR the quest journal on screen">📷 Read journal (OCR)</button>
+          <button class="src-btn bot-readlog" title="parse scribed-recipe lines from the EQ2 log">📜 Read recipes from log</button>
+          <button class="src-btn bot-addrow" title="add a recipe row by hand">＋ Add recipe</button>
+        </div>
+        <div class="queue-head"><span>recipe</span><span>×</span><span></span></div>
+        <ul class="queue-list bot-queue"></ul>
+        <div class="queue-empty">No recipes — read the journal, read the log, or add by hand.</div>
+      </div>
+
+      <!-- progress -->
+      <div class="bot-progress">
+        <div class="prog-line">
+          <span class="prog-recipe">—</span>
+          <span class="prog-item"></span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill"></div><span class="prog-txt"></span></div>
+        <div class="prog-stats">
+          <div class="stat"><b class="st-done">0</b><span>crafts</span></div>
+          <div class="stat"><b class="st-react">0</b><span>reactions</span></div>
+          <div class="stat"><b class="st-rate">0</b><span>crafts/hr</span></div>
+          <div class="stat dura"><b class="st-mode">—</b><span>mode</span></div>
+        </div>
+        <div class="metric">
+          <div class="metric-head"><span>Power</span><b class="st-power">—</b></div>
+          <div class="track"><div class="bot-power fill power"></div></div>
+        </div>
+      </div>
+
+      <!-- controls -->
+      <div class="bot-controls">
+        <button class="big-combat start bot-start">▶ Start</button>
+        <button class="big-combat stop bot-stop">⏹ Stop</button>
+        <button class="big-combat auto bot-pause">⏸</button>
+      </div>
+      <div class="bot-sysrow">
+        <button class="util bot-launch" title="power on the VM and log in this character">⏻ Launch</button>
+        <button class="util bot-switch" title="camp + switch to the other crafter on this account">⇄ Switch char</button>
+      </div>
+
+      <!-- per-bot console -->
+      <div class="bot-console-wrap">
+        <div class="console-head">console</div>
+        <ul class="bot-log"></ul>
+      </div>
+    </section>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

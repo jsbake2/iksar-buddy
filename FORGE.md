@@ -175,6 +175,29 @@ loop until crafts_done == target or stopped:
   hotbar). Craft arts are bare `1`–`6` in the craft window — verify they don't collide
   with the owner's hotbar paging; owner maps them in config.
 
+## 5.5 Launcher + character selection + switch
+
+Reuse the healer's launch chain (host fires the guest `ibrun` task → `launcher.ahk`:
+LaunchPad → auto-login → PLAY → char-select → in-world), generalized two ways:
+
+- **Domain-parameterized host side.** The healer helpers hardcode `DOM=iksar_buddy`
+  (`gexec.py`, `launch_bot.sh`). Forge drives by domain: `gx.py <dom> <ps>` (dom-aware
+  gexec, staged on the server) and a `Guest(dom)`-based launch. Each guest's LaunchPad
+  auto-login uses its OWN saved account creds (no `IB_USER` env in play).
+- **Character selection is EXPLICIT, not a fixed slot.** Each account will hold **2
+  crafters**, so the bot must pick the right one at launch. The deployed `launcher.ahk`
+  hardcodes a slot click (`100,884` = Jenskin) — wrong for multi-char. Replace the
+  blind slot click with **host-side OCR-and-click** (same pattern as
+  `invite_accept.py`/`quest_accept.py`): at char-select, screenshot → OCR the character
+  names → click the one matching the station's configured `character` → Play. The guest
+  `launcher.ahk` stops at "char-select ready" and the host selector takes over.
+- **Switch character = camp hotkey.** A bound `camp` key returns the client to
+  char-select (per `ability_map` `camp`); the same OCR-and-click selector then picks the
+  other crafter and clicks Play. So "switch" = press camp → wait char-select → select
+  target → Play. No relog/restart needed.
+- **Config:** `stations.yaml` gains `character` (target toon) per slot; the launcher and
+  switch both target it. First bot under test: **Robskin** on `iksar_buddy2`.
+
 ## 6. Writ / batch driver
 
 `{recipe: count}` from OCR (or a pasted/loaded list) → for each recipe: clear search,
@@ -246,6 +269,16 @@ infra/vm/iksar_buddy2.xml            # clone domain def (GPU-less)
    host-helpers (parameterized domain + correct click scaling), config loader,
    dashboard shell with two (mostly empty) bot panels. Prove screenshot+crop+click+type
    round-trips to one guest.
+   - **DONE (frontend):** full two-bot control dashboard on `:18081` —
+     `forge/` package (`telemetry.py`, `sim.py` mock backend, `web/app.py` FastAPI +
+     `/ws`, static `index.html`/`forge.css`/`app.js` on the shared `themes.css`). Each
+     bot panel: enable toggle, Single/Writ modes, trade-class, recipe+quantity, writ
+     queue (OCR / read-log / add-by-hand, editable), live progress (recipe, count,
+     reactions, crafts/hr, durability mode, power), Start/Stop/Pause, Launch/Switch-char,
+     per-bot console, plus a shared event stream + global launch/stop. Mock sim
+     (`forge/sim.py`) animates it; real `CraftWorker`s slot in behind the same web
+     contract. Run: `python -m forge --web-port 18081`.
+   - **TODO (backend):** `Guest(dom)` core + click scaling + the real workers.
 1. **Single craft, one guest (THE SLICE).** Calibrate begin/retry, mode pixel, power
    pixel, reaction region+templates. Run one recipe N times end-to-end on the dashboard.
    This is the breathing spine — don't widen before it works.
