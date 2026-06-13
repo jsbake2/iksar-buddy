@@ -83,6 +83,12 @@ class Guest:
                         '{"execute":"guest-ping"}', timeout=6)
         return r.returncode == 0 and '"return"' in (r.stdout or "")
 
+    def eq2_running(self) -> bool:
+        """True if the EQ2 client is up in the guest. Crafting (and clicks) require
+        it — firing input at a closed game errors the guest-side AHK."""
+        out = self.exec_ps("if (Get-Process EverQuest2 -ErrorAction SilentlyContinue) {'Y'}")
+        return bool(out and "Y" in out)
+
     # -- capture (virsh screenshot -> magick crop) -------------------------
     def grab(self) -> bool:
         return self._virsh("screenshot", self.dom, self.ppm).returncode == 0

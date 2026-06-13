@@ -192,6 +192,13 @@ class CraftWorker:
 
     # -- job runner --------------------------------------------------------
     async def _run_job(self, job: dict) -> None:
+        # don't fire clicks/keys at a closed game — that errors the guest AHK and
+        # does nothing useful. Require EQ2 up + in-world (Launch first).
+        if not await self._ex(self.guest.eq2_running):
+            self.t.update_bot(self.id, state="idle")
+            self.t.push_log(self.id, "EQ2 not running — press Launch first, then Start")
+            self.t.push_event(self.id, "control", "start ignored (game not running)")
+            return
         tc = job["trade_class"]
         self.t.update_bot(self.id, started_at=time.time(), reactions=0, crafts_done=0)
         if job["mode"] == "writ":
