@@ -48,8 +48,9 @@ async def _run(args: argparse.Namespace) -> None:
     if args.live:
         from .controller import ForgeController
         profile = _load_yaml(CONF_DIR / "forge" / "craft.yaml")
+        keymap = _load_yaml(CONF_DIR / "forge" / "keymap.yaml")
         backend = ForgeController(tele, stations, profile,
-                                  CONF_DIR / "forge", crafters)
+                                  CONF_DIR / "forge", crafters, keymap)
         logging.getLogger("forge").info("LIVE backend — driving real crafter VMs")
     else:
         backend = ForgeSim(tele)

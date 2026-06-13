@@ -30,12 +30,13 @@ WAIT_BUTTON_S = 30.0      # give up waiting for Begin/Retry after this (then idl
 
 class CraftWorker:
     def __init__(self, guest: Guest, profile: dict, profile_dir: Path,
-                 tele: ForgeTelemetry, bot_id: str) -> None:
+                 tele: ForgeTelemetry, bot_id: str, keymap: dict | None = None) -> None:
         self.guest = guest
-        self.cfg = profile                  # craft.yaml dict
+        self.cfg = profile                  # craft.yaml dict (calibration)
         self.profile_dir = profile_dir
         self.t = tele
         self.id = bot_id
+        self.keymap = keymap or {}          # camp + arts keys (owner-configurable)
         self._job: dict | None = None       # {mode, trade_class, queue/recipe, count}
         self._stop = asyncio.Event()
         self._paused = False
@@ -68,11 +69,15 @@ class CraftWorker:
         """Run a (blocking) guest op in the default executor."""
         return await asyncio.get_running_loop().run_in_executor(None, partial(fn, *a))
 
-    def _arts(self, kind: str) -> list[str]:
-        return list((self.cfg.get("arts", {}) or {}).get(kind, []) or [])
+    def _arts(self, mode: str) -> list[str]:
+        """The counter#1/#2/#3 keys for the given mode (durability|progress), from
+        the owner keymap. Defaults 1-3 (durability) / 4-6 (progress)."""
+        defaults = {"durability": ["1", "2", "3"], "progress": ["4", "5", "6"]}
+        return list((self.keymap.get("arts", {}) or {}).get(mode) or defaults.get(mode, []))
 
-    def _react_key(self, event: str) -> str | None:
-        return ((self.cfg.get("arts", {}) or {}).get("reactions", {}) or {}).get(event)
+    def _counter_key(self, mode: str, counter: int) -> str | None:
+        arts = self._arts(mode)
+        return arts[counter - 1] if 1 <= counter <= len(arts) else None
 
     async def _press(self, seq: str, role: str = "craft") -> bool:
         """THE chat-safety gate (fail-closed) wrapping every keypress."""
@@ -134,21 +139,19 @@ class CraftWorker:
                 await asyncio.sleep(timings.get("power_wait", 1.0))
                 continue
             self.t.update_bot(self.id, state="crafting", power_gated=False)
-            # reaction event? press its counter art
-            ev = await self._ex(sensors.reaction_event, self.guest, self.cfg, self.profile_dir)
-            if ev:
-                key = self._react_key(ev)
-                if key:
-                    await self._press(key, f"reaction:{ev}")
-                    self.t.update_bot(self.id, reactions=(self.t.bot(self.id)["reactions"] + 1))
-                    self.t.push_log(self.id, f"countered {ev} -> {key}")
-                continue
-            # otherwise run the mode's art set
+            # current craft mode (durability vs progress) decides which art set
             mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
             self.t.update_bot(self.id, durability_mode=mode)
-            arts = self._arts("progress" if mode == "progress" else "durability")
-            if arts:
-                await self._press(",".join(arts), f"arts:{mode}")
+            # counter EVENT (#1/#2/#3)? press the keymap key for (mode, counter#)
+            ev = await self._ex(sensors.reaction_event, self.guest, self.cfg, self.profile_dir)
+            if ev:
+                digits = "".join(ch for ch in str(ev) if ch.isdigit())
+                counter = int(digits) if digits else 0
+                key = self._counter_key(mode, counter)
+                if key:
+                    await self._press(key, f"counter{counter}:{mode}")
+                    self.t.update_bot(self.id, reactions=self.t.bot(self.id)["reactions"] + 1)
+                    self.t.push_log(self.id, f"counter#{counter} ({mode}) -> {key}")
             # complete?
             if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
                 return True

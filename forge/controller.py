@@ -30,11 +30,13 @@ class ForgeController:
     ACCOUNT_FOR_VM = {"vm1": "account1", "vm2": "account2"}
 
     def __init__(self, tele: ForgeTelemetry, stations: dict, craft_profile: dict,
-                 profile_dir: Path, crafters: list | None = None) -> None:
+                 profile_dir: Path, crafters: list | None = None,
+                 keymap: dict | None = None) -> None:
         self.t = tele
         self.cfg_profile = craft_profile
         self.profile_dir = profile_dir
         self.crafters = crafters or []            # [{character, class, vm}]
+        self.keymap = keymap or {}                # camp command + arts keys
         self.lock = AccountLock()
         self.guests: dict[str, Guest] = {}
         self.workers: dict[str, CraftWorker] = {}
@@ -44,7 +46,7 @@ class ForgeController:
             bid = bot["id"]
             g = Guest(bot["dom"], bot.get("width", 1920), bot.get("height", 1080))
             self.guests[bid] = g
-            self.workers[bid] = CraftWorker(g, craft_profile, profile_dir, tele, bid)
+            self.workers[bid] = CraftWorker(g, craft_profile, profile_dir, tele, bid, self.keymap)
             self.stations[bid] = bot
 
     # -- character / interlock helpers -------------------------------------
@@ -268,6 +270,44 @@ class ForgeController:
 
     def switch_char(self, bot_id: str) -> None:
         self.t.push_event(bot_id, "launch", "camp + switch crafter (pending calibration)")
+
+    # -- camp (log out to char-select) ------------------------------------
+    def camp(self, bot_id: str) -> None:
+        asyncio.create_task(self._camp(bot_id))
+
+    def camp_all(self) -> None:
+        for bid in list(self.workers):
+            self.camp(bid)
+
+    async def _camp(self, bot_id: str) -> None:
+        """Force camp: click the chat bar, type the camp command (/camp) + Enter.
+        EQ2 then logs the character out to char-select. Stops any craft + frees the
+        account lock."""
+        g = self.guests.get(bot_id)
+        if not g:
+            return
+        loop = asyncio.get_running_loop()
+        if not await loop.run_in_executor(None, g.eq2_running):
+            self.t.push_log(bot_id, "camp: EQ2 not running")
+            return
+        w = self.workers.get(bot_id)
+        if w:
+            w.stop()
+        cmd = (self.keymap.get("camp") or "/camp")
+        ci = (self.cfg_profile.get("chat_input", {}) or {}).get("region")
+        if ci:                                     # click the chat bar to focus it
+            await loop.run_in_executor(None, g.click, ci["x"] + ci["w"] // 2, ci["y"] + ci["h"] // 2)
+            await asyncio.sleep(0.4)
+        # "/" opens the chat input if the click didn't; type the command + Enter
+        await loop.run_in_executor(None, g.type_text, cmd, True)
+        self._release(bot_id)
+        self.t.update_bot(bot_id, state="idle")
+        self.t.push_event(bot_id, "control", f"camp ({cmd})")
+
+    def set_keymap(self, km: dict) -> None:
+        self.keymap = km or {}
+        for w in self.workers.values():
+            w.keymap = self.keymap
 
     # -- supervisor: run worker tasks + refresh held locks ----------------
     async def run(self) -> None:

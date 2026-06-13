@@ -15,7 +15,9 @@ from ..sim import ForgeSim
 from ..telemetry import ForgeTelemetry
 
 STATIC = Path(__file__).resolve().parent / "static"
-CRAFTERS_PATH = Path(__file__).resolve().parent.parent.parent / "config" / "forge" / "crafters.yaml"
+_CFG = Path(__file__).resolve().parent.parent.parent / "config" / "forge"
+CRAFTERS_PATH = _CFG / "crafters.yaml"
+KEYMAP_PATH = _CFG / "keymap.yaml"
 
 
 def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
@@ -69,6 +71,42 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
         if hasattr(sim, "set_crafters"):
             sim.set_crafters(clean)
         return {"ok": True, "crafters": clean}
+
+    @app.get("/api/forgekeymap")
+    async def get_keymap():
+        try:
+            return yaml.safe_load(KEYMAP_PATH.read_text(encoding="utf-8")) or {}
+        except (OSError, yaml.YAMLError):
+            return {}
+
+    @app.post("/api/forgekeymap")
+    async def post_keymap(payload: dict = Body(...)):
+        km = {"camp": str(payload.get("camp", "/camp")).strip() or "/camp",
+              "arts": {
+                  "durability": [str(k) for k in (payload.get("arts", {}).get("durability") or [])][:3],
+                  "progress": [str(k) for k in (payload.get("arts", {}).get("progress") or [])][:3]}}
+        try:
+            KEYMAP_PATH.write_text(
+                "# Forge keymap — camp command + counter#x mode art keys (dashboard-edited).\n"
+                + yaml.safe_dump(km, sort_keys=False, allow_unicode=True), encoding="utf-8")
+        except OSError as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        if hasattr(sim, "set_keymap"):
+            sim.set_keymap(km)
+        return {"ok": True, **km}
+
+    @app.post("/api/bot/{bot_id}/camp")
+    async def camp(bot_id: str):
+        if not _bot_ok(bot_id) or not hasattr(sim, "camp"):
+            return JSONResponse({"error": "unavailable"}, status_code=400)
+        sim.camp(bot_id)
+        return {"ok": True}
+
+    @app.post("/api/campall")
+    async def campall():
+        if hasattr(sim, "camp_all"):
+            sim.camp_all()
+        return {"ok": True}
 
     @app.post("/api/bot/{bot_id}/enable")
     async def enable(bot_id: str, payload: dict = Body(default={})):

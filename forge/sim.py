@@ -125,6 +125,19 @@ class ForgeSim:
             return
         self.t.push_event(bot_id, "launch", "camp -> switch crafter (other toon)")
 
+    def camp(self, bot_id: str) -> None:
+        if not self.t.bot(bot_id):
+            return
+        self.t.update_bot(bot_id, state="idle")
+        self.t.push_event(bot_id, "control", "camp (/camp)")
+
+    def camp_all(self) -> None:
+        for bid in self.t.snapshot["order"]:
+            self.camp(bid)
+
+    def set_keymap(self, km: dict) -> None:
+        self._keymap = km or {}
+
     def ocr_journal(self, bot_id: str) -> None:
         """Mock 'Read quest journal (OCR)' -> populate the writ queue."""
         b = self.t.bot(bot_id)

@@ -6,19 +6,9 @@
 #
 # Coordinate convention: [x, y] guest pixels. color: [r, g, b]. region: {x,y,w,h}.
 
-# --- crafting reaction arts -> hotbar keys -----------------------------------
-# In EQ2 crafting you spam "progress" arts normally; switch to "durability" arts
-# when durability dips; and when a reaction EVENT icon pops, press the specific
-# counter art that answers it. Owner (SME) maps these to the actual hotbar keys.
-arts:
-  progress:   ["1", "2", "3"]      # CALIBRATE: keys that push progress
-  durability: ["4", "5", "6"]      # CALIBRATE: keys that recover durability
-  # reaction-event template name -> counter-art key. Template files live under
-  # templates/reactions/<name>.png (captured live). CALIBRATE both.
-  reactions:
-    react1: "1"
-    react2: "2"
-    react3: "3"
+# NOTE: the art KEYS (counter#1/#2/#3 x durability/progress) live in the owner
+# keymap (config/forge/keymap.yaml), edited from the dashboard keymap window.
+# This file holds CALIBRATION only (pixels/regions/templates/clicks).
 
 # --- durability/progress mode pixel ------------------------------------------
 # One pixel that reads the "progress/high" color when in progress mode; otherwise
@@ -48,9 +38,11 @@ retry:
   click: [1473, 828]                                                    # CALIBRATE
 
 # --- reaction-event region (fast poll, template match) -----------------------
+# templates 1.png / 2.png / 3.png = the counter #1/#2/#3 event icons. reaction_event
+# returns the matched number; the worker presses keymap.arts[mode][counter-1].
 reaction:
   region: {x: 1246, y: 427, w: 66, h: 60}   # CALIBRATE: where event icons appear
-  templates_dir: "templates/reactions"       # relative to config/forge/
+  templates_dir: "templates/reactions"       # relative to config/forge/ (1.png/2.png/3.png)
   confidence: 0.80
   poll_hz: 6                                  # how often to sample (FORGE.md §4.1)
 

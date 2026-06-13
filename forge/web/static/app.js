@@ -93,6 +93,7 @@ function buildBotPanel(bot, tradeClasses) {
     stop: q(".bot-stop"),
     pause: q(".bot-pause"),
     launch: q(".bot-launch"),
+    camp: q(".bot-camp"),
     switch: q(".bot-switch"),
     log: q(".bot-log"),
     vm: bot.vm || "",
@@ -128,6 +129,7 @@ function buildBotPanel(bot, tradeClasses) {
   refs.stop.onclick = () => post(`/api/bot/${id}/stop`);
   refs.pause.onclick = () => post(`/api/bot/${id}/pause`);
   refs.launch.onclick = () => post(`/api/bot/${id}/launch`);
+  refs.camp.onclick = () => post(`/api/bot/${id}/camp`);
   refs.switch.onclick = () => post(`/api/bot/${id}/switch`);
   refs.console.onclick = () =>
     (window.location.href = `ibconsole://open?port=${bot.spice_port || ""}`);
@@ -289,6 +291,10 @@ $("allLaunch").onclick = () => {
 };
 $("allStop").onclick = () => {
   if (confirm("Stop ALL bots?")) Object.keys(botEls).forEach((id) => post(`/api/bot/${id}/stop`));
+};
+const allCamp = $("allCamp");
+if (allCamp) allCamp.onclick = () => {
+  if (confirm("Camp ALL bots out to char-select?")) post("/api/campall");
 };
 
 // ---- live VM screen per bot -----------------------------------------------

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-theme="iksar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ib · forge — keymap</title>
+  <link rel="stylesheet" href="themes.css" />
+  <link rel="stylesheet" href="forge.css" />
+  <style>
+    .km-main { max-width:560px; margin:18px auto; padding:0 18px; display:flex; flex-direction:column; gap:16px; }
+    .km-camp { display:flex; align-items:center; gap:12px; }
+    .km-camp label { font-size:11px; text-transform:uppercase; letter-spacing:.7px; color:var(--muted); font-weight:700; min-width:120px; }
+    .km-sec h3 { margin:0 0 10px; font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--accent2); }
+    .km-grid { display:grid; grid-template-columns:120px 1fr 1fr; gap:10px; align-items:center; }
+    .km-grid .h { color:var(--faint); font-size:10px; text-transform:uppercase; letter-spacing:1px; text-align:center; }
+    .km-grid .rl { font-weight:700; }
+    .km-in { background:var(--panel2); border:1px solid var(--line); color:var(--fg); border-radius:7px;
+      padding:9px 10px; font-size:14px; width:100%; }
+    .km-key { text-align:center; font-family:ui-monospace,monospace; }
+    .km-in:focus { outline:none; border-color:var(--accent); }
+    .km-actions { display:flex; align-items:center; gap:14px; padding:6px 0 30px; }
+    .km-status { font-size:13px; } .km-status.good { color:var(--good); } .km-status.bad { color:var(--bad); }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <div class="brand"><span class="mark">ib</span><span class="sub-mark">forge</span></div>
+    <span class="fg-tagline">keymap — camp command + craft art keys</span>
+    <a class="km-back" href="/">← back</a>
+    <div class="spacer"></div>
+    <label class="theme"><span>theme</span>
+      <select id="theme">
+        <option value="iksar">iksar</option><option value="midnight">midnight</option>
+        <option value="grafana">grafana</option><option value="amber">amber</option>
+        <option value="paper">paper</option><option value="defiler">defiler</option>
+      </select>
+    </label>
+  </header>
+  <main class="km-main">
+    <div class="km-sec">
+      <h3>Camp</h3>
+      <div class="km-camp">
+        <label>Camp command</label>
+        <input id="camp" class="km-in" placeholder="/camp" />
+      </div>
+      <p class="km-hint">Typed into chat to log out to char-select (force camp). The
+        per-bot ⏏ Camp button and ⏏ camp all use this.</p>
+    </div>
+    <div class="km-sec">
+      <h3>Counter art keys</h3>
+      <p class="km-hint">When a counter event (#1/#2/#3) appears, Forge presses the key
+        for the current craft mode.</p>
+      <div class="km-grid" id="grid"></div>
+    </div>
+    <div class="km-actions">
+      <button id="save" class="launch">Save</button>
+      <span class="km-status" id="status"></span>
+    </div>
+  </main>
+  <script src="keymap.js"></script>
+</body>
+</html>

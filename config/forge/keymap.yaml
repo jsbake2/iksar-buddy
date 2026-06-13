@@ -1,0 +1,14 @@
+# Forge keymap — owner-configurable keys + commands. Edit from the dashboard
+# "keymap" window. Keys can change in-game; just update them here.
+#
+# camp: the chat command typed (after clicking the chat bar) to log out to
+#       char-select. Forge then OCR-selects the bot's character and Plays back in.
+camp: "/camp"
+
+# Crafting reaction arts. When a counter EVENT (#1/#2/#3) appears, press the key
+# for the current craft MODE. Defaults are 1-6:
+#   durability: counter#1=1  counter#2=2  counter#3=3
+#   progress:   counter#1=4  counter#2=5  counter#3=6
+arts:
+  durability: ["1", "2", "3"]
+  progress:   ["4", "5", "6"]
