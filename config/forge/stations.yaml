@@ -24,13 +24,13 @@ bots:
     enabled: true
   - id: B
     label: "Crafter 2"
-    dom: iksar_buddy3       # not created yet — clone of iksar_buddy2 once UI is set
-    character: ""
-    account: ""
+    dom: iksar_buddy3       # cloned from iksar_buddy2 2026-06-13 (UI carried over)
+    character: ""           # OWNER: crafter toon on this VM's account
+    account: ""             # OWNER: EQ2 account name (interlock key)
     spice_port: 5920
     width: 1920
     height: 1080
-    enabled: false
+    enabled: true
 
 # EQ2 tradeskill classes (owner picks per craft run).
 trade_classes:
