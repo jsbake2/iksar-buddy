@@ -92,31 +92,37 @@ SME; stated per CLAUDE.md "inform, don't ask").
 
 ## 3. The two-VM problem (the real infra work)
 
-This is the part that needs owner input — flagged in §12.
+**Decisions locked (2026-06-13):** run on the **live server `10.0.0.16`**; clone
+`iksar_buddy` → `iksar_buddy2`; clone is **GPU-less**; **no more AI workloads** on the
+server (CLAUDE.md/PROJECT.md "keep 4070 for AI" is now stale — but it's still one card,
+so the clone can't share it). The two bots = `iksar_buddy` (keeps the 4070) +
+`iksar_buddy2` (software render).
 
-- **Clone source:** `iksar_buddy` (the lean healer image) per the owner. A clone gives
-  an identical Windows + EQ2 install → **one calibration profile serves both guests**
-  (the whole point of cloning vs a fresh build).
-- **No GPU for crafting.** Only one 4070 exists and it's passed to `iksar_buddy`; you
-  can't pass it to two guests. **Crafting is a static 2D UI — it needs no GPU.** The
-  clone runs pure software/virtio-gpu. Recommended: a **GPU-less profile for both
-  craft guests** during craft sessions, so the 4070 stays free for the server's AI
-  work (directly honors the CLAUDE.md "keep the host's stack intact" rule).
-- **Where do they run?** Genuine open decision (§12):
-  - **(A) On the live server (10.0.0.16):** clone `iksar_buddy` in place. Con: shares
-    the box with the 4070 AI work + healer; two more 8-vCPU guests is real contention.
-  - **(B) On this workstation (`JASON-MAIN-CACHY`):** 31G RAM (17G free), 298G disk,
-    already has libvirt + a legacy `eq2-gm-vm`. Copy the lean `iksar_buddy.qcow2` over
-    (or trim `eq2-gm-vm`) and run both craft guests here. **Recommended** — keeps the
-    server untouched; crafting is light and latency-tolerant.
-- **Resources per craft guest (proposed, GPU-less):** 4–6 vCPU, 6 GB RAM, virtio-gpu
-  at a **fixed 1920×1080**, never-sleep, locked UI scale. Two of these fit comfortably
-  on the workstation. Pin to distinct core sets so they don't fight (e.g. guest A
-  cpu0–5, guest B cpu6–11 on the 13700K P-cores; leave E-cores for the host).
-- **Naming (opsec):** `iksar_buddy` (existing) + `iksar_buddy2`. Keys/scheduled-task
-  names inside each guest stay `ib` / `ibkey` (separate Windows installs → no clash).
+Live server facts (measured):
+- `iksar_buddy` is **running** (the live healer). Disk `iksar_buddy.qcow2` = **81 G**;
+  `/var/lib/libvirt/images` has **195 G free** → a full `virt-clone` copy fits.
+- Live XML: 8 GB RAM, 8 vCPU (cpu0–7), emulatorpin 16–17, SPICE port 5900 (loopback),
+  virtio-gpu primary video, **two `<hostdev>`** (4070 GPU `01:00.0` + its audio
+  `01:00.1`). Machine `pc-q35-11.0`. UUID/MAC are per-domain (virt-clone regenerates).
+- RAM is the tight resource: 29 G total, ~12 G free with the healer up. So the clone
+  is sized **6 GB / 6 vCPU**, not 8/8. Both bots ≈ 8 G + 6 G = 14 G of 29 G — fits.
+
+Clone build (server-side):
+1. **Cloning needs `iksar_buddy` shut off** for a consistent disk copy → brief healer
+   downtime. **Owner go-ahead required before shutdown** (CLAUDE.md). ~minutes for the
+   81 G NVMe copy.
+2. `virt-clone --original iksar_buddy --name iksar_buddy2 \
+      --file /var/lib/libvirt/images/iksar_buddy2.qcow2` (regenerates UUID + MAC).
+3. Edit the clone XML: **remove both `<hostdev>`** (GPU-less); RAM→6 G; vCPU→6 pinned
+   **cpu8–13**; emulatorpin **18–19**; keep virtio-gpu video / qemu-guest-agent channel
+   / virtio-serial / input + SPICE (autoport → it lands on 5901). Commit as
+   `infra/vm/iksar_buddy2.xml`.
+4. **GpuPreference caveat:** with the 4070 gone, EQ2's per-app `GpuPreference=2` (force
+   the 4070) has no card — flip EQ2 to the default adapter in the clone, or clear the
+   setting. WARP/software render is fine for the 2004 craft UI.
+- **Naming (opsec):** `iksar_buddy` + `iksar_buddy2`. Keys/scheduled-task names inside
+  each guest stay `ib` / `ibkey` (separate Windows installs → no clash).
 - **Credentials:** owner sets up the **second EQ2 login** in the clone (he volunteered).
-  Two crafting accounts/toons running in parallel.
 
 ## 4. Sensor model (host-side, per guest)
 
@@ -255,10 +261,10 @@ infra/vm/iksar_buddy2.xml            # clone domain def (GPU-less)
 
 ## 12. Open items (owner input)
 
-- **Where the craft guests run:** workstation (recommended) vs live server. → §3.
-- **GPU-less profile OK for crafting?** (recommended — frees the 4070). → §3.
-- **Clone go-ahead + second EQ2 login creds** in `iksar_buddy2` (owner volunteered).
-- **Resource budget** per craft guest (proposed 4–6 vCPU / 6 GB / 1920×1080).
+- ~~Where the craft guests run~~ → **live server** (locked). § 3.
+- ~~GPU-less OK~~ → **yes, clone is GPU-less** (locked). § 3.
+- **Shutdown go-ahead** to clone (healer downtime while `iksar_buddy` is off). ← blocking.
+- **Second EQ2 login creds** in `iksar_buddy2` after it boots (owner volunteered).
 - **Craft art keybinds** (owner SME): which keys are progress arts, durability arts,
   and which counter art answers each reaction event. Fills `craft.yaml`.
 - **Trade classes in scope** first (the dino supported tailor/armorer/weapon/scribe/
