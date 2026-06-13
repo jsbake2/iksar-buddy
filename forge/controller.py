@@ -238,9 +238,22 @@ class ForgeController:
 
     async def _select_character(self, bot_id: str, char: str) -> None:
         """Host-side OCR-and-click character pick at char-select (FORGE.md §5.5).
-        TODO: char-select OCR region needs in-game calibration; until then this is a
-        no-op that logs, leaving the client at char-select for manual pick."""
-        self.t.push_log(bot_id, f"char-select: pick {char} (OCR pick pending calibration)")
+        Empty char => leave at char-select (owner picks / creates a toon)."""
+        if not char:
+            self.t.push_log(bot_id, "no character set — left at char-select")
+            return
+        loop = asyncio.get_running_loop()
+        g = self.guests[bot_id]
+        pt = await loop.run_in_executor(None, partial(sensors.find_character, g, self.cfg_profile, char))
+        if not pt:
+            self.t.push_log(bot_id, f"char-select: '{char}' not found (calibration/scroll?)")
+            return
+        await loop.run_in_executor(None, g.click, pt[0], pt[1])     # select the row
+        await asyncio.sleep(0.7)
+        play = (self.cfg_profile.get("char_select", {}) or {}).get("play_click")
+        if play:
+            await loop.run_in_executor(None, g.click, play[0], play[1])  # Play -> in-world
+        self.t.push_log(bot_id, f"selected {char} @ {pt} -> Play")
 
     def switch_char(self, bot_id: str) -> None:
         self.t.push_event(bot_id, "launch", "camp + switch crafter (pending calibration)")

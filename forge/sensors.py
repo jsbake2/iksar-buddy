@@ -12,6 +12,7 @@ Both are imported/called lazily and degrade gracefully if absent.
 """
 from __future__ import annotations
 
+import difflib
 import logging
 import subprocess
 from pathlib import Path
@@ -146,6 +147,74 @@ def reaction_event(guest: Guest, cfg: dict, profile_dir: Path) -> str | None:
     except Exception as e:                        # never let sensing crash the loop
         log.debug("reaction match error: %s", e)
         return None
+
+
+# ---- char-select: find a character row by name (OCR-and-click) --------------
+def _ocr_words(guest: Guest, region: dict) -> list[dict]:
+    """OCR a region -> [{text,x,y,w,h,conf}] in GUEST coords. [] on failure."""
+    r = region or {}
+    if not r or not guest.grab():
+        return []
+    try:
+        pre = subprocess.run(
+            ["magick", guest.ppm, "-crop", f"{r['w']}x{r['h']}+{r['x']}+{r['y']}",
+             "+repage", "-colorspace", "Gray", "-threshold", "50%", "png:-"],
+            capture_output=True, timeout=6).stdout
+        if not pre:
+            return []
+        out = subprocess.run(["tesseract", "stdin", "stdout", "--psm", "6", "tsv"],
+                             input=pre, capture_output=True, timeout=10).stdout.decode(errors="replace")
+    except (OSError, subprocess.SubprocessError) as e:
+        log.warning("char-select OCR failed: %s", e)
+        return []
+    words = []
+    for line in out.splitlines()[1:]:
+        f = line.split("\t")
+        if len(f) < 12:
+            continue
+        try:
+            conf = float(f[10]); x, y, w, h = int(f[6]), int(f[7]), int(f[8]), int(f[9])
+        except ValueError:
+            continue
+        text = f[11].strip()
+        if conf < 35 or len(text) < 2:
+            continue
+        words.append({"text": text, "x": r["x"] + x, "y": r["y"] + y,
+                      "w": w, "h": h, "conf": conf})
+    return words
+
+
+def find_character(guest: Guest, cfg: dict, target: str) -> tuple[int, int] | None:
+    """Click point for the `target` character row in the char-select list.
+
+    Names repeat across servers (e.g. two Robskins) — the live one is on the
+    owner's server (cfg char_select.server, e.g. 'Wuoshi'), which the EQ2 list
+    sorts toward the BOTTOM. So: of the rows whose name ~matches target, prefer
+    those with the server name detected just below; among those, pick the
+    BOTTOM-MOST (the owner's hint). Returns (x,y) in guest coords or None.
+    """
+    cs = cfg.get("char_select", {})
+    words = _ocr_words(guest, cs.get("list_region", {}))
+    if not words:
+        return None
+    server = (cs.get("server") or "").lower()
+    tl = target.lower()
+    matches = [w for w in words if difflib.SequenceMatcher(None, w["text"].lower(), tl).ratio() >= 0.6]
+    if not matches:
+        return None
+
+    def has_server_below(w):
+        if not server:
+            return False
+        for o in words:
+            if abs(o["x"] - w["x"]) < 60 and 0 < (o["y"] - w["y"]) < 45 \
+                    and difflib.SequenceMatcher(None, o["text"].lower(), server).ratio() >= 0.55:
+                return True
+        return False
+
+    preferred = [w for w in matches if has_server_below(w)] or matches
+    pick = max(preferred, key=lambda w: w["y"])    # bottom-most = the Wuoshi one
+    return (pick["x"] + pick["w"] // 2, pick["y"] + pick["h"] // 2)
 
 
 # ---- journal OCR (writs) ----------------------------------------------------

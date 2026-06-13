@@ -1,19 +1,19 @@
 # Single source of truth for characters (shared by the healer + Forge).
 # - account: interlock key (an account can't be logged in twice; see
-#   shared/account_lock.py). account1 = Robskin+Paraphon, account2 = Jenskin+Croolst.
+#   shared/account_lock.py). account1 = Robskin+Foxyman, account2 = Jenskin+Croolst.
 # - adventure: in-game class (drives healer profile behavior: defiler=wards,
 #   fury=heal-over-times).
 # - tradeskill: crafting class (Forge).
 #
 # Healer profiles pair a healer + a tank (both selected from the same two accounts):
 #   profile "jenskin": healer Jenskin (defiler) + tank Robskin
-#   profile "croolst": healer Croolst (fury)    + tank Paraphon
-# Crafters: Croolst (Sage, acct2) + Paraphon (Alchemist, acct1) — different accounts,
+#   profile "croolst": healer Croolst (fury)    + tank Foxyman
+# Crafters: Croolst (Sage, acct2) + Foxyman (Alchemist, acct1) — different accounts,
 # so the two crafters never collide with each other; they DO collide with the matching
 # healer/tank (same account), which the interlock enforces.
 
 characters:
   Robskin:  { account: account1, adventure: shadowknight, tradeskill: armorer }
-  Paraphon: { account: account1, adventure: crusader,     tradeskill: alchemist }   # tank (class TBD)
+  Foxyman: { account: account1, adventure: crusader,     tradeskill: alchemist }   # tank (class TBD)
   Jenskin:  { account: account2, adventure: defiler,      tradeskill: jeweler }
   Croolst:  { account: account2, adventure: fury,         tradeskill: sage }

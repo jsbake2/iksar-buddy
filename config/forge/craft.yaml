@@ -67,6 +67,16 @@ recipe_select:
 # hotbar/chat (FORGE.md §5 focus discipline). Usually == recipe_select.focus_click.
 craft_focus_click: [1317, 512]     # CALIBRATE
 
+# --- char-select: OCR-and-click the right character (FORGE.md §5.5) -----------
+# Names repeat across servers (e.g. two Robskins) — pick the one on `server`
+# (sorts toward the BOTTOM of the list). list_region is the left character list;
+# play_click is the maroon Play button in the right detail panel. Measured at
+# 1920x1080 from a live char-select; refine if the list scrolls.
+char_select:
+  list_region: {x: 80, y: 380, w: 420, h: 560}   # the "Select Character" name column
+  play_click: [1715, 890]                          # detail-panel Play (maroon)
+  server: "Wuoshi"                                 # disambiguate duplicate names
+
 # --- chat-safety (the inviolable invariant, PROJECT.md §6.2) ------------------
 # Sample this region; if it holds typed text / a cursor, chat input is open and we
 # must NOT inject. CALIBRATE for the crafter UI's chat bar.

@@ -116,19 +116,16 @@ class Guest:
             return b""
         return self.region_png(x, y, w, h)
 
-    # -- input: mouse (qemu input-send-event, RESOLUTION-CORRECT) ----------
+    # -- input: mouse (GUEST-SIDE click, the healer-proven path) -----------
     def click(self, x: int, y: int) -> bool:
-        """Left-click at guest pixel (x,y). The abs axis is 0..32767 normalized to
-        the guest resolution — the healer's gclick.py hardcoded 1024x768, which
-        misplaced clicks on a 1920x1080 guest; we divide by the REAL resolution."""
-        ax = int(max(0, min(x, self.width - 1)) / self.width * 32767)
-        ay = int(max(0, min(y, self.height - 1)) / self.height * 32767)
-        ev = {"execute": "input-send-event", "arguments": {"events": [
-            {"type": "abs", "data": {"axis": "x", "value": ax}},
-            {"type": "abs", "data": {"axis": "y", "value": ay}},
-            {"type": "btn", "data": {"button": "left", "down": True}},
-            {"type": "btn", "data": {"button": "left", "down": False}}]}}
-        return self._monitor(ev)
+        """Left-click at guest pixel (x,y). Uses the SAME mechanism the healer's
+        accept-dialog helpers use (validated live): write the pixel coords to
+        C:\\ib\\click.txt and fire the 'ibgclick' scheduled task, so an AHK script
+        clicks natively INSIDE the guest at true 1920x1080 coords. The host
+        qemu input-send-event path mis-registered in EQ2's UI, so we don't use it."""
+        ps = (f"Set-Content C:\\ib\\click.txt '{int(x)} {int(y)}' -NoNewline; "
+              f"Start-ScheduledTask -TaskName ibgclick")
+        return self.exec_ps(ps, wait=False) is not None
 
     # -- input: typing (virsh send-key) ------------------------------------
     def type_text(self, s: str, enter: bool = False) -> None:
