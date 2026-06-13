@@ -4,6 +4,7 @@ telemetry over websocket, exposing per-bot craft controls. Backend is mocked
 from __future__ import annotations
 
 import asyncio
+import os
 from pathlib import Path
 
 import yaml
@@ -15,7 +16,10 @@ from ..sim import ForgeSim
 from ..telemetry import ForgeTelemetry
 
 STATIC = Path(__file__).resolve().parent / "static"
-_CFG = Path(__file__).resolve().parent.parent.parent / "config" / "forge"
+# Owner config dir (outside the deploy path so saves survive deploys) — matches
+# forge/__main__.FORGE_CFG.
+_CFG = Path(os.environ.get("IB_FORGE_DIR",
+            Path(__file__).resolve().parent.parent.parent / "config" / "forge"))
 CRAFTERS_PATH = _CFG / "crafters.yaml"
 KEYMAP_PATH = _CFG / "keymap.yaml"
 
@@ -106,6 +110,19 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
     async def campall():
         if hasattr(sim, "camp_all"):
             sim.camp_all()
+        return {"ok": True}
+
+    @app.post("/api/bot/{bot_id}/shutdown")
+    async def shutdown(bot_id: str):
+        if not _bot_ok(bot_id) or not hasattr(sim, "shutdown"):
+            return JSONResponse({"error": "unavailable"}, status_code=400)
+        sim.shutdown(bot_id)
+        return {"ok": True}
+
+    @app.post("/api/shutdownall")
+    async def shutdownall():
+        if hasattr(sim, "shutdown_all"):
+            sim.shutdown_all()
         return {"ok": True}
 
     @app.post("/api/bot/{bot_id}/enable")

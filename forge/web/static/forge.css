@@ -121,6 +121,8 @@
 .bot-controls .bot-pause { flex:.6; font-size:16px; }
 .bot-sysrow { display:flex; gap:8px; }
 .bot-sysrow .util { flex:1; }
+.bot-sysrow .bot-shutdown { color:var(--bad); border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }
+.bot-sysrow .bot-shutdown:hover { background:var(--bad); color:#fff; border-color:var(--bad); }
 
 /* per-bot console */
 .bot-console-wrap { border-top:1px solid var(--line); padding-top:9px; }

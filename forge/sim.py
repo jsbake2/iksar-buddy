@@ -138,6 +138,16 @@ class ForgeSim:
     def set_keymap(self, km: dict) -> None:
         self._keymap = km or {}
 
+    def shutdown(self, bot_id: str) -> None:
+        if not self.t.bot(bot_id):
+            return
+        self.t.update_bot(bot_id, state="off", vm_running=False)
+        self.t.push_event(bot_id, "control", "shutdown (EQ2 quit + VM off)")
+
+    def shutdown_all(self) -> None:
+        for bid in self.t.snapshot["order"]:
+            self.shutdown(bid)
+
     def ocr_journal(self, bot_id: str) -> None:
         """Mock 'Read quest journal (OCR)' -> populate the writ queue."""
         b = self.t.bot(bot_id)

@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import os
 from pathlib import Path
 
 import uvicorn
@@ -27,8 +28,11 @@ try:
 except ImportError:  # pragma: no cover
     setproctitle = None
 
-CONF_DIR = Path(__file__).resolve().parent.parent / "config"
-CONFIG = CONF_DIR / "forge" / "stations.yaml"
+# Owner-editable Forge config (stations/crafters/keymap/craft + templates) lives
+# OUTSIDE the code-deploy path so deploys never clobber dashboard edits (same idea
+# as the healer's IB_CONFIG_DIR). Defaults to the repo for local dev.
+FORGE_CFG = Path(os.environ.get("IB_FORGE_DIR",
+                 Path(__file__).resolve().parent.parent / "config" / "forge"))
 
 
 def _load_yaml(p: Path) -> dict:
@@ -39,18 +43,18 @@ def _load_yaml(p: Path) -> dict:
 
 
 async def _run(args: argparse.Namespace) -> None:
-    stations = _load_yaml(CONFIG)
-    crafters = _load_yaml(CONF_DIR / "forge" / "crafters.yaml").get("crafters", [])
+    stations = _load_yaml(FORGE_CFG / "stations.yaml")
+    crafters = _load_yaml(FORGE_CFG / "crafters.yaml").get("crafters", [])
     tele = ForgeTelemetry(trade_classes=stations.get("trade_classes", []),
                           crafters=crafters)
     for bot in stations.get("bots", []):
         tele.add_bot(bot)
     if args.live:
         from .controller import ForgeController
-        profile = _load_yaml(CONF_DIR / "forge" / "craft.yaml")
-        keymap = _load_yaml(CONF_DIR / "forge" / "keymap.yaml")
+        profile = _load_yaml(FORGE_CFG / "craft.yaml")
+        keymap = _load_yaml(FORGE_CFG / "keymap.yaml")
         backend = ForgeController(tele, stations, profile,
-                                  CONF_DIR / "forge", crafters, keymap)
+                                  FORGE_CFG, crafters, keymap)
         logging.getLogger("forge").info("LIVE backend — driving real crafter VMs")
     else:
         backend = ForgeSim(tele)

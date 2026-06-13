@@ -11,6 +11,10 @@ Wants=network-online.target
 Type=simple
 User=jbaker
 WorkingDirectory=/home/jbaker/ib-app
+# Owner-editable Forge config (crafters/keymap/craft/stations + templates) lives
+# OUTSIDE the code-deploy path so dashboard saves survive deploys. Seed once from
+# the repo; after that it's authoritative — NEVER rsync repo config/forge over it.
+Environment=IB_FORGE_DIR=/home/jbaker/ib-data/forge
 ExecStart=/home/jbaker/ib-app/.venv/bin/python -m forge --host 0.0.0.0 --web-port 18081 --live
 Restart=on-failure
 RestartSec=5

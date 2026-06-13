@@ -309,6 +309,33 @@ class ForgeController:
         for w in self.workers.values():
             w.keymap = self.keymap
 
+    # -- shutdown (quit EQ2 + power off the VM) ----------------------------
+    def shutdown(self, bot_id: str) -> None:
+        asyncio.create_task(self._shutdown(bot_id))
+
+    def shutdown_all(self) -> None:
+        for bid in list(self.workers):
+            self.shutdown(bid)
+
+    async def _shutdown(self, bot_id: str) -> None:
+        g = self.guests.get(bot_id)
+        if not g:
+            return
+        loop = asyncio.get_running_loop()
+        w = self.workers.get(bot_id)
+        if w:
+            w.stop()
+        self._release(bot_id)
+        self.t.update_bot(bot_id, state="off")
+        self.t.push_event(bot_id, "control", "shutdown: quitting EQ2 + powering off VM")
+        # quit EQ2 first (clean), then graceful VM power-off (ACPI -> Windows shutdown)
+        await loop.run_in_executor(None, g.exec_ps,
+                                   "Stop-Process -Name EverQuest2 -Force -ErrorAction SilentlyContinue", False)
+        await asyncio.sleep(2)
+        ok = await loop.run_in_executor(None, g.shutdown_vm)
+        self.t.update_bot(bot_id, vm_running=False)
+        self.t.push_event(bot_id, "control", "VM shutdown sent" if ok else "VM shutdown FAILED")
+
     # -- supervisor: run worker tasks + refresh held locks ----------------
     async def run(self) -> None:
         tasks = [asyncio.create_task(w.run()) for w in self.workers.values()]

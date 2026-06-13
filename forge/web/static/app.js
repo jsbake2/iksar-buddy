@@ -95,6 +95,7 @@ function buildBotPanel(bot, tradeClasses) {
     launch: q(".bot-launch"),
     camp: q(".bot-camp"),
     switch: q(".bot-switch"),
+    shutdown: q(".bot-shutdown"),
     log: q(".bot-log"),
     vm: bot.vm || "",
     uiMode: bot.mode || "single",
@@ -131,6 +132,10 @@ function buildBotPanel(bot, tradeClasses) {
   refs.launch.onclick = () => post(`/api/bot/${id}/launch`);
   refs.camp.onclick = () => post(`/api/bot/${id}/camp`);
   refs.switch.onclick = () => post(`/api/bot/${id}/switch`);
+  refs.shutdown.onclick = () => {
+    if (confirm(`Shut down ${refs.root.querySelector(".bot-name").textContent}? Quits EQ2 and powers off the VM.`))
+      post(`/api/bot/${id}/shutdown`);
+  };
   refs.console.onclick = () =>
     (window.location.href = `ibconsole://open?port=${bot.spice_port || ""}`);
   refs.live.onclick = refs.console.onclick;
@@ -295,6 +300,10 @@ $("allStop").onclick = () => {
 const allCamp = $("allCamp");
 if (allCamp) allCamp.onclick = () => {
   if (confirm("Camp ALL bots out to char-select?")) post("/api/campall");
+};
+const allShutdown = $("allShutdown");
+if (allShutdown) allShutdown.onclick = () => {
+  if (confirm("Shut down ALL forge VMs? Quits EQ2 and powers them off.")) post("/api/shutdownall");
 };
 
 // ---- live VM screen per bot -----------------------------------------------
