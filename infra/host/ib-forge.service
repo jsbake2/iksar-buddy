@@ -1,0 +1,19 @@
+# /etc/systemd/system/ib-forge.service
+# ib forge: crafting control dashboard (18081, LAN via ufw). Drives the crafter
+# VMs (iksar_buddy2/3) with --live; uncalibrated workers idle safely. Opsec: unit
+# says "ib", never eq2/bot. Sibling of ib-brain.service.
+[Unit]
+Description=ib forge (crafting dashboard)
+After=network-online.target libvirtd.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jbaker
+WorkingDirectory=/home/jbaker/ib-app
+ExecStart=/home/jbaker/ib-app/.venv/bin/python -m forge --host 0.0.0.0 --web-port 18081 --live
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
