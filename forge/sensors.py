@@ -214,7 +214,10 @@ def find_character(guest: Guest, cfg: dict, target: str) -> tuple[int, int] | No
 
     preferred = [w for w in matches if has_server_below(w)] or matches
     pick = max(preferred, key=lambda w: w["y"])    # bottom-most = the Wuoshi one
-    return (pick["x"] + pick["w"] // 2, pick["y"] + pick["h"] // 2)
+    # CLICK THE ROW-LEFT (portrait), not the name text — the name column isn't the
+    # selectable hotspot (validated live: x~100 selects, x~182 does nothing).
+    row_x = int(cs.get("row_click_x", 100))
+    return (row_x, pick["y"] + pick["h"] // 2)
 
 
 # ---- journal OCR (writs) ----------------------------------------------------

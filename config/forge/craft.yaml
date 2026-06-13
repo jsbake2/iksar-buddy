@@ -73,7 +73,9 @@ craft_focus_click: [1317, 512]     # CALIBRATE
 # play_click is the maroon Play button in the right detail panel. Measured at
 # 1920x1080 from a live char-select; refine if the list scrolls.
 char_select:
-  list_region: {x: 80, y: 380, w: 420, h: 560}   # the "Select Character" name column
+  list_region: {x: 80, y: 380, w: 420, h: 560}   # the "Select Character" name column (OCR)
+  row_click_x: 100                                 # click the row-LEFT (portrait) to select;
+                                                   # the name-text column is NOT the hotspot
   play_click: [1715, 890]                          # detail-panel Play (maroon)
   server: "Wuoshi"                                 # disambiguate duplicate names
 
