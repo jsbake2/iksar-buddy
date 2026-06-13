@@ -30,19 +30,18 @@
   <currentMemory unit='KiB'>6291456</currentMemory>
   <vcpu placement='static'>6</vcpu>
   <cputune>
-    <!-- Hard CPU ceiling: GPU-less EQ2 software-renders on the CPU and pegs every
-         vCPU it has. global_quota/period caps the WHOLE VM (vcpus+emulator) to
-         ~2 cores so a crafter can never hammer the host. The real cure is capping
-         EQ2's framerate in-game (esp. background FPS ~5) — this is the safety belt.
-         Applied live+config 2026-06-13; carries to clones (iksar_buddy3). -->
-    <global_period>100000</global_period>
-    <global_quota>200000</global_quota>
-    <vcpupin vcpu='0' cpuset='8'/>
-    <vcpupin vcpu='1' cpuset='9'/>
-    <vcpupin vcpu='2' cpuset='10'/>
-    <vcpupin vcpu='3' cpuset='11'/>
-    <vcpupin vcpu='4' cpuset='12'/>
-    <vcpupin vcpu='5' cpuset='13'/>
+    <!-- GPU-less EQ2 software-renders on the CPU. A hard quota cap (tried 2026-06-13)
+         strangled interactivity ("unusable, can't even open options") — REMOVED. The
+         correct lever is the IN-GAME framerate cap (Max FPS ~24, Background FPS ~5):
+         it cuts CPU at the source without making the client laggy. vCPUs float across
+         cpu8-15 (4 free physical P-cores; healer owns cpu0-7) to avoid hyperthread
+         contention. Emulator on E-cores. -->
+    <vcpupin vcpu='0' cpuset='8-15'/>
+    <vcpupin vcpu='1' cpuset='8-15'/>
+    <vcpupin vcpu='2' cpuset='8-15'/>
+    <vcpupin vcpu='3' cpuset='8-15'/>
+    <vcpupin vcpu='4' cpuset='8-15'/>
+    <vcpupin vcpu='5' cpuset='8-15'/>
     <emulatorpin cpuset='18-19'/>
   </cputune>
   <os firmware='efi'>
