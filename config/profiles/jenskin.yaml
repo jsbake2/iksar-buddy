@@ -1,0 +1,168 @@
+# Healer profile: JENSKIN (Defiler — wards). Self-contained bundle the brain
+# loads as the active keymap. Switch profiles from the dashboard top-bar dropdown.
+# maintenance_role/group_maintenance_role tell the decision loop which ability is
+# the proactive-mitigation heartbeat (ward for a Defiler). names = slot->character;
+# select_character = who to pick at char-select. Same EQ2 account as Croolst.
+
+healer: defiler
+abilities:
+  attack:
+    key: '1'
+    mode: auto
+    desc: send pet + assist; fired once on combat start
+  spell_attack:
+    key: '2'
+    mode: manual
+    desc: offensive nuke (power-hungry; manual only)
+  debuff:
+    key: '3'
+    mode: manual
+    desc: debuff/slow incoming target (auto later w/ power)
+  deaggro:
+    key: '='
+    mode: manual
+    desc: de-aggro / drop threat
+  direct_heal:
+    key: '4'
+    mode: auto
+    cast_ms: 1500
+    desc: standard single-target heal
+  critical_heal:
+    key: ''
+    mode: auto
+    cast_ms: 1500
+    desc: bigger heal for CRITICAL hp (skill not learned yet)
+  emergency_heal:
+    key: ''
+    mode: auto
+    cast_ms: 800
+    desc: emergency heal, cancels current cast (skill not learned yet)
+  ward:
+    key: '5'
+    mode: auto
+    cast_ms: 1000
+    desc: tank ward (heartbeat) -- spell not learned yet, wired ahead
+  emergency_ward:
+    key: ''
+    mode: auto
+    cast_ms: 800
+    desc: emergency ward (skill not learned yet)
+  cure:
+    key: '0'
+    mode: auto
+    cast_ms: 500
+    desc: GENERIC cure (any detriment type)
+  rez:
+    key: Ctrl+1
+    mode: manual
+    cast_ms: 6000
+    desc: revive a dead member (target via group_target_keys first)
+  follow:
+    key: Alt+=
+    mode: manual
+    desc: auto-follow toggle
+  stop_follow:
+    key: ''
+    mode: manual
+    desc: stop following (prior tool used bare '=')
+  call_home:
+    key: Alt+-
+    mode: manual
+    desc: Call of the Overlord / call to home
+  hail:
+    key: ''
+    mode: manual
+    desc: hail NPC (quest turn-ins / interaction)
+  jump:
+    key: ''
+    mode: manual
+    desc: jump (un-stick / pathing)
+  collect:
+    key: ''
+    mode: manual
+    desc: collect a collection shiny
+  gather:
+    key: ''
+    mode: manual
+    desc: gather / harvest a resource node (big button)
+  sow:
+    key: ''
+    mode: manual
+    desc: speed buff (SoW / totem) on the group
+  evac:
+    key: ''
+    mode: manual
+    desc: emergency evac / GTFO
+  pre_pull:
+    key: ''
+    mode: manual
+    desc: pre-pull routine (debuff incoming + ward up)
+  camp:
+    key: ''
+    mode: manual
+    desc: camp/exit macro (a key bound to /camp desktop) -- pressed by Stop Bot before
+      VM shutdown
+  item_use:
+    key: ''
+    mode: manual
+    desc: use item (totem / temp buff)
+  buff1:
+    key: Alt+5
+    mode: manual
+    desc: buff key 1
+  buff2:
+    key: Alt+6
+    mode: manual
+    desc: buff key 2
+  buff_tank:
+    key: Alt+7
+    mode: manual
+    desc: 'buff: tank'
+  buff_dps:
+    key: Alt+8
+    mode: manual
+    desc: 'buff: DPS'
+  buff_self:
+    key: Alt+9
+    mode: manual
+    desc: 'buff: self'
+  group_heal:
+    key: '8'
+    mode: auto
+    cast_ms: 1500
+    desc: group heal
+  group_ward:
+    key: '9'
+    mode: auto
+    cast_ms: 1500
+    desc: group ward (AE incoming)
+  group_cure:
+    key: none
+    mode: auto
+    cast_ms: 800
+    desc: no dedicated group cure -> single-target cure (0) per member
+group_target_keys:
+- F1
+- F2
+- F3
+- F4
+- F5
+- F6
+slot_roles:
+- healer
+- tank
+- dps
+- dps
+- support
+- support
+tank_slot: 1
+maintenance_role: ward
+group_maintenance_role: group_ward
+names:
+  0: Jenskin
+  1: Robskin
+  2: ''
+  3: ''
+  4: ''
+  5: ''
+select_character: Jenskin

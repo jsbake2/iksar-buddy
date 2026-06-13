@@ -1,0 +1,167 @@
+# Healer profile: CROOLST (Fury — heal-over-times, NO wards). Carried over from the
+# Jenskin keymap with ward->hot / group_ward->group_hot / emergency_ward->emergency_hot.
+# maintenance_role=hot so the loop refreshes the tank HoT instead of a ward. Same EQ2
+# account as Jenskin — just a different character selected at char-select.
+
+abilities:
+  attack:
+    desc: send pet + assist; fired once on combat start
+    key: '1'
+    mode: auto
+  buff1:
+    desc: buff key 1
+    key: Alt+5
+    mode: manual
+  buff2:
+    desc: buff key 2
+    key: Alt+6
+    mode: manual
+  buff_dps:
+    desc: 'buff: DPS'
+    key: Alt+8
+    mode: manual
+  buff_self:
+    desc: 'buff: self'
+    key: Alt+9
+    mode: manual
+  buff_tank:
+    desc: 'buff: tank'
+    key: Alt+7
+    mode: manual
+  call_home:
+    desc: Call of the Overlord / call to home
+    key: Alt+-
+    mode: manual
+  camp:
+    desc: camp/exit macro (a key bound to /camp desktop) -- pressed by Stop Bot before
+      VM shutdown
+    key: ''
+    mode: manual
+  collect:
+    desc: collect a collection shiny
+    key: ''
+    mode: manual
+  critical_heal:
+    cast_ms: 1500
+    desc: bigger heal for CRITICAL hp (skill not learned yet)
+    key: ''
+    mode: auto
+  cure:
+    cast_ms: 500
+    desc: GENERIC cure (any detriment type)
+    key: '0'
+    mode: auto
+  deaggro:
+    desc: de-aggro / drop threat
+    key: '='
+    mode: manual
+  debuff:
+    desc: debuff/slow incoming target (auto later w/ power)
+    key: '3'
+    mode: manual
+  direct_heal:
+    cast_ms: 1500
+    desc: standard single-target heal
+    key: '4'
+    mode: auto
+  emergency_heal:
+    cast_ms: 800
+    desc: emergency heal, cancels current cast (skill not learned yet)
+    key: ''
+    mode: auto
+  evac:
+    desc: emergency evac / GTFO
+    key: ''
+    mode: manual
+  follow:
+    desc: auto-follow toggle
+    key: Alt+=
+    mode: manual
+  gather:
+    desc: gather / harvest a resource node (big button)
+    key: ''
+    mode: manual
+  group_cure:
+    cast_ms: 800
+    desc: no dedicated group cure -> single-target cure (0) per member
+    key: none
+    mode: auto
+  group_heal:
+    cast_ms: 1500
+    desc: group heal
+    key: '8'
+    mode: auto
+  hail:
+    desc: hail NPC (quest turn-ins / interaction)
+    key: ''
+    mode: manual
+  item_use:
+    desc: use item (totem / temp buff)
+    key: ''
+    mode: manual
+  jump:
+    desc: jump (un-stick / pathing)
+    key: ''
+    mode: manual
+  pre_pull:
+    desc: pre-pull routine (debuff incoming + ward up)
+    key: ''
+    mode: manual
+  rez:
+    cast_ms: 6000
+    desc: revive a dead member (target via group_target_keys first)
+    key: Ctrl+1
+    mode: manual
+  sow:
+    desc: speed buff (SoW / totem) on the group
+    key: ''
+    mode: manual
+  spell_attack:
+    desc: offensive nuke (power-hungry; manual only)
+    key: '2'
+    mode: manual
+  stop_follow:
+    desc: stop following (prior tool used bare '=')
+    key: ''
+    mode: manual
+  hot:
+    cast_ms: 1000
+    desc: tank heal-over-time (Fury heartbeat; refresh on fade)
+    key: '5'
+    mode: auto
+  group_hot:
+    cast_ms: 1500
+    desc: group heal-over-time (AE)
+    key: '9'
+    mode: auto
+  emergency_hot:
+    cast_ms: 800
+    desc: emergency HoT (skill not learned yet)
+    key: ''
+    mode: auto
+group_target_keys:
+- F1
+- F2
+- F3
+- F4
+- F5
+- F6
+healer: fury
+slot_roles:
+- healer
+- tank
+- dps
+- dps
+- support
+- support
+tank_slot: 1
+maintenance_role: hot
+group_maintenance_role: group_hot
+names:
+  0: Croolst
+  1: Paraphon
+  2: ''
+  3: ''
+  4: ''
+  5: ''
+select_character: Croolst

@@ -67,9 +67,31 @@ _GROUP_ACTIONS = {
 def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     app = FastAPI(title="ib", docs_url=None, redoc_url=None)
 
+    def _profile_state() -> dict:
+        return {"active": brain.cfg.active_profile,
+                "available": brain.cfg.list_profiles(),
+                "healer": brain.cfg.healer_class,
+                "names": {str(k): v for k, v in brain.cfg.names.items()}}
+
+    # seed the dashboard with the current profile
+    telemetry.update(profile=_profile_state())
+
     @app.get("/api/snapshot")
     async def snapshot():
         return telemetry.snapshot
+
+    @app.get("/api/profiles")
+    async def get_profiles():
+        return _profile_state()
+
+    @app.post("/api/profile/{name}")
+    async def set_profile(name: str):
+        if not brain.cfg.set_profile(name):
+            return JSONResponse({"error": "unknown profile"}, status_code=404)
+        await brain.push_config()          # re-push keymap + names to the agent
+        telemetry.update(profile=_profile_state())
+        telemetry.push_event("config", f"profile -> {name} ({brain.cfg.healer_class})")
+        return {"ok": True, **_profile_state()}
 
     @app.get("/api/frame.jpg")
     async def frame():

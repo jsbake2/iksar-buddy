@@ -85,6 +85,10 @@ def decide(world: WorldState, cfg, state: State) -> Action | None:
 
     th = cfg.thresholds
     tank_slot = int(cfg.ability_map.get("tank_slot", 0))
+    # proactive-mitigation roles depend on the active profile: a Defiler refreshes
+    # a WARD, a Fury refreshes a HoT. `tank.ward` doubles as "maintenance up?".
+    mr = getattr(cfg, "maint_role", "ward")
+    gmr = getattr(cfg, "group_maint_role", "group_ward")
     hp_std = float(th.get("hp_standard", 0.85))
     hp_cri = float(th.get("hp_critical", 0.50))
     hp_emer = float(th.get("hp_emergency", 0.25))
@@ -132,14 +136,14 @@ def decide(world: WorldState, cfg, state: State) -> Action | None:
                 t = _lowest(critical, tank_slot)
                 return Action(role, t.slot, f"critical heal slot{t.slot} {t.hp:.0%}")
 
-        # 5) Tank ward heartbeat (proactive Defiler mitigation).
-        if tank is not None and not tank.ward and _is_mapped(cfg, "ward"):
-            return Action("ward", tank_slot, "tank ward down")
+        # 5) Tank maintenance heartbeat (Defiler ward / Fury HoT).
+        if tank is not None and not tank.ward and _is_mapped(cfg, mr):
+            return Action(mr, tank_slot, f"tank {mr} down")
 
-        # 6) Group ward on AE.
+        # 6) Group maintenance on AE (group ward / group HoT).
         if th.get("group_ward_on_ae", True) and world.ae_incoming \
-                and not world.group_ward_up and _is_mapped(cfg, "group_ward"):
-            return Action("group_ward", None, "AE incoming, group ward down")
+                and not world.group_ward_up and _is_mapped(cfg, gmr):
+            return Action(gmr, None, f"AE incoming, {gmr} down")
 
         # 7) Group standard heal — enough hurt AND mana ok.
         if mana_ok and len(hurt) >= grp_heal_n and len(alive) > 1 and _is_mapped(cfg, "group_heal"):
@@ -153,10 +157,10 @@ def decide(world: WorldState, cfg, state: State) -> Action | None:
 
     # 9) OOC prepull maintenance.
     if state == State.OOC and world.prepull:
-        if tank is not None and not tank.ward and _is_mapped(cfg, "ward"):
-            return Action("ward", tank_slot, "prepull: restore tank ward")
-        if not world.group_ward_up and _is_mapped(cfg, "group_ward"):
-            return Action("group_ward", None, "prepull: restore group ward")
+        if tank is not None and not tank.ward and _is_mapped(cfg, mr):
+            return Action(mr, tank_slot, f"prepull: restore tank {mr}")
+        if not world.group_ward_up and _is_mapped(cfg, gmr):
+            return Action(gmr, None, f"prepull: restore {gmr}")
         if _is_mapped(cfg, "debuff"):
             return Action("debuff", None, "prepull: pre-debuff incoming")
 

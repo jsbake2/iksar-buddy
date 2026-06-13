@@ -64,6 +64,14 @@ class Brain:
         except (ConnectionError, RuntimeError):
             pass
 
+    async def push_config(self) -> None:
+        """Send the active profile's keymap + names + calibration to the agent.
+        Called on connect AND after a profile switch so the agent's targeting keys,
+        and the character names it shows/uses for combat detection, follow the profile."""
+        await self.send(proto.CONFIG, ability_map=self.cfg.ability_map,
+                        calibration=self.cfg.calibration,
+                        names=self.cfg.names)
+
     async def push_command(self, action: Action) -> None:
         key = self.cfg.key_for(action.role)
         await self.send(proto.COMMAND, role=action.role, key=key,
@@ -90,8 +98,7 @@ class Brain:
         log.info("agent connected: %s", peer)
         self.telemetry.update(agent={**self.telemetry.snapshot["agent"], "connected": True})
         await self.send(proto.WELCOME, protocol=proto.PROTOCOL_VERSION)
-        await self.send(proto.CONFIG, ability_map=self.cfg.ability_map,
-                        calibration=self.cfg.calibration)
+        await self.push_config()
         try:
             while True:
                 msg = await proto.read_message(reader)
@@ -219,13 +226,14 @@ class Brain:
         # tunable (ward_heartbeat_s); 0/absent disables it.
         else:
             hb = float(self.cfg.threshold("ward_heartbeat_s", 0) or 0)
-            wkey = self.cfg.key_for("ward")
+            mr = self.cfg.maint_role                 # 'ward' (Defiler) or 'hot' (Fury)
+            wkey = self.cfg.key_for(mr)
             if (hb > 0 and wkey and wkey != "none"
                     and self.sm.state == State.IN_COMBAT and self.sm.override is None
                     and now >= self._next_action_at and now - self._last_ward >= hb):
                 tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
-                await self.send("command", role="ward", key=wkey, target_slot=tank_slot,
-                                manual=False, reason="ward heartbeat")
+                await self.send("command", role=mr, key=wkey, target_slot=tank_slot,
+                                manual=False, reason=f"{mr} heartbeat")
                 self._last_ward = now
                 self._next_action_at = now + GLOBAL_GCD_S
 

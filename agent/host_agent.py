@@ -123,6 +123,10 @@ class HostAgent:
         self._aborted = 0           # injections aborted because chat was unsafe
         self._group_target_keys = []  # slot -> F-key (from CONFIG)
         self._injecting = False     # serialize injects (don't overlap key sequences)
+        # names + combat regex follow the active healer PROFILE (pushed via CONFIG):
+        # Jenskin/Robskin (Defiler) vs Croolst/Paraphon (Fury). Default until CONFIG.
+        self._names = dict(NAMES)
+        self._name_re = NAME_RE
 
     async def run(self) -> None:
         asyncio.create_task(self._combat_log_loop())   # runs independent of brain link
@@ -195,7 +199,7 @@ class HostAgent:
         newest = None
         for ln in lines[1:]:
             m = re.match(r"\((\d+)\)", ln)
-            if m and COMBAT_RE.search(ln) and NAME_RE.search(ln):
+            if m and COMBAT_RE.search(ln) and self._name_re.search(ln):
                 ep = int(m.group(1))
                 if newest is None or ep > newest:
                     newest = ep
@@ -243,7 +247,16 @@ class HostAgent:
             if msg.type == proto.CONFIG:
                 am = msg.data.get("ability_map") or {}
                 self._group_target_keys = am.get("group_target_keys") or []
-                log.info("config: %d target keys", len(self._group_target_keys))
+                names = msg.data.get("names") or am.get("names") or {}
+                if names:
+                    self._names = {int(k): v for k, v in names.items() if v}
+                    # combat counts only if a GROUP MEMBER OTHER THAN the bot (slot 0)
+                    # is named — rebuild the regex for the active profile's names.
+                    others = [re.escape(v) for s, v in self._names.items() if s != 0 and v]
+                    if others:
+                        self._name_re = re.compile(r"\b(" + "|".join(others) + r")\b")
+                log.info("config: %d target keys, names=%s",
+                         len(self._group_target_keys), self._names)
             elif msg.type == proto.COMMAND:
                 await self._on_command(msg.data, loop)
             elif msg.type in (proto.WELCOME, proto.PING):
@@ -377,7 +390,7 @@ class HostAgent:
         self._chat_safe = chat_safe            # the inject gate reads this
         return {
             "members": members,
-            "names": {str(k): v for k, v in NAMES.items()},
+            "names": {str(k): v for k, v in self._names.items()},
             "own_power": (own.get("power") or 0) / 100.0,
             "own_hp": (own.get("hp") or 0) / 100.0,
             "casting": False,                  # cast-bar sensing not built yet

@@ -35,6 +35,26 @@ if (wardHb) {
   };
 }
 
+// ---- healer profile selector (top bar) ------------------------------------
+const profileSel = $("profile");
+const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+let profileSig = "";
+function renderProfile(p) {
+  if (!p || !profileSel) return;
+  const sig = (p.available || []).join(",");
+  if (sig !== profileSig) {            // rebuild options only when the set changes
+    profileSig = sig;
+    profileSel.innerHTML = (p.available || [])
+      .map((n) => `<option value="${n}">${cap(n)}</option>`).join("");
+  }
+  if (document.activeElement !== profileSel && p.active) profileSel.value = p.active;
+  if (p.healer && $("selfClass")) $("selfClass").textContent = cap(p.healer);
+}
+if (profileSel) profileSel.onchange = () => {
+  if (confirm(`Switch healer profile to ${cap(profileSel.value)}?\n\nThis swaps the character + keymap (Defiler wards vs Fury HoTs).`))
+    post(`/api/profile/${profileSel.value}`);
+};
+
 document.querySelectorAll("[data-ov]").forEach((b) => (b.onclick = () => post(`/api/override/${b.dataset.ov}`)));
 document.querySelectorAll("[data-ctl]").forEach((b) => (b.onclick = () => post(`/api/control/${b.dataset.ctl}`)));
 document.querySelectorAll("[data-group]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.group}`)));
@@ -255,6 +275,9 @@ function render(s) {
   pushHpHistory(members);
   drawHpGraph(members);
   if (!gridBuilt || members.length) maybeRebuildGrid(members);
+
+  // ---- profile selector ----
+  renderProfile(s.profile);
 
   // ---- events ----
   renderEvents(s.events || []);
