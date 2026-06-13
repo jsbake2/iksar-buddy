@@ -7,15 +7,16 @@
   <link rel="stylesheet" href="themes.css" />
   <link rel="stylesheet" href="forge.css" />
   <style>
-    .cc-main { max-width:680px; margin:18px auto; padding:0 18px; display:flex; flex-direction:column; gap:14px; }
-    .cc-row { display:grid; grid-template-columns:200px 1fr; gap:14px; align-items:center;
-      padding:9px 10px; border-bottom:1px solid var(--grid); }
+    .cc-main { max-width:760px; margin:18px auto; padding:0 18px; display:flex; flex-direction:column; gap:14px; }
+    .cc-row { display:grid; grid-template-columns:1fr 1fr 120px 34px; gap:12px; align-items:center;
+      padding:8px 10px; border-bottom:1px solid var(--grid); }
     .cc-row.head { color:var(--faint); font-size:10px; text-transform:uppercase; letter-spacing:1.2px;
       border-bottom:1px solid var(--line); }
-    .cc-class { font-weight:700; text-transform:capitalize; }
     .cc-in { background:var(--panel2); border:1px solid var(--line); color:var(--fg);
       border-radius:7px; padding:8px 10px; font-size:14px; width:100%; }
     .cc-in:focus { outline:none; border-color:var(--accent); }
+    .cc-del { background:none; border:none; color:var(--faint); cursor:pointer; font-size:18px; padding:0; }
+    .cc-del:hover { color:var(--bad); }
     .cc-actions { display:flex; align-items:center; gap:14px; padding:8px 10px 30px; }
     .cc-status { font-size:13px; }
     .cc-status.good { color:var(--good); } .cc-status.bad { color:var(--bad); }
@@ -36,11 +37,12 @@
     </label>
   </header>
   <main class="cc-main">
-    <p class="km-hint">Forge selects this character at char-select when you pick the class.
-      The bot's trade-class dropdown shows <code>alchemist (Foxyman)</code>. Leave a class blank
-      if no crafter has it yet.</p>
+    <p class="km-hint">Each crafter = a character + its tradeskill class + which VM it's on
+      (<code>vm1</code> = Crafter 1, <code>vm2</code> = Crafter 2). A bot's dropdown shows only its
+      VM's crafters as <code>class (character)</code>. Forge selects that character at char-select.</p>
     <div id="tbl"></div>
     <div class="cc-actions">
+      <button id="add" class="util">＋ Add crafter</button>
       <button id="save" class="launch">Save</button>
       <span class="cc-status" id="status"></span>
     </div>

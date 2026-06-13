@@ -1,0 +1,12 @@
+# Crafter roster (FORGE.md). Each crafter = a character + its tradeskill class +
+# which VM/account it lives on. Edited from the dashboard "characters" config window.
+# A bot's trade dropdown shows ONLY the crafters for that bot's VM, labelled
+# "class (character)". vm1 = iksar_buddy2 (account 1), vm2 = iksar_buddy3 (account 2).
+# Classes left blank until the owner assigns them.
+crafters:
+  - { character: Robskin,  class: armorer,   vm: vm1 }
+  - { character: Foxyman,  class: alchemist, vm: vm1 }
+  - { character: Paraphon, class: "",        vm: vm1 }
+  - { character: Jenskin,  class: jeweler,   vm: vm2 }
+  - { character: Croolst,  class: sage,      vm: vm2 }
+  - { character: Croalst,  class: "",        vm: vm2 }

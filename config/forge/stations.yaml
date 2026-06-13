@@ -16,8 +16,7 @@ bots:
   - id: A
     label: "Crafter 1"
     dom: iksar_buddy2
-    character: ""          # OWNER: crafter toon on this VM's account
-    account: ""            # OWNER: EQ2 account name (interlock key)
+    vm: vm1               # crafters.yaml entries with vm: vm1 show in this bot's dropdown
     spice_port: 5910
     width: 1920
     height: 1080
@@ -25,8 +24,7 @@ bots:
   - id: B
     label: "Crafter 2"
     dom: iksar_buddy3       # cloned from iksar_buddy2 2026-06-13 (UI carried over)
-    character: ""           # OWNER: crafter toon on this VM's account
-    account: ""             # OWNER: EQ2 account name (interlock key)
+    vm: vm2
     spice_port: 5920
     width: 1920
     height: 1080

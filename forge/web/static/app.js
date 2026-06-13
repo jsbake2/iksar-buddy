@@ -28,16 +28,21 @@ function post(url, body) {
 const botEls = {};          // id -> { root, refs..., uiMode, queueSig }
 const tpl = $("botTpl");
 
-// tradeskill -> character mapping (from class_chars config); the dropdown shows
-// "alchemist (Foxyman)" and the bot's character is derived from the chosen class.
-let classChars = {};
-let allTrades = [];
-const tradeLabel = (t) => (classChars[t] ? `${t} (${classChars[t]})` : t);
-function refreshTradeOptions() {
+// Crafter roster: [{character, class, vm}]. Each bot's dropdown shows only the
+// crafters for its VM, labelled "class (character)"; selecting one sets both the
+// bot's character (for char-select) and trade_class (for crafting).
+let crafters = [];
+const craftersForVm = (vm) => crafters.filter((c) => c.vm === vm);
+const crafterLabel = (c) => (c.class ? `${c.class} (${c.character})` : `(${c.character}) — no class`);
+const selectedCrafter = (refs) =>
+  crafters.find((c) => c.vm === refs.vm && c.character === refs.trade.value) || null;
+function refreshCrafterOptions() {
   Object.values(botEls).forEach((refs) => {
     const cur = refs.trade.value;
-    refs.trade.innerHTML = allTrades.map((t) => `<option value="${t}">${tradeLabel(t)}</option>`).join("");
-    if (cur) refs.trade.value = cur;
+    const list = craftersForVm(refs.vm);
+    refs.trade.innerHTML = list.map((c) =>
+      `<option value="${c.character}">${crafterLabel(c)}</option>`).join("");
+    if (cur && list.some((c) => c.character === cur)) refs.trade.value = cur;
   });
 }
 
@@ -51,9 +56,10 @@ function buildBotPanel(bot, tradeClasses) {
   q(".bot-char").textContent = bot.character || "—";
   q(".bot-dom").textContent = bot.dom || "—";
 
-  // trade-class options — label shows the mapped character "alchemist (Foxyman)"
+  // crafter options — only the crafters on THIS bot's VM, "class (character)"
   const trade = q(".bot-trade");
-  trade.innerHTML = tradeClasses.map((t) => `<option value="${t}">${tradeLabel(t)}</option>`).join("");
+  trade.innerHTML = craftersForVm(bot.vm).map((c) =>
+    `<option value="${c.character}">${crafterLabel(c)}</option>`).join("");
 
   const refs = {
     root,
@@ -89,6 +95,7 @@ function buildBotPanel(bot, tradeClasses) {
     launch: q(".bot-launch"),
     switch: q(".bot-switch"),
     log: q(".bot-log"),
+    vm: bot.vm || "",
     uiMode: bot.mode || "single",
     queueSig: "",
   };
@@ -102,16 +109,22 @@ function buildBotPanel(bot, tradeClasses) {
     applyMode(refs);
     post(`/api/bot/${id}/config`, { mode: refs.uiMode });
   }));
-  refs.trade.onchange = () => post(`/api/bot/${id}/config`, { trade_class: refs.trade.value });
+  refs.trade.onchange = () => {
+    const c = selectedCrafter(refs);
+    if (c) post(`/api/bot/${id}/config`, { character: c.character, trade_class: c.class });
+  };
   refs.recipe.onchange = () => post(`/api/bot/${id}/config`, { recipe: refs.recipe.value });
   refs.count.onchange = () => post(`/api/bot/${id}/config`, { count: parseInt(refs.count.value) || 1 });
   refs.ocr.onclick = () => post(`/api/bot/${id}/ocr`);
   refs.readlog.onclick = () => post(`/api/bot/${id}/readlog`);
   refs.addrow.onclick = () => { pushQueueRow(refs, { name: "", count: 1 }); saveQueue(id, refs); };
-  refs.start.onclick = () => post(`/api/bot/${id}/start`, {
-    mode: refs.uiMode, trade_class: refs.trade.value,
-    recipe: refs.recipe.value, count: parseInt(refs.count.value) || 1,
-  });
+  refs.start.onclick = () => {
+    const c = selectedCrafter(refs);
+    post(`/api/bot/${id}/start`, {
+      mode: refs.uiMode, trade_class: c ? c.class : "",
+      recipe: refs.recipe.value, count: parseInt(refs.count.value) || 1,
+    });
+  };
   refs.stop.onclick = () => post(`/api/bot/${id}/stop`);
   refs.pause.onclick = () => post(`/api/bot/${id}/pause`);
   refs.launch.onclick = () => post(`/api/bot/${id}/launch`);
@@ -121,7 +134,7 @@ function buildBotPanel(bot, tradeClasses) {
   refs.live.onclick = refs.console.onclick;
 
   // initial input values
-  if (bot.trade_class) refs.trade.value = bot.trade_class;
+  if (bot.character) refs.trade.value = bot.character;
   applyMode(refs);
   $("bots").appendChild(root);
   return refs;
@@ -178,11 +191,11 @@ function updateBotPanel(refs, bot) {
   refs.state.textContent = st.replace("_", " ");
   refs.state.className = "state-pill bot-state s-" + st;
 
-  // trade class (don't clobber an open dropdown)
-  if (document.activeElement !== refs.trade && bot.trade_class && refs.trade.value !== bot.trade_class)
-    refs.trade.value = bot.trade_class;
-  // header shows the character derived from the chosen trade class
-  if (refs.charName) refs.charName.textContent = classChars[bot.trade_class] || "—";
+  // selected crafter (dropdown value = character; don't clobber an open dropdown)
+  if (document.activeElement !== refs.trade && bot.character && refs.trade.value !== bot.character)
+    refs.trade.value = bot.character;
+  // header shows the selected character
+  if (refs.charName) refs.charName.textContent = bot.character || "—";
   // recipe / count only when not focused
   if (document.activeElement !== refs.recipe && bot.recipe && refs.uiMode === "single")
     if (!refs.recipe.value) refs.recipe.placeholder = bot.recipe;
@@ -254,15 +267,14 @@ let built = false;
 function render(s) {
   const order = s.order || [];
   const bots = s.bots || {};
-  allTrades = s.trade_classes || allTrades;
-  const cc = s.class_chars || {};
-  const ccChanged = JSON.stringify(cc) !== JSON.stringify(classChars);
-  classChars = cc;
+  const cr = s.crafters || [];
+  const crChanged = JSON.stringify(cr) !== JSON.stringify(crafters);
+  crafters = cr;
   if (!built && order.length) {
-    order.forEach((id) => buildBotPanel(bots[id], allTrades));
+    order.forEach((id) => buildBotPanel(bots[id]));
     built = true;
-  } else if (ccChanged) {
-    refreshTradeOptions();
+  } else if (crChanged) {
+    refreshCrafterOptions();
   }
   order.forEach((id) => {
     const refs = botEls[id];

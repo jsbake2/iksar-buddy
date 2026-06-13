@@ -40,17 +40,16 @@ def _load_yaml(p: Path) -> dict:
 
 async def _run(args: argparse.Namespace) -> None:
     stations = _load_yaml(CONFIG)
-    class_chars = _load_yaml(CONF_DIR / "forge" / "class_chars.yaml").get("class_chars", {})
+    crafters = _load_yaml(CONF_DIR / "forge" / "crafters.yaml").get("crafters", [])
     tele = ForgeTelemetry(trade_classes=stations.get("trade_classes", []),
-                          class_chars=class_chars)
+                          crafters=crafters)
     for bot in stations.get("bots", []):
         tele.add_bot(bot)
     if args.live:
         from .controller import ForgeController
         profile = _load_yaml(CONF_DIR / "forge" / "craft.yaml")
-        chars = _load_yaml(CONF_DIR / "characters.yaml").get("characters", {})
         backend = ForgeController(tele, stations, profile,
-                                  CONF_DIR / "forge", chars, class_chars)
+                                  CONF_DIR / "forge", crafters)
         logging.getLogger("forge").info("LIVE backend — driving real crafter VMs")
     else:
         backend = ForgeSim(tele)

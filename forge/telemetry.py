@@ -25,7 +25,7 @@ STATES = ["off", "idle", "launching", "selecting", "crafting",
 
 # What a fresh bot panel shows before anything runs.
 DEFAULT_BOT: dict[str, Any] = {
-    "id": "", "label": "", "dom": "", "character": "", "spice_port": None,
+    "id": "", "label": "", "dom": "", "vm": "", "character": "", "spice_port": None,
     "enabled": False,
     "vm_running": False,
     "state": "off",
@@ -49,22 +49,22 @@ DEFAULT_BOT: dict[str, Any] = {
 
 class ForgeTelemetry:
     def __init__(self, trade_classes: list[str] | None = None,
-                 class_chars: dict | None = None) -> None:
+                 crafters: list | None = None) -> None:
         self._bots: dict[str, dict] = {}
         self._order: list[str] = []
         self._events: list[dict] = []
         self._trade_classes = trade_classes or []
-        self._class_chars = class_chars or {}     # tradeskill -> character
+        self._crafters = crafters or []           # [{character, class, vm}]
         self._subs: set[asyncio.Queue] = set()
 
-    def set_class_chars(self, mapping: dict) -> None:
-        self._class_chars = mapping or {}
+    def set_crafters(self, crafters: list) -> None:
+        self._crafters = crafters or []
         self._publish()
 
     # -- bot registry ------------------------------------------------------
     def add_bot(self, cfg: dict) -> None:
         b = deepcopy(DEFAULT_BOT)
-        for k in ("id", "label", "dom", "character", "spice_port", "enabled"):
+        for k in ("id", "label", "dom", "vm", "character", "spice_port", "enabled"):
             if k in cfg:
                 b[k] = cfg[k]
         b["state"] = "idle" if b["enabled"] else "off"
@@ -104,7 +104,7 @@ class ForgeTelemetry:
             "order": self._order,
             "events": self._events,
             "trade_classes": self._trade_classes,
-            "class_chars": self._class_chars,
+            "crafters": self._crafters,
             "ts": time.time(),
         }
 

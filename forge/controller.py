@@ -27,13 +27,14 @@ LAUNCHER_LOG = r"C:\ib\launcher.log"
 
 
 class ForgeController:
+    ACCOUNT_FOR_VM = {"vm1": "account1", "vm2": "account2"}
+
     def __init__(self, tele: ForgeTelemetry, stations: dict, craft_profile: dict,
-                 profile_dir: Path, characters: dict, class_chars: dict | None = None) -> None:
+                 profile_dir: Path, crafters: list | None = None) -> None:
         self.t = tele
         self.cfg_profile = craft_profile
         self.profile_dir = profile_dir
-        self.chars = characters or {}
-        self.class_chars = class_chars or {}      # tradeskill -> character
+        self.crafters = crafters or []            # [{character, class, vm}]
         self.lock = AccountLock()
         self.guests: dict[str, Guest] = {}
         self.workers: dict[str, CraftWorker] = {}
@@ -48,20 +49,21 @@ class ForgeController:
 
     # -- character / interlock helpers -------------------------------------
     def _char_for(self, bid: str) -> str:
-        """The character a bot uses = the toon mapped to its chosen trade class
-        (class_chars). Falls back to an explicit station character if set."""
-        b = self.t.bot(bid) or {}
-        tc = b.get("trade_class") or ""
-        return (self.class_chars.get(tc) or self.stations.get(bid, {}).get("character") or "").strip()
+        """The character a bot uses = the crafter selected in its dropdown (stored
+        on the bot as `character` when the combo is picked)."""
+        return ((self.t.bot(bid) or {}).get("character") or "").strip()
 
     def _account(self, bid: str) -> str:
-        return self.chars.get(self._char_for(bid), {}).get("account", "")
+        """Interlock key derived from the bot's VM (vm1->account1, vm2->account2),
+        matching the healer's account locks."""
+        vm = (self.t.bot(bid) or {}).get("vm") or self.stations.get(bid, {}).get("vm", "")
+        return self.ACCOUNT_FOR_VM.get(vm, "")
 
     def _holder(self, bid: str) -> str:
         return f"forge:{self.stations.get(bid, {}).get('dom', bid)}:{self._char_for(bid) or '?'}"
 
-    def set_class_chars(self, mapping: dict) -> None:
-        self.class_chars = mapping or {}
+    def set_crafters(self, crafters: list) -> None:
+        self.crafters = crafters or []
 
     def _acquire(self, bid: str) -> bool:
         acct = self._account(bid)

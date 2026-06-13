@@ -15,7 +15,7 @@ from ..sim import ForgeSim
 from ..telemetry import ForgeTelemetry
 
 STATIC = Path(__file__).resolve().parent / "static"
-CLASS_CHARS_PATH = Path(__file__).resolve().parent.parent.parent / "config" / "forge" / "class_chars.yaml"
+CRAFTERS_PATH = Path(__file__).resolve().parent.parent.parent / "config" / "forge" / "crafters.yaml"
 
 
 def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
@@ -39,28 +39,36 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
         return Response(content=data, media_type="image/jpeg",
                         headers={"Cache-Control": "no-store"})
 
-    @app.get("/api/classchars")
-    async def get_classchars():
-        return {"class_chars": tele.snapshot.get("class_chars", {}),
-                "trade_classes": tele.snapshot.get("trade_classes", [])}
+    @app.get("/api/crafters")
+    async def get_crafters():
+        return {"crafters": tele.snapshot.get("crafters", []),
+                "trade_classes": tele.snapshot.get("trade_classes", []),
+                "vms": [{"vm": b.get("vm"), "label": b.get("label"), "dom": b.get("dom")}
+                        for b in tele.snapshot.get("bots", {}).values() if b.get("vm")]}
 
-    @app.post("/api/classchars")
-    async def post_classchars(payload: dict = Body(...)):
-        mapping = payload.get("class_chars")
-        if not isinstance(mapping, dict):
-            return JSONResponse({"error": "missing class_chars"}, status_code=400)
-        mapping = {str(k): str(v).strip() for k, v in mapping.items()}
+    @app.post("/api/crafters")
+    async def post_crafters(payload: dict = Body(...)):
+        rows = payload.get("crafters")
+        if not isinstance(rows, list):
+            return JSONResponse({"error": "missing crafters list"}, status_code=400)
+        clean = []
+        for r in rows:
+            ch = str(r.get("character", "")).strip()
+            if not ch:
+                continue
+            clean.append({"character": ch, "class": str(r.get("class", "")).strip(),
+                          "vm": str(r.get("vm", "")).strip()})
         try:
-            CLASS_CHARS_PATH.write_text(
-                "# Tradeskill class -> character (edited from the dashboard).\n"
-                + yaml.safe_dump({"class_chars": mapping}, sort_keys=True, allow_unicode=True),
+            CRAFTERS_PATH.write_text(
+                "# Crafter roster: character + tradeskill class + VM (edited from dashboard).\n"
+                + yaml.safe_dump({"crafters": clean}, sort_keys=False, allow_unicode=True),
                 encoding="utf-8")
         except OSError as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-        tele.set_class_chars(mapping)
-        if hasattr(sim, "set_class_chars"):
-            sim.set_class_chars(mapping)
-        return {"ok": True, "class_chars": mapping}
+        tele.set_crafters(clean)
+        if hasattr(sim, "set_crafters"):
+            sim.set_crafters(clean)
+        return {"ok": True, "crafters": clean}
 
     @app.post("/api/bot/{bot_id}/enable")
     async def enable(bot_id: str, payload: dict = Body(default={})):
