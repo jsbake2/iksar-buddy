@@ -14,6 +14,8 @@ import time
 from functools import partial
 from pathlib import Path
 
+import yaml
+
 from shared.account_lock import AccountLock
 
 from . import sensors
@@ -24,6 +26,17 @@ from .worker import CraftWorker
 log = logging.getLogger("forge.controller")
 
 LAUNCHER_LOG = r"C:\ib\launcher.log"
+
+
+def _deep_merge(dst: dict, src: dict) -> dict:
+    """Recursively merge src into dst (in place). Used to fold calibration captures
+    into the loaded craft.yaml profile."""
+    for k, v in (src or {}).items():
+        if isinstance(v, dict) and isinstance(dst.get(k), dict):
+            _deep_merge(dst[k], v)
+        else:
+            dst[k] = v
+    return dst
 
 
 class ForgeController:
@@ -178,27 +191,66 @@ class ForgeController:
         self.t.update_bot(bot_id, mode="writ", queue=queue)
         self.t.push_event(bot_id, "log", f"log: {len(queue)} recipes")
 
-    # -- live VM screen (dashboard thumbnail) ------------------------------
-    def frame_jpeg(self, bot_id: str) -> bytes:
-        """One virsh screenshot of the bot's VM as a downscaled JPEG. Cached ~1s so
-        rapid <img> reloads from two panels are cheap. b'' if the VM isn't grabbable."""
+    # -- live VM screen (dashboard thumbnail / calibration full-res) -------
+    def frame_jpeg(self, bot_id: str, full: bool = False) -> bytes:
+        """One virsh screenshot of the bot's VM as JPEG. full=False -> 640px (cached,
+        for panels); full=True -> native 1920 (for the calibration picker, uncached
+        so coords are exact). b'' if the VM isn't grabbable."""
         g = self.guests.get(bot_id)
         if not g:
             return b""
-        ts, data = self._frames.get(bot_id, (0.0, b""))
-        now = time.time()
-        if now - ts < 1.0 and data:
-            return data
+        if not full:
+            ts, data = self._frames.get(bot_id, (0.0, b""))
+            now = time.time()
+            if now - ts < 1.0 and data:
+                return data
         if not g.grab():
             return b""
+        args = (["magick", g.ppm, "-quality", "85", "jpg:-"] if full
+                else ["magick", g.ppm, "-scale", "640", "-quality", "65", "jpg:-"])
         try:
-            out = subprocess.run(["magick", g.ppm, "-scale", "640", "-quality", "65", "jpg:-"],
-                                 capture_output=True, timeout=4).stdout
+            out = subprocess.run(args, capture_output=True, timeout=5).stdout
         except (OSError, subprocess.SubprocessError):
             return b""
-        if out:
-            self._frames[bot_id] = (now, out)
+        if out and not full:
+            self._frames[bot_id] = (time.time(), out)
         return out
+
+    # -- calibration capture (the "set up tradeskills" window) -------------
+    def pixel(self, bot_id: str, x: int, y: int) -> list | None:
+        g = self.guests.get(bot_id)
+        if not g or not g.grab():
+            return None
+        return list(g.pixel(int(x), int(y)))
+
+    def save_template(self, bot_id: str, name: str, x: int, y: int, w: int, h: int) -> bool:
+        g = self.guests.get(bot_id)
+        if not g or not g.grab():
+            return False
+        png = g.region_png(int(x), int(y), int(w), int(h))
+        if not png:
+            return False
+        tdir = self.profile_dir / (self.cfg_profile.get("reaction", {}).get(
+            "templates_dir", "templates/reactions"))
+        tdir.mkdir(parents=True, exist_ok=True)
+        safe = "".join(c for c in str(name) if c.isalnum()) or "t"
+        (tdir / f"{safe}.png").write_bytes(png)
+        return True
+
+    def save_calib(self, updates: dict) -> bool:
+        """Deep-merge captured values into craft.yaml (in IB_FORGE_DIR) + reload.
+        Workers share self.cfg_profile by reference, so they pick it up live."""
+        if not isinstance(updates, dict):
+            return False
+        _deep_merge(self.cfg_profile, updates)
+        try:
+            (self.profile_dir / "craft.yaml").write_text(
+                "# Forge craft calibration (dashboard-captured).\n"
+                + yaml.safe_dump(self.cfg_profile, sort_keys=False, allow_unicode=True),
+                encoding="utf-8")
+        except OSError:
+            return False
+        return True
 
     # -- launch / switch (login automation, FORGE.md §5.5) ----------------
     def launch(self, bot_id: str) -> None:

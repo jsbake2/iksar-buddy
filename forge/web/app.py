@@ -34,16 +34,63 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
     async def snapshot():
         return tele.snapshot
 
+    async def _exec(fn, *a):
+        return await asyncio.get_running_loop().run_in_executor(None, fn, *a)
+
     @app.get("/api/bot/{bot_id}/frame.jpg")
     async def frame(bot_id: str):
         """Live VM screen for a bot's panel (live backend only). 503 until grabbable."""
         if not _bot_ok(bot_id) or not hasattr(sim, "frame_jpeg"):
             return Response(status_code=503)
-        data = await asyncio.get_running_loop().run_in_executor(None, sim.frame_jpeg, bot_id)
+        data = await _exec(sim.frame_jpeg, bot_id)
         if not data:
             return Response(status_code=503)
         return Response(content=data, media_type="image/jpeg",
                         headers={"Cache-Control": "no-store"})
+
+    @app.get("/api/bot/{bot_id}/calibframe.jpg")
+    async def calibframe(bot_id: str):
+        """Full-res (1920) frame for the calibration picker — exact coords."""
+        if not _bot_ok(bot_id) or not hasattr(sim, "frame_jpeg"):
+            return Response(status_code=503)
+        data = await _exec(sim.frame_jpeg, bot_id, True)
+        if not data:
+            return Response(status_code=503)
+        return Response(content=data, media_type="image/jpeg",
+                        headers={"Cache-Control": "no-store"})
+
+    @app.get("/api/calib/enabled")
+    async def calib_enabled():
+        return {"enabled": hasattr(sim, "pixel")}     # live backend only
+
+    @app.get("/api/bot/{bot_id}/pixel")
+    async def pixel(bot_id: str, x: int, y: int):
+        if not _bot_ok(bot_id) or not hasattr(sim, "pixel"):
+            return JSONResponse({"error": "unavailable"}, status_code=400)
+        return {"rgb": await _exec(sim.pixel, bot_id, x, y)}
+
+    @app.post("/api/bot/{bot_id}/template")
+    async def template(bot_id: str, payload: dict = Body(...)):
+        if not _bot_ok(bot_id) or not hasattr(sim, "save_template"):
+            return JSONResponse({"error": "unavailable"}, status_code=400)
+        ok = await _exec(sim.save_template, bot_id, payload.get("name", "1"),
+                         payload.get("x", 0), payload.get("y", 0),
+                         payload.get("w", 0), payload.get("h", 0))
+        return {"ok": ok}
+
+    @app.get("/api/calib")
+    async def get_calib():
+        try:
+            return yaml.safe_load((_CFG / "craft.yaml").read_text(encoding="utf-8")) or {}
+        except (OSError, yaml.YAMLError):
+            return {}
+
+    @app.post("/api/calib")
+    async def post_calib(payload: dict = Body(...)):
+        if not hasattr(sim, "save_calib"):
+            return JSONResponse({"error": "live backend only"}, status_code=400)
+        ok = await _exec(sim.save_calib, payload.get("updates", {}))
+        return {"ok": ok}
 
     @app.get("/api/crafters")
     async def get_crafters():

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" data-theme="iksar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ib · forge — set up tradeskills</title>
+  <link rel="stylesheet" href="themes.css" />
+  <link rel="stylesheet" href="forge.css" />
+  <style>
+    .cal-wrap { display:grid; grid-template-columns:1fr 380px; gap:16px; padding:14px; max-width:1700px; margin:0 auto; }
+    .cal-img-box { position:relative; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#000; }
+    #frame { display:block; width:100%; cursor:crosshair; user-select:none; }
+    .sel { position:absolute; border:2px solid var(--accent); background:color-mix(in srgb,var(--accent) 18%,transparent); pointer-events:none; }
+    .cal-side { display:flex; flex-direction:column; gap:10px; }
+    .cal-hint { color:var(--muted); font-size:12px; line-height:1.5; }
+    .cal-hint b { color:var(--accent2); }
+    .cal-list { display:flex; flex-direction:column; gap:5px; max-height:62vh; overflow:auto; }
+    .cal-item { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;
+      padding:8px 10px; border-radius:8px; background:var(--panel2); border:1px solid var(--line); }
+    .cal-item.armed { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+    .cal-item .nm { font-size:12px; font-weight:600; }
+    .cal-item .val { font-size:10px; color:var(--muted); font-family:ui-monospace,monospace; }
+    .cal-item .val.set { color:var(--good); }
+    .cal-item .sw { display:inline-block; width:11px; height:11px; border-radius:3px; border:1px solid var(--line); vertical-align:-1px; margin-left:5px; }
+    .cap-btn { font-size:11px; padding:6px 10px; border-radius:7px; cursor:pointer; background:var(--panel);
+      color:var(--fg); border:1px solid var(--line); }
+    .cap-btn:hover { border-color:var(--accent); color:var(--accent2); }
+    .cal-actions { display:flex; align-items:center; gap:12px; padding-top:6px; border-top:1px solid var(--line); }
+    .cal-status { font-size:12px; } .cal-status.good { color:var(--good); } .cal-status.bad { color:var(--bad); }
+    .cal-grp { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--faint); margin:8px 0 2px; }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <div class="brand"><span class="mark">ib</span><span class="sub-mark">forge</span></div>
+    <span class="fg-tagline">set up tradeskills — capture the crafting window</span>
+    <a class="km-back" href="/">← back</a>
+    <div class="spacer"></div>
+    <label class="theme"><span>bot</span><select id="bot"></select></label>
+    <button class="km-link" id="refresh" title="re-grab the VM screen">↻ refresh</button>
+    <label class="theme"><span>theme</span>
+      <select id="theme">
+        <option value="iksar">iksar</option><option value="midnight">midnight</option>
+        <option value="grafana">grafana</option><option value="amber">amber</option>
+        <option value="paper">paper</option><option value="defiler">defiler</option>
+      </select>
+    </label>
+  </header>
+  <main class="cal-wrap">
+    <div class="cal-img-box" id="imgbox">
+      <img id="frame" alt="VM screen" draggable="false" />
+      <div class="sel" id="sel" hidden></div>
+    </div>
+    <div class="cal-side">
+      <p class="cal-hint">Pick a bot whose VM is at the crafting window. Click <b>Capture</b>
+        on a target, then on the screen: <b>click a point</b> (pixels/clicks) or <b>drag a box</b>
+        (regions/templates). Then <b>Save</b>. For the 3 reaction buttons, drag a box around
+        each unique button — saved instantly as 1/2/3.png.</p>
+      <div class="cal-list" id="list"></div>
+      <div class="cal-actions">
+        <button id="save" class="launch">Save calibration</button>
+        <span class="cal-status" id="status"></span>
+      </div>
+    </div>
+  </main>
+  <script src="calibrate.js"></script>
+</body>
+</html>
