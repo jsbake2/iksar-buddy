@@ -95,7 +95,7 @@ def parse_crafted_log(text: str) -> list[str]:
     'You created <item>.' / 'You made <item>.' shapes (refine once we see real lines)."""
     out: list[str] = []
     for line in text.splitlines():
-        mm = re.search(r"You (?:create|made|crafted|finished creating)\s+(?:a |an )?(.+?)\.", line, re.I)
+        mm = re.search(r"You (?:created|made|crafted|finished creating)\s+(?:a |an )?(.+?)\.", line, re.I)
         if mm:
             out.append(mm.group(1).strip())
     return out
