@@ -46,8 +46,8 @@
 .switch input:checked + .slider::before { transform:translateX(19px); background:var(--good); }
 
 /* live thumbnail */
-.bot-live-frame { position:relative; width:100%; height:152px; border-radius:10px;
-  background:#000 center/cover no-repeat; border:1px solid var(--line); overflow:hidden;
+.bot-live-frame { position:relative; width:100%; aspect-ratio:16/9; border-radius:10px;
+  background:#000 center/contain no-repeat; border:1px solid var(--line); overflow:hidden;
   cursor:pointer; display:grid; place-items:center; }
 .bot-live-frame::after { content:"no signal"; color:var(--faint); font-size:12px; }
 .bot-live-frame.has-img::after { content:""; }

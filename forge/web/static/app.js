@@ -46,12 +46,14 @@ function buildBotPanel(bot, tradeClasses) {
     root,
     state: q(".bot-state"),
     enable: q(".bot-enable"),
+    charName: q(".bot-char"),
     console: q(".bot-console"),
     live: q(".bot-live-frame"),
     tabs: [...root.querySelectorAll(".mode-tab")],
     paneSingle: q(".pane-single"),
     paneWrit: q(".pane-writ"),
     trade,
+    character: q(".bot-character"),
     recipe: q(".bot-recipe"),
     count: q(".bot-count"),
     ocr: q(".bot-ocr"),
@@ -89,6 +91,7 @@ function buildBotPanel(bot, tradeClasses) {
     post(`/api/bot/${id}/config`, { mode: refs.uiMode });
   }));
   refs.trade.onchange = () => post(`/api/bot/${id}/config`, { trade_class: refs.trade.value });
+  refs.character.onchange = () => post(`/api/bot/${id}/config`, { character: refs.character.value.trim() });
   refs.recipe.onchange = () => post(`/api/bot/${id}/config`, { recipe: refs.recipe.value });
   refs.count.onchange = () => post(`/api/bot/${id}/config`, { count: parseInt(refs.count.value) || 1 });
   refs.ocr.onclick = () => post(`/api/bot/${id}/ocr`);
@@ -108,6 +111,7 @@ function buildBotPanel(bot, tradeClasses) {
 
   // initial input values
   if (bot.trade_class) refs.trade.value = bot.trade_class;
+  if (bot.character) refs.character.value = bot.character;
   applyMode(refs);
   $("bots").appendChild(root);
   return refs;
@@ -167,6 +171,11 @@ function updateBotPanel(refs, bot) {
   // trade class (don't clobber an open dropdown)
   if (document.activeElement !== refs.trade && bot.trade_class && refs.trade.value !== bot.trade_class)
     refs.trade.value = bot.trade_class;
+  // character (header + field, don't clobber while typing)
+  const ch = bot.character || "";
+  if (refs.charName) refs.charName.textContent = ch || "—";
+  if (document.activeElement !== refs.character && ch && refs.character.value !== ch)
+    refs.character.value = ch;
   // recipe / count only when not focused
   if (document.activeElement !== refs.recipe && bot.recipe && refs.uiMode === "single")
     if (!refs.recipe.value) refs.recipe.placeholder = bot.recipe;

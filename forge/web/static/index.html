@@ -53,7 +53,7 @@
         </div>
         <span class="state-pill bot-state">off</span>
         <span class="spacer"></span>
-        <button class="bot-console km-link" title="open the native SPICE console for this bot">⧉</button>
+        <button class="bot-console km-link" title="open the native console for this bot">⧉</button>
         <label class="switch" title="enable / park this bot">
           <input type="checkbox" class="bot-enable" />
           <span class="slider"></span>
@@ -71,6 +71,12 @@
       <div class="mode-tabs">
         <button class="mode-tab" data-mode="single">Single craft</button>
         <button class="mode-tab" data-mode="writ">Writ / batch</button>
+      </div>
+
+      <!-- character to select at char-select (login automation picks this) -->
+      <div class="field-row">
+        <label>Character</label>
+        <input type="text" class="bot-character" placeholder="toon name to select at char-select" />
       </div>
 
       <!-- shared: trade class -->
