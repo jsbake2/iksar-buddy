@@ -13,10 +13,10 @@ ts.onchange = () => { document.documentElement.dataset.theme = ts.value; localSt
 // region {x,y,w,h} | template (drag a box -> POST as <name>.png).
 const TARGETS = [
   { grp: "Crafting" },
-  { id: "reaction_region", nm: "Reaction-button area", kind: "region", path: "reaction.region" },
-  { id: "tpl1", nm: "Reaction button #1 → 1.png", kind: "template", tpl: "1" },
-  { id: "tpl2", nm: "Reaction button #2 → 2.png", kind: "template", tpl: "2" },
-  { id: "tpl3", nm: "Reaction button #3 → 3.png", kind: "template", tpl: "3" },
+  { id: "btn1", nm: "Reaction button #1 position", kind: "btnregion", btn: 0 },
+  { id: "btn2", nm: "Reaction button #2 position", kind: "btnregion", btn: 1 },
+  { id: "btn3", nm: "Reaction button #3 position", kind: "btnregion", btn: 2 },
+  { id: "reaction_region", nm: "Active-reaction watch area", kind: "region", path: "reaction.region" },
   { id: "mode", nm: "Durability/Progress mode pixel", kind: "pixel", loc: "durability_mode.location", col: "durability_mode.progress_color" },
   { id: "power", nm: "Power gate pixel", kind: "pixel", loc: "power.location", col: "power.ok_color" },
   { id: "begin", nm: "Begin button (pixel + click)", kind: "pixelclick", loc: "begin.pixel.location", col: "begin.pixel.color", clk: "begin.click" },
@@ -72,8 +72,9 @@ window.addEventListener("mouseup", async (e) => {
   const region = { x: Math.min(p0[0], p1[0]), y: Math.min(p0[1], p1[1]),
                    w: Math.abs(p1[0] - p0[0]), h: Math.abs(p1[1] - p0[1]) };
   const point = p1;
-  if ((t.kind === "region" || t.kind === "template") && moved > 4) {
-    await captureBox(t, region);
+  if ((t.kind === "region" || t.kind === "btnregion") && moved > 4) {
+    captured[t.id] = { _region: region };
+    render();
   } else {
     await capturePoint(t, point);
   }
@@ -90,20 +91,6 @@ async function capturePoint(t, [x, y]) {
   }
   render();
 }
-async function captureBox(t, region) {
-  if (t.kind === "template") {
-    const r = await fetch(`/api/bot/${bot}/template`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: t.tpl, ...region }),
-    }).then((x) => x.json()).catch(() => ({}));
-    captured[t.id] = { _tpl: r.ok ? `saved ${region.w}×${region.h}` : "FAILED", _region: region };
-    flash(r.ok ? `template ${t.tpl} saved` : "template save failed", r.ok);
-  } else {
-    captured[t.id] = { _region: region };
-  }
-  render();
-}
-
 // ---- target list ----------------------------------------------------------
 function valText(t) {
   const c = captured[t.id];
@@ -136,6 +123,7 @@ function setPath(obj, path, val) {
   for (let i = 0; i < keys.length - 1; i++) { o[keys[i]] = o[keys[i]] || {}; o = o[keys[i]]; }
   o[keys[keys.length - 1]] = val;
 }
+let existing = {};
 $("save").onclick = () => {
   const updates = {};
   TARGETS.forEach((t) => {
@@ -145,6 +133,11 @@ $("save").onclick = () => {
     if (t.clk && c._click) setPath(updates, t.clk, c._click);
     if (t.path && c._region) setPath(updates, t.path, c._region);
   });
+  // assemble reaction.button_regions [#1,#2,#3] — captured this session or kept
+  const exBtns = ((existing.reaction || {}).button_regions) || [];
+  const btns = ["btn1", "btn2", "btn3"].map((id, i) =>
+    (captured[id] && captured[id]._region) || exBtns[i]).filter(Boolean);
+  if (btns.length) setPath(updates, "reaction.button_regions", btns);
   fetch("/api/calib", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ updates }),
@@ -158,6 +151,7 @@ function flash(msg, ok) {
 
 // ---- init -----------------------------------------------------------------
 $("refresh").onclick = loadFrame;
+fetch("/api/calib").then((r) => r.json()).then((d) => { existing = d || {}; }).catch(() => {});
 fetch("/api/snapshot").then((r) => r.json()).then((s) => {
   const sel = $("bot");
   sel.innerHTML = (s.order || []).map((id) => {

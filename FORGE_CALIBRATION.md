@@ -10,15 +10,18 @@ Legend: **pixel** = one point + its color · **region** = a box {x,y,w,h} · **c
 a point to click · **template** = a cropped PNG for image-matching.
 
 ## A. Crafting loop (the core)
-1. **Reaction-button area** — `region`. The strip in the crafting window showing the
-   six reaction hotkeys. This is the area we watch for which counter is active.
-2. **3 reaction button templates** — `template ×3` → `1.png / 2.png / 3.png`. The three
-   UNIQUE button icons (counter #1/#2/#3). Keys 1–3 (durability) and 4–6 (progress) reuse
-   the same three icons, so we only capture three. Forge matches which one is the active
-   counter, then presses the keymap key for (counter#, mode).
+1. **3 reaction button positions** — `region ×3` (`reaction.button_regions`). The FIXED
+   spots where the three reaction buttons render. We do NOT save a per-class template
+   library — at **every craft start** Forge grabs these three buttons FRESH into memory
+   and uses them as the match references. So any class works, even a random quest craft
+   for an undefined class. (Counter #1/#2/#3; keys 1–3 durability / 4–6 progress reuse
+   the same three buttons.)
+2. **Active-reaction watch area** — `region` (`reaction.region`). Where the active
+   reaction shows up; matched against the 3 live references → counter # → press the key
+   for (counter#, mode).
 3. **Active-reaction cue** — how a button signals it's the one to press right now
-   (glow / highlight / pulse / a marker). Owner describes it; may be baked into the
-   template or need a separate pixel. ← needs your eyes.
+   (glow / highlight / pulse / a marker) — so the watch-area match is reliable.
+   ← needs your eyes when we calibrate.
 4. **Durability vs Progress mode** — `pixel`. One spot that reads one color in
    durability mode and another in progress mode (decides which key-set answers a counter).
 5. **Power / mana gate** — `pixel`. Reads the "enough power" color; below it Forge pauses

@@ -37,12 +37,19 @@ retry:
   pixel: {location: [1473, 828], color: [112, 165, 59], tolerance: 12}  # CALIBRATE
   click: [1473, 828]                                                    # CALIBRATE
 
-# --- reaction-event region (fast poll, template match) -----------------------
-# templates 1.png / 2.png / 3.png = the counter #1/#2/#3 event icons. reaction_event
-# returns the matched number; the worker presses keymap.arts[mode][counter-1].
+# --- reaction matching (NO saved library — references captured live) ---------
+# button_regions = the FIXED positions of the 3 reaction buttons in the craft
+# window. At EACH craft start the worker grabs them fresh into memory and uses them
+# as the match references, so any class/recipe (even a random quest craft for an
+# undefined class) works without a per-class template library.
+# region = where the ACTIVE reaction shows up (matched against the 3 references ->
+# counter #; the worker presses keymap.arts[mode][counter-1]).
 reaction:
-  region: {x: 1246, y: 427, w: 66, h: 60}   # CALIBRATE: where event icons appear
-  templates_dir: "templates/reactions"       # relative to config/forge/ (1.png/2.png/3.png)
+  button_regions:                             # CALIBRATE: 3 boxes (counter #1/#2/#3)
+    - {x: 1180, y: 980, w: 44, h: 44}
+    - {x: 1230, y: 980, w: 44, h: 44}
+    - {x: 1280, y: 980, w: 44, h: 44}
+  region: {x: 1246, y: 427, w: 66, h: 60}     # CALIBRATE: where the active reaction shows
   confidence: 0.80
   poll_hz: 6                                  # how often to sample (FORGE.md §4.1)
 

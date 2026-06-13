@@ -89,60 +89,70 @@ def chat_safe(guest: Guest, cfg: dict) -> bool:
     return bright <= c.get("bright_threshold", 25)
 
 
-# ---- reaction template match (opencv) ---------------------------------------
-_templates_cache: dict = {}
-
-
-def _load_templates(cfg: dict, profile_dir: Path):
-    """Load reaction templates once -> {event_name: cv2 BGR array}. Empty if cv2
-    or the template dir is missing (reaction detection then no-ops, safely)."""
-    key = str(profile_dir)
-    if key in _templates_cache:
-        return _templates_cache[key]
-    out: dict = {}
-    try:
-        import cv2
-    except ImportError:
-        log.info("opencv not installed — reaction matching disabled (install later)")
-        _templates_cache[key] = out
-        return out
-    tdir = profile_dir / cfg.get("reaction", {}).get("templates_dir", "templates/reactions")
-    if tdir.is_dir():
-        for png in tdir.glob("*.png"):
-            img = cv2.imread(str(png))
-            if img is not None:
-                out[png.stem] = img
-    _templates_cache[key] = out
-    return out
-
-
-def reaction_event(guest: Guest, cfg: dict, profile_dir: Path) -> str | None:
-    """Grab the reaction region and template-match. Returns the matched event name
-    (-> arts.reactions[name] key) or None. No-op if opencv/templates absent."""
-    templates = _load_templates(cfg, profile_dir)
-    if not templates:
-        return None
-    reg = cfg.get("reaction", {}).get("region")
-    if not reg:
-        return None
-    png = guest.grab_region_png(reg["x"], reg["y"], reg["w"], reg["h"])
-    if not png:
-        return None
+# ---- reaction matching (opencv, IN-MEMORY references) -----------------------
+# No saved per-class template library. Instead, at the start of every craft the
+# worker grabs the 3 reaction buttons FRESH from their fixed calibrated positions
+# (reaction.button_regions) into memory, and we match the active-reaction region
+# against those. This works for any class — even a quest craft for an undefined
+# class — because the reference is captured live from whatever's on screen.
+def _cv2():
     try:
         import cv2
         import numpy as np
+        return cv2, np
+    except ImportError:
+        log.info("opencv not installed — reaction matching disabled (install later)")
+        return None, None
+
+
+def capture_buttons(guest: Guest, cfg: dict) -> list:
+    """Grab the 3 reference reaction-button images NOW (in memory) from their fixed
+    positions. Returns [cv2 BGR array, ...] in counter order, or [] if cv2/regions
+    are missing. Called by the worker at each craft start."""
+    cv2, np = _cv2()
+    if cv2 is None:
+        return []
+    boxes = (cfg.get("reaction", {}) or {}).get("button_regions") or []
+    if not boxes or not guest.grab():
+        return []
+    out = []
+    for b in boxes:
+        png = guest.region_png(int(b["x"]), int(b["y"]), int(b["w"]), int(b["h"]))
+        if not png:
+            out.append(None)
+            continue
+        arr = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_COLOR)
+        out.append(arr)
+    return out
+
+
+def reaction_event(guest: Guest, cfg: dict, templates: list) -> int | None:
+    """Match the active-reaction watch region against the in-memory reference button
+    templates. Returns the counter NUMBER (1-based) of the best match, or None."""
+    if not templates:
+        return None
+    reg = (cfg.get("reaction", {}) or {}).get("region")
+    if not reg:
+        return None
+    png = guest.grab_region_png(int(reg["x"]), int(reg["y"]), int(reg["w"]), int(reg["h"]))
+    if not png:
+        return None
+    cv2, np = _cv2()
+    if cv2 is None:
+        return None
+    try:
         arr = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_COLOR)
         if arr is None:
             return None
-        thresh = float(cfg.get("reaction", {}).get("confidence", 0.80))
+        thresh = float((cfg.get("reaction", {}) or {}).get("confidence", 0.80))
         best, best_val = None, 0.0
-        for name, tmpl in templates.items():
-            if tmpl.shape[0] > arr.shape[0] or tmpl.shape[1] > arr.shape[1]:
+        for i, tmpl in enumerate(templates):
+            if tmpl is None or tmpl.shape[0] > arr.shape[0] or tmpl.shape[1] > arr.shape[1]:
                 continue
             res = cv2.matchTemplate(arr, tmpl, cv2.TM_CCOEFF_NORMED)
             _, mx, _, _ = cv2.minMaxLoc(res)
             if mx > thresh and mx > best_val:
-                best, best_val = name, mx
+                best, best_val = i + 1, mx
         return best
     except Exception as e:                        # never let sensing crash the loop
         log.debug("reaction match error: %s", e)

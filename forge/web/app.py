@@ -69,15 +69,6 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
             return JSONResponse({"error": "unavailable"}, status_code=400)
         return {"rgb": await _exec(sim.pixel, bot_id, x, y)}
 
-    @app.post("/api/bot/{bot_id}/template")
-    async def template(bot_id: str, payload: dict = Body(...)):
-        if not _bot_ok(bot_id) or not hasattr(sim, "save_template"):
-            return JSONResponse({"error": "unavailable"}, status_code=400)
-        ok = await _exec(sim.save_template, bot_id, payload.get("name", "1"),
-                         payload.get("x", 0), payload.get("y", 0),
-                         payload.get("w", 0), payload.get("h", 0))
-        return {"ok": ok}
-
     @app.get("/api/calib")
     async def get_calib():
         try:

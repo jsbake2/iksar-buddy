@@ -223,20 +223,6 @@ class ForgeController:
             return None
         return list(g.pixel(int(x), int(y)))
 
-    def save_template(self, bot_id: str, name: str, x: int, y: int, w: int, h: int) -> bool:
-        g = self.guests.get(bot_id)
-        if not g or not g.grab():
-            return False
-        png = g.region_png(int(x), int(y), int(w), int(h))
-        if not png:
-            return False
-        tdir = self.profile_dir / (self.cfg_profile.get("reaction", {}).get(
-            "templates_dir", "templates/reactions"))
-        tdir.mkdir(parents=True, exist_ok=True)
-        safe = "".join(c for c in str(name) if c.isalnum()) or "t"
-        (tdir / f"{safe}.png").write_bytes(png)
-        return True
-
     def save_calib(self, updates: dict) -> bool:
         """Deep-merge captured values into craft.yaml (in IB_FORGE_DIR) + reload.
         Workers share self.cfg_profile by reference, so they pick it up live."""

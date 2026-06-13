@@ -42,6 +42,7 @@ class CraftWorker:
         self._paused = False
         self._new_job = asyncio.Event()
         self._aborted = 0                   # chat-unsafe injection aborts
+        self._ref_buttons: list = []        # in-memory reaction-button references (per craft)
 
     # -- control (called by the controller) --------------------------------
     def start(self, mode: str, trade_class: str, recipe: str = "",
@@ -125,6 +126,12 @@ class CraftWorker:
         reappears). Returns True on completion, False if stopped."""
         timings = self.cfg.get("timings", {})
         await self._focus_craft()
+        # capture the 3 reaction-button references FRESH for THIS craft (no saved
+        # library) — works for any class, including random quest crafts.
+        self._ref_buttons = await self._ex(sensors.capture_buttons, self.guest, self.cfg)
+        got = sum(1 for b in self._ref_buttons if b is not None)
+        if got:
+            self.t.push_log(self.id, f"captured {got} reaction-button references")
         while not self._stop.is_set():
             await self._wait_unpaused()
             if self._stop.is_set():
@@ -142,11 +149,10 @@ class CraftWorker:
             # current craft mode (durability vs progress) decides which art set
             mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
             self.t.update_bot(self.id, durability_mode=mode)
-            # counter EVENT (#1/#2/#3)? press the keymap key for (mode, counter#)
-            ev = await self._ex(sensors.reaction_event, self.guest, self.cfg, self.profile_dir)
-            if ev:
-                digits = "".join(ch for ch in str(ev) if ch.isdigit())
-                counter = int(digits) if digits else 0
+            # counter EVENT (#1/#2/#3)? match the watch region vs the in-memory
+            # references; press the keymap key for (mode, counter#)
+            counter = await self._ex(sensors.reaction_event, self.guest, self.cfg, self._ref_buttons)
+            if counter:
                 key = self._counter_key(mode, counter)
                 if key:
                     await self._press(key, f"counter{counter}:{mode}")
