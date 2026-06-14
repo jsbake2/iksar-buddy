@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
-# Launched by the ibconsole:// scheme (dashboard console buttons). The dashboard
-# passes the VM's SPICE port, e.g. ibconsole://open?port=5910, so one handler can
-# open the right console: 5900=healer, 5910=crafter1, 5920=crafter2. Logs to /tmp
-# so failures launched from the browser are visible.
+# Launched by the ibconsole:// scheme (dashboard ⧉ buttons). URL carries the VM's
+# SPICE port, e.g. ibconsole://open?port=5910. Default 5900 (healer).
 url="$1"
 port=$(printf '%s' "$url" | grep -oP 'port=\K[0-9]+')
-{
-  case "$port" in
-    5910) exec "$HOME/.local/bin/ib-console2" ;;
-    5920) exec "$HOME/.local/bin/ib-console3" ;;
-    *)    exec "$HOME/.local/bin/ib-console" ;;
-  esac
-} >>/tmp/ib-console.log 2>&1
+exec "$HOME/.local/bin/ib-console" "${port:-5900}" >>/tmp/ib-console.log 2>&1
