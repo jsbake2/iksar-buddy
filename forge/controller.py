@@ -80,7 +80,10 @@ class ForgeController:
         return self.ACCOUNT_FOR_VM.get(vm, "")
 
     def _holder(self, bid: str) -> str:
-        return f"forge:{self.stations.get(bid, {}).get('dom', bid)}:{self._char_for(bid) or '?'}"
+        # Keyed by the VM (the thing that owns the account LOGIN), NOT the character.
+        # Two characters on one VM/account is the /camp switch case — re-acquiring our
+        # own lock must be idempotent, so the character must not be part of identity.
+        return f"forge:{self.stations.get(bid, {}).get('dom', bid)}"
 
     def set_crafters(self, crafters: list) -> None:
         self.crafters = crafters or []
