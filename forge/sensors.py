@@ -282,61 +282,27 @@ def _stable_panel(guest: Guest, region: dict) -> str:
 
 def select_character(guest: Guest, cfg: dict, target: str,
                      log=lambda _m: None, play: bool = True) -> bool:
-    """Char-select pick used by BOTH login and forge (FORGE.md §5.5).
-
-    Dead simple + correct: click the owner-MARKED location for the character
-    (`char_select.rows[<vm>][<character>]`), then read the detail-panel ("verify area")
-    and require BOTH the target NAME *and* the expected SERVER (char_select.server, e.g.
-    Wuoshi) — that's what tells the two Robskins (Maj'Dul vs Wuoshi) apart. The guest's
-    click lands a few px off the screenshot coords (and the sign isn't stable), so we
-    SWEEP a few clicks around the marked Y until name+server match, then Play. We NEVER
-    Play unless the verify area shows the exact target on the right server.
+    """Char-select pick (FORGE.md §5.5) — dead simple, owner's spec: click the marked
+    click-point for this VM's character (`char_select.rows[<vm>][<character>]`), wait,
+    then click Play. No OCR, no verify, no sweep. The stored Y is the exact click point
+    that selects that character (offset already baked in); re-mark if the roster shifts.
     """
     cs = cfg.get("char_select", cfg) or {}
-    # the whole detail panel: name + class(es) + location + "<server> server"
-    vr = cs.get("verify_region", {"x": 1605, "y": 745, "w": 280, "h": 155})
-    settle = float(cs.get("select_settle_s", 2.5))        # panel lags; short reads are stale
-    name_x = int(cs.get("name_click_x", 190))             # the centered name column
+    name_x = int(cs.get("name_click_x", 190))
+    pause = float(cs.get("select_settle_s", 1.0))
     play_click = cs.get("play_click")
-    server = _alpha(cs.get("server", ""))                 # expected server, e.g. 'wuoshi'
-    ctl = _alpha(target)
-    if len(ctl) < 4:
-        log(f"char-select: target '{target}' too short"); return False
-
     dom = getattr(guest, "dom", "")
     rows = {_alpha(k): int(v) for k, v in (cs.get("rows") or {}).get(dom, {}).items()}
-    target_y = rows.get(ctl)
-    if target_y is None:                                  # not marked -> OCR the list once
-        words = []
-        for _ in range(6):
-            words += [w for w in _ocr_words(guest, cs.get("list_region", {}))
-                      if len(_alpha(w["text"])) >= 4]
-            if any(ctl == _alpha(w["text"]) or ctl in _alpha(w["text"]) for w in words):
-                break
-            time.sleep(0.8)
-        m = [w for w in words if ctl == _alpha(w["text"]) or ctl in _alpha(w["text"])]
-        if not m:
-            log(f"char-select: '{target}' not found (no mark, no OCR)"); return False
-        w = max(m, key=lambda w: w["y"])
-        target_y = w["y"] + w["h"] // 2
-
-    # Sweep outward from the marked Y until the verify area shows target name + server.
-    # (~44px between rows; +-60 covers a row either way regardless of offset direction.)
-    for dy in (0, -15, 15, -30, 30, -45, 45, -60, 60):
-        cy = target_y + dy
-        guest.click(name_x, cy)
-        time.sleep(settle)                                # selection + panel update
-        blob = panel_name(guest, vr)                      # alpha-joined panel text
-        has_name = ctl in blob                            # STRICT: 'croolst' != 'croalst'
-        has_server = _contains(blob, server)              # tolerant: Wuoshi vs Maj'Dul
-        log(f"y{cy}: panel='{blob[:46]}' name={has_name} server={has_server}")
-        if has_name and has_server:
-            log(f"confirmed {target} on {cs.get('server','')} @ y{cy} -> Play")
-            if play and play_click:
-                guest.click(int(play_click[0]), int(play_click[1]))
-            return True
-    log(f"char-select: could NOT land on {target}/{cs.get('server','')} — NOT pressing Play")
-    return False
+    y = rows.get(_alpha(target))
+    if y is None:
+        log(f"char-select: no marked click-point for '{target}' on {dom}"); return False
+    log(f"click {target} @ ({name_x},{y})")
+    guest.click(name_x, y)
+    time.sleep(pause)                                     # let the selection register
+    if play and play_click:
+        guest.click(int(play_click[0]), int(play_click[1]))
+        log(f"Play -> {target}")
+    return True
 
 
 # ---- journal OCR (writs) ----------------------------------------------------
