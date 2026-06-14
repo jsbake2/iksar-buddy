@@ -20,12 +20,11 @@ from shared.account_lock import AccountLock
 
 from . import sensors
 from .guest import Guest
+from .login import LoginDriver, WORLD
 from .telemetry import ForgeTelemetry
 from .worker import CraftWorker
 
 log = logging.getLogger("forge.controller")
-
-LAUNCHER_LOG = r"C:\ib\launcher.log"
 
 
 def _deep_merge(dst: dict, src: dict) -> dict:
@@ -51,6 +50,7 @@ class ForgeController:
         self.crafters = crafters or []            # [{character, class, vm}]
         self.keymap = keymap or {}                # camp command + arts keys
         self.lock = AccountLock()
+        self.accounts, self.world = self._load_accounts(profile_dir)
         self.guests: dict[str, Guest] = {}
         self.workers: dict[str, CraftWorker] = {}
         self.stations: dict[str, dict] = {}
@@ -61,6 +61,24 @@ class ForgeController:
             self.guests[bid] = g
             self.workers[bid] = CraftWorker(g, craft_profile, profile_dir, tele, bid, self.keymap)
             self.stations[bid] = bot
+
+    @staticmethod
+    def _load_accounts(profile_dir: Path) -> tuple[dict, str]:
+        """EQ2 account credentials, keyed by VM domain, from accounts.yaml in the
+        owner data dir (gitignored — never in the repo). Shape:
+            world: Wuoshi
+            accounts: { iksar_buddy2: {user: ..., password: ...}, ... }
+        Missing file -> empty creds (login logs a clear error instead of guessing)."""
+        try:
+            data = yaml.safe_load((profile_dir / "accounts.yaml").read_text(encoding="utf-8")) or {}
+        except (OSError, yaml.YAMLError):
+            data = {}
+        return (data.get("accounts") or {}), (data.get("world") or WORLD)
+
+    def _creds(self, bot_id: str) -> tuple[str, str]:
+        dom = self.stations.get(bot_id, {}).get("dom", "")
+        a = self.accounts.get(dom) or {}
+        return (a.get("user") or ""), (a.get("password") or "")
 
     # -- character / interlock helpers -------------------------------------
     def _char_for(self, bid: str) -> str:
@@ -276,15 +294,18 @@ class ForgeController:
 
     async def _launch(self, bot_id: str) -> None:
         g = self.guests.get(bot_id)
-        s = self.stations.get(bot_id, {})
         if not g:
             return
         if not self._acquire(bot_id):
             return
         loop = asyncio.get_running_loop()
         char = self._char_for(bot_id)
+        user, pw = self._creds(bot_id)
+        if not (user and pw):
+            self.t.push_log(bot_id, f"no credentials for {g.dom} (set accounts.yaml)")
+            self.t.update_bot(bot_id, state="error"); return
         self.t.update_bot(bot_id, state="launching", vm_running=True)
-        self.t.push_event(bot_id, "launch", f"power on {g.dom} -> login {char or '?'}")
+        self.t.push_event(bot_id, "launch", f"power on {g.dom} -> direct login {char or '?'}")
         if not await loop.run_in_executor(None, g.start_vm):
             self.t.push_log(bot_id, "VM start failed"); return
         for _ in range(40):                        # wait guest agent
@@ -292,8 +313,8 @@ class ForgeController:
                 break
             await asyncio.sleep(3)
         # The guest agent answers at the Windows LOGIN screen — before the interactive
-        # desktop exists. Firing ibrun then = "boots to Windows, nothing launches". Wait
-        # for the user session (explorer.exe) + a settle, like the healer's launch_bot.sh.
+        # desktop exists. Wait for the user session (explorer.exe) + a settle, else AHK
+        # fired into session 0 launches invisible windows that go nowhere.
         self.t.push_event(bot_id, "launch", "waiting for desktop (auto-login)…")
         for _ in range(25):                        # up to ~75s for auto-login
             out = await loop.run_in_executor(None, g.exec_ps,
@@ -302,54 +323,37 @@ class ForgeController:
                 break
             await asyncio.sleep(3)
         await asyncio.sleep(10)                     # let the desktop/shell settle
-        # Idempotent: if EQ2 is ALREADY running (e.g. parked at char-select), DON'T
-        # re-fire the launcher (that pops a 2nd LaunchPad over the live client). Just
-        # go pick the character.
-        if await loop.run_in_executor(None, g.eq2_running):
-            self.t.push_event(bot_id, "launch", "EQ2 already up — skipping launcher, selecting character")
+        drv = LoginDriver(g, lambda m: self.t.push_log(bot_id, m))
+        # Idempotent: if EQ2 is already in world as another same-account toon, just
+        # /camp to the target instead of relaunching the client.
+        if char and await loop.run_in_executor(None, g.eq2_running):
+            self.t.push_event(bot_id, "launch", "EQ2 already up — /camp switch")
+            ok = await loop.run_in_executor(None, partial(drv.camp_to, char))
         else:
-            # tell the (craft) launcher which character to select, then fire it
-            if char:
-                await loop.run_in_executor(None, g.exec_ps,
-                                           f"Set-Content C:\\ib\\target_char.txt '{char}' -NoNewline", False)
-            # clear the launcher log FIRST so we wait for THIS run's char-select, not a
-            # stale "char-select ready" from a prior launch (the "jumped to in-world" bug)
-            await loop.run_in_executor(None, g.exec_ps, 'Set-Content C:\\ib\\launcher.log ""', False)
-            await asyncio.sleep(1)
-            await loop.run_in_executor(None, g.exec_ps, "Start-ScheduledTask -TaskName ibrun", False)
-            # poll launcher.log for char-select, then host-side OCR pick
-            ready = False
-            for _ in range(120):
-                tail = await loop.run_in_executor(None, g.read_file, LAUNCHER_LOG, 1)
-                if tail and ("char-select ready" in tail or "in-world" in tail):
-                    ready = True
-                    break
-                await asyncio.sleep(3)
-            if not ready:
-                self.t.push_log(bot_id, "launcher didn't reach char-select (calibration?)")
-                self.t.update_bot(bot_id, state="idle")
-                return
-        await self._select_character(bot_id, char)
+            ok = await loop.run_in_executor(
+                None, partial(drv.login, user, pw, char, self.world))
         self.t.update_bot(bot_id, state="idle")
-        self.t.push_event(bot_id, "launch", f"in-world as {char or '?'} (verify)")
-
-    async def _select_character(self, bot_id: str, char: str) -> None:
-        """Validated host-side character pick at char-select (FORGE.md §5.5): click the
-        row, read the detail-panel name to CONFIRM, then Play — same shared selector the
-        healer login uses. Empty char => leave at char-select (owner picks a toon)."""
-        if not char:
-            self.t.push_log(bot_id, "no character set — left at char-select")
-            return
-        loop = asyncio.get_running_loop()
-        g = self.guests[bot_id]
-        ok = await loop.run_in_executor(
-            None, partial(sensors.select_character, g, self.cfg_profile, char,
-                          lambda m: self.t.push_log(bot_id, m), True))
-        if not ok:
-            self.t.push_log(bot_id, f"char-select: could not confirm '{char}' (left at char-select)")
+        if ok:
+            self.t.push_event(bot_id, "launch", f"in world as {char or '?'}")
+        else:
+            self.t.push_log(bot_id, f"login did not confirm in-world for {char or '?'}")
 
     def switch_char(self, bot_id: str) -> None:
-        self.t.push_event(bot_id, "launch", "camp + switch crafter (pending calibration)")
+        asyncio.create_task(self._switch_char(bot_id))
+
+    async def _switch_char(self, bot_id: str) -> None:
+        """Same-account character switch via EQ2 '/camp <name>' (no char-select). The
+        target is whatever crafter is selected in the dropdown."""
+        g = self.guests.get(bot_id)
+        char = self._char_for(bot_id)
+        if not g or not char:
+            self.t.push_log(bot_id, "switch: no character selected"); return
+        if not self._acquire(bot_id):
+            return
+        self.t.push_event(bot_id, "launch", f"/camp switch -> {char}")
+        drv = LoginDriver(g, lambda m: self.t.push_log(bot_id, m))
+        ok = await asyncio.get_running_loop().run_in_executor(None, partial(drv.camp_to, char))
+        self.t.push_event(bot_id, "launch", f"now {char}" if ok else f"switch to {char} failed")
 
     # -- camp (log out to char-select) ------------------------------------
     def camp(self, bot_id: str) -> None:

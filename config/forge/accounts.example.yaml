@@ -1,0 +1,20 @@
+# EQ2 account credentials for direct login (forge.login.LoginDriver).
+#
+# COPY this to the owner data dir as accounts.yaml (IB_FORGE_DIR, e.g.
+# ~/ib-data/forge/accounts.yaml). The real file is GITIGNORED — never commit creds.
+#
+# Keyed by VM domain (matches stations.yaml `dom`). The character to log into comes
+# from the dashboard crafter dropdown, not here — these are just account login.
+
+world: Wuoshi
+
+accounts:
+  iksar_buddy2:                      # crafter VM 1
+    user: EXAMPLE_ACCOUNT
+    password: "EXAMPLE_PASSWORD"
+  iksar_buddy3:                      # crafter VM 2
+    user: EXAMPLE_ACCOUNT
+    password: "EXAMPLE_PASSWORD"
+  iksar_buddy:                       # healer VM (owner fills)
+    user: ""
+    password: ""

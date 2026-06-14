@@ -159,6 +159,21 @@ class Guest:
               f"Start-ScheduledTask -TaskName ibkey")
         return self.exec_ps(ps, wait=False) is not None
 
+    # -- run an AHK script (ibrun scheduled task, session 1 = interactive) --
+    def run_ahk(self, script: str) -> bool:
+        """Write an AHK v2 script to C:\\ib\\launcher.ahk and fire the 'ibrun'
+        scheduled task (runs it in the INTERACTIVE session, so windows/keystrokes
+        are visible and register — guest-exec runs in session 0 and can't). The
+        script is shipped base64 so passwords/symbols survive PowerShell quoting.
+        This is the single substrate for the whole login flow (LaunchPad creds,
+        game login, /camp switch). Fire-and-forget; the host gates on screenshots."""
+        import base64 as _b64
+        b = _b64.b64encode(script.encode("utf-8")).decode("ascii")
+        ps = (f"$b=[Convert]::FromBase64String('{b}');"
+              f"[IO.File]::WriteAllBytes('C:\\ib\\launcher.ahk',$b);"
+              f"Start-ScheduledTask -TaskName ibrun")
+        return self.exec_ps(ps, wait=True) is not None
+
     # -- guest PowerShell (guest-exec; gexec.py pattern) -------------------
     def exec_ps(self, ps: str, wait: bool = True, poll: int = 60) -> str | None:
         """Run PowerShell in the guest. wait=True polls for completion and returns

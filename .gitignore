@@ -1,5 +1,7 @@
 # secrets — NEVER commit (launcher creds, etc.)
 config/secrets.yaml
+config/forge/accounts.yaml
+accounts.yaml
 
 # python
 __pycache__/
