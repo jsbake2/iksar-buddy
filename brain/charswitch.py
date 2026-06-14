@@ -54,25 +54,11 @@ def _char_select_cfg() -> dict:
 
 def _select_at_charselect(g: Guest, target_char: str,
                           log: Callable[[str], None]) -> bool:
-    """At char-select already: OCR-find `target_char`, click its row, click Play.
-    Retries ~24s while the list renders. Returns True iff the row was clicked."""
-    cs = {"char_select": _char_select_cfg()}
-    pt = None
-    for _ in range(12):                        # ~24s for the list to render
-        pt = sensors.find_character(g, cs, target_char)
-        if pt:
-            break
-        time.sleep(2)
-    if not pt:
-        log(f"char-select: '{target_char}' not found (wrong account, or still loading?)")
-        return False
-    g.click(pt[0], pt[1])                       # select the row (portrait, x~100)
-    time.sleep(0.7)
-    play = cs["char_select"].get("play_click")
-    if play:
-        g.click(int(play[0]), int(play[1]))     # Play -> in-world
-    log(f"selected {target_char} @ {pt} -> Play")
-    return True
+    """At char-select already: validated OCR pick of `target_char` (clicks the row,
+    reads the detail-panel name to confirm, then Play). Shared with forge so login
+    behaves identically in both tools. Never Plays an unconfirmed selection."""
+    return sensors.select_character(g, {"char_select": _char_select_cfg()},
+                                    target_char, log=log, play=True)
 
 
 def select_only(target_char: str,

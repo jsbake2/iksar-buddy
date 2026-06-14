@@ -43,9 +43,11 @@ python3 "$G" 'Start-ScheduledTask -TaskName ibrun' >/dev/null 2>&1
 
 echo "waiting for char-select (up to ~6 min)"
 for i in $(seq 1 120); do
-  line=$(python3 "$G" 'Get-Content C:\ib\launcher.log -Tail 1' 2>/dev/null | grep '@' | tail -1)
-  if echo "$line" | grep -qi "char-select ready"; then echo "char-select ready"; exit 0; fi
-  if echo "$line" | grep -qi "in-world"; then echo "in-world (legacy launcher)"; exit 2; fi
+  # grep the last few lines, not just tail -1: the launcher logs "char-select ready"
+  # then a "launcher done" line, so the final line is NOT the marker.
+  tail=$(python3 "$G" 'Get-Content C:\ib\launcher.log -Tail 6' 2>/dev/null)
+  if echo "$tail" | grep -qi "char-select ready"; then echo "char-select ready"; exit 0; fi
+  if echo "$tail" | grep -qi "in-world"; then echo "in-world (legacy launcher)"; exit 2; fi
   sleep 3
 done
 echo "FAILED: never reached char-select"

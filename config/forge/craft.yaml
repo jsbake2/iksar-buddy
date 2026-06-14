@@ -73,10 +73,13 @@ craft_focus_click: [1317, 512]     # CALIBRATE
 # 1920x1080 from a live char-select; refine if the list scrolls.
 char_select:
   list_region: {x: 80, y: 380, w: 420, h: 560}   # the "Select Character" name column (OCR)
-  row_click_x: 100                                 # click the row-LEFT (portrait) to select;
-                                                   # the name-text column is NOT the hotspot
+  name_region: {x: 1610, y: 772, w: 250, h: 30}  # selected toon's name in the detail panel
+                                                   # (above Play) — read to VALIDATE the pick
+  row_click_offset_y: 0                            # click AT the name's center Y to select it
+  select_settle_s: 2.5                             # wait before reading the panel (it lags)
   play_click: [1715, 890]                          # detail-panel Play (maroon)
-  server: "Wuoshi"                                 # disambiguate duplicate names
+  server: "Wuoshi"                                 # (legacy) duplicate-name server hint
+  row_click_x: 100                                 # (legacy) used only by old find_character
 
 # --- chat-safety (the inviolable invariant, PROJECT.md §6.2) ------------------
 # Sample this region; if it holds typed text / a cursor, chat input is open and we

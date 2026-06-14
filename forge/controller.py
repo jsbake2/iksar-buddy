@@ -320,23 +320,19 @@ class ForgeController:
         self.t.push_event(bot_id, "launch", f"in-world as {char or '?'} (verify)")
 
     async def _select_character(self, bot_id: str, char: str) -> None:
-        """Host-side OCR-and-click character pick at char-select (FORGE.md §5.5).
-        Empty char => leave at char-select (owner picks / creates a toon)."""
+        """Validated host-side character pick at char-select (FORGE.md §5.5): click the
+        row, read the detail-panel name to CONFIRM, then Play — same shared selector the
+        healer login uses. Empty char => leave at char-select (owner picks a toon)."""
         if not char:
             self.t.push_log(bot_id, "no character set — left at char-select")
             return
         loop = asyncio.get_running_loop()
         g = self.guests[bot_id]
-        pt = await loop.run_in_executor(None, partial(sensors.find_character, g, self.cfg_profile, char))
-        if not pt:
-            self.t.push_log(bot_id, f"char-select: '{char}' not found (calibration/scroll?)")
-            return
-        await loop.run_in_executor(None, g.click, pt[0], pt[1])     # select the row
-        await asyncio.sleep(0.7)
-        play = (self.cfg_profile.get("char_select", {}) or {}).get("play_click")
-        if play:
-            await loop.run_in_executor(None, g.click, play[0], play[1])  # Play -> in-world
-        self.t.push_log(bot_id, f"selected {char} @ {pt} -> Play")
+        ok = await loop.run_in_executor(
+            None, partial(sensors.select_character, g, self.cfg_profile, char,
+                          lambda m: self.t.push_log(bot_id, m), True))
+        if not ok:
+            self.t.push_log(bot_id, f"char-select: could not confirm '{char}' (left at char-select)")
 
     def switch_char(self, bot_id: str) -> None:
         self.t.push_event(bot_id, "launch", "camp + switch crafter (pending calibration)")
