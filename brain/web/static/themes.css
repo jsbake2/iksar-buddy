@@ -110,7 +110,7 @@ body {
 /* manual control sits to the right of the console and runs tall, so the short
    left-column panels (group, graph, self...) stack UNDER the console instead of
    leaving dead space. */
-.control-panel { grid-row:span 4; }
+.control-panel { grid-row:span 3; }
 .panel {
   background:linear-gradient(var(--panel),var(--panel2));
   border:1px solid var(--line); border-radius:14px; padding:15px 17px;
