@@ -4,6 +4,7 @@ telemetry over websocket, exposing per-bot craft controls. Backend is mocked
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import os
 from pathlib import Path
 
@@ -293,6 +294,51 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
             pass
         finally:
             tele.unsubscribe(q)
+
+    # SPICE web console proxy (same-origin) — bridge a browser WebSocket to a crafter
+    # VM's local SPICE, so spice-html5 works on the LAN AND remotely through Cloudflare
+    # (wss://forge.jsb-emr.us/spice/ws/5910), inheriting Access. Allowlist the bot ports.
+    SPICE_PORTS = {int(b.get("spice_port")) for b in tele.snapshot.get("bots", {}).values()
+                   if b.get("spice_port")} or {5910, 5920}
+
+    @app.websocket("/spice/ws/{port}")
+    async def spice_ws(websocket: WebSocket, port: int):
+        if port not in SPICE_PORTS:
+            await websocket.close(code=1008); return
+        await websocket.accept(subprotocol="binary")
+        try:
+            reader, writer = await asyncio.open_connection("127.0.0.1", port)
+        except OSError:
+            await websocket.close(code=1011); return
+
+        async def ws_to_tcp():
+            try:
+                while True:
+                    writer.write(await websocket.receive_bytes())
+                    await writer.drain()
+            except Exception:
+                pass
+
+        async def tcp_to_ws():
+            try:
+                while True:
+                    data = await reader.read(65536)
+                    if not data:
+                        break
+                    await websocket.send_bytes(data)
+            except Exception:
+                pass
+
+        t1 = asyncio.create_task(ws_to_tcp())
+        t2 = asyncio.create_task(tcp_to_ws())
+        try:
+            await asyncio.wait({t1, t2}, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            for t in (t1, t2):
+                t.cancel()
+            writer.close()
+            with contextlib.suppress(Exception):
+                await websocket.close()
 
     if STATIC.exists():
         app.mount("/", StaticFiles(directory=str(STATIC), html=True), name="static")

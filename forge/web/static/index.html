@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ib · forge</title>
   <link rel="stylesheet" href="themes.css?v=20260614" />
-  <link rel="stylesheet" href="forge.css?v=20260614" />
+  <link rel="stylesheet" href="forge.css?v=20260614b" />
 </head>
 <body>
   <!-- top bar -->
@@ -58,8 +58,7 @@
         </div>
         <span class="state-pill bot-state">off</span>
         <span class="spacer"></span>
-        <button class="bot-console km-link" title="open the native console (needs the ib-console installer)">⧉</button>
-        <button class="bot-webconsole km-link" title="open the in-browser console (LAN only, no install)">▣</button>
+        <button class="bot-console km-link" title="connect to this VM's console — web or native">⧉</button>
         <label class="switch" title="enable / park this bot">
           <input type="checkbox" class="bot-enable" />
           <span class="slider"></span>
@@ -155,6 +154,24 @@
     </section>
   </template>
 
-  <script src="app.js?v=20260614"></script>
+  <!-- console connect modal: web (one click, works anywhere) + native (copy command) -->
+  <div id="consoleModal" class="cm-overlay" hidden>
+    <div class="cm-box">
+      <div class="cm-head"><b id="cmTitle">Connect to console</b><button class="cm-x" id="cmClose">✕</button></div>
+      <p class="cm-sub">Two ways to view this VM.</p>
+      <div class="cm-opt">
+        <div class="cm-opt-h">▣ In-browser (no install)</div>
+        <button class="cm-btn primary" id="cmWeb">Open web console</button>
+        <p class="cm-note">SPICE view in a new tab — works on the LAN and remotely (via the domain).</p>
+      </div>
+      <div class="cm-opt">
+        <div class="cm-opt-h">⧉ Native viewer (smoother, LAN)</div>
+        <p class="cm-note">Paste into a terminal on the computer you're at. Needs <code>virt-viewer</code> + SSH to the server.</p>
+        <div class="cm-cmd"><code id="cmCmd"></code><button class="cm-btn" id="cmCopy">Copy</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=20260614b"></script>
 </body>
 </html>

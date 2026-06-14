@@ -24,6 +24,29 @@ function post(url, body) {
   }).catch(() => {});
 }
 
+// ---- console connect modal (web console + copy-paste tunnel command) -------
+const IB_LAN = "10.0.0.16";          // server LAN IP (home network)
+const IB_SSH_USER = "jbaker";
+function openConsoleModal(title, spicePort) {
+  const sp = spicePort || 5910;
+  const localPort = 5950 + Math.floor((sp - 5900) / 10);   // 5910->5951, 5920->5952
+  const cmd = `ssh -fN -L ${localPort}:127.0.0.1:${sp} ${IB_SSH_USER}@${IB_LAN} 2>/dev/null; `
+            + `remote-viewer spice://127.0.0.1:${localPort}`;
+  $("cmTitle").textContent = `Connect — ${title}`;
+  $("cmCmd").textContent = cmd;
+  $("cmWeb").onclick = () => {     // same-origin: works on LAN AND through Cloudflare
+    window.open(`${location.origin}/spice/console.html?port=${sp}`,
+      "ibweb", "width=1300,height=820,menubar=no,toolbar=no,location=no");
+  };
+  $("cmCopy").onclick = () => navigator.clipboard.writeText(cmd).then(() => {
+    $("cmCopy").textContent = "Copied!";
+    setTimeout(() => ($("cmCopy").textContent = "Copy"), 1500);
+  });
+  $("consoleModal").hidden = false;
+}
+$("cmClose").onclick = () => ($("consoleModal").hidden = true);
+$("consoleModal").onclick = (e) => { if (e.target.id === "consoleModal") $("consoleModal").hidden = true; };
+
 // ---- bot panels -----------------------------------------------------------
 const botEls = {};          // id -> { root, refs..., uiMode, queueSig }
 const tpl = $("botTpl");
@@ -86,7 +109,6 @@ function buildBotPanel(bot, tradeClasses) {
     enable: q(".bot-enable"),
     charName: q(".bot-char"),
     console: q(".bot-console"),
-    webconsole: q(".bot-webconsole"),
     live: q(".bot-live-frame"),
     tabs: [...root.querySelectorAll(".mode-tab")],
     paneSingle: q(".pane-single"),
@@ -180,18 +202,8 @@ function buildBotPanel(bot, tradeClasses) {
     if (confirm(`Shut down ${refs.root.querySelector(".bot-name").textContent}? Quits EQ2 and powers off the VM.`))
       post(`/api/bot/${id}/shutdown`);
   };
-  refs.console.onclick = () =>
-    (window.location.href = `ibconsole://open?port=${bot.spice_port || ""}`);
+  refs.console.onclick = () => openConsoleModal(`${bot.label || id} (${bot.dom || ""})`, bot.spice_port);
   refs.live.onclick = refs.console.onclick;
-  // in-browser SPICE console (LAN only): spice-html5 is served by the healer dash
-  // on :18080; the WS bridge port is the VM SPICE port + 59 (5910->5969, 5920->5979).
-  if (refs.webconsole) refs.webconsole.onclick = () => {
-    const sp = bot.spice_port;
-    if (!sp) { alert("no SPICE port for this bot"); return; }
-    const h = location.hostname;
-    window.open(`http://${h}:18080/spice/console.html?host=${h}&port=${sp + 59}`,
-      `ibweb${id}`, "width=1300,height=820,menubar=no,toolbar=no,location=no");
-  };
 
   // initial input values
   if (bot.character) refs.trade.value = bot.character;

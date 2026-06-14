@@ -55,6 +55,28 @@
 .bot-live-frame.powered-off::after { content:"⏻ POWERED OFF"; color:var(--bad);
   font-size:13px; font-weight:800; letter-spacing:1.2px; }
 .bot-live-frame.powered-off .bot-live-hint { display:none; }
+
+/* console connect modal (web console + copy-paste tunnel command) */
+.cm-overlay { position:fixed; inset:0; background:#000a; display:grid; place-items:center; z-index:50; }
+.cm-overlay[hidden] { display:none; }
+.cm-box { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 20px;
+  width:min(560px,92vw); box-shadow:0 12px 40px #000a; }
+.cm-head { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+.cm-head b { font-size:16px; flex:1; }
+.cm-x { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; }
+.cm-x:hover { color:var(--fg); }
+.cm-sub { color:var(--muted); font-size:12px; margin:0 0 14px; }
+.cm-opt { border:1px solid var(--line); border-radius:9px; padding:12px; margin-bottom:10px; background:var(--panel2); }
+.cm-opt-h { font-weight:700; font-size:13px; margin-bottom:8px; }
+.cm-note { color:var(--muted); font-size:11px; margin:6px 0 0; }
+.cm-note code, .cm-cmd code { background:var(--bg); padding:1px 5px; border-radius:4px; }
+.cm-btn { background:var(--panel); color:var(--fg); border:1px solid var(--line); border-radius:7px;
+  padding:7px 12px; font-size:12px; cursor:pointer; }
+.cm-btn:hover { border-color:var(--accent); }
+.cm-btn.primary { background:linear-gradient(120deg,var(--accent),var(--accent2)); color:#fff; border:none; }
+.cm-cmd { display:flex; gap:8px; align-items:stretch; margin-top:8px; }
+.cm-cmd code { flex:1; padding:8px 10px; font:11px ui-monospace,monospace; color:var(--fg);
+  border:1px solid var(--line); border-radius:7px; white-space:pre-wrap; word-break:break-all; user-select:all; }
 .bot-live-hint { position:absolute; bottom:7px; right:8px; font-size:10px; font-weight:600;
   padding:2px 8px; border-radius:6px; opacity:.6; color:var(--fg); z-index:1;
   background:color-mix(in srgb,var(--bg) 70%,transparent); border:1px solid var(--line); }
