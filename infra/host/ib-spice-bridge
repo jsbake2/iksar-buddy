@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# websockify bridge for one VM's in-browser SPICE console. Arg = the VM's SPICE
+# port on the host; the WS port is +59 (5900->5959 healer, 5910->5969 craft1,
+# 5920->5979 craft2). The dashboard's spice console.html connects to ws://<host>:<wsport>.
+# SPICE is a PASSIVE view (the bot keeps running). Unauthenticated -> LAN-only via ufw.
+set -eu
+sp="${1:?usage: ib-spice-bridge <vm_spice_port>}"
+ws=$(( sp + 59 ))
+exec /home/jbaker/ib-app/.venv/bin/python -m websockify "0.0.0.0:${ws}" "127.0.0.1:${sp}"

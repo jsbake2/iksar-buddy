@@ -498,6 +498,52 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         finally:
             telemetry.unsubscribe(q)
 
+    # SPICE web console proxy: bridge a browser WebSocket to the VM's local SPICE
+    # TCP port, SAME-ORIGIN, so spice-html5 works both on the LAN and remotely THROUGH
+    # Cloudflare (wss://<dash>/spice/ws/5900) — inheriting the dashboard's Access auth,
+    # no extra hostname/port exposed. Replaces the LAN-only websockify bridge.
+    SPICE_PORTS = {5900}                      # healer VM SPICE (allowlist)
+
+    @app.websocket("/spice/ws/{port}")
+    async def spice_ws(websocket: WebSocket, port: int):
+        if port not in SPICE_PORTS:
+            await websocket.close(code=1008); return
+        # spice-html5 connects with the 'binary' subprotocol
+        await websocket.accept(subprotocol="binary")
+        try:
+            reader, writer = await asyncio.open_connection("127.0.0.1", port)
+        except OSError:
+            await websocket.close(code=1011); return
+
+        async def ws_to_tcp():
+            try:
+                while True:
+                    writer.write(await websocket.receive_bytes())
+                    await writer.drain()
+            except Exception:
+                pass
+
+        async def tcp_to_ws():
+            try:
+                while True:
+                    data = await reader.read(65536)
+                    if not data:
+                        break
+                    await websocket.send_bytes(data)
+            except Exception:
+                pass
+
+        t1 = asyncio.create_task(ws_to_tcp())
+        t2 = asyncio.create_task(tcp_to_ws())
+        try:
+            await asyncio.wait({t1, t2}, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            for t in (t1, t2):
+                t.cancel()
+            writer.close()
+            with contextlib.suppress(Exception):
+                await websocket.close()
+
     if STATIC.exists():
         app.mount("/", StaticFiles(directory=str(STATIC), html=True), name="static")
 

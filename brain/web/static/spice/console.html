@@ -10,8 +10,13 @@
 <script type="module">
 import * as SpiceHtml5 from "./src/main.js";
 const qv=(n,d)=>{const m=new RegExp("[?&]"+n+"=([^&#]*)").exec(location.search);return m?decodeURIComponent(m[1]):d;};
-const host=qv("host",location.hostname), port=qv("port","5959");
-const uri="ws://"+host+":"+port;
+// SAME-ORIGIN ws path (default): proxied by the dashboard to the VM's SPICE, so it
+// works on the LAN AND remotely through Cloudflare (wss, inherits Access). The
+// legacy host:port form still works if explicitly given.
+const port=qv("port","5900");
+const proto=location.protocol==="https:"?"wss":"ws";
+const uri=qv("host")?("ws://"+qv("host")+":"+qv("port","5959"))
+                    :(proto+"://"+location.host+"/spice/ws/"+port);
 const msg=document.getElementById("msg");
 let sc;
 function err(e){msg.textContent="error: "+(e&&e.toString?e.toString():e);console.log("spice error",e);}

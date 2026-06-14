@@ -417,20 +417,39 @@ function refreshFrame() {
 setInterval(refreshFrame, 1200);
 refreshFrame();
 
-// Click the live view to open the in-browser SPICE console -- a full interactive
-// view of the VM that does NOT detach the console (unlike RDP), so the bot keeps
-// running while you click/type. Pops a window connecting through the websockify
-// bridge (ib-spice.service) to the VM's SPICE.
-function openConsole() {
-  window.open(`/spice/console.html?host=${location.hostname}&port=5959`,
-    "ibconsole", "width=1300,height=820,menubar=no,toolbar=no,location=no");
+// Console connect: a modal offering the in-browser SPICE view (one click) OR the
+// copy-paste tunnel command for the native viewer — so it works from ANY computer
+// with nothing pre-installed. LAN-only (the server's SPICE/WS aren't public).
+const IB_LAN = "10.0.0.16";          // server LAN IP (home network)
+const IB_SSH_USER = "jbaker";
+function openConsoleModal(title, spicePort) {
+  const sp = spicePort || 5900;
+  const localPort = 5950 + Math.floor((sp - 5900) / 10);   // 5900->5950, 5910->5951...
+  const cmd = `ssh -fN -L ${localPort}:127.0.0.1:${sp} ${IB_SSH_USER}@${IB_LAN} 2>/dev/null; `
+            + `remote-viewer spice://127.0.0.1:${localPort}`;
+  $("cmTitle").textContent = `Connect — ${title}`;
+  $("cmCmd").textContent = cmd;
+  // SAME-ORIGIN web console: works on the LAN and remotely through Cloudflare.
+  $("cmWeb").onclick = () => {
+    window.open(`${location.origin}/spice/console.html?port=${sp}`,
+      "ibweb", "width=1300,height=820,menubar=no,toolbar=no,location=no");
+  };
+  $("cmCopy").onclick = () => {
+    navigator.clipboard.writeText(cmd).then(() => {
+      $("cmCopy").textContent = "Copied!";
+      setTimeout(() => ($("cmCopy").textContent = "Copy"), 1500);
+    });
+  };
+  $("consoleModal").hidden = false;
 }
+$("cmClose").onclick = () => ($("consoleModal").hidden = true);
+$("consoleModal").onclick = (e) => { if (e.target.id === "consoleModal") $("consoleModal").hidden = true; };
 if (liveImg) {
-  liveImg.title = "click to open the native SPICE console";
-  liveImg.onclick = () => { window.location.href = "ibconsole://open"; };
+  liveImg.title = "click to connect to the console";
+  liveImg.onclick = () => openConsoleModal("healer (iksar_buddy)", 5900);
 }
 const consoleBtn = $("consoleBtn");
-if (consoleBtn) consoleBtn.onclick = openConsole;
+if (consoleBtn) consoleBtn.onclick = () => openConsoleModal("healer (iksar_buddy)", 5900);
 const spiceRestartBtn = $("spiceRestartBtn");
 if (spiceRestartBtn) spiceRestartBtn.onclick = () => {
   spiceRestartBtn.disabled = true;

@@ -86,6 +86,7 @@ function buildBotPanel(bot, tradeClasses) {
     enable: q(".bot-enable"),
     charName: q(".bot-char"),
     console: q(".bot-console"),
+    webconsole: q(".bot-webconsole"),
     live: q(".bot-live-frame"),
     tabs: [...root.querySelectorAll(".mode-tab")],
     paneSingle: q(".pane-single"),
@@ -182,6 +183,15 @@ function buildBotPanel(bot, tradeClasses) {
   refs.console.onclick = () =>
     (window.location.href = `ibconsole://open?port=${bot.spice_port || ""}`);
   refs.live.onclick = refs.console.onclick;
+  // in-browser SPICE console (LAN only): spice-html5 is served by the healer dash
+  // on :18080; the WS bridge port is the VM SPICE port + 59 (5910->5969, 5920->5979).
+  if (refs.webconsole) refs.webconsole.onclick = () => {
+    const sp = bot.spice_port;
+    if (!sp) { alert("no SPICE port for this bot"); return; }
+    const h = location.hostname;
+    window.open(`http://${h}:18080/spice/console.html?host=${h}&port=${sp + 59}`,
+      `ibweb${id}`, "width=1300,height=820,menubar=no,toolbar=no,location=no");
+  };
 
   // initial input values
   if (bot.character) refs.trade.value = bot.character;
