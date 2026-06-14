@@ -381,14 +381,31 @@ function renderEvents(events) {
 // new image has actually decoded, so we never show a broken-image flash; pause
 // while the tab is hidden to save bandwidth.
 const liveImg = $("liveFrame");
+const liveWrap = liveImg ? liveImg.closest(".live-wrap") : null;
 let liveLoading = false;
+let liveUrl = "";
 function refreshFrame() {
   if (document.hidden || liveLoading || !liveImg) return;
   liveLoading = true;
-  const probe = new Image();
-  probe.onload = () => { liveImg.src = probe.src; liveLoading = false; if ($("liveAge")) $("liveAge").textContent = "live"; };
-  probe.onerror = () => { liveLoading = false; if ($("liveAge")) $("liveAge").textContent = "no signal"; };
-  probe.src = "/api/frame.jpg?t=" + Date.now();
+  fetch("/api/frame.jpg?t=" + Date.now()).then(async (r) => {
+    if (r.status === 200) {
+      const url = URL.createObjectURL(await r.blob());
+      liveImg.src = url;
+      if (liveUrl) URL.revokeObjectURL(liveUrl);
+      liveUrl = url;
+      if (liveWrap) liveWrap.classList.remove("powered-off");
+      if ($("liveAge")) $("liveAge").textContent = "live";
+    } else if (r.status === 409) {
+      // VM powered off -> clear the stale frame, show the placeholder.
+      liveImg.removeAttribute("src");
+      if (liveUrl) { URL.revokeObjectURL(liveUrl); liveUrl = ""; }
+      if (liveWrap) liveWrap.classList.add("powered-off");
+      if ($("liveAge")) $("liveAge").textContent = "powered off";
+    } else if ($("liveAge")) {
+      $("liveAge").textContent = "no signal";   // 503: transient, keep last frame
+    }
+  }).catch(() => { if ($("liveAge")) $("liveAge").textContent = "no signal"; })
+    .finally(() => { liveLoading = false; });
 }
 setInterval(refreshFrame, 1200);
 refreshFrame();

@@ -242,6 +242,12 @@ class ForgeController:
             self._frames[bot_id] = (time.time(), out)
         return out
 
+    def vm_off(self, bot_id: str) -> bool:
+        """True if the bot's VM is powered off (domstate 'shut off'). Lets the
+        frame endpoint return 'powered off' instead of a stale last frame."""
+        g = self.guests.get(bot_id)
+        return bool(g and g.state() == "shut off")
+
     # -- calibration capture (the "set up tradeskills" window) -------------
     def pixel(self, bot_id: str, x: int, y: int) -> list | None:
         g = self.guests.get(bot_id)

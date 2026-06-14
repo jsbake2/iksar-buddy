@@ -148,6 +148,10 @@ class ForgeSim:
         for bid in self.t.snapshot["order"]:
             self.shutdown(bid)
 
+    def vm_off(self, bot_id: str) -> bool:
+        b = self.t.bot(bot_id)
+        return bool(b and not b.get("vm_running", False))
+
     def ocr_journal(self, bot_id: str) -> None:
         """Mock 'Read quest journal (OCR)' -> populate the writ queue."""
         b = self.t.bot(bot_id)

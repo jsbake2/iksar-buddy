@@ -45,7 +45,10 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
             return Response(status_code=503)
         data = await _exec(sim.frame_jpeg, bot_id)
         if not data:
-            return Response(status_code=503)
+            # 409 = VM confirmed powered off (show 'powered off', not a stale
+            # frame); 503 = transient/not-grabbable-yet (keep last).
+            off = hasattr(sim, "vm_off") and await _exec(sim.vm_off, bot_id)
+            return Response(status_code=409 if off else 503)
         return Response(content=data, media_type="image/jpeg",
                         headers={"Cache-Control": "no-store"})
 

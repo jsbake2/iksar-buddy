@@ -354,6 +354,7 @@ if (allShutdown) allShutdown.onclick = () => {
 // Poll each bot's frame endpoint; swap the panel background only once the new
 // JPEG decodes (no broken-image flash). 503 (VM not grabbable) -> keep "no signal".
 const frameLoading = {};
+const frameUrls = {};
 function refreshFrames() {
   if (document.hidden) return;
   Object.keys(botEls).forEach((id) => {
@@ -361,17 +362,25 @@ function refreshFrames() {
     const refs = botEls[id];
     if (!refs || !refs.live) return;
     frameLoading[id] = true;
-    const probe = new Image();
-    probe.onload = () => {
-      refs.live.style.backgroundImage = `url(${probe.src})`;
-      refs.live.classList.add("has-img");
-      frameLoading[id] = false;
-    };
-    probe.onerror = () => {
-      refs.live.classList.remove("has-img");
-      frameLoading[id] = false;
-    };
-    probe.src = `/api/bot/${id}/frame.jpg?t=${Date.now()}`;
+    fetch(`/api/bot/${id}/frame.jpg?t=${Date.now()}`).then(async (r) => {
+      if (r.status === 200) {
+        const url = URL.createObjectURL(await r.blob());
+        refs.live.style.backgroundImage = `url(${url})`;
+        refs.live.classList.add("has-img");
+        refs.live.classList.remove("powered-off");
+        if (frameUrls[id]) URL.revokeObjectURL(frameUrls[id]);
+        frameUrls[id] = url;
+      } else if (r.status === 409) {
+        // VM powered off -> drop the stale frame, show the placeholder.
+        refs.live.style.backgroundImage = "";
+        refs.live.classList.remove("has-img");
+        refs.live.classList.add("powered-off");
+        if (frameUrls[id]) { URL.revokeObjectURL(frameUrls[id]); frameUrls[id] = ""; }
+      } else {
+        refs.live.classList.remove("has-img");   // 503: transient, keep last
+      }
+    }).catch(() => { refs.live.classList.remove("has-img"); })
+      .finally(() => { frameLoading[id] = false; });
   });
 }
 setInterval(refreshFrames, 1500);

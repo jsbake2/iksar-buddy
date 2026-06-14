@@ -51,6 +51,10 @@
   cursor:pointer; display:grid; place-items:center; }
 .bot-live-frame::after { content:"no signal"; color:var(--faint); font-size:12px; }
 .bot-live-frame.has-img::after { content:""; }
+.bot-live-frame.powered-off { background:#000; }
+.bot-live-frame.powered-off::after { content:"⏻ POWERED OFF"; color:var(--bad);
+  font-size:13px; font-weight:800; letter-spacing:1.2px; }
+.bot-live-frame.powered-off .bot-live-hint { display:none; }
 .bot-live-hint { position:absolute; bottom:7px; right:8px; font-size:10px; font-weight:600;
   padding:2px 8px; border-radius:6px; opacity:.6; color:var(--fg); z-index:1;
   background:color-mix(in srgb,var(--bg) 70%,transparent); border:1px solid var(--line); }

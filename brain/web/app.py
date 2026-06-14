@@ -27,6 +27,28 @@ STATIC = Path(__file__).resolve().parent / "static"
 FRAME_PPM = "/tmp/ib_sensor.ppm"
 _frame_cache: dict = {"ts": 0.0, "data": b""}
 
+# Healer VM domain (matches stop_bot.sh). When it's powered off the agent stops
+# refreshing FRAME_PPM, so the file holds a STALE frame — we'd serve last-known
+# state forever. Check domstate so the live view can show "powered off" instead.
+VIRSH = ["sudo", "-n", "virsh", "-c", "qemu:///system"]
+HEALER_DOM = "iksar_buddy"
+_vm_state: dict = {"ts": 0.0, "off": False}
+
+
+def _healer_powered_off() -> bool:
+    """Cached (~2s) domstate probe. Keeps the prior reading on a transient virsh
+    hiccup so a one-off failure never falsely flips the view to 'powered off'."""
+    now = time.time()
+    if now - _vm_state["ts"] > 2.0:
+        try:
+            r = subprocess.run(VIRSH + ["domstate", HEALER_DOM],
+                               capture_output=True, text=True, timeout=4)
+            if r.returncode == 0:
+                _vm_state.update(ts=now, off=("shut off" in (r.stdout or "")))
+        except Exception:
+            pass
+    return _vm_state["off"]
+
 
 def _save_config(path: Path, text: str) -> None:
     """Persist owner config safely: back up the previous version (.bak) and write
@@ -100,7 +122,11 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     async def frame():
         """Live VM view: the agent's latest framebuffer as a downscaled JPEG.
         Cached ~0.7s (the agent only refreshes ~1Hz) so rapid <img> reloads are
-        cheap. Returns 503 until the first frame exists."""
+        cheap. Returns 503 until the first frame exists, 409 when the VM is
+        powered off (so the view shows 'powered off', not a stale frame)."""
+        if await asyncio.get_running_loop().run_in_executor(None, _healer_powered_off):
+            _frame_cache["data"] = b""   # drop stale so a restart can't flash it
+            return Response(status_code=409)
         now = time.time()
         if now - _frame_cache["ts"] > 0.7:
             try:
