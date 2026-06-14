@@ -197,7 +197,10 @@ function buildBotPanel(bot, tradeClasses) {
   };
   refs.stop.onclick = () => post(`/api/bot/${id}/stop`);
   refs.pause.onclick = () => post(`/api/bot/${id}/pause`);
-  refs.launch.onclick = () => post(`/api/bot/${id}/launch`);
+  refs.launch.onclick = () => {
+    const c = selectedCrafter(refs);   // send the dropdown's crafter so the backend
+    post(`/api/bot/${id}/launch`, c ? { character: c.character, trade_class: c.class } : {});
+  };
   refs.camp.onclick = () => post(`/api/bot/${id}/camp`);
   refs.switch.onclick = () => post(`/api/bot/${id}/switch`);
   refs.shutdown.onclick = () => {
@@ -360,7 +363,10 @@ function render(s) {
 
 // ---- global controls ------------------------------------------------------
 $("allLaunch").onclick = () => {
-  Object.keys(botEls).forEach((id) => post(`/api/bot/${id}/launch`));
+  Object.keys(botEls).forEach((id) => {
+    const c = selectedCrafter(botEls[id]);
+    post(`/api/bot/${id}/launch`, c ? { character: c.character, trade_class: c.class } : {});
+  });
 };
 $("allStop").onclick = () => {
   if (confirm("Stop ALL bots?")) Object.keys(botEls).forEach((id) => post(`/api/bot/${id}/stop`));

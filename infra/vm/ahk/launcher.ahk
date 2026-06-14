@@ -19,7 +19,17 @@ SetTitleMatchMode 2
 EQDIR := "C:\Users\Public\Daybreak Game Company\Installed Games\EverQuest II"
 LOGF := "C:\ib\launcher.log"
 lg(m) {
-    FileAppend(m " @" A_Now "`n", LOGF)
+    ; The HOST polls launcher.log while we write it -> a sharing collision used to
+    ; throw a modal AHK error and halt the launcher. Retry briefly, then give up
+    ; silently (a dropped log line must never stop the launcher).
+    Loop 20 {
+        try {
+            FileAppend(m " @" A_Now "`n", LOGF)
+            return
+        } catch {
+            Sleep 50
+        }
+    }
 }
 
 rgb(x, y) {

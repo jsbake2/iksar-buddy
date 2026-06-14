@@ -247,9 +247,14 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
         return {"ok": True}
 
     @app.post("/api/bot/{bot_id}/launch")
-    async def launch(bot_id: str):
+    async def launch(bot_id: str, payload: dict = Body(default={})):
         if not _bot_ok(bot_id):
             return JSONResponse({"error": "unknown bot"}, status_code=404)
+        # The dropdown's crafter rides along so the backend has the character to pick
+        # even if the dropdown was never changed (its onchange never fired).
+        ch = str(payload.get("character", "")).strip()
+        if ch:
+            sim.configure(bot_id, character=ch, trade_class=str(payload.get("trade_class", "")).strip())
         sim.launch(bot_id)
         return {"ok": True}
 

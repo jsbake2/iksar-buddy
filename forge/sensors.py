@@ -250,7 +250,10 @@ def panel_name(guest: Guest, region: dict) -> str:
             capture_output=True, timeout=6).stdout
         if not pre:
             return ""
-        out = subprocess.run(["tesseract", "stdin", "stdout", "--psm", "7"],
+        # psm 6 (block): the detail panel shows NAME then a class line; a tall region
+        # can catch either, so OCR both lines and join — the caller checks the target
+        # name as a substring, which still tells the near-identical twins apart.
+        out = subprocess.run(["tesseract", "stdin", "stdout", "--psm", "6"],
                              input=pre, capture_output=True, timeout=10).stdout
     except (OSError, subprocess.SubprocessError):
         return ""
@@ -268,71 +271,70 @@ def _stable_panel(guest: Guest, region: dict) -> str:
 
 def select_character(guest: Guest, cfg: dict, target: str,
                      log=lambda _m: None, play: bool = True,
-                     attempts: int = 8) -> bool:
-    """Closed-loop char-select pick used by BOTH login and forge (FORGE.md §5.5).
+                     attempts: int = 6) -> bool:
+    """Char-select pick used by BOTH login and forge (FORGE.md §5.5).
 
-    The list has no portrait column (centered text) and the click coordinate space is
-    offset/noisy vs the screenshot, so an open-loop click picked the wrong toon. So:
-    click the target row, READ the detail-panel name to VALIDATE, and steer the click
-    Y proportionally toward the target from whoever we actually hit. Confirmation is
-    SUBSTRING-only (never fuzzy — 'Croolst'/'Croalst' differ by one letter), so the
-    wrong twin can't be confirmed. Play is pressed ONLY after the panel confirms
-    `target`; an unconfirmed selection returns False and never Plays.
+    Primary source of truth is `char_select.rows[<vm>][<character>]` — the owner-marked
+    NAME Y for each character on that VM (resolves duplicate names like the two Robskins,
+    and doesn't depend on flaky list OCR). Falls back to OCR for any character not in the
+    map. We then click the row, READ the detail-panel name to CONFIRM (substring-only, so
+    the near-identical twins can't be mis-confirmed), and steer the click Y to absorb the
+    guest's click-vs-screenshot offset. Play is pressed ONLY once the panel confirms the
+    target; an unconfirmed selection never Plays.
     """
     cs = cfg.get("char_select", cfg) or {}
-    list_region = cs.get("list_region", {})
-    name_region = cs.get("name_region", {"x": 1610, "y": 772, "w": 250, "h": 30})
-    offset = int(cs.get("row_click_offset_y", 0))         # clicking AT the name selects it
+    name_region = cs.get("name_region", {"x": 1610, "y": 748, "w": 250, "h": 30})
     settle = float(cs.get("select_settle_s", 2.5))        # panel lags; short reads are stale
+    name_x = int(cs.get("name_click_x", 190))             # the centered name column
     play_click = cs.get("play_click")
     ctl = _alpha(target)
     if len(ctl) < 5:
         log(f"char-select: target '{target}' too short to disambiguate"); return False
 
-    # Build a name->position map by MERGING several grabs (per-frame list OCR is flaky,
-    # the names garble — 'Croalst' reads as 'crjst'/'croalstg'). Keep ALL candidate
-    # positions per name so a single clean read locates the row.
-    def _strong(c: str, k: str) -> bool:
-        # exact, or length-guarded substring — catches same-name OCR variants
-        # ('jenskin'/'jensking', 'croalst'/'croalstg') WITHOUT matching the near-twin
-        # 'croolst' vs 'croalst' (neither is a substring of the other).
-        return c == k or (len(k) >= 5 and (c in k or k in c) and abs(len(k) - len(c)) <= 2)
+    # Owner-marked positions for THIS VM: {character_alpha: name_y}.
+    dom = getattr(guest, "dom", "")
+    rows = {_alpha(k): int(v) for k, v in (cs.get("rows") or {}).get(dom, {}).items()}
 
-    cands: dict[str, list[tuple[int, int]]] = {}
-    for _ in range(8):
-        for w in _ocr_words(guest, list_region):
-            a = _alpha(w["text"])
-            if len(a) >= 4:
-                cands.setdefault(a, []).append((w["x"] + w["w"] // 2, w["y"] + w["h"] // 2))
-        if any(_strong(ctl, k) for k in cands):            # got a clean read of the target
-            break
-        time.sleep(0.8)
+    # OCR is only needed for chars NOT in the marked map (and for the legacy server
+    # disambiguation). Lazily merged on first use.
+    _words: list = []
 
-    def _pos(name: str):
+    def _ocr_pos(name: str):
+        if not _words:
+            for _ in range(6):
+                for w in _ocr_words(guest, cs.get("list_region", {})):
+                    if len(_alpha(w["text"])) >= 4:
+                        _words.append(w)
+                if any(ctl in _alpha(w["text"]) for w in _words):
+                    break
+                time.sleep(0.8)
         c = _alpha(name)
-        # Prefer strong (exact/substring) matches; only if NONE exist fall back to a
-        # fuzzy floor. This is what makes single-letter OCR errors (jenskin->jenrkin,
-        # ratio 0.857) recoverable WITHOUT averaging in the croolst/croalst twin (also
-        # 0.857): when a clean read is present it wins; when not, fuzzy still locates it.
-        pts = [p for k, v in cands.items() if _strong(c, k) for p in v]
-        if not pts:
-            pts = [p for k, v in cands.items()
-                   if difflib.SequenceMatcher(None, k, c).ratio() >= 0.85 for p in v]
-        if not pts:
+        m = [w for w in _words if c == _alpha(w["text"])
+             or (len(_alpha(w["text"])) >= 5 and (c in _alpha(w["text"]) or _alpha(w["text"]) in c))]
+        if not m:
             return None
-        pts.sort(key=lambda p: p[1])
-        return pts[len(pts) // 2]                          # median (robust to stray reads)
+        w = max(m, key=lambda w: w["y"])                  # owner's dup sorts to the bottom
+        return w["y"] + w["h"] // 2
 
-    tpos = _pos(target)
-    if not tpos:
-        log(f"char-select: '{target}' not found in list ({sorted(cands)})"); return False
-    tx, ty = tpos
-    lo, hi = ty - 55, ty + 55                              # never click into the void
+    def row_y(name: str):
+        """Name -> its NAME-line Y: marked map first (handles duplicates), then OCR."""
+        c = _alpha(name)
+        if c in rows:
+            return rows[c]
+        for k, v in rows.items():                          # panel blob: 'robskinlevel...'
+            if len(k) >= 5 and (k in c or c in k):
+                return v
+        return _ocr_pos(name)
 
-    guess_y = ty + offset
+    target_y = row_y(target)
+    if target_y is None:
+        log(f"char-select: '{target}' not found (no mark + no OCR match)"); return False
+    lo, hi = target_y - 60, target_y + 60                  # never click into the void
+
+    guess_y = target_y
     for attempt in range(attempts):
         guess_y = max(lo, min(hi, guess_y))
-        guest.click(tx, guess_y)
+        guest.click(name_x, guess_y)
         time.sleep(settle)                                 # selection + panel update
         sel = _stable_panel(guest, name_region)
         if ctl in sel:
@@ -340,15 +342,14 @@ def select_character(guest: Guest, cfg: dict, target: str,
             if play and play_click:
                 guest.click(int(play_click[0]), int(play_click[1]))
             return True
-        # steer: map the panel name back to a list row to learn the click error
-        hitpos = _pos(sel) if len(sel) >= 5 else None
-        if hitpos and abs(hitpos[1] - ty) > 4:             # proportional steer (gain 1)
-            err = hitpos[1] - ty                           # +ve: selected too low
-            log(f"panel '{sel}' -> y{hitpos[1]} err={err}; click_y {guess_y}->{guess_y - err}")
-            guess_y -= err
+        # steer: which character did we actually hit? map its name -> Y, correct the click.
+        sy = row_y(sel) if len(sel) >= 5 else None
+        if sy is not None and abs(sy - target_y) > 4:      # proportional (gain 1) -> absorbs offset
+            log(f"panel '{sel}' -> y{sy}; click {guess_y}->{guess_y - (sy - target_y)}")
+            guess_y -= (sy - target_y)
         else:
             log(f"panel '{sel}' unresolved; nudge up")
-            guess_y -= 14
+            guess_y -= 16
         time.sleep(0.3)
     log(f"char-select: could NOT confirm {target} — not pressing Play")
     return False

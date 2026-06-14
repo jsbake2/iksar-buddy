@@ -302,30 +302,33 @@ class ForgeController:
                 break
             await asyncio.sleep(3)
         await asyncio.sleep(10)                     # let the desktop/shell settle
-        # tell the (craft) launcher which character to select, then fire it
-        if char:
-            await loop.run_in_executor(None, g.exec_ps,
-                                       f"Set-Content C:\\ib\\target_char.txt '{char}' -NoNewline", False)
-        # clear the launcher log FIRST so we wait for THIS run's char-select, not a
-        # stale "char-select ready" from a prior launch (the "jumped to in-world" bug)
-        await loop.run_in_executor(None, g.exec_ps, 'Set-Content C:\\ib\\launcher.log ""', False)
-        await asyncio.sleep(1)
-        await loop.run_in_executor(None, g.exec_ps, "Start-ScheduledTask -TaskName ibrun", False)
-        # poll launcher.log for char-select, then host-side OCR pick
-        ready = False
-        for _ in range(120):
-            tail = await loop.run_in_executor(None, g.read_file, LAUNCHER_LOG, 1)
-            if tail and "char-select ready" in tail:
-                ready = True
-                break
-            if tail and "in-world" in tail:
-                ready = True
-                break
-            await asyncio.sleep(3)
-        if not ready:
-            self.t.push_log(bot_id, "launcher didn't reach char-select (calibration?)")
-            self.t.update_bot(bot_id, state="idle")
-            return
+        # Idempotent: if EQ2 is ALREADY running (e.g. parked at char-select), DON'T
+        # re-fire the launcher (that pops a 2nd LaunchPad over the live client). Just
+        # go pick the character.
+        if await loop.run_in_executor(None, g.eq2_running):
+            self.t.push_event(bot_id, "launch", "EQ2 already up — skipping launcher, selecting character")
+        else:
+            # tell the (craft) launcher which character to select, then fire it
+            if char:
+                await loop.run_in_executor(None, g.exec_ps,
+                                           f"Set-Content C:\\ib\\target_char.txt '{char}' -NoNewline", False)
+            # clear the launcher log FIRST so we wait for THIS run's char-select, not a
+            # stale "char-select ready" from a prior launch (the "jumped to in-world" bug)
+            await loop.run_in_executor(None, g.exec_ps, 'Set-Content C:\\ib\\launcher.log ""', False)
+            await asyncio.sleep(1)
+            await loop.run_in_executor(None, g.exec_ps, "Start-ScheduledTask -TaskName ibrun", False)
+            # poll launcher.log for char-select, then host-side OCR pick
+            ready = False
+            for _ in range(120):
+                tail = await loop.run_in_executor(None, g.read_file, LAUNCHER_LOG, 1)
+                if tail and ("char-select ready" in tail or "in-world" in tail):
+                    ready = True
+                    break
+                await asyncio.sleep(3)
+            if not ready:
+                self.t.push_log(bot_id, "launcher didn't reach char-select (calibration?)")
+                self.t.update_bot(bot_id, state="idle")
+                return
         await self._select_character(bot_id, char)
         self.t.update_bot(bot_id, state="idle")
         self.t.push_event(bot_id, "launch", f"in-world as {char or '?'} (verify)")

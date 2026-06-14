@@ -55,7 +55,7 @@ class ForgeSim:
         """Persist UI selections (trade_class, mode, recipe, count) without
         starting — so the panel remembers them between renders."""
         clean = {k: v for k, v in fields.items()
-                 if k in ("trade_class", "mode", "recipe")}
+                 if k in ("trade_class", "mode", "recipe", "character")}
         if "count" in fields:
             try:
                 clean["count"] = {"done": 0, "total": max(1, int(fields["count"]))}
