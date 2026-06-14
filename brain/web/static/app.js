@@ -434,6 +434,8 @@ function openConsoleModal(title, spicePort) {
     window.open(`${location.origin}/spice/console.html?port=${sp}`,
       "ibweb", "width=1300,height=820,menubar=no,toolbar=no,location=no");
   };
+  // one-click native viewer (works if this machine ran the ib-console installer)
+  $("cmNative").onclick = () => { window.location.href = `ibconsole://open?port=${sp}`; };
   $("cmCopy").onclick = () => {
     navigator.clipboard.writeText(cmd).then(() => {
       $("cmCopy").textContent = "Copied!";
