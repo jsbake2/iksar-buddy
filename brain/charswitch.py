@@ -52,6 +52,42 @@ def _char_select_cfg() -> dict:
     return _DEFAULT_CHAR_SELECT
 
 
+def _select_at_charselect(g: Guest, target_char: str,
+                          log: Callable[[str], None]) -> bool:
+    """At char-select already: OCR-find `target_char`, click its row, click Play.
+    Retries ~24s while the list renders. Returns True iff the row was clicked."""
+    cs = {"char_select": _char_select_cfg()}
+    pt = None
+    for _ in range(12):                        # ~24s for the list to render
+        pt = sensors.find_character(g, cs, target_char)
+        if pt:
+            break
+        time.sleep(2)
+    if not pt:
+        log(f"char-select: '{target_char}' not found (wrong account, or still loading?)")
+        return False
+    g.click(pt[0], pt[1])                       # select the row (portrait, x~100)
+    time.sleep(0.7)
+    play = cs["char_select"].get("play_click")
+    if play:
+        g.click(int(play[0]), int(play[1]))     # Play -> in-world
+    log(f"selected {target_char} @ {pt} -> Play")
+    return True
+
+
+def select_only(target_char: str,
+                log: Callable[[str], None] = lambda _m: None) -> bool:
+    """Pick `target_char` when ALREADY at char-select (used by Launch, which now
+    stops the in-game launcher at char-select and lets the host pick by profile).
+    Blocking — run it in an executor."""
+    if not target_char:
+        log("char-select: no target character set"); return False
+    g = Guest(HEALER_DOM)
+    if not g.eq2_running():
+        log("char-select: EQ2 not running"); return False
+    return _select_at_charselect(g, target_char, log)
+
+
 def camp_and_select(target_char: str, camp_key: str, camp_wait: float = 20.0,
                     log: Callable[[str], None] = lambda _m: None) -> bool:
     """Camp the current character and select `target_char` at char-select.
@@ -71,22 +107,4 @@ def camp_and_select(target_char: str, camp_key: str, camp_wait: float = 20.0,
     log(f"camping (key {camp_key}) -> char-select")
     g.press_keys(camp_key)
     time.sleep(camp_wait)                      # camp countdown -> char-select
-
-    cs = {"char_select": _char_select_cfg()}
-    pt = None
-    for _ in range(12):                        # ~24s for the list to render
-        pt = sensors.find_character(g, cs, target_char)
-        if pt:
-            break
-        time.sleep(2)
-    if not pt:
-        log(f"char-select: '{target_char}' not found (wrong account, or still camping?)")
-        return False
-
-    g.click(pt[0], pt[1])                       # select the row (portrait, x~100)
-    time.sleep(0.7)
-    play = cs["char_select"].get("play_click")
-    if play:
-        g.click(int(play[0]), int(play[1]))     # Play -> in-world
-    log(f"selected {target_char} @ {pt} -> Play")
-    return True
+    return _select_at_charselect(g, target_char, log)

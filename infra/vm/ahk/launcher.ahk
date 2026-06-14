@@ -1,8 +1,10 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 ; Hands-off launcher (PROJECT.md §6.5): desktop -> LaunchPad -> PLAY ->
-; select Jenskin -> char-select Play -> load world -> wait for group invite
-; (indefinitely) -> accept.
+; char-select, then STOP. The HOST (brain) OCR-picks the ACTIVE PROFILE's character
+; and clicks Play, so Launch respects the selected profile (Jenskin/Croolst/...)
+; instead of a hardcoded list slot. The group invite is accepted host-side via the
+; dashboard 'accept invite' button (invite_accept.py).
 ;
 ; EQ2 only registers legacy mouse_event-style clicks -> SendMode "Event".
 ; Gating uses gold-button fingerprints (no blind sleeps where avoidable).
@@ -81,18 +83,7 @@ Loop 150 {                        ; up to ~5 min for software-render load
     Sleep 2000
 }
 lg("char-select ready")
-
-; 4) select Jenskin (fixed slot) then click Play
-evclick(100, 884, gw)             ; Jenskin in the list
-Sleep 600
-evclick(1715, 890, gw)            ; Play
-lg("entered world as Jenskin; loading")
-
-Sleep 50000                       ; world load (software render)
-lg("in-world; host OCR (invite_accept.py) handles the group invite")
-lg("=== launcher done: in-world ===")
-
-; NOTE: the group invite is accepted HOST-SIDE by invite_accept.py, which OCRs
-; the screen, gates on "invited ... group", and clicks the located "Accept"
-; word box (same self-locating approach as quest_accept.py). The guest has no
-; tesseract, so blind pixel-sampling here was fragile and is intentionally gone.
+; STOP HERE. The host OCRs the char list, finds the active profile's character,
+; clicks its row + Play (brain.charswitch.select_only via forge.sensors). No blind
+; slot-click here — that loaded the wrong toon when the list order changed.
+lg("=== launcher done: char-select (host picks profile character) ===")
