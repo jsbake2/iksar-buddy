@@ -83,7 +83,7 @@ if ! ss -ltn 2>/dev/null | grep -q "127.0.0.1:$local_port "; then
   fi
   sleep 1
 fi
-exec remote-viewer "spice://127.0.0.1:$local_port" --title "ib console :$remote" >>"$log" 2>&1
+exec env GDK_BACKEND=x11 remote-viewer "spice://127.0.0.1:$local_port" --title "ib console :$remote" >>"$log" 2>&1
 SH
 
 cat >"$BIN/ib-console2" <<'SH'

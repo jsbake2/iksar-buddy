@@ -287,7 +287,7 @@ function render(s) {
   $("stateK").textContent = state;
   $("override").textContent = s.override || "none";
   $("groupSizeK").textContent = s.group_size ?? 0;
-  $("groupSize").textContent = `${s.group_size ?? 0}/6`;
+  { const gs = $("groupSize"); if (gs) gs.textContent = `${s.group_size ?? 0}/6`; }
   const runK = $("runningK");
   runK.textContent = s.running ? "armed" : "disarmed";
   runK.className = s.running ? "good" : "";
@@ -337,6 +337,7 @@ function buildMemberEl(slot) {
 }
 function renderMembers(members) {
   const box = $("members");
+  if (!box) return;            // group panel removed from main page (use the ⊟ pop-out)
   members.forEach((m) => {
     let el = memberEls[m.slot];
     if (!el) { el = buildMemberEl(m.slot); memberEls[m.slot] = el; box.appendChild(el); }
