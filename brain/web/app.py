@@ -339,6 +339,18 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         asyncio.create_task(_go())
         return {"ok": True, "stop": "started"}
 
+    @app.post("/api/shutdown")
+    async def shutdown():
+        """Shutdown: power off the healer VM directly (no camp wait). Windows ACPI
+        shutdown closes EQ2 cleanly; forces off if it hangs (stop_bot.sh "none")."""
+        telemetry.push_event("control", "Shutdown VM (no camp)")
+
+        async def _go():
+            await _run_bot_script("stop_bot.sh", "none", "0")
+            telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": False})
+        asyncio.create_task(_go())
+        return {"ok": True, "shutdown": "started"}
+
     # Dialog accepts: run the host-side OCR-and-click helper ONCE on click (no
     # background watching). Each entry is the helper's argv. quest passes --accept
     # so the manual button accepts whatever quest is shown (the policy allowlist is
