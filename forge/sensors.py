@@ -236,6 +236,17 @@ def _alpha(s: str) -> str:
     return re.sub(r"[^a-z]", "", (s or "").lower())
 
 
+def _contains(blob: str, word: str) -> bool:
+    """Is `word` in `blob`, tolerant of one OCR slip (e.g. 'wuoshi' in 'wiuoshiserver')?"""
+    if not word:
+        return True
+    if word in blob:
+        return True
+    n = len(word)
+    return any(difflib.SequenceMatcher(None, blob[i:i + n + 1], word).ratio() >= 0.8
+               for i in range(max(1, len(blob) - n)))
+
+
 def panel_name(guest: Guest, region: dict) -> str:
     """OCR the selected-character name shown in the char-select detail panel (above
     Play). Light gold-on-textured text, so: grayscale + upscale + normalize (no hard
@@ -270,88 +281,61 @@ def _stable_panel(guest: Guest, region: dict) -> str:
 
 
 def select_character(guest: Guest, cfg: dict, target: str,
-                     log=lambda _m: None, play: bool = True,
-                     attempts: int = 6) -> bool:
+                     log=lambda _m: None, play: bool = True) -> bool:
     """Char-select pick used by BOTH login and forge (FORGE.md §5.5).
 
-    Primary source of truth is `char_select.rows[<vm>][<character>]` — the owner-marked
-    NAME Y for each character on that VM (resolves duplicate names like the two Robskins,
-    and doesn't depend on flaky list OCR). Falls back to OCR for any character not in the
-    map. We then click the row, READ the detail-panel name to CONFIRM (substring-only, so
-    the near-identical twins can't be mis-confirmed), and steer the click Y to absorb the
-    guest's click-vs-screenshot offset. Play is pressed ONLY once the panel confirms the
-    target; an unconfirmed selection never Plays.
+    Dead simple + correct: click the owner-MARKED location for the character
+    (`char_select.rows[<vm>][<character>]`), then read the detail-panel ("verify area")
+    and require BOTH the target NAME *and* the expected SERVER (char_select.server, e.g.
+    Wuoshi) — that's what tells the two Robskins (Maj'Dul vs Wuoshi) apart. The guest's
+    click lands a few px off the screenshot coords (and the sign isn't stable), so we
+    SWEEP a few clicks around the marked Y until name+server match, then Play. We NEVER
+    Play unless the verify area shows the exact target on the right server.
     """
     cs = cfg.get("char_select", cfg) or {}
-    name_region = cs.get("name_region", {"x": 1610, "y": 748, "w": 250, "h": 30})
+    # the whole detail panel: name + class(es) + location + "<server> server"
+    vr = cs.get("verify_region", {"x": 1605, "y": 745, "w": 280, "h": 155})
     settle = float(cs.get("select_settle_s", 2.5))        # panel lags; short reads are stale
     name_x = int(cs.get("name_click_x", 190))             # the centered name column
     play_click = cs.get("play_click")
+    server = _alpha(cs.get("server", ""))                 # expected server, e.g. 'wuoshi'
     ctl = _alpha(target)
-    if len(ctl) < 5:
-        log(f"char-select: target '{target}' too short to disambiguate"); return False
+    if len(ctl) < 4:
+        log(f"char-select: target '{target}' too short"); return False
 
-    # Owner-marked positions for THIS VM: {character_alpha: name_y}.
     dom = getattr(guest, "dom", "")
     rows = {_alpha(k): int(v) for k, v in (cs.get("rows") or {}).get(dom, {}).items()}
-
-    # OCR is only needed for chars NOT in the marked map (and for the legacy server
-    # disambiguation). Lazily merged on first use.
-    _words: list = []
-
-    def _ocr_pos(name: str):
-        if not _words:
-            for _ in range(6):
-                for w in _ocr_words(guest, cs.get("list_region", {})):
-                    if len(_alpha(w["text"])) >= 4:
-                        _words.append(w)
-                if any(ctl in _alpha(w["text"]) for w in _words):
-                    break
-                time.sleep(0.8)
-        c = _alpha(name)
-        m = [w for w in _words if c == _alpha(w["text"])
-             or (len(_alpha(w["text"])) >= 5 and (c in _alpha(w["text"]) or _alpha(w["text"]) in c))]
+    target_y = rows.get(ctl)
+    if target_y is None:                                  # not marked -> OCR the list once
+        words = []
+        for _ in range(6):
+            words += [w for w in _ocr_words(guest, cs.get("list_region", {}))
+                      if len(_alpha(w["text"])) >= 4]
+            if any(ctl == _alpha(w["text"]) or ctl in _alpha(w["text"]) for w in words):
+                break
+            time.sleep(0.8)
+        m = [w for w in words if ctl == _alpha(w["text"]) or ctl in _alpha(w["text"])]
         if not m:
-            return None
-        w = max(m, key=lambda w: w["y"])                  # owner's dup sorts to the bottom
-        return w["y"] + w["h"] // 2
+            log(f"char-select: '{target}' not found (no mark, no OCR)"); return False
+        w = max(m, key=lambda w: w["y"])
+        target_y = w["y"] + w["h"] // 2
 
-    def row_y(name: str):
-        """Name -> its NAME-line Y: marked map first (handles duplicates), then OCR."""
-        c = _alpha(name)
-        if c in rows:
-            return rows[c]
-        for k, v in rows.items():                          # panel blob: 'robskinlevel...'
-            if len(k) >= 5 and (k in c or c in k):
-                return v
-        return _ocr_pos(name)
-
-    target_y = row_y(target)
-    if target_y is None:
-        log(f"char-select: '{target}' not found (no mark + no OCR match)"); return False
-    lo, hi = target_y - 60, target_y + 60                  # never click into the void
-
-    guess_y = target_y
-    for attempt in range(attempts):
-        guess_y = max(lo, min(hi, guess_y))
-        guest.click(name_x, guess_y)
-        time.sleep(settle)                                 # selection + panel update
-        sel = _stable_panel(guest, name_region)
-        if ctl in sel:
-            log(f"confirmed {target} (panel '{sel}')")
+    # Sweep outward from the marked Y until the verify area shows target name + server.
+    # (~44px between rows; +-60 covers a row either way regardless of offset direction.)
+    for dy in (0, -15, 15, -30, 30, -45, 45, -60, 60):
+        cy = target_y + dy
+        guest.click(name_x, cy)
+        time.sleep(settle)                                # selection + panel update
+        blob = panel_name(guest, vr)                      # alpha-joined panel text
+        has_name = ctl in blob                            # STRICT: 'croolst' != 'croalst'
+        has_server = _contains(blob, server)              # tolerant: Wuoshi vs Maj'Dul
+        log(f"y{cy}: panel='{blob[:46]}' name={has_name} server={has_server}")
+        if has_name and has_server:
+            log(f"confirmed {target} on {cs.get('server','')} @ y{cy} -> Play")
             if play and play_click:
                 guest.click(int(play_click[0]), int(play_click[1]))
             return True
-        # steer: which character did we actually hit? map its name -> Y, correct the click.
-        sy = row_y(sel) if len(sel) >= 5 else None
-        if sy is not None and abs(sy - target_y) > 4:      # proportional (gain 1) -> absorbs offset
-            log(f"panel '{sel}' -> y{sy}; click {guess_y}->{guess_y - (sy - target_y)}")
-            guess_y -= (sy - target_y)
-        else:
-            log(f"panel '{sel}' unresolved; nudge up")
-            guess_y -= 16
-        time.sleep(0.3)
-    log(f"char-select: could NOT confirm {target} — not pressing Play")
+    log(f"char-select: could NOT land on {target}/{cs.get('server','')} — NOT pressing Play")
     return False
 
 
