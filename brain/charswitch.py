@@ -1,96 +1,53 @@
-"""Camp-and-switch-character for the healer.
+"""Healer login + character switch — now on the SAME direct-login path as forge
+(forge.login.LoginDriver). Replaces the old LaunchPad -> char-select -> OCR-pick
+flow (changing list order + duplicate names + flaky click offset made it pick the
+wrong toon).
 
-The owner's chars now /camp to CHARACTER SELECT (not a full logout), so a healer
-profile change can swap the in-game character too: press the camp key -> wait out
-the countdown -> OCR-and-click the target profile's character -> Play -> in-world.
+  Launch  : boot the healer VM -> LaunchPad -> EverQuest2.exe -> log straight into
+            the active profile's character.  -> healer_login()
+  Switch  : same-account character change via in-game "/camp <name>".  -> healer_switch()
 
-This reuses the forge host-side substrate — `forge.guest.Guest` drives the same
-`iksar_buddy` VM (it has the same ibkey/ibgclick guest tasks the agent uses) and
-`forge.sensors.find_character` does the char-select OCR. Same client + 1920x1080,
-so the forge's VALIDATED char_select calibration applies; we read it from the
-forge config and fall back to the known-good defaults.
-
-Only same-ACCOUNT characters appear at char-select. Jenskin<->Croolst share an
-account, so they swap cleanly; a profile on a different account won't be found
-(camp lands on the wrong account's list) -> we report it and leave the profile
-unchanged. A cross-account move still needs a full Stop Bot + Launch.
+Credentials live in the gitignored accounts.yaml (owner data dir), keyed by VM dom
+(`iksar_buddy`). World + creds come from there; the character comes from the brain's
+active profile (brain.cfg.select_character). Only same-account toons switch via /camp;
+a cross-account move still needs a full Launch.
 """
 from __future__ import annotations
 
-import os
-import time
-from pathlib import Path
 from typing import Callable
 
-import yaml
-
-from forge import sensors
 from forge.guest import Guest
+from forge.login import LoginDriver, load_accounts
 
 HEALER_DOM = "iksar_buddy"
-
-# Known-good fallback (matches launcher.ahk's hardcoded picks + the forge's live-
-# validated char_select). Used if the forge craft.yaml can't be read.
-_DEFAULT_CHAR_SELECT = {
-    "list_region": {"x": 80, "y": 380, "w": 420, "h": 560},
-    "row_click_x": 100,
-    "play_click": [1715, 890],
-    "server": "Wuoshi",
-}
+Log = Callable[[str], None]
 
 
-def _char_select_cfg() -> dict:
-    """The forge's char_select calibration (single source of truth) or the default."""
-    forge_dir = os.environ.get("IB_FORGE_DIR", str(Path.home() / "ib-data" / "forge"))
-    try:
-        prof = yaml.safe_load((Path(forge_dir) / "craft.yaml").read_text(encoding="utf-8")) or {}
-        cs = prof.get("char_select")
-        if isinstance(cs, dict) and cs.get("list_region"):
-            return cs
-    except (OSError, yaml.YAMLError):
-        pass
-    return _DEFAULT_CHAR_SELECT
+def _creds() -> tuple[str, str, str]:
+    accts, world = load_accounts()
+    a = accts.get(HEALER_DOM) or {}
+    return (a.get("user") or ""), (a.get("password") or ""), world
 
 
-def _select_at_charselect(g: Guest, target_char: str,
-                          log: Callable[[str], None]) -> bool:
-    """At char-select already: validated OCR pick of `target_char` (clicks the row,
-    reads the detail-panel name to confirm, then Play). Shared with forge so login
-    behaves identically in both tools. Never Plays an unconfirmed selection."""
-    return sensors.select_character(g, {"char_select": _char_select_cfg()},
-                                    target_char, log=log, play=True)
-
-
-def select_only(target_char: str,
-                log: Callable[[str], None] = lambda _m: None) -> bool:
-    """Pick `target_char` when ALREADY at char-select (used by Launch, which now
-    stops the in-game launcher at char-select and lets the host pick by profile).
-    Blocking — run it in an executor."""
+def healer_login(target_char: str, log: Log = lambda _m: None) -> bool:
+    """Launch Bot: power on the healer VM and log directly into `target_char`
+    (the active profile's character). If EQ2 is already in world as another
+    same-account toon, /camp-switches instead. Blocking — run in an executor."""
     if not target_char:
-        log("char-select: no target character set"); return False
+        log("launch: no character set on the active profile"); return False
+    user, pw, world = _creds()
+    if not (user and pw):
+        log(f"launch: no credentials for {HEALER_DOM} (set accounts.yaml)"); return False
+    drv = LoginDriver(Guest(HEALER_DOM), log)
+    return drv.boot_and_login(user, pw, target_char, world)
+
+
+def healer_switch(target_char: str, log: Log = lambda _m: None) -> bool:
+    """Camp + switch to `target_char` via in-game '/camp <name>' (same account, no
+    char-select). Blocking — run in an executor. Returns True once in world."""
+    if not target_char:
+        log("switch: no target character"); return False
     g = Guest(HEALER_DOM)
     if not g.eq2_running():
-        log("char-select: EQ2 not running"); return False
-    return _select_at_charselect(g, target_char, log)
-
-
-def camp_and_select(target_char: str, camp_key: str, camp_wait: float = 20.0,
-                    log: Callable[[str], None] = lambda _m: None) -> bool:
-    """Camp the current character and select `target_char` at char-select.
-
-    Blocking (sleeps through the camp countdown + char-select render) — run it in
-    an executor. Returns True only if the target row was found and clicked.
-    """
-    if not target_char:
-        log("camp+switch: no target character"); return False
-    if not camp_key or camp_key.lower() == "none":
-        log("camp+switch: no camp key bound"); return False
-
-    g = Guest(HEALER_DOM)
-    if not g.eq2_running():
-        log("camp+switch: EQ2 not running"); return False
-
-    log(f"camping (key {camp_key}) -> char-select")
-    g.press_keys(camp_key)
-    time.sleep(camp_wait)                      # camp countdown -> char-select
-    return _select_at_charselect(g, target_char, log)
+        log("switch: EQ2 not running (use Launch)"); return False
+    return LoginDriver(g, log).camp_to(target_char)

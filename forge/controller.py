@@ -20,7 +20,7 @@ from shared.account_lock import AccountLock
 
 from . import sensors
 from .guest import Guest
-from .login import LoginDriver, WORLD
+from .login import LoginDriver, WORLD, load_accounts
 from .telemetry import ForgeTelemetry
 from .worker import CraftWorker
 
@@ -50,7 +50,7 @@ class ForgeController:
         self.crafters = crafters or []            # [{character, class, vm}]
         self.keymap = keymap or {}                # camp command + arts keys
         self.lock = AccountLock()
-        self.accounts, self.world = self._load_accounts(profile_dir)
+        self.accounts, self.world = load_accounts(profile_dir)
         self.guests: dict[str, Guest] = {}
         self.workers: dict[str, CraftWorker] = {}
         self.stations: dict[str, dict] = {}
@@ -61,19 +61,6 @@ class ForgeController:
             self.guests[bid] = g
             self.workers[bid] = CraftWorker(g, craft_profile, profile_dir, tele, bid, self.keymap)
             self.stations[bid] = bot
-
-    @staticmethod
-    def _load_accounts(profile_dir: Path) -> tuple[dict, str]:
-        """EQ2 account credentials, keyed by VM domain, from accounts.yaml in the
-        owner data dir (gitignored — never in the repo). Shape:
-            world: Wuoshi
-            accounts: { iksar_buddy2: {user: ..., password: ...}, ... }
-        Missing file -> empty creds (login logs a clear error instead of guessing)."""
-        try:
-            data = yaml.safe_load((profile_dir / "accounts.yaml").read_text(encoding="utf-8")) or {}
-        except (OSError, yaml.YAMLError):
-            data = {}
-        return (data.get("accounts") or {}), (data.get("world") or WORLD)
 
     def _creds(self, bot_id: str) -> tuple[str, str]:
         dom = self.stations.get(bot_id, {}).get("dom", "")
@@ -306,32 +293,9 @@ class ForgeController:
             self.t.update_bot(bot_id, state="error"); return
         self.t.update_bot(bot_id, state="launching", vm_running=True)
         self.t.push_event(bot_id, "launch", f"power on {g.dom} -> direct login {char or '?'}")
-        if not await loop.run_in_executor(None, g.start_vm):
-            self.t.push_log(bot_id, "VM start failed"); return
-        for _ in range(40):                        # wait guest agent
-            if await loop.run_in_executor(None, g.agent_ready):
-                break
-            await asyncio.sleep(3)
-        # The guest agent answers at the Windows LOGIN screen — before the interactive
-        # desktop exists. Wait for the user session (explorer.exe) + a settle, else AHK
-        # fired into session 0 launches invisible windows that go nowhere.
-        self.t.push_event(bot_id, "launch", "waiting for desktop (auto-login)…")
-        for _ in range(25):                        # up to ~75s for auto-login
-            out = await loop.run_in_executor(None, g.exec_ps,
-                "if (Get-Process explorer -ErrorAction SilentlyContinue) {'Y'}")
-            if out and "Y" in out:
-                break
-            await asyncio.sleep(3)
-        await asyncio.sleep(10)                     # let the desktop/shell settle
         drv = LoginDriver(g, lambda m: self.t.push_log(bot_id, m))
-        # Idempotent: if EQ2 is already in world as another same-account toon, just
-        # /camp to the target instead of relaunching the client.
-        if char and await loop.run_in_executor(None, g.eq2_running):
-            self.t.push_event(bot_id, "launch", "EQ2 already up — /camp switch")
-            ok = await loop.run_in_executor(None, partial(drv.camp_to, char))
-        else:
-            ok = await loop.run_in_executor(
-                None, partial(drv.login, user, pw, char, self.world))
+        ok = await loop.run_in_executor(
+            None, partial(drv.boot_and_login, user, pw, char, self.world))
         self.t.update_bot(bot_id, state="idle")
         if ok:
             self.t.push_event(bot_id, "launch", f"in world as {char or '?'}")

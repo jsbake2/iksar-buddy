@@ -124,25 +124,22 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         profile's character, then (only if that succeeds) commit the profile config
         swap. Lets the owner change healer/character in-game without a relog — works
         for same-account toons (Jenskin<->Croolst); cross-account needs Stop+Launch."""
-        from ..charswitch import camp_and_select
+        from ..charswitch import healer_switch
         if name not in brain.cfg.list_profiles():
             return JSONResponse({"error": "unknown profile"}, status_code=404)
         target_char = brain.cfg.peek_select_character(name)
         if not target_char:
             return JSONResponse({"error": "profile has no character"}, status_code=400)
-        camp_key = brain.cfg.key_for("camp") or "none"
-        camp_wait = float(brain.cfg.threshold("camp_wait_s", 20))
         telemetry.push_event("control", f"camp+switch -> {name} ({target_char})")
 
         async def _go():
             loop = asyncio.get_running_loop()
             # push_event touches asyncio.Queues -> hop back to the loop thread
             tlog = lambda m: loop.call_soon_threadsafe(telemetry.push_event, "switch", m)
-            # disarm while we're at char-select so the loop can't fire stray keys
+            # disarm while we switch so the loop can't fire stray keys mid-camp
             await brain.send("command", role="_pause", key="", target_slot=None,
                              reason="camp+switch")
-            ok = await loop.run_in_executor(
-                None, camp_and_select, target_char, camp_key, camp_wait, tlog)
+            ok = await loop.run_in_executor(None, healer_switch, target_char, tlog)
             if ok:
                 brain.cfg.set_profile(name)
                 await brain.push_config()
@@ -381,10 +378,10 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
 
     @app.post("/api/launch")
     async def launch():
-        """Launch Bot: bring the VM up to char-select, then HOST-pick the active
-        profile's character (OCR) and load in-world. Respects the selected profile
-        instead of a hardcoded list slot (which loaded the wrong toon)."""
-        from ..charswitch import select_only
+        """Launch Bot: power on the VM and log DIRECTLY into the active profile's
+        character (forge.login.LoginDriver — same path as the crafters). No more
+        char-select OCR pick; the EQ2 login form takes the character by name."""
+        from ..charswitch import healer_login
         telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": True})
         telemetry.push_event("control", "Launch Bot")
 
@@ -392,20 +389,11 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             loop = asyncio.get_running_loop()
             # push_event touches asyncio.Queues -> must hop back to the loop thread
             tlog = lambda m: loop.call_soon_threadsafe(telemetry.push_event, "launch", m)
-            rc = await _run_bot_script("launch_bot.sh")
-            if rc == 2:
-                telemetry.push_event("launch", "client already in-world; no char pick")
-                return
-            if rc != 0:
-                telemetry.push_event("launch", "launch failed before char-select")
-                return
             char = brain.cfg.select_character
-            ok = await loop.run_in_executor(None, select_only, char, tlog)
+            ok = await loop.run_in_executor(None, healer_login, char, tlog)
             if not ok:
-                telemetry.push_event("launch", f"char pick failed; left at char-select ({char})")
+                telemetry.push_event("launch", f"login failed for {char}")
                 return
-            telemetry.push_event("launch", f"loading world as {char}")
-            await asyncio.sleep(50)                       # software-render world load
             await _run_bot_script("ensure_logging.sh")    # combat-log on (detection signal)
             telemetry.push_event("launch", f"in-world as {char}; logging on")
         asyncio.create_task(_go())

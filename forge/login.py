@@ -24,10 +24,14 @@ is a tiny AHK fired through Guest.run_ahk (ibrun, interactive session).
 """
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import time
+from pathlib import Path
 from typing import Callable
+
+import yaml
 
 from .guest import Guest
 
@@ -37,10 +41,25 @@ from .guest import Guest
 PLAY_PX = (1300, 752)                 # solid-orange point on the PLAY button face
 EULA_ACCEPT_PX = (1045, 757)          # "I ACCEPT" on the LaunchPad EULA
 DISK_CONTINUE_PX = (960, 661)         # "Continue" on the low-disk warning dialog
-UI_IMPORT_OK_PX = (905, 620)          # "Ok" on first-login "Import UI Settings"
+UI_IMPORT_CANCEL_PX = (970, 616)      # "Cancel" (default) on "Import UI Settings"
 WORLD = "Wuoshi"
 
 Log = Callable[[str], None]
+
+
+def load_accounts(profile_dir: str | Path | None = None) -> tuple[dict, str]:
+    """EQ2 account credentials keyed by VM domain, from accounts.yaml in the owner
+    data dir (gitignored — never in the repo). Shared by forge + healer. Shape:
+        world: Wuoshi
+        accounts: { iksar_buddy2: {user: .., password: ..}, iksar_buddy: {...}, ... }
+    Missing/garbage -> ({}, WORLD) so callers log a clear 'no creds' error."""
+    base = Path(profile_dir or os.environ.get(
+        "IB_FORGE_DIR", str(Path.home() / "ib-data" / "forge")))
+    try:
+        data = yaml.safe_load((base / "accounts.yaml").read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError):
+        data = {}
+    return (data.get("accounts") or {}), (data.get("world") or WORLD)
 
 
 # --- AHK snippet builders ----------------------------------------------------
@@ -94,6 +113,9 @@ def _login_ahk(user: str, password: str, character: str, world: str) -> str:
         'Sleep 300\nSend("{Tab}")\nSleep 300\n'  # -> character
         'Send("^a")\nSleep 120\nSend("{Delete}")\nSleep 200\n'
         f'Send("{{Raw}}{raw(character)}")\n'
+        'Sleep 300\nSend("{Tab}")\nSleep 300\n'  # -> world (blank on some clients
+        'Send("^a")\nSleep 120\nSend("{Delete}")\nSleep 200\n'  # -> char-select w/o it)
+        f'Send("{{Raw}}{raw(world)}")\n'
         'Sleep 400\nSend("{Enter}")\n'
     )
 
@@ -168,7 +190,44 @@ class LoginDriver:
         # The game login form: the gold "Login" header sits centred above the fields.
         return "login" in self._ocr(760, 395, 130, 32)
 
-    # --- public: full login (power-on assumed done; VM at desktop) -----------
+    def _char_select_present(self) -> bool:
+        # Char-select shows a "Select Character" header at the top-left list panel.
+        return "select" in self._ocr(40, 612, 240, 34, grab=False)
+
+    # --- public: power-on -> desktop -> in world (the Launch button) --------
+    def boot_and_login(self, user: str, password: str, character: str,
+                       world: str = WORLD) -> bool:
+        """Full cold path: start the VM, wait for the agent + interactive desktop
+        (auto-login), then log in. If EQ2 is already in world (same account, other
+        toon), /camp-switch instead of relaunching the client. Shared by forge +
+        healer so both behave identically."""
+        g = self.g
+        if not (user and password):
+            self.log("no credentials — set accounts.yaml"); return False
+        if not g.start_vm():
+            self.log("VM start failed"); return False
+        self.log("waiting for guest agent")
+        for _ in range(40):
+            if g.agent_ready():
+                break
+            time.sleep(3)
+        else:
+            self.log("guest agent never came up"); return False
+        # The agent answers at the Windows LOGIN screen — before the interactive
+        # desktop. Firing AHK then lands in session 0 (invisible). Wait for explorer.
+        self.log("waiting for desktop (auto-login)")
+        for _ in range(25):
+            out = g.exec_ps("if (Get-Process explorer -ErrorAction SilentlyContinue) {'Y'}")
+            if out and "Y" in out:
+                break
+            time.sleep(3)
+        time.sleep(10)                              # let the shell settle
+        if character and g.eq2_running():
+            self.log("EQ2 already up — /camp switch")
+            return self.camp_to(character)
+        return self.login(user, password, character, world)
+
+    # --- public: full login (LaunchPad+game form; VM at desktop) -------------
     def login(self, user: str, password: str, character: str,
               world: str = WORLD, *, timeout_lp: int = 150,
               timeout_form: int = 150, timeout_world: int = 60) -> bool:
@@ -246,13 +305,17 @@ class LoginDriver:
         t0 = time.time()
         while time.time() - t0 < timeout:
             time.sleep(4)
-            if self._login_form_present():
-                # still at the form — likely a rejection dialog
-                if "rejected" in self._ocr(560, 380, 360, 80):
+            if self._login_form_present():           # grabs a fresh frame
+                if "rejected" in self._ocr(560, 380, 360, 80, grab=False):
                     self.log("LOGIN REJECTED (bad credentials?)")
                     return False
-                continue
-            # form gone -> zoning/in-world. Clear the first-login UI-import dialog.
+                continue                             # still at the form
+            if self._char_select_present():
+                # account login OK but didn't go in-world (e.g. blank World field).
+                self.log("landed at CHAR-SELECT, not in world (World field set?)")
+                return False
+            # neither form nor char-select -> zoning/in-world. Clear any first-login
+            # "Import UI Settings" dialog and call it done.
             self._dismiss_ui_import()
             self.log(f"in world as {character}")
             return True
@@ -260,9 +323,20 @@ class LoginDriver:
         return False
 
     def _dismiss_ui_import(self) -> None:
-        if "import" in self._ocr(640, 270, 360, 40):
-            self.log("dismissing Import-UI dialog")
-            self.g.run_ahk(_KEY_AHK % "Enter")
+        # The first-login "Import UI Settings" modal pops up DURING zone-load, so it
+        # races a one-shot check — poll for it for a while. Enter accepts it (AHK
+        # Click and Escape do NOT work on it).
+        for _ in range(6):
+            if "import" in self._ocr(640, 270, 360, 40):
+                self.log("dismissing Import-UI dialog")
+                # ibgclick FOCUSES the (default) Cancel button; Enter activates it.
+                # Click alone or Enter alone is unreliable on this modal — the combo
+                # is what dismisses it (validated live).
+                self.g.click(*UI_IMPORT_CANCEL_PX)
+                time.sleep(0.6)
+                self.g.run_ahk(_KEY_AHK % "Enter")
+                time.sleep(3)
+                return
             time.sleep(3)
 
     # --- public: same-account switch via /camp ------------------------------
