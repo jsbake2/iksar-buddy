@@ -118,6 +118,39 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         telemetry.push_event("config", f"profile -> {name} ({brain.cfg.healer_class})")
         return {"ok": True, **_profile_state()}
 
+    @app.post("/api/profile/{name}/swap")
+    async def swap_profile(name: str):
+        """Camp-and-switch: log the current toon out to char-select, pick the target
+        profile's character, then (only if that succeeds) commit the profile config
+        swap. Lets the owner change healer/character in-game without a relog — works
+        for same-account toons (Jenskin<->Croolst); cross-account needs Stop+Launch."""
+        from ..charswitch import camp_and_select
+        if name not in brain.cfg.list_profiles():
+            return JSONResponse({"error": "unknown profile"}, status_code=404)
+        target_char = brain.cfg.peek_select_character(name)
+        if not target_char:
+            return JSONResponse({"error": "profile has no character"}, status_code=400)
+        camp_key = brain.cfg.key_for("camp") or "none"
+        camp_wait = float(brain.cfg.threshold("camp_wait_s", 20))
+        telemetry.push_event("control", f"camp+switch -> {name} ({target_char})")
+
+        async def _go():
+            # disarm while we're at char-select so the loop can't fire stray keys
+            await brain.send("command", role="_pause", key="", target_slot=None,
+                             reason="camp+switch")
+            ok = await asyncio.get_running_loop().run_in_executor(
+                None, camp_and_select, target_char, camp_key, camp_wait,
+                lambda m: telemetry.push_event("switch", m))
+            if ok:
+                brain.cfg.set_profile(name)
+                await brain.push_config()
+                telemetry.update(profile=_profile_state())
+                telemetry.push_event("config", f"profile -> {name} ({brain.cfg.healer_class})")
+            else:
+                telemetry.push_event("switch", "camp+switch failed — profile unchanged")
+        asyncio.create_task(_go())
+        return {"ok": True, "swap": name, "character": target_char}
+
     @app.get("/api/frame.jpg")
     async def frame():
         """Live VM view: the agent's latest framebuffer as a downscaled JPEG.

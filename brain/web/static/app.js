@@ -67,8 +67,15 @@ function renderProfile(p) {
   }
 }
 if (profileSel) profileSel.onchange = () => {
-  if (confirm(`Switch healer profile to ${cap(profileSel.value)}?\n\nThis swaps the character + keymap (Defiler wards vs Fury HoTs).`))
+  if (confirm(`Switch healer profile to ${cap(profileSel.value)}?\n\nThis swaps the keymap + character config only (no in-game camp). Use ⇄ swap to camp + switch the live character.`))
     post(`/api/profile/${profileSel.value}`);
+};
+const swapBtn = $("swapBtn");
+if (swapBtn) swapBtn.onclick = () => {
+  const v = profileSel ? profileSel.value : "";
+  if (!v) return;
+  if (confirm(`Camp + switch to ${cap(v)}?\n\nCamps the current character out to char-select, selects ${cap(v)}'s character, and loads in-world. Then re-ARM when ready. (Same-account toons only.)`))
+    post(`/api/profile/${v}/swap`);
 };
 
 document.querySelectorAll("[data-ov]").forEach((b) => (b.onclick = () => post(`/api/override/${b.dataset.ov}`)));

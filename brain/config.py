@@ -134,6 +134,15 @@ class Config:
     def select_character(self) -> str:
         return self.ability_map.get("select_character", "")
 
+    def peek_select_character(self, name: str) -> str:
+        """The select_character of ANOTHER profile without activating it (for the
+        camp-and-switch flow: we pick the target toon, then only commit the profile
+        swap if char-select actually succeeds)."""
+        if name not in self.list_profiles():
+            return ""
+        prof = _load_yaml(self._profiles_dir / f"{name}.yaml")
+        return prof.get("select_character", "")
+
     @property
     def healer_class(self) -> str:
         return self.ability_map.get("healer", "")
