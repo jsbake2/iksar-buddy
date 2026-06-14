@@ -89,6 +89,26 @@ def parse_recipe_list(text: str) -> dict[str, int]:
     return items
 
 
+# Recipes learned when a book is transcribed. The dino assumed the RETAIL format
+# `Recipe: "<name>" put in recipe book.`; this may differ on EQ2Emu — VALIDATE
+# against a real log line, then adjust this one regex. Unlike parse_recipe_list,
+# this ONLY pulls the book lines (the EQ2 chat log is full of other text).
+_SCRIBED_RE = re.compile(r'Recipe:\s*"(.*?)"\s+put in recipe book', re.I)
+
+
+def parse_scribed_recipes(text: str) -> dict[str, int]:
+    """From an EQ2 chat log, pull recipes added by transcribing a book -> {name: 1}.
+    Order-preserving, deduped."""
+    out: dict[str, int] = {}
+    for line in text.splitlines():
+        m = _SCRIBED_RE.search(line)
+        if m:
+            name = m.group(1).strip()
+            if name:
+                out[name] = 1
+    return out
+
+
 def parse_crafted_log(text: str) -> list[str]:
     """EQ2 log lines confirming a craft completed -> list of created item names.
     Used for authoritative completion + dedup (FORGE.md §4.6). Matches the common

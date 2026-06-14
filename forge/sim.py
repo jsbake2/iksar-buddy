@@ -161,15 +161,21 @@ class ForgeSim:
         self.t.push_event(bot_id, "ocr", f"journal: detected {len(queue)} recipes")
 
     def read_log(self, bot_id: str) -> None:
-        """Mock 'Read crafting recipes from log'."""
+        """Mock 'Read scribed recipes from log' — merges into the existing queue."""
         b = self.t.bot(bot_id)
         if not b:
             return
         tc = b.get("trade_class") or "sage"
-        recs = _recipes_for(tc)
-        queue = [{"name": r, "count": 1, "done": 0} for r in recs]
+        queue = list(b.get("queue", []) or [])
+        have = {str(q.get("name", "")).strip().lower() for q in queue}
+        added = 0
+        for r in _recipes_for(tc):
+            if r.lower() not in have:
+                queue.append({"name": r, "count": 1, "done": 0})
+                have.add(r.lower())
+                added += 1
         self.t.update_bot(bot_id, mode="writ", queue=queue)
-        self.t.push_event(bot_id, "log", f"log: scribed {len(queue)} recipes")
+        self.t.push_event(bot_id, "log", f"log: +{added} scribed recipe(s) ({len(queue)} queued)")
 
     def set_queue(self, bot_id: str, queue: list) -> None:
         clean = []

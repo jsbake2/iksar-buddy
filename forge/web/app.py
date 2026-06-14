@@ -22,6 +22,7 @@ _CFG = Path(os.environ.get("IB_FORGE_DIR",
             Path(__file__).resolve().parent.parent.parent / "config" / "forge"))
 CRAFTERS_PATH = _CFG / "crafters.yaml"
 KEYMAP_PATH = _CFG / "keymap.yaml"
+LISTS_PATH = _CFG / "lists.yaml"
 
 
 def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
@@ -113,6 +114,44 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
         if hasattr(sim, "set_crafters"):
             sim.set_crafters(clean)
         return {"ok": True, "crafters": clean}
+
+    @app.get("/api/forgelists")
+    async def get_lists():
+        try:
+            return yaml.safe_load(LISTS_PATH.read_text(encoding="utf-8")) or {"lists": {}}
+        except (OSError, yaml.YAMLError):
+            return {"lists": {}}
+
+    @app.post("/api/forgelists")
+    async def post_lists(payload: dict = Body(...)):
+        raw = payload.get("lists")
+        if not isinstance(raw, dict):
+            return JSONResponse({"error": "missing lists"}, status_code=400)
+        clean = {}
+        for name, rows in raw.items():
+            nm = str(name).strip()
+            if not nm or not isinstance(rows, list):
+                continue
+            items = []
+            for r in rows:
+                rn = str(r.get("name", "")).strip()
+                if not rn:
+                    continue
+                try:
+                    c = max(1, int(r.get("count", 1)))
+                except (TypeError, ValueError):
+                    c = 1
+                items.append({"name": rn, "count": c})
+            if items:
+                clean[nm] = items
+        try:
+            LISTS_PATH.write_text(
+                "# Named profit-craft lists (dashboard-edited).\n"
+                + yaml.safe_dump({"lists": clean}, sort_keys=True, allow_unicode=True),
+                encoding="utf-8")
+        except OSError as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        return {"ok": True, "lists": clean}
 
     @app.get("/api/forgekeymap")
     async def get_keymap():

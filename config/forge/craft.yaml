@@ -85,6 +85,16 @@ chat_input:
   region: {x: 50, y: 1019, w: 208, h: 22}   # CALIBRATE
   bright_threshold: 25
 
+# --- EQ2 chat log (scribed-recipe gathering) ---------------------------------
+# "Read recipes from log" parses scribed-recipe lines (Recipe: "X" put in recipe
+# book) out of the client chat log. EQ2 writes one log per character at
+#   <dir>\<server>\eq2log_<character>.txt        (requires /log ON in-game)
+# server comes from char_select.server; character from the bot's selected crafter.
+# Windows paths are case-insensitive so the toon's capitalization doesn't matter.
+eq2_log:
+  dir: 'C:\Users\Public\Daybreak Game Company\Installed Games\EverQuest II\logs'  # CALIBRATE to the client install
+  tail: 5000                                  # only scan the last N lines (logs grow huge)
+
 # --- journal OCR region (writs) ----------------------------------------------
 journal_ocr:
   region: {x: 1500, y: 360, w: 360, h: 220}  # CALIBRATE: quest-journal writ text

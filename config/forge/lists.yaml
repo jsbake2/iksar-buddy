@@ -1,0 +1,4 @@
+# Named profit-craft lists — load one into a bot's queue to craft outside of writs.
+# Built INLINE from the writ pane: edit the queue rows, "Save as…" to name+store the
+# current queue, "Load" to refill it later, "✕" to delete. Each list = recipe -> count.
+lists: {}

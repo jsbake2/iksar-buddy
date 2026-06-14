@@ -33,6 +33,25 @@ const tpl = $("botTpl");
 // bot's character (for char-select) and trade_class (for crafting).
 let crafters = [];
 const craftersForVm = (vm) => crafters.filter((c) => c.vm === vm);
+
+// saved profit-craft lists {name: [{name,count}]} — loaded into a bot's queue.
+let forgeLists = {};
+function populateListSelects() {
+  const names = Object.keys(forgeLists).sort();
+  Object.values(botEls).forEach((refs) => {
+    if (!refs.listsel) return;
+    const cur = refs.listsel.value;
+    refs.listsel.innerHTML = `<option value="">— saved lists —</option>` +
+      names.map((n) => `<option value="${n.replace(/"/g, "&quot;")}">${n}</option>`).join("");
+    if (cur && forgeLists[cur]) refs.listsel.value = cur;
+  });
+}
+function fetchLists() {
+  fetch("/api/forgelists").then((r) => r.json()).then((d) => {
+    forgeLists = d.lists || {}; populateListSelects();
+  }).catch(() => {});
+}
+function saveLists() { post("/api/forgelists", { lists: forgeLists }); }
 const crafterLabel = (c) => (c.class ? `${c.class} (${c.character})` : `(${c.character}) — no class`);
 const selectedCrafter = (refs) =>
   crafters.find((c) => c.vm === refs.vm && c.character === refs.trade.value) || null;
@@ -78,6 +97,10 @@ function buildBotPanel(bot, tradeClasses) {
     readlog: q(".bot-readlog"),
     addrow: q(".bot-addrow"),
     queue: q(".bot-queue"),
+    listsel: q(".bot-listsel"),
+    listload: q(".bot-listload"),
+    listsave: q(".bot-listsave"),
+    listdel: q(".bot-listdel"),
     progRecipe: q(".prog-recipe"),
     progItem: q(".prog-item"),
     progFill: q(".prog-fill"),
@@ -120,6 +143,26 @@ function buildBotPanel(bot, tradeClasses) {
   refs.ocr.onclick = () => post(`/api/bot/${id}/ocr`);
   refs.readlog.onclick = () => post(`/api/bot/${id}/readlog`);
   refs.addrow.onclick = () => { pushQueueRow(refs, { name: "", count: 1 }); saveQueue(id, refs); };
+  // saved lists: load fills the queue; save names the current queue; delete removes
+  refs.listload.onclick = () => {
+    const items = forgeLists[refs.listsel.value];
+    if (items) post(`/api/bot/${id}/queue`, { queue: items });
+  };
+  refs.listsave.onclick = () => {
+    const items = readQueueDom(refs);
+    if (!items.length) { alert("Queue is empty — add recipes first."); return; }
+    const name = (prompt("Save this queue as list name:", refs.listsel.value || "") || "").trim();
+    if (!name) return;
+    forgeLists[name] = items;
+    saveLists();
+    setTimeout(() => { fetchLists(); refs.listsel.value = name; }, 150);
+  };
+  refs.listdel.onclick = () => {
+    const n = refs.listsel.value;
+    if (n && forgeLists[n] && confirm(`Delete list "${n}"?`)) {
+      delete forgeLists[n]; saveLists(); setTimeout(fetchLists, 150);
+    }
+  };
   refs.start.onclick = () => {
     const c = selectedCrafter(refs);
     post(`/api/bot/${id}/start`, {
@@ -280,6 +323,7 @@ function render(s) {
   if (!built && order.length) {
     order.forEach((id) => buildBotPanel(bots[id]));
     built = true;
+    fetchLists();
   } else if (crChanged) {
     refreshCrafterOptions();
   }

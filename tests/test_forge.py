@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 
 from forge.recipes import (clean_item_name, parse_crafted_log, parse_ocr_items,
-                           parse_recipe_list, search_name)
+                           parse_recipe_list, parse_scribed_recipes, search_name)
 from shared.account_lock import AccountLock
 
 
@@ -35,6 +35,24 @@ def test_recipe_list_plain_and_log():
     items = parse_recipe_list(text)
     assert "Pristine Elm Chair" in items
     assert "Pristine Teak Table" in items
+
+
+def test_scribed_recipes_from_log():
+    # only the "put in recipe book" lines; deduped + order-preserving; other chat
+    # log noise ignored. (Regex still UNVERIFIED vs real EQ2Emu output.)
+    text = (
+        "(1718000000)[Fri Jun 13] You say to the group, hi\n"
+        '(1718000001)[Fri Jun 13] Recipe: "Pristine Teak Table" put in recipe book.\n'
+        '(1718000002)[Fri Jun 13] Recipe: "Pristine Teak Chair" put in recipe book.\n'
+        '(1718000003)[Fri Jun 13] Recipe: "Pristine Teak Table" put in recipe book.\n'
+        "(1718000004)[Fri Jun 13] You gain experience!\n")
+    out = parse_scribed_recipes(text)
+    assert list(out) == ["Pristine Teak Table", "Pristine Teak Chair"]
+    assert all(v == 1 for v in out.values())
+
+
+def test_scribed_recipes_empty_when_no_book_lines():
+    assert parse_scribed_recipes("just chatter\nYou created a thing.\n") == {}
 
 
 def test_crafted_log_parse():

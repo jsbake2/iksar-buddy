@@ -72,7 +72,11 @@
 .pane { display:flex; flex-direction:column; gap:10px; }
 .pane[hidden] { display:none; }   /* beat .pane's display:flex (UA [hidden] loses) */
 
-/* writ sources + queue */
+/* saved lists + writ sources + queue */
+.writ-lists { display:grid; grid-template-columns:1fr auto auto auto; gap:6px; margin-bottom:6px; }
+.writ-lists select { background:var(--panel2); color:var(--fg); border:1px solid var(--line);
+  border-radius:8px; padding:7px 9px; font-size:12px; }
+.writ-lists .src-btn { flex:none; min-width:0; }
 .writ-sources { display:flex; flex-wrap:wrap; gap:6px; }
 .src-btn { flex:1 1 calc(50% - 3px); min-width:120px; padding:9px 8px; border-radius:9px; cursor:pointer;
   font-size:12px; font-weight:600; background:var(--panel2); color:var(--fg); border:1px solid var(--line); transition:.12s; }

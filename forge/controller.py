@@ -179,17 +179,43 @@ class ForgeController:
         asyncio.create_task(self._read_log(bot_id))
 
     async def _read_log(self, bot_id: str) -> None:
-        from .recipes import parse_recipe_list
+        from .recipes import parse_scribed_recipes
         g = self.guests.get(bot_id)
-        if not g:
+        b = self.t.bot(bot_id)
+        if not g or not b:
             return
-        self.t.push_event(bot_id, "log", "reading recipe log…")
+        char = self._char_for(bot_id)
+        if not char:
+            self.t.push_log(bot_id, "read log: no crafter selected")
+            self.t.push_event(bot_id, "log", "no character — pick a crafter first")
+            return
+        cfg = self.cfg_profile.get("eq2_log", {}) or {}
+        log_dir = (cfg.get("dir")
+                   or r"C:\Users\Public\Daybreak Game Company\Installed Games"
+                      r"\EverQuest II\logs").rstrip("\\")
+        server = (self.cfg_profile.get("char_select", {}) or {}).get("server", "")
+        path = "\\".join(p for p in (log_dir, server, f"eq2log_{char}.txt") if p)
+        tail = int(cfg.get("tail", 5000) or 5000)
+        self.t.push_event(bot_id, "log", f"reading {char}'s chat log…")
         text = await asyncio.get_running_loop().run_in_executor(
-            None, partial(g.read_file, r"C:\ib\recipes.txt"))
-        items = parse_recipe_list(text or "")
-        queue = [{"name": n, "count": c, "done": 0} for n, c in items.items()]
+            None, partial(g.read_file, path, tail))
+        if not text:
+            self.t.push_log(bot_id, f"log empty/not found: {path} (is /log on?)")
+            self.t.push_event(bot_id, "log", "log not found — turn /log on in-game")
+            return
+        items = parse_scribed_recipes(text)
+        # merge into the existing queue (dedupe by name) so scribing more books
+        # and OCR reads accumulate rather than clobber.
+        queue = list(b.get("queue", []) or [])
+        have = {str(q.get("name", "")).strip().lower() for q in queue}
+        added = 0
+        for name in items:
+            if name.lower() not in have:
+                queue.append({"name": name, "count": 1, "done": 0})
+                have.add(name.lower())
+                added += 1
         self.t.update_bot(bot_id, mode="writ", queue=queue)
-        self.t.push_event(bot_id, "log", f"log: {len(queue)} recipes")
+        self.t.push_event(bot_id, "log", f"log: +{added} scribed recipe(s) ({len(queue)} queued)")
 
     # -- live VM screen (dashboard thumbnail / calibration full-res) -------
     def frame_jpeg(self, bot_id: str, full: bool = False) -> bytes:
