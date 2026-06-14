@@ -291,6 +291,17 @@ class ForgeController:
             if await loop.run_in_executor(None, g.agent_ready):
                 break
             await asyncio.sleep(3)
+        # The guest agent answers at the Windows LOGIN screen — before the interactive
+        # desktop exists. Firing ibrun then = "boots to Windows, nothing launches". Wait
+        # for the user session (explorer.exe) + a settle, like the healer's launch_bot.sh.
+        self.t.push_event(bot_id, "launch", "waiting for desktop (auto-login)…")
+        for _ in range(25):                        # up to ~75s for auto-login
+            out = await loop.run_in_executor(None, g.exec_ps,
+                "if (Get-Process explorer -ErrorAction SilentlyContinue) {'Y'}")
+            if out and "Y" in out:
+                break
+            await asyncio.sleep(3)
+        await asyncio.sleep(10)                     # let the desktop/shell settle
         # tell the (craft) launcher which character to select, then fire it
         if char:
             await loop.run_in_executor(None, g.exec_ps,
@@ -346,9 +357,10 @@ class ForgeController:
             self.camp(bid)
 
     async def _camp(self, bot_id: str) -> None:
-        """Force camp: click the chat bar, type the camp command (/camp) + Enter.
-        EQ2 then logs the character out to char-select. Stops any craft + frees the
-        account lock."""
+        """Force camp -> char-select. The owner's crafters bind a /camp macro to a KEY
+        (e.g. Ctrl+-), so by default we PRESS that key (via ibkey, no chat typing —
+        safest). If the camp value is instead a slash command ('/camp'), we click the
+        chat bar and type it. Stops any craft + frees the account lock."""
         g = self.guests.get(bot_id)
         if not g:
             return
@@ -359,16 +371,18 @@ class ForgeController:
         w = self.workers.get(bot_id)
         if w:
             w.stop()
-        cmd = (self.keymap.get("camp") or "/camp")
-        ci = (self.cfg_profile.get("chat_input", {}) or {}).get("region")
-        if ci:                                     # click the chat bar to focus it
-            await loop.run_in_executor(None, g.click, ci["x"] + ci["w"] // 2, ci["y"] + ci["h"] // 2)
-            await asyncio.sleep(0.4)
-        # "/" opens the chat input if the click didn't; type the command + Enter
-        await loop.run_in_executor(None, g.type_text, cmd, True)
+        camp = (self.keymap.get("camp") or "Ctrl+-").strip()
+        if camp.startswith("/"):                   # slash command: type it into chat
+            ci = (self.cfg_profile.get("chat_input", {}) or {}).get("region")
+            if ci:
+                await loop.run_in_executor(None, g.click, ci["x"] + ci["w"] // 2, ci["y"] + ci["h"] // 2)
+                await asyncio.sleep(0.4)
+            await loop.run_in_executor(None, g.type_text, camp, True)
+        else:                                      # keybind (Ctrl+-): press via ibkey
+            await loop.run_in_executor(None, g.press_keys, camp)
         self._release(bot_id)
         self.t.update_bot(bot_id, state="idle")
-        self.t.push_event(bot_id, "control", f"camp ({cmd})")
+        self.t.push_event(bot_id, "control", f"camp ({camp})")
 
     def set_keymap(self, km: dict) -> None:
         self.keymap = km or {}
