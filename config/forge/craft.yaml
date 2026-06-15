@@ -202,7 +202,12 @@ journal_ocr:
 
 # --- timings (seconds) -------------------------------------------------------
 timings:
-  art_interval: 1.0        # CYCLE: ~1s between filler arts (owner spec); we watch for a counter the whole time
+  # CRAFT REACTION LOOP (dino model): one grab/iteration, counter checked first + pressed
+  # instantly. loop_sleep is the tiny pause between iterations; done_check_interval rate-
+  # limits the (non-urgent) finish check so the counter path stays tight.
+  loop_sleep: 0.03         # pause between reaction-loop iterations
+  done_check_interval: 0.5 # how often to check repeat/Begin/Create (craft finished)
+  art_interval: 1.0        # (legacy, unused — loop no longer pauses between filler arts)
   pause: 0.8               # (unused legacy)
   pause_low_mana: 2.5      # longer pause when mana is low (still interruptible)
   # wait=True clicks already CONFIRM the click landed, so SETUP settles are short (speed).

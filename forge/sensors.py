@@ -261,15 +261,23 @@ def capture_buttons(guest: Guest, cfg: dict) -> list:
     return out
 
 
-def reaction_event(guest: Guest, cfg: dict, templates: list) -> int | None:
+def reaction_event(guest: Guest, cfg: dict, templates: list, fresh: bool = True) -> int | None:
     """Match the active-reaction watch region against the in-memory reference button
-    templates. Returns the counter NUMBER (1-based) of the best match, or None."""
+    templates. Returns the counter NUMBER (1-based) of the best match, or None.
+
+    fresh=True grabs a new screenshot; fresh=False crops the LAST grab() — let the
+    craft loop take ONE screenshot per iteration and read every sensor (counter,
+    running, done, durability) off that single frame instead of grabbing 4-6x (each
+    virsh screenshot is ~170ms; that latency is what made counter reactions sluggish)."""
     if not templates:
         return None
     reg = (cfg.get("reaction", {}) or {}).get("region")
     if not reg:
         return None
-    png = guest.grab_region_png(int(reg["x"]), int(reg["y"]), int(reg["w"]), int(reg["h"]))
+    if fresh:
+        png = guest.grab_region_png(int(reg["x"]), int(reg["y"]), int(reg["w"]), int(reg["h"]))
+    else:
+        png = guest.region_png(int(reg["x"]), int(reg["y"]), int(reg["w"]), int(reg["h"]))
     if not png:
         return None
     cv2, np = _cv2()

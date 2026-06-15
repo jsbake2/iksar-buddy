@@ -86,18 +86,23 @@ class CraftWorker:
         arts = self._arts(mode)
         return arts[counter - 1] if 1 <= counter <= len(arts) else None
 
-    async def _press(self, seq: str, role: str = "craft") -> bool:
+    async def _press(self, seq: str, role: str = "craft", gated: bool = True) -> bool:
         """THE chat-safety gate (fail-closed) wrapping every keypress. Single-key craft
         arts (1-6) go via virsh send-key (type_text): SYNCHRONOUS + instant, so a counter
         actually lands in its window — ibkey is an async scheduled task that fires LATE
         and DROPS when filler+counter presses collide. Complex keys (modifiers/F-keys,
-        e.g. mana-recover/camp) still use ibkey (send-key can't express them)."""
-        if not await self._ex(self.guest.grab):
-            return False
-        if not await self._ex(sensors.chat_safe, self.guest, self.cfg):
-            self._aborted += 1
-            self.t.push_log(self.id, f"inject ABORTED (chat unsafe): {role}")
-            return False
+        e.g. mana-recover/camp) still use ibkey (send-key can't express them).
+
+        gated=True grabs + checks chat_safe here. gated=False SKIPS that (the craft loop
+        already verified chat_safe off its single per-iteration frame) — avoids a second
+        ~170ms grab per keypress so counters land fast."""
+        if gated:
+            if not await self._ex(self.guest.grab):
+                return False
+            if not await self._ex(sensors.chat_safe, self.guest, self.cfg):
+                self._aborted += 1
+                self.t.push_log(self.id, f"inject ABORTED (chat unsafe): {role}")
+                return False
         if len(seq) == 1 and seq in "0123456789":
             await self._ex(self.guest.type_text, seq)      # fast synchronous send-key
         else:
@@ -219,25 +224,25 @@ class CraftWorker:
         await asyncio.sleep(float(self.cfg.get("timings", {}).get("post_begin", 0.5)))
 
     # -- counter check (highest priority, breaks any sequence) -------------
-    async def _counter(self, mode: str) -> bool:
-        """If a counter is showing in the watch area, press its key ONCE (durability or
-        progress version for the current mode). The same event lingers ~3.5s, so we
-        DEBOUNCE: press only when a NEW counter appears (region went empty, or a
-        different counter #) — not every poll, which mashed the art 5-7x/event."""
-        n = await self._ex(sensors.reaction_event, self.guest, self.cfg, self._ref_buttons)
+    async def _counter(self, mode: str, safe: bool) -> bool:
+        """If a counter is showing in the watch area, press its key. Reads the LAST
+        grabbed frame (fresh=False) so the caller's single per-iteration screenshot
+        feeds it. Dino-style: NO debounce — press the matching key whenever the counter
+        is visible. The art is on cooldown after it fires, so re-pressing while the icon
+        lingers is harmless, and it guarantees we never miss the window. Returns True
+        if a counter was detected (so the caller skips filler this iteration)."""
+        n = await self._ex(partial(sensors.reaction_event, self.guest, self.cfg,
+                                   self._ref_buttons, False))
         if not n:
-            self._last_counter = None            # region clear -> next counter is "new"
             return False
-        if n == self._last_counter:
-            return False                         # same event still lingering -> already pressed;
-            #                                      let filler SPAM resume until it clears + a new one shows
-        self._last_counter = n
         key = self._counter_key(mode, n)
-        if key:
-            await self._press(key, f"counter{n}:{mode}")
-            self.t.update_bot(self.id, reactions=self.t.bot(self.id)["reactions"] + 1)
-            self.t.push_log(self.id, f"counter#{n} ({mode}) -> {key}")
-        return True                              # NEW counter pressed once
+        if key and safe:
+            await self._press(key, f"counter{n}:{mode}", gated=False)
+            if n != self._last_counter:          # count + log only on a NEW counter (not every re-press)
+                self.t.update_bot(self.id, reactions=self.t.bot(self.id)["reactions"] + 1)
+                self.t.push_log(self.id, f"counter#{n} ({mode}) -> {key}")
+        self._last_counter = n
+        return True                              # counter present -> handled (skip filler)
 
     # -- one craft cycle ----------------------------------------------------
     async def _craft_cycle(self, gate_power: bool = True) -> bool:
@@ -248,7 +253,6 @@ class CraftWorker:
         completion, False if stopped. gate_power=False (writs) skips the low-mana
         pause and barrels forward to finish the order (owner rule)."""
         timings = self.cfg.get("timings", {})
-        poll = max(0.05, 1.0 / float((self.cfg.get("reaction", {}) or {}).get("poll_hz", 6)))
         await self._focus_craft()
         # capture the reaction-button references FRESH for THIS craft (no saved lib)
         self._ref_buttons = await self._ex(sensors.capture_buttons, self.guest, self.cfg)
@@ -260,45 +264,47 @@ class CraftWorker:
         self.t.update_bot(self.id, state="crafting")
         cycle_start = time.time()
         max_t = float(timings.get("max_craft_time", 90.0))   # safety: bail if it never completes
-        # Completion (owner): a craft-DONE button (repeat ↻ / Begin / Create) reappears.
-        # saw_active guards it — we only complete once we've SEEN the craft running (those
-        # buttons absent = reaction arts on the bar). So the just-clicked start button or a
-        # stale done-state can't false-complete, and a craft that never started can't either
-        # (it just times out at max_t instead of spamming).
+        done_every = float(timings.get("done_check_interval", 0.5))  # finish-check cadence (not timing-critical)
+        loop_sleep = float(timings.get("loop_sleep", 0.03))
+        # THE DINO MODEL: ONE grab per iteration, every sensor reads that single frame.
+        # Counter FIRST and pressed the instant it's seen (the reaction window is short —
+        # a virsh grab is ~170ms, so we cannot afford 4-6 grabs/iter or a 1s filler pause).
+        # Completion (owner): a craft-DONE button (repeat ↻ / Begin / Create) reappears
+        # AFTER we've seen the craft running (saw_active) — guards against the just-clicked
+        # start button or a stale state false-completing; a craft that never starts times out.
         saw_active = False
+        last_done = 0.0
         while not self._stop.is_set() and time.time() - cycle_start < max_t:
             await self._wait_unpaused()
             if self._stop.is_set():
                 return False
-            await self._ex(self.guest.grab)
-            # RUNNING (red stop sign) -> mark active. DONE (repeat ↻ / Begin / Create back)
-            # AFTER it was running -> craft ended (success or fail).
-            if await self._ex(sensors.craft_running, self.guest, self.cfg):
-                saw_active = True
-            elif saw_active and await self._ex(sensors.craft_done, self.guest, self.cfg):
-                return True
+            await self._ex(self.guest.grab)                       # the ONE screenshot
+            safe = await self._ex(sensors.chat_safe, self.guest, self.cfg)  # gate, off this frame
             mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
-            self.t.update_bot(self.id, durability_mode=mode)
-            if await self._counter(mode):
+            # COUNTER FIRST — press it immediately (no debounce), then loop tight. Skip the
+            # filler + finish checks this iteration so the next grab comes ASAP.
+            if await self._counter(mode, safe):
+                self.t.update_bot(self.id, durability_mode=mode)
+                await asyncio.sleep(loop_sleep)
                 continue
-            # No counter: press the NEXT filler art, ROTATING through this mode's 3 so
-            # all get used (1-2-3 / 4-5-6), then WATCH for a counter CONTINUOUSLY for the
-            # spam interval and fire it the instant it appears (owner: never miss one).
-            arts = self._arts(mode)
-            if arts:
-                key = arts[self._filler_i % len(arts)]
-                self._filler_i += 1
-                await self._press(key, f"art:{mode}")
-            interval = float(timings.get("art_interval", 0.5))
-            if gate_power and not await self._ex(sensors.power_ok, self.guest, self.cfg):
-                self.t.update_bot(self.id, power_gated=True)     # low mana (single craft): hold, keep watching
-                interval = float(timings.get("pause_low_mana", 2.5))
-            else:
-                self.t.update_bot(self.id, power_gated=False)
-            t1 = time.time()
-            while time.time() - t1 < interval and not self._stop.is_set():
-                if await self._counter(mode):                    # counter handled the instant it shows
-                    break
+            # No counter -> fire the next rotating filler art (1-2-3 / 4-5-6).
+            self.t.update_bot(self.id, durability_mode=mode)
+            if safe:
+                arts = self._arts(mode)
+                if arts:
+                    key = arts[self._filler_i % len(arts)]
+                    self._filler_i += 1
+                    await self._press(key, f"art:{mode}", gated=False)
+            # FINISH check — rate-limited (not timing-critical), off the current frame.
+            now = time.time()
+            if now - last_done >= done_every:
+                last_done = now
+                if await self._ex(sensors.craft_running, self.guest, self.cfg):
+                    saw_active = True
+                    self.t.update_bot(self.id, power_gated=False)
+                elif saw_active and await self._ex(sensors.craft_done, self.guest, self.cfg):
+                    return True
+            await asyncio.sleep(loop_sleep)
         return False
 
     async def _craft_recipe(self, name: str, count: int, trade_class: str,
