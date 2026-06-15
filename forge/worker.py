@@ -158,10 +158,9 @@ class CraftWorker:
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             return False
-        self.t.push_log(self.id, f"matched recipe row -> click {row_click}")
-        # wait=True: the recipe-select click MUST land (fire-and-forget races the next
-        # action and the recipe never selects -> no Begin).
-        await self._ex(partial(self.guest.click, row_click[0], row_click[1], True))
+        self.t.push_log(self.id, f"matched recipe row -> double-click {row_click}")
+        # DOUBLE-click the row icon to LOAD the recipe (single only highlights it).
+        await self._ex(partial(self.guest.double_click, row_click[0], row_click[1]))
         await asyncio.sleep(click_settle)
         # park focus on the craft window
         foc = rs.get("focus_click")

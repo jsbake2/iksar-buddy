@@ -276,11 +276,15 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
             best_score, best, best_words = score, row, words
     if not best or best_score < float(rs.get("match_threshold", 0.6)):
         return None
-    # Click the row's ICON square (recipe_select.result_rows[].click) — the selectable
-    # hotspot. The NAME text is NOT clickable (owner-confirmed; same as char-select),
-    # so we OCR the name to identify the row but click its icon to select it.
+    # Click the row's ICON COLUMN (x from config) at the ACTUAL row Y where the name
+    # OCR'd — the rows shift vertically (name wraps to 1-2 lines), so a fixed Y misses.
+    # The caller DOUBLE-clicks this to load the recipe (single only highlights).
     clk = best.get("click")
-    return (int(clk[0]), int(clk[1])) if clk else None
+    if not clk:
+        return None
+    ys = [w["y"] + w["h"] // 2 for w in best_words]
+    y = sum(ys) // len(ys) if ys else int(clk[1])
+    return (int(clk[0]), y)
 
 
 def _alpha(s: str) -> str:

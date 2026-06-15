@@ -150,6 +150,24 @@ class Guest:
                    "-eq 'Running' -and $n -lt 50){Start-Sleep -Milliseconds 80; $n++}")
         return self.exec_ps(ps, wait=True if wait else False) is not None
 
+    def double_click(self, x: int, y: int) -> bool:
+        """DOUBLE-click at guest pixel (x,y). EQ2 recipe rows need a double-click to
+        LOAD the recipe into the craft pane (a single click only highlights the row);
+        verified live. Event-mode AHK Click("x y 2") via ibrun (same substrate as
+        gclick_ev.ahk: activate EQ2, move, click), waited."""
+        script = ('CoordMode "Mouse", "Screen"\n'
+                  'SendMode "Event"\n'
+                  'SetMouseDelay 40\n'
+                  'SetTitleMatchMode 2\n'
+                  'if !WinExist("EverQuest II")\n'
+                  '    ExitApp\n'
+                  'WinActivate("EverQuest II")\n'
+                  'Sleep 400\n'
+                  f'MouseMove({int(x)}, {int(y)})\n'
+                  'Sleep 200\n'
+                  f'Click("{int(x)} {int(y)} 2")\n')
+        return self.run_ahk(script)
+
     # -- input: typing into the GAME WORLD (virsh send-key scancodes) ------
     def type_text(self, s: str, enter: bool = False) -> None:
         """Send key SCANCODES to the guest. EQ2's game WORLD reads these (as hotkeys),
