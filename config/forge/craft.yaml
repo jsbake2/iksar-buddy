@@ -226,3 +226,4 @@ timings:
   post_focus: 0.15         # after the craft-window safe-spot focus click
   running_timeout: 5.0     # after clicking start, wait this long for the red stop-sign
   max_craft_time: 90.0     # bail a single craft if it never completes (avoid a hang)
+  mana_wait: 25.0          # low mana between crafts: recover + wait up to this, then press on

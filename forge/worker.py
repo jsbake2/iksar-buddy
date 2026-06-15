@@ -217,16 +217,31 @@ class CraftWorker:
             await asyncio.sleep(float(self.cfg.get("timings", {}).get("post_focus", 0.3)))
 
     async def _recover_mana(self) -> None:
-        """Between crafts: if mana is low, press the keymap mana-recover hotkey."""
-        mk = (self.keymap.get("mana_recover") or "").strip()
-        if not mk:
-            return
+        """Between crafts: if mana is low, press the keymap mana-recover hotkey and WAIT
+        until mana is back (owner: recover, then continue). No-op when mana is fine, so
+        it's safe to call before every craft. Bounded so a missing/forgotten key can't
+        hang the list forever (gives up after mana_wait and presses on)."""
         await self._ex(self.guest.grab)
         if await self._ex(sensors.power_ok, self.guest, self.cfg):
             return
-        self.t.push_log(self.id, "low mana between crafts -> recover")
-        await self._press(mk, "mana recover")
-        await asyncio.sleep(float(self.cfg.get("timings", {}).get("post_begin", 0.5)))
+        mk = (self.keymap.get("mana_recover") or "").strip()
+        timings = self.cfg.get("timings", {})
+        if mk:
+            self.t.push_log(self.id, "low mana between crafts -> recover")
+            self.t.update_bot(self.id, state="waiting_power", power_gated=True)
+            await self._press(mk, "mana recover")
+        else:
+            self.t.push_log(self.id, "low mana, no recover key set -> waiting for mana")
+            self.t.update_bot(self.id, state="waiting_power", power_gated=True)
+        t0 = time.time()
+        wait = float(timings.get("mana_wait", 25.0))
+        while time.time() - t0 < wait and not self._stop.is_set():
+            await asyncio.sleep(1.0)
+            await self._ex(self.guest.grab)
+            if await self._ex(sensors.power_ok, self.guest, self.cfg):
+                self.t.update_bot(self.id, power_gated=False)
+                return
+        self.t.update_bot(self.id, power_gated=False)       # timed out -> press on anyway
 
     # -- counter check (highest priority, breaks any sequence) -------------
     async def _counter(self, mode: str, safe: bool) -> bool:
@@ -395,6 +410,9 @@ class CraftWorker:
         attempts = int(self.cfg.get("recipe_select", {}).get("start_attempts", 4))
         done = 0
         while done < count and not self._stop.is_set():
+            await self._recover_mana()            # low mana -> recover + wait, then craft (no-op if fine)
+            if self._stop.is_set():
+                return done
             # START the craft and CONFIRM it's RUNNING (red stop sign). If it's not
             # running, click the start button AGAIN (owner: "click begin again").
             started = False
