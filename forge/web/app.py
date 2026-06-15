@@ -29,6 +29,18 @@ LISTS_PATH = _CFG / "lists.yaml"
 def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
     app = FastAPI(title="ib-forge", docs_url=None, redoc_url=None)
 
+    @app.middleware("http")
+    async def no_cache_assets(request, call_next):
+        """Force the browser to REVALIDATE html/js/css every load. Without this a
+        deploy can leave a stale app.js running against fresh index.html — e.g. the
+        new Search box renders but the cached JS never sends its value (the
+        'typed recipe name not search name' bug)."""
+        resp = await call_next(request)
+        p = request.url.path
+        if p == "/" or p.endswith((".js", ".css", ".html")):
+            resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+        return resp
+
     def _bot_ok(bot_id: str) -> bool:
         return tele.bot(bot_id) is not None
 
