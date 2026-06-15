@@ -17,17 +17,11 @@
 # Bar geometry: track x581..882 (w=301) at y=262; gold quality ticks at x641 & x821.
 # 80% point = x822 sits on the tick, so we sample x=824 (~80.7%, just right of it).
 durability_mode:
-  location: [824, 262]
-  progress_color: [34, 205, 46]    # green = filled at 80% => HIGH => progress arts (else maroon => durability)
+  # OWNER-MARKED pixel on the GREEN durability bar (~80% mark): GREEN [34,205,46] = good
+  # durability => progress arts (4/5/6); not green (maroon/dark) = low => durability arts (1/2/3).
+  location: [857, 261]
+  progress_color: [34, 205, 46]
   tolerance: 45
-
-# OCR the on-screen durability PERCENT (owner-pointed: read the NUMBER, not the bar —
-# bar reads were unreliable). >= threshold => progress mode (arts 4/5/6); below =>
-# durability mode (arts 1/2/3). Region = the "NN%" readout at the craft window's top-right.
-durability_ocr:
-  region: {x: 882, y: 249, w: 40, h: 27}   # tight on the "NN%" digits (verified OCR='88%')
-  threshold: 80
-  interval: 0.4                    # re-OCR cadence (durability changes slowly; cache between)
 
 # --- power (mana) gate -------------------------------------------------------
 # Owner rule: pause when power < 50% (single craft); during a WRIT we barrel forward

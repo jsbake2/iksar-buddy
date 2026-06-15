@@ -18,8 +18,6 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
-import re
-
 import cv2
 import mss
 import numpy as np
@@ -29,16 +27,6 @@ try:
     import pygetwindow as gw
 except Exception:                      # noqa: BLE001
     gw = None
-
-try:
-    import pytesseract
-    for _tp in (r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-                r"C:\ib\tesseract\tesseract.exe"):
-        if Path(_tp).exists():
-            pytesseract.pytesseract.tesseract_cmd = _tp
-            break
-except Exception:                      # noqa: BLE001
-    pytesseract = None
 
 pydirectinput.PAUSE = 0                 # no built-in delay; we pace the loop ourselves
 pydirectinput.FAILSAFE = False
@@ -78,9 +66,6 @@ class CraftReflex:
         self._cnt_resolved = None         # None | "green" (success) | "red" (fail)
         self._cnt_last_press = 0.0
         self.fails = 0
-        self._mode_cache = "progress"     # OCR'd durability mode (cached between reads)
-        self._last_ocr = 0.0
-        self._last_pct = None
 
     # -- sensors (mss, local) ---------------------------------------------
     def _capture_templates(self, sct) -> int:
@@ -123,53 +108,10 @@ class CraftReflex:
                 best, best_val = i + 1, mx
         return best, scores, arr
 
-    def _durability_pct(self, sct):
-        """OCR the on-screen durability percent. Owner-pointed: read the NUMBER, the bar
-        was unreliable. Returns int 0-100 or None."""
-        if pytesseract is None:
-            return None
-        o = self.r.get("durability_ocr", {}) or {}
-        reg = o.get("region")
-        if not reg:
-            return None
-        try:
-            crop = _grab(sct, reg["x"], reg["y"], reg["w"], reg["h"])
-            gray = cv2.resize(cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY), None,
-                              fx=6, fy=6, interpolation=cv2.INTER_CUBIC)
-            val, raw = None, ""
-            for th in (110, 90, 130, 70, 150):       # live brightness varies; try a few
-                _, bw = cv2.threshold(gray, th, 255, cv2.THRESH_BINARY)
-                txt = pytesseract.image_to_string(
-                    bw, config="--psm 7 -c tessedit_char_whitelist=0123456789%")
-                m = re.search(r"\d{1,3}", txt)
-                if m and 0 <= int(m.group()) <= 100:
-                    val, raw = int(m.group()), txt.strip()
-                    break
-            if getattr(self, "_debug", False) and getattr(self, "_dur_dbg", 0) < 10:
-                try:
-                    cv2.imwrite(str(Path(r"C:\ib\agent\dbg") / f"dur_{self._dur_dbg:02d}.png"), crop)
-                    self._dur_dbg += 1
-                    self.log(f"  durOCR -> {val} (raw={raw!r})")
-                except Exception:            # noqa: BLE001
-                    pass
-            return val
-        except Exception:                    # noqa: BLE001
-            return None
-
     def _mode(self, sct) -> str:
-        """Durability mode via OCR of the percent (cached on an interval — durability
-        changes slowly). >= threshold => progress arts, below => durability arts. Falls
-        back to the calibrated bar pixel only if OCR is unavailable."""
-        o = self.r.get("durability_ocr", {}) or {}
-        if pytesseract is not None and o.get("region"):
-            now = time.time()
-            if now - self._last_ocr >= float(o.get("interval", 0.4)):
-                self._last_ocr = now
-                pct = self._durability_pct(sct)
-                if pct is not None:
-                    self._last_pct = pct
-                    self._mode_cache = "progress" if pct >= int(o.get("threshold", 80)) else "durability"
-            return self._mode_cache
+        """Durability mode from the OWNER-MARKED pixel on the green durability bar:
+        GREEN [34,205,46] = good durability => progress arts (4/5/6); not green = low
+        durability => durability arts (1/2/3). One pixel — the simple, reliable read."""
         d = self.r.get("durability_mode", {}) or {}
         loc = d.get("location")
         if not loc:
@@ -301,10 +243,10 @@ class CraftReflex:
                         dr = mr - self._cnt_baseline[0]
                         if dg >= green_delta and dg > dr:
                             self._cnt_resolved = "green"; self.reactions += 1
-                            self.log(f"counter#{n} ({mode} {self._last_pct}%) SUCCESS (green, dg={dg:.0f})")
+                            self.log(f"counter#{n} ({mode}) SUCCESS (green, dg={dg:.0f})")
                         elif dr >= red_delta and dr > dg:
                             self._cnt_resolved = "red"; self.fails += 1
-                            self.log(f"counter#{n} ({mode} {self._last_pct}%) FAILED (red, dr={dr:.0f})")
+                            self.log(f"counter#{n} ({mode}) FAILED (red, dr={dr:.0f})")
                     now = time.time()
                     if self._cnt_resolved is None and safe and now - self._cnt_last_press >= press_interval:
                         key = self.arts[mode][n - 1] if 1 <= n <= len(self.arts[mode]) else None
