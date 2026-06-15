@@ -94,7 +94,7 @@ reaction:
   # (Was 0.80 — higher than any real counter, so it detected NOTHING.)
   confidence: 0.45
   poll_hz: 6                                  # how often to sample (FORGE.md §4.1)
-  debug: true                                 # in-guest agent dumps templates + watch crops + scores (TUNING)
+  debug: false                                # in-guest agent dumps templates + watch crops + scores (TUNING)
   # COUNTER MASH (owner: push the art until the icon tints green=success / red=fail):
   press_interval: 0.12                        # mash cadence while a counter is uncountered
   green_delta: 16                             # watch-region mean-G rise vs onset baseline => SUCCESS
