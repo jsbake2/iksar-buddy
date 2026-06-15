@@ -200,14 +200,15 @@ class CraftWorker:
             self._last_counter = None            # region clear -> next counter is "new"
             return False
         if n == self._last_counter:
-            return True                          # same event still showing -> already pressed
+            return False                         # same event still lingering -> already pressed;
+            #                                      let filler SPAM resume until it clears + a new one shows
         self._last_counter = n
         key = self._counter_key(mode, n)
         if key:
             await self._press(key, f"counter{n}:{mode}")
             self.t.update_bot(self.id, reactions=self.t.bot(self.id)["reactions"] + 1)
             self.t.push_log(self.id, f"counter#{n} ({mode}) -> {key}")
-        return True
+        return True                              # NEW counter pressed once
 
     # -- one craft cycle ----------------------------------------------------
     async def _craft_cycle(self, gate_power: bool = True) -> bool:
