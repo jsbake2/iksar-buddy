@@ -179,10 +179,13 @@ class CraftWorker:
         return True
 
     async def _focus_craft(self) -> None:
+        """Click the mouse-safe spot to FOCUS the craft window so the art keys (1-6) land
+        in it, NOT on the combat hotbar. wait=True so the click LANDS before we press —
+        send-key arts go to whatever's focused, so this MUST be reliable."""
         loc = self.cfg.get("craft_focus_click")
         if loc:
-            await self._ex(self.guest.click, loc[0], loc[1])
-            await asyncio.sleep(0.1)
+            await self._ex(partial(self.guest.click, loc[0], loc[1], True))
+            await asyncio.sleep(float(self.cfg.get("timings", {}).get("post_focus", 0.3)))
 
     async def _recover_mana(self) -> None:
         """Between crafts: if mana is low, press the keymap mana-recover hotkey."""
