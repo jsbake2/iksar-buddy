@@ -16,6 +16,7 @@ chat input line is clear and we're in-world.
 from __future__ import annotations
 
 import time
+from pathlib import Path
 
 import cv2
 import mss
@@ -74,23 +75,27 @@ class CraftReflex:
         return sum(1 for t in self._templates if t is not None)
 
     def _counter(self, sct):
+        """Return (best_counter_n_or_None, [score0,score1,score2], watch_array)."""
         reg = (self.r.get("reaction", {}) or {}).get("region")
         if not reg or not self._templates:
-            return None
+            return None, [], None
         try:
             arr = _grab(sct, reg["x"], reg["y"], reg["w"], reg["h"])
         except Exception:                        # noqa: BLE001
-            return None
+            return None, [], None
         thresh = float((self.r.get("reaction", {}) or {}).get("confidence", 0.45))
+        scores = []
         best, best_val = None, 0.0
         for i, t in enumerate(self._templates):
             if t is None or t.shape[0] > arr.shape[0] or t.shape[1] > arr.shape[1]:
+                scores.append(0.0)
                 continue
             res = cv2.matchTemplate(arr, t, cv2.TM_CCOEFF_NORMED)
             _, mx, _, _ = cv2.minMaxLoc(res)
+            scores.append(round(float(mx), 3))
             if mx > thresh and mx > best_val:
                 best, best_val = i + 1, mx
-        return best
+        return best, scores, arr
 
     def _mode(self, sct) -> str:
         d = self.r.get("durability_mode", {}) or {}
@@ -176,16 +181,41 @@ class CraftReflex:
         loop_sleep = float(self.r.get("loop_sleep", 0.03))
         done_every = float(self.r.get("done_check_interval", 0.5))
         max_t = float(self.r.get("max_craft_time", 90.0))
+        debug = bool(self.r.get("debug"))
+        dbg_dir = Path(r"C:\ib\agent\dbg")
+        dbg_n = 0
         self._activate_eq2()
         with mss.mss() as sct:
             got = self._capture_templates(sct)
-            self.log(f"reflex: captured {got} counter templates; reacting")
+            self.log(f"reflex: captured {got} counter templates; reacting (debug={debug})")
+            if debug:
+                try:
+                    dbg_dir.mkdir(parents=True, exist_ok=True)
+                    for f in dbg_dir.glob("*.png"):
+                        f.unlink()
+                    full = _grab(sct, 0, 0, 1920, 1080)
+                    cv2.imwrite(str(dbg_dir / "full.png"), full)
+                    for i, t in enumerate(self._templates):
+                        if t is not None:
+                            cv2.imwrite(str(dbg_dir / f"tmpl_{i}.png"), t)
+                    self.log(f"reflex: dumped full.png + {got} templates to {dbg_dir}")
+                except Exception as e:           # noqa: BLE001
+                    self.log(f"reflex: debug dump failed: {e}")
             t0 = time.time()
             last_done = 0.0
             while not self.should_stop() and time.time() - t0 < max_t:
                 safe = self._chat_safe(sct)
                 mode = self._mode(sct)
-                n = self._counter(sct)
+                n, scores, watch = self._counter(sct)
+                # DEBUG: log scores whenever anything is even close, and save the watch
+                # crop for near-misses + hits so we can see what the live counter looks
+                # like vs the templates and where the confidence threshold should sit.
+                if debug and scores and max(scores) >= 0.30 and dbg_n < 60:
+                    key_dbg = self.arts[mode][n - 1] if (n and 1 <= n <= len(self.arts[mode])) else "-"
+                    self.log(f"  scores={scores} best={n} mode={mode} press={key_dbg} safe={safe}")
+                    if watch is not None:
+                        cv2.imwrite(str(dbg_dir / f"watch_{dbg_n:02d}_{max(scores):.2f}_n{n}.png"), watch)
+                        dbg_n += 1
                 if n:
                     key = self.arts[mode][n - 1] if 1 <= n <= len(self.arts[mode]) else None
                     if key and safe:
