@@ -235,7 +235,7 @@ function pushQueueRow(refs, item) {
   li.className = "qrow" + (item.done >= item.count && item.count ? " done" : "");
   li.innerHTML =
     `<input class="qname" type="text" value="${(item.name || "").replace(/"/g, "&quot;")}" placeholder="recipe name" />` +
-    `<input class="qsearch" type="text" value="${(item.search || "").replace(/"/g, "&quot;")}" placeholder="search (blank=name)" />` +
+    `<input class="qsearch" type="text" maxlength="18" value="${(item.search || "").replace(/"/g, "&quot;")}" placeholder="search (blank=name)" />` +
     `<input class="qcount" type="number" min="1" max="999" value="${item.count || 1}" />` +
     `<button class="qdel" title="remove">×</button>`;
   const id = refs.root.dataset.bot;

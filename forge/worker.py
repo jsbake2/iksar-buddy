@@ -127,7 +127,9 @@ class CraftWorker:
         rs = self.cfg.get("recipe_select", {})
         timings = self.cfg.get("timings", {})
         click_settle = float(timings.get("click_settle", 0.8))
-        query = (search or "").strip() or search_name(name, trade_class)   # owner-tuned search text, else full name
+        # owner-tuned search text (capped to EQ2's 18-char field), else the full name
+        # (EQ2 truncates that itself; we still OCR-match the row on the full `name`).
+        query = (search or "").strip()[:18] or search_name(name, trade_class)
         sb = rs.get("search_click")
         attempts = int(rs.get("focus_attempts", 3))
 
@@ -149,43 +151,26 @@ class CraftWorker:
                 self._aborted += 1
                 self.t.push_log(self.id, "recipe type ABORTED (chat unsafe / not in-world)")
                 return False
-            # ATOMIC: activate EQ2 + click the search field + type, all in ONE AHK run
-            # (no Enter — EQ2 filters live, and a stray Enter in the world opens chat).
-            # focus_xy fuses the focus-click and the typing so NOTHING can steal focus
-            # between them and leak the recipe letters into the world as movement.
+            # ATOMIC: activate EQ2 + click the search field + type + Enter, all in ONE
+            # AHK run. Fusing focus-click+type+Enter means nothing can steal focus
+            # between them, so the recipe letters can't leak into the world as movement
+            # (that race — split ibgclick-then-type — is what ran the character into the
+            # wall). Enter lives INSIDE the focused run, so it filters the list (owner
+            # spec) and can't open chat in a normal focus. chat_safe above already
+            # proved in-world; if focus fails the next art press is chat_safe-gated too.
             if sb:
-                await self._ex(partial(self.guest.type_field, query, False, (sb[0], sb[1])))
+                await self._ex(partial(self.guest.type_field, query, True, (sb[0], sb[1])))
             else:
-                await self._ex(self.guest.type_field, query, False)
-            await asyncio.sleep(post_search)
-            # FAIL-CLOSED VERIFY: prove the query landed in the search box. If it didn't,
-            # it LEAKED to the world — do NOT re-type (that would leak again). Abort the
-            # whole job. (This is why your character ran into the wall: a missed focus
-            # dumped the recipe name as keystrokes. Never type blind again.)
-            await self._ex(self.guest.grab)
-            if not await self._ex(sensors.search_landed, self.guest, self.cfg, query):
-                self.t.push_log(self.id,
-                    f"search box never showed '{query}' — focus failed, ABORTING (won't retype into the world)")
-                return False
-            # Focus PROVEN (text landed) -> now it's safe to press Enter to filter the
-            # list (owner spec). Enter is gated behind the verify so a focus miss can
-            # NEVER send Enter to the world (which would open chat). focus_xy re-clicks
-            # the field first so the Enter lands in it.
-            if sb:
-                await self._ex(partial(self.guest.type_field, "", True, (sb[0], sb[1])))
-            else:
-                await self._ex(self.guest.type_field, "", True)
-            await asyncio.sleep(post_search)
-            # focused + text landed + Enter -> poll the filtered list for the row
+                await self._ex(self.guest.type_field, query, True)
+            # Proof the search worked = the row appears in the filtered list. Poll for it.
             for _ in range(int(rs.get("match_polls", 5))):
+                await asyncio.sleep(post_search)
                 row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
                 if row_click:
                     break
-                await asyncio.sleep(post_search)
             if row_click:
                 break
-            # search WAS focused (text landed) but the row didn't match — re-typing is
-            # safe now (the field has focus), so retry the search.
+            # row not found — re-clear + re-type (atomic focus again) and try once more.
             self.t.push_log(self.id, f"'{name}' not in filtered list (attempt {i}/{attempts}) — retrying")
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
