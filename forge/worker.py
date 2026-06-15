@@ -133,6 +133,7 @@ class CraftWorker:
 
         clr = rs.get("clear_click")
         post_search = float(timings.get("post_search", 0.6))
+        self.t.push_log(self.id, f"search box <- '{query}'  (OCR-match recipe '{name}')")
         row_click = None
         for i in range(1, attempts + 1):
             if self._stop.is_set():
@@ -166,7 +167,16 @@ class CraftWorker:
                 self.t.push_log(self.id,
                     f"search box never showed '{query}' — focus failed, ABORTING (won't retype into the world)")
                 return False
-            # focused + text landed -> poll the filtered list for the row
+            # Focus PROVEN (text landed) -> now it's safe to press Enter to filter the
+            # list (owner spec). Enter is gated behind the verify so a focus miss can
+            # NEVER send Enter to the world (which would open chat). focus_xy re-clicks
+            # the field first so the Enter lands in it.
+            if sb:
+                await self._ex(partial(self.guest.type_field, "", True, (sb[0], sb[1])))
+            else:
+                await self._ex(self.guest.type_field, "", True)
+            await asyncio.sleep(post_search)
+            # focused + text landed + Enter -> poll the filtered list for the row
             for _ in range(int(rs.get("match_polls", 5))):
                 row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
                 if row_click:

@@ -138,7 +138,9 @@ class ForgeController:
             recipe = recipe or b.get("recipe", "")   # dashboard shows the saved recipe
             search = search or b.get("search", "")   # owner-tuned search text (empty -> name)
             w.start("single", trade_class, recipe=recipe, count=count, search=search)
-            self.t.push_event(bot_id, "craft", f"single start: {recipe or '(loaded)'} x{count}")
+            self.t.update_bot(bot_id, search=search)   # persist so the UI/snapshot reflects what we'll type
+            self.t.push_event(bot_id, "craft",
+                              f"single start: type '{search or recipe}' -> {recipe or '(loaded)'} x{count}")
         self.t.update_bot(bot_id, mode=mode, trade_class=trade_class, state="selecting")
 
     def stop(self, bot_id: str) -> None:
