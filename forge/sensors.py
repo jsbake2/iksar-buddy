@@ -71,6 +71,26 @@ def begin_or_retry(guest: Guest, cfg: dict) -> str | None:
     return None
 
 
+def progress_full(guest: Guest, cfg: dict) -> bool:
+    """OCR-FREE completion: the BLUE progress bar (owner: progress=blue, durability=green)
+    reaching its right end = the craft finished ('You created'). We sample the last few
+    px of the bar row; mostly-blue there => progress ~100%. Reliable (no chat OCR)."""
+    p = cfg.get("progress_bar")
+    if not p:
+        return False
+    y = int(p.get("y", 277))
+    x0 = int(p.get("full_x0", 873)); x1 = int(p.get("full_x1", 881))
+    try:
+        px = guest.crop(x0, y, max(1, x1 - x0), 1)
+    except Exception:
+        return False
+    if not px:
+        return False
+    blue = p.get("blue", [40, 54, 242]); tol = int(p.get("tolerance", 70))
+    n = sum(1 for c in px.values() if matches(c, blue, tol))
+    return n / len(px) >= float(p.get("full_frac", 0.6))
+
+
 def craft_complete_chat(guest: Guest, cfg: dict) -> bool:
     """AUTHORITATIVE craft-complete signal: the game prints 'You gain tradeskill XP!'
     / 'You created <item>.' on completion. The button states vary too much to detect

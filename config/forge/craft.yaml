@@ -151,6 +151,18 @@ chat_input:
 complete_chat:
   region: {x: 15, y: 715, w: 560, h: 70}
 
+# --- progress bar (OCR-FREE completion) --------------------------------------
+# Owner: progress = BLUE bar (bottom, y~277), durability = GREEN (top, y~262).
+# Craft is done when the blue bar fills to its right end. We sample the last px of
+# the bar row; mostly-blue there => progress ~100% => 'You created'.
+progress_bar:
+  y: 277
+  full_x0: 873
+  full_x1: 881
+  blue: [40, 54, 242]
+  tolerance: 70
+  full_frac: 0.6
+
 # --- EQ2 chat log (scribed-recipe gathering) ---------------------------------
 # "Read recipes from log" parses scribed-recipe lines (Recipe: "X" put in recipe
 # book) out of the client chat log. EQ2 writes one log per character at

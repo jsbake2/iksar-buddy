@@ -249,17 +249,24 @@ class CraftWorker:
 
         cycle_start = time.time()
         last_chat_check = cycle_start            # throttle the (slow) chat OCR
-        # Avoid the PREVIOUS craft's stale 'tradeskill XP' line: fire only once the chat
-        # has been CLEAR of a completion phrase and then a NEW one appears.
+        saw_low = False                          # progress bar was empty this craft (not a stale full bar)
+        # backup chat signal: fire only once the chat has been CLEAR then a NEW line appears
         saw_clear = not await self._ex(sensors.craft_complete_chat, self.guest, self.cfg)
         while not self._stop.is_set():
             await self._wait_unpaused()
             if self._stop.is_set():
                 return False
-            # AUTHORITATIVE completion: a NEW chat 'tradeskill XP / You created' line.
-            # The button/bar states are too variable to detect reliably.
+            await self._ex(self.guest.grab)
+            # PRIMARY completion (OCR-free): the BLUE progress bar reached its right end.
+            if await self._ex(sensors.progress_full, self.guest, self.cfg):
+                if saw_low:
+                    self.t.push_log(self.id, "craft complete (progress bar full)")
+                    return True
+            else:
+                saw_low = True
+            # backup: a NEW chat 'tradeskill XP / You created' line (throttled OCR)
             now = time.time()
-            if now - last_chat_check > 1.2:
+            if now - last_chat_check > 1.5:
                 last_chat_check = now
                 has = await self._ex(sensors.craft_complete_chat, self.guest, self.cfg)
                 if not has:
@@ -267,10 +274,6 @@ class CraftWorker:
                 elif saw_clear:
                     self.t.push_log(self.id, "craft complete (chat: tradeskill XP)")
                     return True
-            await self._ex(self.guest.grab)
-            # also accept the Begin/Retry button if it does reappear (fast path)
-            if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
-                return True
             mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
             self.t.update_bot(self.id, durability_mode=mode)
             if await self._counter(mode):
