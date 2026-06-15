@@ -108,6 +108,7 @@ function buildBotPanel(bot, tradeClasses) {
   const refs = {
     root,
     state: q(".bot-state"),
+    agent: q(".bot-agent"),
     enable: q(".bot-enable"),
     charName: q(".bot-char"),
     console: q(".bot-console"),
@@ -273,6 +274,13 @@ function updateBotPanel(refs, bot) {
   const st = bot.state || "off";
   refs.state.textContent = st.replace("_", " ");
   refs.state.className = "state-pill bot-state s-" + st;
+  if (refs.agent) {
+    const up = !!bot.agent_up;
+    refs.agent.classList.toggle("up", up);
+    refs.agent.classList.toggle("down", !up);
+    refs.agent.title = up ? "in-guest reflex agent: UP (fast reactions)"
+                          : "in-guest reflex agent: down (host-side fallback)";
+  }
 
   // selected crafter (dropdown value = character; don't clobber an open dropdown)
   if (document.activeElement !== refs.trade && bot.character && refs.trade.value !== bot.character)

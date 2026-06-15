@@ -25,6 +25,13 @@
 .bot-head .spacer { flex:1; }
 .bot-console { padding:4px 9px; }
 
+/* in-guest reflex-agent health pill */
+.agent-pill { font-size:10px; padding:2px 7px; border-radius:10px; border:1px solid var(--line);
+  letter-spacing:.3px; white-space:nowrap; }
+.agent-pill.up { color:var(--good); border-color:color-mix(in srgb,var(--good) 55%,var(--line));
+  background:color-mix(in srgb,var(--good) 12%,transparent); }
+.agent-pill.down { color:var(--muted); opacity:.55; }
+
 /* state pill colors per craft state */
 .state-pill.bot-state { font-size:11px; }
 .state-pill.s-crafting { color:var(--good); border-color:color-mix(in srgb,var(--good) 50%,var(--line)); }

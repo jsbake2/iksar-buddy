@@ -448,15 +448,24 @@ class ForgeController:
     async def run(self) -> None:
         tasks = [asyncio.create_task(w.run()) for w in self.workers.values()]
         try:
+            tick = 0
             while True:
+                # fast (2s): refresh each bot's agent-health flag for the dashboard
                 for bid in list(self.workers):
-                    acct = self._account(bid)
-                    st = (self.t.bot(bid) or {}).get("state")
-                    if acct and st in ("crafting", "selecting", "waiting_power", "launching"):
-                        self.lock.refresh(acct, self._holder(bid))   # keep our lock alive
-                    if st == "done":
-                        self._release(bid)                            # free the account
-                await asyncio.sleep(30)
+                    seen = (self.t.bot(bid) or {}).get("agent_seen")
+                    up = bool(seen and (time.time() - seen) < 5.0)
+                    if (self.t.bot(bid) or {}).get("agent_up") != up:
+                        self.t.update_bot(bid, agent_up=up)
+                if tick % 15 == 0:                                    # slow (30s): account locks
+                    for bid in list(self.workers):
+                        acct = self._account(bid)
+                        st = (self.t.bot(bid) or {}).get("state")
+                        if acct and st in ("crafting", "selecting", "waiting_power", "launching"):
+                            self.lock.refresh(acct, self._holder(bid))
+                        if st == "done":
+                            self._release(bid)
+                tick += 1
+                await asyncio.sleep(2)
         finally:
             for tk in tasks:
                 tk.cancel()
