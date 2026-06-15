@@ -401,6 +401,40 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
     return (icon_x, y)
 
 
+def search_box_text(guest: Guest, cfg: dict) -> str:
+    """OCR the recipe SEARCH FIELD and return its lowercased text. Used to PROVE the
+    field is focused and our query actually landed there (vs leaking to the game world
+    as movement keys). Region defaults are derived from search_click/clear_click so it
+    works before the owner calibrates `recipe_select.search_region`."""
+    rs = cfg.get("recipe_select", {}) or {}
+    reg = rs.get("search_region")
+    if not reg:
+        sc = rs.get("search_click") or [349, 180]
+        cc = rs.get("clear_click") or [443, 181]
+        left = max(0, int(sc[0]) - 110)
+        reg = {"x": left, "y": int(sc[1]) - 11, "w": max(60, int(cc[0]) - 5 - left), "h": 24}
+    words = _ocr_words(guest, reg)
+    return _alpha(" ".join(w["text"] for w in words))
+
+
+def search_landed(guest: Guest, cfg: dict, query: str) -> bool:
+    """True if the OCR'd search box shows our query (proof the field was focused and
+    the keystrokes did NOT leak to the world). Tolerant: any query token (>=3 chars)
+    appearing in the box counts — OCR of a small field is noisy, but an EMPTY/garbage
+    box (the leak case) shares no tokens, so we fail closed and abort instead of
+    re-typing into the world."""
+    box = search_box_text(guest, cfg)
+    if not box:
+        log.info("search box reads empty — query did not land (likely leaked to world)")
+        return False
+    want = [t for t in re.findall(r"[a-z]+", (query or "").lower()) if len(t) >= 3]
+    if not want:
+        return bool(box)
+    hit = sum(1 for t in want if _contains(box, t))
+    log.info("search box=%r query tokens=%s hit=%d", box, want, hit)
+    return hit >= 1
+
+
 def _alpha(s: str) -> str:
     return re.sub(r"[^a-z]", "", (s or "").lower())
 

@@ -187,20 +187,42 @@ class Guest:
             self._virsh("send-key", self.dom, "--codeset", "linux", "KEY_ENTER")
 
     # -- input: typing into a FOCUSED EQ2 UI FIELD (AHK Event-mode {Raw}) ---
-    def type_field(self, text: str, enter: bool = True) -> bool:
+    def type_field(self, text: str, enter: bool = True,
+                   focus_xy: tuple[int, int] | None = None) -> bool:
         """Type into a FOCUSED EQ2 UI text field (recipe search, etc.). EQ2 widgets
         only register real Windows key messages — virsh send-key/SendText do NOT land
         in them (only the game world reads those scancodes). So drive AHK Event-mode
         Send("{Raw}…") via ibrun, the SAME proven mechanism as the login form
-        (forge/login.py). Caller must focus the field first (click + settle)."""
+        (forge/login.py).
+
+        focus_xy=(x,y): ATOMICALLY activate EQ2 + click the field + type, all in ONE
+        AHK script with no foreground gap. This is the safe path — a separate
+        ibgclick-then-type leaves a window-focus race where the keystrokes can land in
+        the GAME WORLD (recipe letters = w/a/s/d movement). When focus_xy is given the
+        click and the typing can't be split apart by anything stealing focus between them.
+        focus_xy=None keeps the old behavior (caller focused the field) for login.py."""
         esc = (text or "").replace('"', '""')
         # NO Ctrl+A clear here — the modifier races the fast key delay and types a literal
         # 'a' ("aleather backpack"). The caller already clicks the clear-X to empty the box.
         # 40,25 is reliable typing (22,12 dropped chars) and faster than the login's 55,45.
-        script = ('SendMode "Event"\n'
-                  'SetKeyDelay 40, 25\n'
-                  'Sleep 120\n'
-                  f'Send("{{Raw}}{esc}")\n')
+        head = 'SendMode "Event"\nSetKeyDelay 40, 25\n'
+        if focus_xy:
+            x, y = int(focus_xy[0]), int(focus_xy[1])
+            head += ('CoordMode "Mouse", "Screen"\n'
+                     'SetMouseDelay 40\n'
+                     'SetTitleMatchMode 2\n'
+                     'if !WinExist("EverQuest II")\n'
+                     '    ExitApp\n'
+                     'WinActivate("EverQuest II")\n'
+                     'WinWaitActive("EverQuest II",, 2)\n'
+                     'Sleep 150\n'
+                     f'MouseMove({x}, {y})\n'
+                     'Sleep 80\n'
+                     f'Click("{x} {y}")\n'
+                     'Sleep 160\n')
+        else:
+            head += 'Sleep 120\n'
+        script = head + f'Send("{{Raw}}{esc}")\n'
         if enter:
             script += 'Sleep 150\nSend("{Enter}")\n'
         return self.run_ahk(script)

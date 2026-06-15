@@ -127,47 +127,56 @@ class CraftWorker:
         rs = self.cfg.get("recipe_select", {})
         timings = self.cfg.get("timings", {})
         click_settle = float(timings.get("click_settle", 0.8))
-        type_settle = float(timings.get("pre_type_settle", 1.5))
         query = (search or "").strip() or search_name(name, trade_class)   # owner-tuned search text, else full name
         sb = rs.get("search_click")
         attempts = int(rs.get("focus_attempts", 3))
 
+        clr = rs.get("clear_click")
+        post_search = float(timings.get("post_search", 0.6))
         row_click = None
         for i in range(1, attempts + 1):
             if self._stop.is_set():
                 return False
             # clear the box first (the X) so stale/previous text doesn't corrupt the
             # query (owner-required; EQ2's field keeps the last search).
-            clr = rs.get("clear_click")
             if rs.get("use_clear") and clr:
                 await self._ex(partial(self.guest.click, clr[0], clr[1], True))
                 await asyncio.sleep(click_settle)
-            # focus the search field — double click (1st may only activate the window),
-            # the 2nd WAITS for the click to land before we type.
-            if sb:
-                await self._ex(self.guest.click, sb[0], sb[1])
-                await asyncio.sleep(click_settle)
-                await self._ex(partial(self.guest.click, sb[0], sb[1], True))
-                await asyncio.sleep(type_settle)
             # chat-safety gate: never type unless in-world + chat clear (the invariant)
             await self._ex(self.guest.grab)
             if not await self._ex(sensors.chat_safe, self.guest, self.cfg):
                 self._aborted += 1
                 self.t.push_log(self.id, "recipe type ABORTED (chat unsafe / not in-world)")
                 return False
-            # AHK Event-mode {Raw} — EQ2 UI fields ignore virsh send-key (type_text)
-            await self._ex(self.guest.type_field, query, True)
-            # POLL for the list to filter (takes ~1-2s) — don't re-type on the first
-            # empty read or we double-search. Only a whole-window miss = focus failed.
-            row_click = None
+            # ATOMIC: activate EQ2 + click the search field + type, all in ONE AHK run
+            # (no Enter — EQ2 filters live, and a stray Enter in the world opens chat).
+            # focus_xy fuses the focus-click and the typing so NOTHING can steal focus
+            # between them and leak the recipe letters into the world as movement.
+            if sb:
+                await self._ex(partial(self.guest.type_field, query, False, (sb[0], sb[1])))
+            else:
+                await self._ex(self.guest.type_field, query, False)
+            await asyncio.sleep(post_search)
+            # FAIL-CLOSED VERIFY: prove the query landed in the search box. If it didn't,
+            # it LEAKED to the world — do NOT re-type (that would leak again). Abort the
+            # whole job. (This is why your character ran into the wall: a missed focus
+            # dumped the recipe name as keystrokes. Never type blind again.)
+            await self._ex(self.guest.grab)
+            if not await self._ex(sensors.search_landed, self.guest, self.cfg, query):
+                self.t.push_log(self.id,
+                    f"search box never showed '{query}' — focus failed, ABORTING (won't retype into the world)")
+                return False
+            # focused + text landed -> poll the filtered list for the row
             for _ in range(int(rs.get("match_polls", 5))):
-                await asyncio.sleep(float(timings.get("post_search", 0.6)))
                 row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
                 if row_click:
                     break
+                await asyncio.sleep(post_search)
             if row_click:
                 break
-            self.t.push_log(self.id, f"search not focused (attempt {i}/{attempts}) — retrying")
+            # search WAS focused (text landed) but the row didn't match — re-typing is
+            # safe now (the field has focus), so retry the search.
+            self.t.push_log(self.id, f"'{name}' not in filtered list (attempt {i}/{attempts}) — retrying")
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             return False
