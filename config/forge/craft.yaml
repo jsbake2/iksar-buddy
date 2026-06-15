@@ -1,8 +1,7 @@
 # Forge craft calibration + kit profile (FORGE.md §4, §7). ONE profile serves both
-# crafter VMs (identical clones). The LOGIC that reads these is built; the NUMBERS
-# below are placeholders — fill them during in-game capture (FORGE.md "in-game
-# capturing later"). Everything is for a fixed 1920x1080 guest. Anything marked
-# CALIBRATE is a guess and will be measured live.
+# crafter VMs (identical clones). Values CALIBRATED 2026-06-14 from owner-marked
+# screenshots of iksar_buddy2 (see claude_findings/FINDINGS.md). Everything is for a
+# fixed 1920x1080 guest. Items still marked CALIBRATE/TUNE need a live verify.
 #
 # Coordinate convention: [x, y] guest pixels. color: [r, g, b]. region: {x,y,w,h}.
 
@@ -11,60 +10,74 @@
 # This file holds CALIBRATION only (pixels/regions/templates/clicks).
 
 # --- durability/progress mode pixel ------------------------------------------
-# One pixel that reads the "progress/high" color when in progress mode; otherwise
-# we run durability arts. CALIBRATE loc+color.
+# Owner rule (2026-06-14): durability < 80% -> durability arts (1/2/3); durability
+# >= 80% -> progress arts (4/5/6). Sample ONE pixel at the 80% mark of the top
+# (durability) bar: green => bar filled there => >=80% => "progress" mode; maroon =>
+# depleted below 80% => "durability" mode.
+# Bar geometry: track x581..882 (w=301) at y=262; gold quality ticks at x641 & x821.
+# 80% point = x822 sits on the tick, so we sample x=824 (~80.7%, just right of it).
 durability_mode:
-  location: [1590, 324]            # CALIBRATE
-  progress_color: [21, 190, 33]    # CALIBRATE (green = progress mode)
-  tolerance: 12
+  location: [824, 262]
+  progress_color: [34, 205, 46]    # green = filled at 80% => HIGH => progress arts (else maroon => durability)
+  tolerance: 45
 
 # --- power (mana) gate -------------------------------------------------------
-# Pixel that's the "ok" color when power is sufficient; below it we pause, fire
-# the power ability, and wait. CALIBRATE.
+# Owner rule: pause when power < 50% (single craft); during a WRIT we barrel forward
+# and ignore this. Same self power bar the healer reads (agent/host_sensor.py): track
+# x19..128 at y~46, blue=(117,117,234) when filled. Sample the 50% mark (x=74): blue
+# => >=50% (ok); dark => <50% (pause).
 power:
-  location: [123, 71]              # CALIBRATE
-  ok_color: [114, 114, 241]        # CALIBRATE (blue = power ok)
-  tolerance: 14
-  ability_key: ""                  # OWNER: key/macro that restores power (blank = just wait)
+  location: [74, 46]
+  ok_color: [115, 115, 230]
+  tolerance: 45
+  ability_key: ""                  # OWNER: key/macro that restores power (blank = just wait) — also keymap.mana_recover
 
 # --- begin / retry buttons (craft-loop heartbeat) ----------------------------
-# Begin starts the next craft; Retry repeats the current recipe. Detect by a pixel
-# fingerprint (fast); click region center to press. CALIBRATE.
+# CONFIRMED: Create=LEFT(492,707), Begin=RIGHT(784,707). First craft shows "Begin";
+# subsequent crafts the SAME spot becomes "Retry/Redo" — so begin & retry share the
+# click point. Detection fingerprint = the button's gold border/text; its presence
+# also signals craft-complete (the art bar is gone, the button is back).
+# TUNE: gold can appear elsewhere — verify the fingerprint live (it's the craft
+# heartbeat). A false hit ends a craft early; a miss just hangs (both chat-safe).
 begin:
-  pixel: {location: [985, 827], color: [112, 165, 59], tolerance: 14}   # CALIBRATE
-  click: [985, 827]                                                     # CALIBRATE
+  pixel: {location: [784, 707], color: [207, 173, 107], tolerance: 45}
+  click: [784, 707]
 retry:
-  pixel: {location: [1473, 828], color: [112, 165, 59], tolerance: 12}  # CALIBRATE
-  click: [1473, 828]                                                    # CALIBRATE
+  pixel: {location: [784, 707], color: [207, 173, 107], tolerance: 45}
+  click: [784, 707]
+# Create button — not used in the loop (Begin is the start); kept for the fallback
+# path the owner flagged (something odd on a failed craft).
+create:
+  click: [492, 707]
 
 # --- reaction matching (NO saved library — references captured live) ---------
-# button_regions = the FIXED positions of the 3 reaction buttons in the craft
-# window. At EACH craft start the worker grabs them fresh into memory and uses them
-# as the match references, so any class/recipe (even a random quest craft for an
-# undefined class) works without a per-class template library.
-# region = where the ACTIVE reaction shows up (matched against the 3 references ->
-# counter #; the worker presses keymap.arts[mode][counter-1]).
+# CONFIRMED mechanic: during a craft the bottom bar is [book][1][2][3][4][5][6][stop].
+# 1/2/3 = durability arts, 4/5/6 = progress arts; 3 reaction TYPES, paired 1<->4,
+# 2<->5, 3<->6. At each craft start we grab icons 1/2/3 FRESH (button_regions) as the
+# match references. When a reaction fires its icon shows in `region` (the counter
+# slot left of its name, e.g. "Orange Hot Metal"); we match it to a type N in 1..3,
+# then press the durability key (N) if durability<80% or the progress key (N+3) if >=80.
 reaction:
-  button_regions:                             # CALIBRATE: 3 boxes (counter #1/#2/#3)
-    - {x: 1180, y: 980, w: 44, h: 44}
-    - {x: 1230, y: 980, w: 44, h: 44}
-    - {x: 1280, y: 980, w: 44, h: 44}
-  region: {x: 1246, y: 427, w: 66, h: 60}     # CALIBRATE: where the active reaction shows
+  button_regions:                             # arts 1/2/3 icons (centers 640/683/726, y710)
+    - {x: 619, y: 689, w: 42, h: 42}          # art 1
+    - {x: 662, y: 689, w: 42, h: 42}          # art 2
+    - {x: 705, y: 689, w: 42, h: 42}          # art 3
+  region: {x: 578, y: 621, w: 40, h: 40}      # active-counter watch slot (center ~598,641)
   confidence: 0.80
   poll_hz: 6                                  # how often to sample (FORGE.md §4.1)
 
 # --- recipe selection (writ/single: search the recipe book) ------------------
-# Clicks to clear the search, focus it, then select the first result, then refocus
-# the craft window. type_text handles the recipe name (parens via shift+9/0).
+# Clear the search (the small X), focus the field, type name+ENTER to filter, click
+# the first result, then refocus the craft window. type_text handles parens.
 recipe_select:
-  clear_click:  [1191, 269]        # CALIBRATE (the small X)
-  search_click: [954, 267]         # CALIBRATE (search box)
-  result_click: [880, 348]         # CALIBRATE (first result)
-  focus_click:  [1317, 512]        # CALIBRATE (a craft-window reaction button = keeps focus)
+  clear_click:  [445, 180]         # the small X at the right of the search field (TUNE: near the dropdown)
+  search_click: [349, 180]         # search input field
+  result_click: [377, 272]         # first filtered result row (top of the list)
+  focus_click:  [837, 144]         # mouse-safe craft-window spot (keeps focus off hotbar/chat)
 
-# Click here before pressing arts so keys land in the CRAFT WINDOW, not the
-# hotbar/chat (FORGE.md §5 focus discipline). Usually == recipe_select.focus_click.
-craft_focus_click: [1317, 512]     # CALIBRATE
+# Click here before pressing arts so keys land in the CRAFT WINDOW, not the hotbar/
+# chat (FORGE.md §5 focus discipline). The owner's "mouse safe" point.
+craft_focus_click: [837, 144]
 
 # --- char-select: OCR-and-click the right character (FORGE.md §5.5) -----------
 # Names repeat across servers (e.g. two Robskins) — pick the one on `server`
@@ -96,10 +109,22 @@ char_select:
       Jenskin: 840
 
 # --- chat-safety (the inviolable invariant, PROJECT.md §6.2) ------------------
-# Sample this region; if it holds typed text / a cursor, chat input is open and we
-# must NOT inject. CALIBRATE for the crafter UI's chat bar.
+# Fail-closed. A keypress is allowed ONLY if BOTH hold:
+#   1. game_present  — the self power bar (blue) is rendered => we're in the game
+#      world (not login/char-select/loading). Verified crafter HUD coords below.
+#   2. chat_input clear — no typed text in the chat-input line.
+# Plus focus discipline: the worker clicks craft_focus_click (mouse-safe) before art
+# bursts, and never presses ENTER in-world, so keys land in the craft window.
+game_present:
+  region: {x: 19, y: 44, w: 109, h: 6}      # self power-bar band (blue when in-world)
+  blue: [115, 115, 230]
+  tolerance: 45
+  min_pixels: 20
+# chat_input region is DARK when chat is closed (verified across frames), so it never
+# false-blocks; typed text raises the bright count. TUNE: confirm the active input
+# line actually renders here with a live "chat-open" frame.
 chat_input:
-  region: {x: 50, y: 1019, w: 208, h: 22}   # CALIBRATE
+  region: {x: 50, y: 1019, w: 208, h: 22}
   bright_threshold: 25
 
 # --- EQ2 chat log (scribed-recipe gathering) ---------------------------------
@@ -113,8 +138,10 @@ eq2_log:
   tail: 5000                                  # only scan the last N lines (logs grow huge)
 
 # --- journal OCR region (writs) ----------------------------------------------
+# From owner-marked quest-area-blue.png (the writ "I need to make…" panel, right side).
+# Writs aren't run until the owner hits crafter L20; TUNE against a real writ then.
 journal_ocr:
-  region: {x: 1500, y: 360, w: 360, h: 220}  # CALIBRATE: quest-journal writ text
+  region: {x: 1562, y: 239, w: 347, h: 367}
   scale_percent: 150
   tesseract_psm: 4
 

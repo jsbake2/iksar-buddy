@@ -72,9 +72,30 @@ def begin_or_retry(guest: Guest, cfg: dict) -> str | None:
 
 
 # ---- chat safety (the inviolable invariant, PROJECT.md §6.2) ----------------
+def game_present(guest: Guest, cfg: dict) -> bool:
+    """In-world check: the self power bar (blue) is rendered, proving we're in the
+    game world (not login/char-select/loading) — a precondition for injecting. Same
+    bar the healer reads. Fail-closed (False) on a read error / not enough blue."""
+    g = cfg.get("game_present", {})
+    reg = g.get("region")
+    if not reg:
+        return False                              # uncalibrated -> fail closed
+    try:
+        px = guest.crop(int(reg["x"]), int(reg["y"]), int(reg["w"]), int(reg["h"]))
+    except Exception:
+        return False
+    blue = g.get("blue", [115, 115, 230])
+    tol = int(g.get("tolerance", 45))
+    n = sum(1 for rgb in px.values() if matches(rgb, blue, tol))
+    return n >= int(g.get("min_pixels", 20))
+
+
 def chat_safe(guest: Guest, cfg: dict) -> bool:
-    """True only if the chat input line is CLEAR (no typed text / cursor). Counts
-    bright pixels in the chat-input region; fail-closed (False) on a read error."""
+    """Fail-closed keypress gate. True only if we're provably in the game world AND
+    the chat input line is CLEAR (no typed text / cursor). Reads the current
+    screenshot (the caller grabs first)."""
+    if not game_present(guest, cfg):
+        return False                              # not in-world -> never inject
     c = cfg.get("chat_input", {})
     reg = c.get("region")
     if not reg:

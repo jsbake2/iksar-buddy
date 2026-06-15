@@ -148,12 +148,13 @@ class CraftWorker:
         return True
 
     # -- one craft cycle ----------------------------------------------------
-    async def _craft_cycle(self) -> bool:
+    async def _craft_cycle(self, gate_power: bool = True) -> bool:
         """Counter-FIRST loop until the craft completes. When no counter is up, send
         the filler sequence (1-2-3 in durability mode / 4-5-6 in progress mode) then
         an interruptible pause (longer when mana is low). Both the sequence and the
         pause break IMMEDIATELY the instant a counter appears. Returns True on
-        completion, False if stopped."""
+        completion, False if stopped. gate_power=False (writs) skips the low-mana
+        pause and barrels forward to finish the order (owner rule)."""
         timings = self.cfg.get("timings", {})
         poll = max(0.05, 1.0 / float((self.cfg.get("reaction", {}) or {}).get("poll_hz", 6)))
         await self._focus_craft()
@@ -186,8 +187,9 @@ class CraftWorker:
                 await asyncio.sleep(timings.get("art_interval", 0.3))
             if broke:
                 continue
-            # interruptible pause — longer when mana is low; break on a counter
-            ok = await self._ex(sensors.power_ok, self.guest, self.cfg)
+            # interruptible pause — longer when mana is low; break on a counter.
+            # Writs (gate_power=False) ignore mana and never extend the pause.
+            ok = True if not gate_power else await self._ex(sensors.power_ok, self.guest, self.cfg)
             self.t.update_bot(self.id, power_gated=not ok)
             dur = float(timings.get("pause_low_mana", 2.5) if not ok else timings.get("pause", 0.8))
             waited = 0.0
@@ -202,7 +204,8 @@ class CraftWorker:
         return False
 
     async def _craft_recipe(self, name: str, count: int, trade_class: str,
-                            item_idx: int = 0, item_total: int = 0) -> int:
+                            item_idx: int = 0, item_total: int = 0,
+                            gate_power: bool = True) -> int:
         timings = self.cfg.get("timings", {})
         self.t.update_bot(self.id, state="selecting", recipe=name,
                           count={"done": 0, "total": count},
@@ -226,16 +229,17 @@ class CraftWorker:
             which = await self._ex(sensors.begin_or_retry, self.guest, self.cfg)
             clk = (self.cfg.get(which or "begin", {}) or {}).get("click")
             if clk:
+                # Click Begin/Retry to start the craft. NO Enter confirm — in-world
+                # ENTER opens the chat bar (chat-safety leak); the click alone starts it.
                 await self._ex(self.guest.click, clk[0], clk[1])
                 await asyncio.sleep(timings.get("post_begin", 0.5))
-                await self._press("enter", "confirm")
-            if await self._craft_cycle():
+            if await self._craft_cycle(gate_power=gate_power):
                 done += 1
                 self.t.update_bot(self.id, count={"done": done, "total": count},
                                   crafts_done=self.t.bot(self.id)["crafts_done"] + 1)
                 self.t.push_event(self.id, "craft", f"{name} {done}/{count}")
-                if done < count:
-                    await self._recover_mana()      # between crafts: recover mana if low
+                if done < count and gate_power:
+                    await self._recover_mana()      # between crafts: recover mana if low (not in writs)
         return done
 
     # -- job runner --------------------------------------------------------
@@ -255,7 +259,8 @@ class CraftWorker:
             for i, it in enumerate(q, 1):
                 if self._stop.is_set():
                     break
-                await self._craft_recipe(it["name"], it["count"], tc, i, len(q))
+                await self._craft_recipe(it["name"], it["count"], tc, i, len(q),
+                                         gate_power=False)   # writs barrel forward
                 it["done"] = it["count"]
                 self.t.update_bot(self.id, queue=q)
             self.t.push_event(self.id, "craft", "batch complete")
