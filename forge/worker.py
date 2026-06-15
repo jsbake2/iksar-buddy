@@ -43,6 +43,7 @@ class CraftWorker:
         self._new_job = asyncio.Event()
         self._aborted = 0                   # chat-unsafe injection aborts
         self._ref_buttons: list = []        # in-memory reaction-button references (per craft)
+        self._filler_i = 0                  # rotating index into the mode's 3 filler arts
 
     # -- control (called by the controller) --------------------------------
     def start(self, mode: str, trade_class: str, recipe: str = "",
@@ -216,6 +217,7 @@ class CraftWorker:
         await self._focus_craft()
         # capture the reaction-button references FRESH for THIS craft (no saved lib)
         self._ref_buttons = await self._ex(sensors.capture_buttons, self.guest, self.cfg)
+        self._filler_i = 0
         got = sum(1 for b in self._ref_buttons if b is not None)
         if got:
             self.t.push_log(self.id, f"captured {got} reaction-button references")
@@ -245,31 +247,24 @@ class CraftWorker:
             self.t.update_bot(self.id, durability_mode=mode)
             if await self._counter(mode):
                 continue
-            # filler: send this mode's 3 arts, breaking the instant a counter shows
-            broke = False
-            for key in self._arts(mode):
-                await self._ex(self.guest.grab)
-                if await self._counter(mode):
-                    broke = True
-                    break
+            # No counter: press the NEXT filler art, ROTATING through this mode's 3 so
+            # all get used (1-2-3 / 4-5-6), then WATCH for a counter CONTINUOUSLY for the
+            # spam interval and fire it the instant it appears (owner: never miss one).
+            arts = self._arts(mode)
+            if arts:
+                key = arts[self._filler_i % len(arts)]
+                self._filler_i += 1
                 await self._press(key, f"art:{mode}")
-                await asyncio.sleep(timings.get("art_interval", 0.3))
-            if broke:
-                continue
-            # interruptible pause — longer when mana is low; break on a counter.
-            # Writs (gate_power=False) ignore mana and never extend the pause.
-            ok = True if not gate_power else await self._ex(sensors.power_ok, self.guest, self.cfg)
-            self.t.update_bot(self.id, power_gated=not ok)
-            dur = float(timings.get("pause_low_mana", 2.5) if not ok else timings.get("pause", 0.8))
-            waited = 0.0
-            while waited < dur and not self._stop.is_set():
-                await self._ex(self.guest.grab)
-                if await self._counter(mode):
+            interval = float(timings.get("art_interval", 0.5))
+            if gate_power and not await self._ex(sensors.power_ok, self.guest, self.cfg):
+                self.t.update_bot(self.id, power_gated=True)     # low mana (single craft): hold, keep watching
+                interval = float(timings.get("pause_low_mana", 2.5))
+            else:
+                self.t.update_bot(self.id, power_gated=False)
+            t1 = time.time()
+            while time.time() - t1 < interval and not self._stop.is_set():
+                if await self._counter(mode):                    # counter handled the instant it shows
                     break
-                if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
-                    return True
-                await asyncio.sleep(poll)
-                waited += poll
         return False
 
     async def _craft_recipe(self, name: str, count: int, trade_class: str,

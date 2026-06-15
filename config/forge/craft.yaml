@@ -63,7 +63,10 @@ reaction:
     - {x: 662, y: 689, w: 42, h: 42}          # art 2
     - {x: 705, y: 689, w: 42, h: 42}          # art 3
   region: {x: 578, y: 621, w: 40, h: 40}      # active-counter watch slot (center ~598,641)
-  confidence: 0.80
+  # MEASURED live (2026-06-14): real counters match at 0.58-0.70; background 0.14,
+  # cross-button noise during a counter 0.31. 0.45 catches all 3, rejects the rest.
+  # (Was 0.80 — higher than any real counter, so it detected NOTHING.)
+  confidence: 0.45
   poll_hz: 6                                  # how often to sample (FORGE.md §4.1)
 
 # --- recipe selection (writ/single: search the recipe book) ------------------
@@ -159,7 +162,7 @@ journal_ocr:
 
 # --- timings (seconds) -------------------------------------------------------
 timings:
-  art_interval: 0.3        # gap between the 1-2-3 / 4-5-6 filler presses
+  art_interval: 0.5        # gap between filler presses (we watch for a counter the whole time)
   pause: 0.8               # pause after a filler sequence (interruptible by a counter)
   pause_low_mana: 2.5      # longer pause when mana is low (still interruptible)
   click_settle: 1.0        # wait after an ibgclick (async scheduled-task; ~1-2s to register)
