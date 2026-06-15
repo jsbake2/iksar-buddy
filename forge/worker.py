@@ -220,18 +220,31 @@ class CraftWorker:
         if got:
             self.t.push_log(self.id, f"captured {got} reaction-button references")
         self.t.update_bot(self.id, state="crafting")
+        # wait for the craft to actually START (the Begin/Retry button disappears) so we
+        # don't read the just-clicked pre-craft button as instant completion.
+        t0 = time.time()
+        while time.time() - t0 < float(timings.get("craft_start_timeout", 6.0)):
+            if self._stop.is_set():
+                return False
+            await self._ex(self.guest.grab)
+            if not await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
+                break
+            await asyncio.sleep(0.3)
 
         while not self._stop.is_set():
             await self._wait_unpaused()
             if self._stop.is_set():
                 return False
             await self._ex(self.guest.grab)
-            mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
-            self.t.update_bot(self.id, durability_mode=mode)
-            if await self._counter(mode):          # counter has priority
-                continue
+            # COMPLETION FIRST — Begin/Retry returning = craft done. Checked before the
+            # counter so a noisy counter-match can't starve completion (the loop would
+            # otherwise `continue` forever and never see the craft finish).
             if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
                 return True
+            mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
+            self.t.update_bot(self.id, durability_mode=mode)
+            if await self._counter(mode):
+                continue
             # filler: send this mode's 3 arts, breaking the instant a counter shows
             broke = False
             for key in self._arts(mode):
