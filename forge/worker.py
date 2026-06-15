@@ -166,11 +166,12 @@ class CraftWorker:
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             return False
-        self.t.push_log(self.id, f"select recipe -> click {row_click}")
-        # SINGLE-click the row icon to LOAD the recipe (owner spec, step 3). Do NOT click
-        # the safe-spot here — that deselects it.
-        await self._ex(partial(self.guest.click, row_click[0], row_click[1], True))
-        await asyncio.sleep(float(timings.get("post_select", 0.2)))
+        self.t.push_log(self.id, f"select recipe -> double-click {row_click}")
+        # DOUBLE-click to LOAD (owner does a single mouse click, but the programmatic
+        # ibgclick single-click only HIGHLIGHTS — double reliably loads + shows Begin;
+        # verified live). Do NOT click the safe-spot here (it deselects).
+        await self._ex(partial(self.guest.double_click, row_click[0], row_click[1]))
+        await asyncio.sleep(float(timings.get("post_select", 0.3)))
         return True
 
     async def _focus_craft(self) -> None:
