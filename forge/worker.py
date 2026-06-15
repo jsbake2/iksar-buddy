@@ -44,6 +44,7 @@ class CraftWorker:
         self._aborted = 0                   # chat-unsafe injection aborts
         self._ref_buttons: list = []        # in-memory reaction-button references (per craft)
         self._filler_i = 0                  # rotating index into the mode's 3 filler arts
+        self._last_counter = None           # debounce: counter # we last pressed (None = region clear)
 
     # -- control (called by the controller) --------------------------------
     def start(self, mode: str, trade_class: str, recipe: str = "",
@@ -190,12 +191,17 @@ class CraftWorker:
 
     # -- counter check (highest priority, breaks any sequence) -------------
     async def _counter(self, mode: str) -> bool:
-        """If a counter is showing in the watch area, press its key (durability or
-        progress version for the current mode) and return True. The counter icon is
-        identical to one of the captured reference buttons; we match -> counter #."""
+        """If a counter is showing in the watch area, press its key ONCE (durability or
+        progress version for the current mode). The same event lingers ~3.5s, so we
+        DEBOUNCE: press only when a NEW counter appears (region went empty, or a
+        different counter #) — not every poll, which mashed the art 5-7x/event."""
         n = await self._ex(sensors.reaction_event, self.guest, self.cfg, self._ref_buttons)
         if not n:
+            self._last_counter = None            # region clear -> next counter is "new"
             return False
+        if n == self._last_counter:
+            return True                          # same event still showing -> already pressed
+        self._last_counter = n
         key = self._counter_key(mode, n)
         if key:
             await self._press(key, f"counter{n}:{mode}")
@@ -217,6 +223,7 @@ class CraftWorker:
         # capture the reaction-button references FRESH for THIS craft (no saved lib)
         self._ref_buttons = await self._ex(sensors.capture_buttons, self.guest, self.cfg)
         self._filler_i = 0
+        self._last_counter = None
         got = sum(1 for b in self._ref_buttons if b is not None)
         if got:
             self.t.push_log(self.id, f"captured {got} reaction-button references")
