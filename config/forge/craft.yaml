@@ -70,8 +70,8 @@ reaction:
 # Clear the search (the small X), focus the field, type name+ENTER to filter, click
 # the first result, then refocus the craft window. type_text handles parens.
 recipe_select:
-  use_clear:    false              # skip the clear-X until its coord is verified (box is empty on craft 1)
-  clear_click:  [445, 180]         # the small X at the right of the search field (TUNE: near the dropdown)
+  use_clear:    true               # click the X to clear the box before each search (owner-required)
+  clear_click:  [443, 181]         # the X clear button (owner-marked; between the glass icon and the ▼)
   search_click: [349, 180]         # search input field — CLICKED + settled BEFORE typing (else keys hit the game)
   focus_click:  [837, 144]         # mouse-safe craft-window spot (keeps focus off hotbar/chat)
   # The filtered result can land in one of two candidate rows. Per row we OCR the NAME

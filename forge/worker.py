@@ -119,6 +119,12 @@ class CraftWorker:
         for i in range(1, attempts + 1):
             if self._stop.is_set():
                 return False
+            # clear the box first (the X) so stale/previous text doesn't corrupt the
+            # query (owner-required; EQ2's field keeps the last search).
+            clr = rs.get("clear_click")
+            if rs.get("use_clear") and clr:
+                await self._ex(partial(self.guest.click, clr[0], clr[1], True))
+                await asyncio.sleep(click_settle)
             # focus the search field — double click (1st may only activate the window),
             # the 2nd WAITS for the click to land before we type.
             if sb:
