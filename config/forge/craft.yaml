@@ -21,6 +21,14 @@ durability_mode:
   progress_color: [34, 205, 46]    # green = filled at 80% => HIGH => progress arts (else maroon => durability)
   tolerance: 45
 
+# OCR the on-screen durability PERCENT (owner-pointed: read the NUMBER, not the bar —
+# bar reads were unreliable). >= threshold => progress mode (arts 4/5/6); below =>
+# durability mode (arts 1/2/3). Region = the "NN%" readout at the craft window's top-right.
+durability_ocr:
+  region: {x: 879, y: 247, w: 47, h: 31}
+  threshold: 80
+  interval: 0.4                    # re-OCR cadence (durability changes slowly; cache between)
+
 # --- power (mana) gate -------------------------------------------------------
 # Owner rule: pause when power < 50% (single craft); during a WRIT we barrel forward
 # and ignore this. Same self power bar the healer reads (agent/host_sensor.py): track
