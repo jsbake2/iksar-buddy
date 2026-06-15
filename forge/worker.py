@@ -335,12 +335,17 @@ class CraftWorker:
         done = 0
         while done < count and not self._stop.is_set():
             if done == 0:
-                # step 5 — first craft: click Begin if it's showing, else Create.
-                await self._ex(self.guest.grab)
-                if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
-                    clk, label = begin, "begin"
-                else:
-                    clk, label = create, "create"
+                # step 5 — first craft: after the load, Begin appears within a moment;
+                # WAIT for it then click it (clicking Create instead opens a setup detour
+                # that doesn't start the craft). Create only if Begin truly never shows.
+                clk, label = create, "create"
+                t0 = time.time()
+                while time.time() - t0 < 3.0 and not self._stop.is_set():
+                    await self._ex(self.guest.grab)
+                    if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
+                        clk, label = begin, "begin"
+                        break
+                    await asyncio.sleep(0.3)
             else:
                 # step 8a — repeat the SAME recipe via the green-↻ repeat button.
                 clk, label = repeat, "repeat"
