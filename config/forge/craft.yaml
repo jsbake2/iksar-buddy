@@ -70,10 +70,20 @@ reaction:
 # Clear the search (the small X), focus the field, type name+ENTER to filter, click
 # the first result, then refocus the craft window. type_text handles parens.
 recipe_select:
+  use_clear:    false              # skip the clear-X until its coord is verified (box is empty on craft 1)
   clear_click:  [445, 180]         # the small X at the right of the search field (TUNE: near the dropdown)
-  search_click: [349, 180]         # search input field
-  result_click: [377, 272]         # first filtered result row (top of the list)
+  search_click: [349, 180]         # search input field — CLICKED + settled BEFORE typing (else keys hit the game)
   focus_click:  [837, 144]         # mouse-safe craft-window spot (keeps focus off hotbar/chat)
+  # The filtered result can land in one of these candidate rows. We OCR each region
+  # and click the CENTER OF THE MATCHED TEXT in the row whose words match the searched
+  # recipe name (owner-marked red=row1 / green=row2). The recipe name WRAPS to two
+  # lines, so each region is ~46px tall to capture both; width stops short of the
+  # Difficulty column. `click` is only a fallback if OCR word boxes are unavailable.
+  # match_threshold = fraction of recipe word-tokens that must appear to accept a row.
+  match_threshold: 0.6
+  result_rows:
+    - {region: {x: 246, y: 264, w: 200, h: 46}, click: [332, 283]}   # row 1 (red)
+    - {region: {x: 246, y: 314, w: 200, h: 46}, click: [332, 333]}   # row 2 (green)
 
 # Click here before pressing arts so keys land in the CRAFT WINDOW, not the hotbar/
 # chat (FORGE.md §5 focus discipline). The owner's "mouse safe" point.
@@ -150,5 +160,8 @@ timings:
   art_interval: 0.3        # gap between the 1-2-3 / 4-5-6 filler presses
   pause: 0.8               # pause after a filler sequence (interruptible by a counter)
   pause_low_mana: 2.5      # longer pause when mana is low (still interruptible)
+  click_settle: 1.0        # wait after an ibgclick (async scheduled-task; ~1-2s to register)
+  pre_type_settle: 2.0     # wait after the search-field focus-click BEFORE typing (keys-to-game guard; login flow proved ~2s)
+  post_search: 0.6         # wait after typing name+ENTER (let the list filter)
   post_select: 0.5         # wait after selecting a recipe
   post_begin: 0.5          # wait after clicking Begin/Retry

@@ -253,6 +253,39 @@ def find_character(guest: Guest, cfg: dict, target: str) -> tuple[int, int] | No
     return (row_x, pick["y"] + pick["h"] // 2)
 
 
+def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | None:
+    """After a recipe search, the wanted result can land in one of N candidate rows
+    (recipe_select.result_rows). OCR each row's region, match against the searched
+    `name` (token overlap, tolerant of an OCR slip and of extra words like 'pristine'),
+    and return the CLICK point of the best-matching row — or None if none clears the
+    threshold (so we never click/craft the wrong recipe). Owner-confirmed approach."""
+    rs = cfg.get("recipe_select", {})
+    rows = rs.get("result_rows") or []
+    want = [t for t in re.findall(r"[a-z]+", (name or "").lower()) if len(t) >= 3]
+    if not rows or not want:
+        return None
+    best, best_words, best_score = None, [], 0.0
+    for row in rows:
+        words = _ocr_words(guest, row.get("region", {}))
+        blob = _alpha(" ".join(w["text"] for w in words))
+        if not blob:
+            continue
+        score = sum(1 for t in want if _contains(blob, t)) / len(want)
+        log.debug("recipe row %s score=%.2f blob=%r", row.get("click"), score, blob)
+        if score > best_score:
+            best_score, best, best_words = score, row, words
+    if not best or best_score < float(rs.get("match_threshold", 0.6)):
+        return None
+    # Click the CENTER of the matched text (robust to where the name wraps/renders);
+    # fall back to the row's configured click point if word boxes are unavailable.
+    if best_words:
+        cx = sum(w["x"] + w["w"] // 2 for w in best_words) // len(best_words)
+        cy = sum(w["y"] + w["h"] // 2 for w in best_words) // len(best_words)
+        return (cx, cy)
+    clk = best.get("click")
+    return (int(clk[0]), int(clk[1])) if clk else None
+
+
 def _alpha(s: str) -> str:
     return re.sub(r"[^a-z]", "", (s or "").lower())
 

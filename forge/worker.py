@@ -97,22 +97,52 @@ class CraftWorker:
             await asyncio.sleep(0.4)
 
     # -- recipe selection --------------------------------------------------
-    async def _select_recipe(self, name: str, trade_class: str) -> None:
+    async def _select_recipe(self, name: str, trade_class: str) -> bool:
+        """Focus the search field, type the recipe name, ENTER to filter, click the
+        first result, then park focus on the craft window. Returns False if it bailed.
+
+        CRITICAL (clicks are async ibgclick scheduled-tasks, ~1-2s to register, while
+        type_text is instant): we MUST settle long enough after the focus-click or the
+        letters land in the GAME WORLD as hotkeys (opening windows) — or, if chat is
+        open, in chat. So: long focus settle + a chat-safety gate before typing."""
         rs = self.cfg.get("recipe_select", {})
         timings = self.cfg.get("timings", {})
-        for key in ("clear_click", "search_click"):
-            loc = rs.get(key)
-            if loc:
-                await self._ex(self.guest.click, loc[0], loc[1])
-                await asyncio.sleep(0.2)
+        click_settle = float(timings.get("click_settle", 0.8))
+        type_settle = float(timings.get("pre_type_settle", 1.5))   # focus must be SOLID
+        # optional clear (the X) — coord still unverified, off by default
+        clr = rs.get("clear_click")
+        if rs.get("use_clear") and clr:
+            await self._ex(self.guest.click, clr[0], clr[1])
+            await asyncio.sleep(click_settle)
+        # FOCUS the search field
+        sb = rs.get("search_click")
+        if sb:
+            await self._ex(self.guest.click, sb[0], sb[1])
+            await asyncio.sleep(type_settle)
+        # gate typing on chat-safety so the name can NEVER land in chat (the invariant)
+        await self._ex(self.guest.grab)
+        if not await self._ex(sensors.chat_safe, self.guest, self.cfg):
+            self._aborted += 1
+            self.t.push_log(self.id, "recipe type ABORTED (chat unsafe / not in-world)")
+            return False
         await self._ex(self.guest.type_text, search_name(name, trade_class), True)
-        await asyncio.sleep(0.3)
-        for key in ("result_click", "focus_click"):
-            loc = rs.get(key)
-            if loc:
-                await self._ex(self.guest.click, loc[0], loc[1])
-                await asyncio.sleep(0.2)
-        await asyncio.sleep(timings.get("post_select", 0.5))
+        await asyncio.sleep(float(timings.get("post_search", 0.6)))
+        # OCR the candidate result rows; click the one that matches the recipe name
+        # (never click a non-matching row -> never craft the wrong recipe).
+        row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
+        if not row_click:
+            self.t.push_log(self.id, f"recipe '{name}' not matched in the result rows — skipping")
+            return False
+        self.t.push_log(self.id, f"matched recipe row -> click {row_click}")
+        await self._ex(self.guest.click, row_click[0], row_click[1])
+        await asyncio.sleep(click_settle)
+        # park focus on the craft window
+        foc = rs.get("focus_click")
+        if foc:
+            await self._ex(self.guest.click, foc[0], foc[1])
+            await asyncio.sleep(click_settle)
+        await asyncio.sleep(float(timings.get("post_select", 0.5)))
+        return True
 
     async def _focus_craft(self) -> None:
         loc = self.cfg.get("craft_focus_click")
@@ -210,7 +240,8 @@ class CraftWorker:
         self.t.update_bot(self.id, state="selecting", recipe=name,
                           count={"done": 0, "total": count},
                           item={"idx": item_idx, "total": item_total})
-        await self._select_recipe(name, trade_class)
+        if not await self._select_recipe(name, trade_class):
+            return 0                              # bailed (chat-unsafe / not in-world)
         done = 0
         while done < count and not self._stop.is_set():
             # wait for Begin/Retry (fail-safe: times out if uncalibrated)
