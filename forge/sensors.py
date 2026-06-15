@@ -303,6 +303,11 @@ def reaction_event(guest: Guest, cfg: dict, templates: list, fresh: bool = True)
 
 
 # ---- char-select: find a character row by name (OCR-and-click) --------------
+_OCR_SCALE = 2          # upscale before OCR: recipe/char rows are thin light text on a
+#                         near-black bg; at 1x tesseract reads NOTHING. 2x + a lower
+#                         threshold makes them legible. Coords are scaled back to guest px.
+
+
 def _ocr_words(guest: Guest, region: dict) -> list[dict]:
     """OCR a region -> [{text,x,y,w,h,conf}] in GUEST coords. [] on failure."""
     r = region or {}
@@ -311,16 +316,18 @@ def _ocr_words(guest: Guest, region: dict) -> list[dict]:
     try:
         pre = subprocess.run(
             ["magick", guest.ppm, "-crop", f"{r['w']}x{r['h']}+{r['x']}+{r['y']}",
-             "+repage", "-colorspace", "Gray", "-threshold", "50%", "png:-"],
+             "+repage", "-colorspace", "Gray", "-resize", f"{_OCR_SCALE * 100}%",
+             "-threshold", "43%", "png:-"],
             capture_output=True, timeout=6).stdout
         if not pre:
             return []
         out = subprocess.run(["tesseract", "stdin", "stdout", "--psm", "6", "tsv"],
                              input=pre, capture_output=True, timeout=10).stdout.decode(errors="replace")
     except (OSError, subprocess.SubprocessError) as e:
-        log.warning("char-select OCR failed: %s", e)
+        log.warning("region OCR failed: %s", e)
         return []
     words = []
+    s = _OCR_SCALE
     for line in out.splitlines()[1:]:
         f = line.split("\t")
         if len(f) < 12:
@@ -332,8 +339,8 @@ def _ocr_words(guest: Guest, region: dict) -> list[dict]:
         text = f[11].strip()
         if conf < 35 or len(text) < 2:
             continue
-        words.append({"text": text, "x": r["x"] + x, "y": r["y"] + y,
-                      "w": w, "h": h, "conf": conf})
+        words.append({"text": text, "x": r["x"] + x // s, "y": r["y"] + y // s,
+                      "w": w // s, "h": h // s, "conf": conf})
     return words
 
 
