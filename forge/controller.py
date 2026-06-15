@@ -135,7 +135,8 @@ class ForgeController:
             w.start("writ", trade_class, queue=b.get("queue", []))
             self.t.push_event(bot_id, "craft", f"writ start ({len(b.get('queue', []))} recipes)")
         else:
-            w.start("single", trade_class, recipe=recipe, count=count)
+            recipe = recipe or b.get("recipe", "")   # dashboard shows the saved recipe
+            w.start("single", trade_class, recipe=recipe, count=count)   # as a PLACEHOLDER; the input value can be empty
             self.t.push_event(bot_id, "craft", f"single start: {recipe or '(loaded)'} x{count}")
         self.t.update_bot(bot_id, mode=mode, trade_class=trade_class, state="selecting")
 
