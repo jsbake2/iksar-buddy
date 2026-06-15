@@ -54,6 +54,14 @@ create:
 repeat:
   click: [902, 709]
 
+# Craft-DONE detection (owner: a craft ended when ANY of these reappears — the bar shows
+# reaction-art icons during an active craft, so none are present then). Fires on
+# success OR failure.
+done_detect:
+  create: {location: [492, 707], color: [248, 213, 126], tolerance: 40}   # Create button gold
+  repeat: {region: {x: 884, y: 694, w: 38, h: 32}, green: [114, 167, 60], tolerance: 55, min_pixels: 30}
+  # Begin/Retry uses the `begin` fingerprint above (gold @784,707).
+
 # --- reaction matching (NO saved library — references captured live) ---------
 # CONFIRMED mechanic: during a craft the bottom bar is [book][1][2][3][4][5][6][stop].
 # 1/2/3 = durability arts, 4/5/6 = progress arts; 3 reaction TYPES, paired 1<->4,

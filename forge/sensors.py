@@ -91,6 +91,37 @@ def progress_full(guest: Guest, cfg: dict) -> bool:
     return n / len(px) >= float(p.get("full_frac", 0.6))
 
 
+def craft_done(guest: Guest, cfg: dict) -> bool:
+    """A craft has ENDED (success OR fail) when ANY of these reappears in the bottom
+    bar (owner): the green REPEAT ↻, the Begin button, or the Create button. During an
+    active craft the bar shows the reaction-art icons instead, so none are present.
+    Reads the current screenshot (caller grabs first)."""
+    d = cfg.get("done_detect", {}) or {}
+    # Create button gold (mid-craft this spot is grey, not gold)
+    cr = d.get("create")
+    if cr and cr.get("location"):
+        loc = cr["location"]
+        if matches(guest.pixel(loc[0], loc[1]), cr.get("color", [248, 213, 126]),
+                   int(cr.get("tolerance", 40))):
+            return True
+    # Begin / Retry gold @ its calibrated spot
+    if begin_or_retry(guest, cfg):
+        return True
+    # green REPEAT ↻ arrow
+    rp = d.get("repeat")
+    if rp and rp.get("region"):
+        reg = rp["region"]
+        try:
+            px = guest.crop(int(reg["x"]), int(reg["y"]), int(reg["w"]), int(reg["h"]))
+            if px and sum(1 for c in px.values()
+                          if matches(c, rp.get("green", [114, 167, 60]),
+                                     int(rp.get("tolerance", 55)))) >= int(rp.get("min_pixels", 30)):
+                return True
+        except Exception:
+            pass
+    return False
+
+
 def craft_complete_chat(guest: Guest, cfg: dict) -> bool:
     """AUTHORITATIVE craft-complete signal: the game prints 'You gain tradeskill XP!'
     / 'You created <item>.' on completion. The button states vary too much to detect

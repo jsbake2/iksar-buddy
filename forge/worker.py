@@ -249,51 +249,24 @@ class CraftWorker:
         if got:
             self.t.push_log(self.id, f"captured {got} reaction-button references")
         self.t.update_bot(self.id, state="crafting")
-        # CONFIRM the craft actually STARTED: the Begin button must disappear. If it's
-        # still there, the start click didn't take — BAIL instead of spamming arts into
-        # the combat hotbar (the "only 2,3" symptom). Caller retries the start.
-        t0 = time.time()
-        started = False
-        while time.time() - t0 < float(timings.get("craft_start_timeout", 4.0)):
-            if self._stop.is_set():
-                return False
-            await self._ex(self.guest.grab)
-            if not await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
-                started = True
-                break
-            await asyncio.sleep(0.25)
-        if not started:
-            self.t.push_log(self.id, "craft did NOT start (Begin still up) — not spamming")
-            return False
-
         cycle_start = time.time()
         max_t = float(timings.get("max_craft_time", 90.0))   # safety: bail if it never completes
-        last_chat_check = cycle_start            # throttle the (slow) chat OCR
-        saw_low = False                          # progress bar was empty this craft (not a stale full bar)
-        # backup chat signal: fire only once the chat has been CLEAR then a NEW line appears
-        saw_clear = not await self._ex(sensors.craft_complete_chat, self.guest, self.cfg)
+        # Completion (owner): a craft-DONE button (repeat ↻ / Begin / Create) reappears.
+        # saw_active guards it — we only complete once we've SEEN the craft running (those
+        # buttons absent = reaction arts on the bar). So the just-clicked start button or a
+        # stale done-state can't false-complete, and a craft that never started can't either
+        # (it just times out at max_t instead of spamming).
+        saw_active = False
         while not self._stop.is_set() and time.time() - cycle_start < max_t:
             await self._wait_unpaused()
             if self._stop.is_set():
                 return False
             await self._ex(self.guest.grab)
-            # PRIMARY completion (OCR-free): the BLUE progress bar reached its right end.
-            if await self._ex(sensors.progress_full, self.guest, self.cfg):
-                if saw_low:
-                    self.t.push_log(self.id, "craft complete (progress bar full)")
-                    return True
+            if await self._ex(sensors.craft_done, self.guest, self.cfg):
+                if saw_active:
+                    return True                  # craft ended (success OR fail)
             else:
-                saw_low = True
-            # backup: a NEW chat 'tradeskill XP / You created' line (throttled OCR)
-            now = time.time()
-            if now - last_chat_check > 1.5:
-                last_chat_check = now
-                has = await self._ex(sensors.craft_complete_chat, self.guest, self.cfg)
-                if not has:
-                    saw_clear = True
-                elif saw_clear:
-                    self.t.push_log(self.id, "craft complete (chat: tradeskill XP)")
-                    return True
+                saw_active = True                # reaction arts on the bar -> craft is running
             mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
             self.t.update_bot(self.id, durability_mode=mode)
             if await self._counter(mode):
