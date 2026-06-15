@@ -37,7 +37,7 @@ class CraftWorker:
         self.t = tele
         self.id = bot_id
         self.keymap = keymap or {}          # camp + arts keys (owner-configurable)
-        self._job: dict | None = None       # {mode, trade_class, queue/recipe, count}
+        self._pending: dict | None = None    # next job to run (set by start(), consumed by run())
         self._stop = asyncio.Event()
         self._paused = False
         self._new_job = asyncio.Event()
@@ -49,16 +49,19 @@ class CraftWorker:
               count: int = 1, queue: list | None = None) -> None:
         if mode == "writ":
             q = [dict(it, done=0) for it in (queue or [])]
-            self._job = {"mode": "writ", "trade_class": trade_class, "queue": q}
+            self._pending = {"mode": "writ", "trade_class": trade_class, "queue": q}
         else:
-            self._job = {"mode": "single", "trade_class": trade_class,
-                         "recipe": recipe or "", "count": max(1, int(count or 1))}
-        self._stop.clear()
+            self._pending = {"mode": "single", "trade_class": trade_class,
+                             "recipe": recipe or "", "count": max(1, int(count or 1))}
         self._paused = False
+        # SUPERSEDE any in-flight job: signal it to abort (its loops check _stop), then
+        # wake run() which clears _stop and runs the pending job. Prevents a 2nd Start
+        # from STACKING (which would re-search after the first craft finished).
+        self._stop.set()
         self._new_job.set()
 
     def stop(self) -> None:
-        self._job = None
+        self._pending = None
         self._stop.set()
         self._new_job.set()
 
@@ -140,9 +143,14 @@ class CraftWorker:
                 return False
             # AHK Event-mode {Raw} — EQ2 UI fields ignore virsh send-key (type_text)
             await self._ex(self.guest.type_field, query, True)
-            await asyncio.sleep(float(timings.get("post_search", 0.6)))
-            # verify focus WORKED by the list filtering to a matching row
-            row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
+            # POLL for the list to filter (takes ~1-2s) — don't re-type on the first
+            # empty read or we double-search. Only a whole-window miss = focus failed.
+            row_click = None
+            for _ in range(int(rs.get("match_polls", 5))):
+                await asyncio.sleep(float(timings.get("post_search", 0.6)))
+                row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
+                if row_click:
+                    break
             if row_click:
                 break
             self.t.push_log(self.id, f"search not focused (attempt {i}/{attempts}) — retrying")
@@ -260,6 +268,7 @@ class CraftWorker:
                           item={"idx": item_idx, "total": item_total})
         if not await self._select_recipe(name, trade_class):
             return 0                              # bailed (chat-unsafe / not in-world)
+        self.t.push_log(self.id, f"recipe selected: {name} — running {count} craft(s)")
         done = 0
         while done < count and not self._stop.is_set():
             # wait for Begin/Retry (fail-safe: times out if uncalibrated)
@@ -277,12 +286,14 @@ class CraftWorker:
             # press Begin/Retry (click + confirm), then run the cycle
             which = await self._ex(sensors.begin_or_retry, self.guest, self.cfg)
             clk = (self.cfg.get(which or "begin", {}) or {}).get("click")
+            self.t.push_log(self.id, f"{which} -> start craft {done + 1}/{count}")
             if clk:
                 # Click Begin/Retry to start the craft (wait=True so it lands). NO Enter
                 # confirm — in-world ENTER opens the chat bar; the click alone starts it.
                 await self._ex(partial(self.guest.click, clk[0], clk[1], True))
                 await asyncio.sleep(timings.get("post_begin", 0.5))
             if await self._craft_cycle(gate_power=gate_power):
+                self.t.push_log(self.id, f"craft {done + 1}/{count} complete")
                 done += 1
                 self.t.update_bot(self.id, count={"done": done, "total": count},
                                   crafts_done=self.t.bot(self.id)["crafts_done"] + 1)
@@ -308,9 +319,9 @@ class CraftWorker:
             for i, it in enumerate(q, 1):
                 if self._stop.is_set():
                     break
-                await self._craft_recipe(it["name"], it["count"], tc, i, len(q),
-                                         gate_power=False)   # writs barrel forward
-                it["done"] = it["count"]
+                made = await self._craft_recipe(it["name"], it["count"], tc, i, len(q),
+                                                gate_power=False)   # writs barrel forward
+                it["done"] = made                # ACTUAL crafts done, not assumed
                 self.t.update_bot(self.id, queue=q)
             self.t.push_event(self.id, "craft", "batch complete")
         else:
@@ -319,11 +330,14 @@ class CraftWorker:
         self.t.update_bot(self.id, state="done", durability_mode=None)
 
     async def run(self) -> None:
-        """Supervisor: idle until a job arrives, run it, idle again."""
+        """Supervisor: idle until a job arrives, run it, idle again. A new start()
+        aborts the in-flight job (via _stop) and supersedes it with the pending one."""
         while True:
             await self._new_job.wait()
             self._new_job.clear()
-            job = self._job
+            self._stop.clear()                    # fresh run for the pending job
+            job = self._pending
+            self._pending = None
             if job is None:                       # was a stop
                 self.t.update_bot(self.id, state="idle")
                 continue

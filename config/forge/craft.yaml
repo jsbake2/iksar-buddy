@@ -82,6 +82,7 @@ recipe_select:
   # recipe word-tokens that must appear in a row to accept it.
   match_threshold: 0.6
   focus_attempts: 3                # retry focus+type if the list didn't filter
+  match_polls: 5                   # poll the list ~5x (post_search apart) before re-typing
   result_rows:
     - {region: {x: 246, y: 264, w: 200, h: 46}, click: [244, 282]}   # row 1: OCR name, click icon
     - {region: {x: 246, y: 309, w: 200, h: 40}, click: [244, 325]}   # row 2: OCR name, click icon
