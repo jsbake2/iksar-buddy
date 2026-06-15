@@ -194,12 +194,12 @@ class Guest:
         Send("{Raw}…") via ibrun, the SAME proven mechanism as the login form
         (forge/login.py). Caller must focus the field first (click + settle)."""
         esc = (text or "").replace('"', '""')
-        # 22,12 DROPPED chars in EQ2's field ("rawhide leather ba" instead of full name).
-        # 40,25 is reliable and still faster than the login's 55,45.
+        # NO Ctrl+A clear here — the modifier races the fast key delay and types a literal
+        # 'a' ("aleather backpack"). The caller already clicks the clear-X to empty the box.
+        # 40,25 is reliable typing (22,12 dropped chars) and faster than the login's 55,45.
         script = ('SendMode "Event"\n'
                   'SetKeyDelay 40, 25\n'
                   'Sleep 120\n'
-                  'Send("^a")\nSleep 60\nSend("{Delete}")\nSleep 80\n'  # clear (idempotent retries)
                   f'Send("{{Raw}}{esc}")\n')
         if enter:
             script += 'Sleep 150\nSend("{Enter}")\n'
