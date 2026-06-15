@@ -133,8 +133,11 @@ class Guest:
               f"Start-ScheduledTask -TaskName ibgclick")
         return self.exec_ps(ps, wait=False) is not None
 
-    # -- input: typing (virsh send-key) ------------------------------------
+    # -- input: typing into the GAME WORLD (virsh send-key scancodes) ------
     def type_text(self, s: str, enter: bool = False) -> None:
+        """Send key SCANCODES to the guest. EQ2's game WORLD reads these (as hotkeys),
+        but its UI text WIDGETS do NOT register them — for a focused EQ2 text field
+        (recipe search, login form) use type_field() instead."""
         for ch in s:
             spec = _TYPE_MAP.get(ch)
             if spec is None and ch.isupper():
@@ -147,6 +150,22 @@ class Guest:
             time.sleep(0.04)
         if enter:
             self._virsh("send-key", self.dom, "--codeset", "linux", "KEY_ENTER")
+
+    # -- input: typing into a FOCUSED EQ2 UI FIELD (AHK Event-mode {Raw}) ---
+    def type_field(self, text: str, enter: bool = True) -> bool:
+        """Type into a FOCUSED EQ2 UI text field (recipe search, etc.). EQ2 widgets
+        only register real Windows key messages — virsh send-key/SendText do NOT land
+        in them (only the game world reads those scancodes). So drive AHK Event-mode
+        Send("{Raw}…") via ibrun, the SAME proven mechanism as the login form
+        (forge/login.py). Caller must focus the field first (click + settle)."""
+        esc = (text or "").replace('"', '""')
+        script = ('SendMode "Event"\n'
+                  'SetKeyDelay 55, 45\n'
+                  'Sleep 250\n'
+                  f'Send("{{Raw}}{esc}")\n')
+        if enter:
+            script += 'Sleep 300\nSend("{Enter}")\n'
+        return self.run_ahk(script)
 
     # -- input: hotkeys (keys.txt + ibkey AHK task, per guest) -------------
     def press_keys(self, seq: str) -> bool:

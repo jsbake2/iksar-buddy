@@ -276,12 +276,9 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
             best_score, best, best_words = score, row, words
     if not best or best_score < float(rs.get("match_threshold", 0.6)):
         return None
-    # Click the CENTER of the matched text (robust to where the name wraps/renders);
-    # fall back to the row's configured click point if word boxes are unavailable.
-    if best_words:
-        cx = sum(w["x"] + w["w"] // 2 for w in best_words) // len(best_words)
-        cy = sum(w["y"] + w["h"] // 2 for w in best_words) // len(best_words)
-        return (cx, cy)
+    # Click the row's ICON square (recipe_select.result_rows[].click) — the selectable
+    # hotspot. The NAME text is NOT clickable (owner-confirmed; same as char-select),
+    # so we OCR the name to identify the row but click its icon to select it.
     clk = best.get("click")
     return (int(clk[0]), int(clk[1])) if clk else None
 

@@ -125,7 +125,8 @@ class CraftWorker:
             self._aborted += 1
             self.t.push_log(self.id, "recipe type ABORTED (chat unsafe / not in-world)")
             return False
-        await self._ex(self.guest.type_text, search_name(name, trade_class), True)
+        # AHK Event-mode {Raw} — EQ2 UI fields ignore virsh send-key (type_text)
+        await self._ex(self.guest.type_field, search_name(name, trade_class), True)
         await asyncio.sleep(float(timings.get("post_search", 0.6)))
         # OCR the candidate result rows; click the one that matches the recipe name
         # (never click a non-matching row -> never craft the wrong recipe).
