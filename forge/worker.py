@@ -166,12 +166,11 @@ class CraftWorker:
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             return False
-        self.t.push_log(self.id, f"matched recipe row -> double-click {row_click}")
-        # DOUBLE-click the row icon to LOAD the recipe (single only highlights it).
-        # DO NOT click the safe-spot here — that DESELECTS the recipe and kills the Begin
-        # button (the start then clicks a stale gold and nothing begins).
-        await self._ex(partial(self.guest.double_click, row_click[0], row_click[1]))
-        await asyncio.sleep(float(timings.get("post_select", 0.4)))
+        self.t.push_log(self.id, f"select recipe -> click {row_click}")
+        # SINGLE-click the row icon to LOAD the recipe (owner spec, step 3). Do NOT click
+        # the safe-spot here — that deselects it.
+        await self._ex(partial(self.guest.click, row_click[0], row_click[1], True))
+        await asyncio.sleep(float(timings.get("post_select", 0.2)))
         return True
 
     async def _focus_craft(self) -> None:
@@ -253,11 +252,12 @@ class CraftWorker:
             return False
 
         cycle_start = time.time()
+        max_t = float(timings.get("max_craft_time", 90.0))   # safety: bail if it never completes
         last_chat_check = cycle_start            # throttle the (slow) chat OCR
         saw_low = False                          # progress bar was empty this craft (not a stale full bar)
         # backup chat signal: fire only once the chat has been CLEAR then a NEW line appears
         saw_clear = not await self._ex(sensors.craft_complete_chat, self.guest, self.cfg)
-        while not self._stop.is_set():
+        while not self._stop.is_set() and time.time() - cycle_start < max_t:
             await self._wait_unpaused()
             if self._stop.is_set():
                 return False
@@ -313,49 +313,37 @@ class CraftWorker:
         if not await self._select_recipe(name, trade_class):
             return 0                              # bailed (chat-unsafe / not in-world)
         self.t.push_log(self.id, f"recipe selected: {name} — running {count} craft(s)")
+        begin = (self.cfg.get("begin", {}) or {}).get("click")
         create = (self.cfg.get("create", {}) or {}).get("click")
-
-        async def _wait_begin(secs: float) -> bool:
-            t0 = time.time()
-            while time.time() - t0 < secs and not self._stop.is_set():
-                await self._ex(self.guest.grab)
-                if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
-                    return True
-                await asyncio.sleep(0.4)
-            return False
+        repeat = (self.cfg.get("repeat", {}) or {}).get("click")
 
         done = 0
         while done < count and not self._stop.is_set():
-            # Start the craft. Two states:
-            #  - loaded recipe -> Begin@784,707 is showing: click Begin (verified: starts it).
-            #  - 'Create | art-bar | green-↻' (post-craft / polluted): NO Begin, CREATE
-            #    starts the next craft directly (owner-confirmed). Don't wait for Begin then.
-            if await _wait_begin(6.0):
-                which = await self._ex(sensors.begin_or_retry, self.guest, self.cfg)
-                clk = (self.cfg.get(which or "begin", {}) or {}).get("click")
-                start = which
-            elif create:
-                clk = create
-                start = "create"
+            if done == 0:
+                # step 5 — first craft: click Begin if it's showing, else Create.
+                await self._ex(self.guest.grab)
+                if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
+                    clk, label = begin, "begin"
+                else:
+                    clk, label = create, "create"
             else:
-                self.t.push_log(self.id, f"no Begin/Create for {name} — skipping")
+                # step 8a — repeat the SAME recipe via the green-↻ repeat button.
+                clk, label = repeat, "repeat"
+            if not clk:
+                self.t.push_log(self.id, f"no '{label}' start button — stopping")
                 break
-            if self._stop.is_set():
-                break
-            self.t.push_log(self.id, f"{start} -> start craft {done + 1}/{count}")
-            if clk:
-                # click to start (wait=True so it lands). NO Enter confirm — in-world
-                # ENTER opens the chat bar; the click alone starts the craft.
-                await self._ex(partial(self.guest.click, clk[0], clk[1], True))
-                await asyncio.sleep(timings.get("post_begin", 0.5))
+            self.t.push_log(self.id, f"{label} -> start craft {done + 1}/{count}")
+            await self._ex(partial(self.guest.click, clk[0], clk[1], True))
+            await asyncio.sleep(float(timings.get("post_begin", 0.25)))
             if await self._craft_cycle(gate_power=gate_power):
                 self.t.push_log(self.id, f"craft {done + 1}/{count} complete")
                 done += 1
                 self.t.update_bot(self.id, count={"done": done, "total": count},
                                   crafts_done=self.t.bot(self.id)["crafts_done"] + 1)
                 self.t.push_event(self.id, "craft", f"{name} {done}/{count}")
-                if done < count and gate_power:
-                    await self._recover_mana()      # between crafts: recover mana if low (not in writs)
+            else:
+                self.t.push_log(self.id, f"craft {done + 1}/{count} didn't complete — stopping")
+                break
         return done
 
     # -- job runner --------------------------------------------------------

@@ -45,10 +45,14 @@ begin:
 retry:
   pixel: {location: [784, 707], color: [207, 173, 107], tolerance: 45}
   click: [784, 707]
-# Create button — not used in the loop (Begin is the start); kept for the fallback
-# path the owner flagged (something odd on a failed craft).
+# Create button — used to START the first craft if Begin isn't showing (owner: "Begin
+# or Create, whichever is available").
 create:
   click: [492, 707]
+# Repeat button — the green ↻ at the lower-right. Used to REPEAT the same recipe for
+# crafts 2..N (owner step 8a), so we skip the search/select between same-recipe crafts.
+repeat:
+  click: [902, 709]
 
 # --- reaction matching (NO saved library — references captured live) ---------
 # CONFIRMED mechanic: during a craft the bottom bar is [book][1][2][3][4][5][6][stop].
@@ -183,14 +187,15 @@ journal_ocr:
 
 # --- timings (seconds) -------------------------------------------------------
 timings:
-  art_interval: 0.5        # gap between filler presses (we watch for a counter the whole time)
-  pause: 0.8               # pause after a filler sequence (interruptible by a counter)
+  art_interval: 1.0        # CYCLE: ~1s between filler arts (owner spec); we watch for a counter the whole time
+  pause: 0.8               # (unused legacy)
   pause_low_mana: 2.5      # longer pause when mana is low (still interruptible)
-  # wait=True clicks already CONFIRM the click landed, so settles can be short.
-  click_settle: 0.25       # brief UI-react pause after a (confirmed) click
-  pre_type_settle: 1.2     # after the search focus-click, before typing
-  post_search: 0.5         # after name+ENTER, per match poll
-  post_select: 0.4         # after the double-click load (recipe must register)
-  post_begin: 0.3          # after Begin/Create
-  post_focus: 0.2          # after the craft-window focus click
+  # wait=True clicks already CONFIRM the click landed, so SETUP settles are short (speed).
+  click_settle: 0.2        # brief UI-react pause after a (confirmed) click
+  pre_type_settle: 1.0     # after the search focus-click, before typing
+  post_search: 0.4         # after name+ENTER, per match poll
+  post_select: 0.2         # after the single-click load
+  post_begin: 0.25         # after Begin/Create/Repeat
+  post_focus: 0.15         # after the craft-window safe-spot focus click
   craft_start_timeout: 4.0 # confirm the craft started (Begin gone) within this
+  max_craft_time: 90.0     # bail a single craft if it never completes (avoid a hang)
