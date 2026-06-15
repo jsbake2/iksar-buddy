@@ -262,11 +262,12 @@ class CraftWorker:
             if self._stop.is_set():
                 return False
             await self._ex(self.guest.grab)
-            if await self._ex(sensors.craft_done, self.guest, self.cfg):
-                if saw_active:
-                    return True                  # craft ended (success OR fail)
-            else:
-                saw_active = True                # reaction arts on the bar -> craft is running
+            # RUNNING (red stop sign) -> mark active. DONE (repeat ↻ / Begin / Create back)
+            # AFTER it was running -> craft ended (success or fail).
+            if await self._ex(sensors.craft_running, self.guest, self.cfg):
+                saw_active = True
+            elif saw_active and await self._ex(sensors.craft_done, self.guest, self.cfg):
+                return True
             mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
             self.t.update_bot(self.id, durability_mode=mode)
             if await self._counter(mode):
@@ -305,29 +306,45 @@ class CraftWorker:
         create = (self.cfg.get("create", {}) or {}).get("click")
         repeat = (self.cfg.get("repeat", {}) or {}).get("click")
 
+        attempts = int(self.cfg.get("recipe_select", {}).get("start_attempts", 4))
         done = 0
         while done < count and not self._stop.is_set():
-            if done == 0:
-                # step 5 — first craft: after the load, Begin appears within a moment;
-                # WAIT for it then click it (clicking Create instead opens a setup detour
-                # that doesn't start the craft). Create only if Begin truly never shows.
-                clk, label = create, "create"
-                t0 = time.time()
-                while time.time() - t0 < 3.0 and not self._stop.is_set():
+            # START the craft and CONFIRM it's RUNNING (red stop sign). If it's not
+            # running, click the start button AGAIN (owner: "click begin again").
+            started = False
+            for _ in range(attempts):
+                if self._stop.is_set():
+                    return done
+                if done == 0:
+                    clk, label = create, "create"   # first craft: Begin if up, else Create
+                    t0 = time.time()
+                    while time.time() - t0 < 2.5 and not self._stop.is_set():
+                        await self._ex(self.guest.grab)
+                        if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
+                            clk, label = begin, "begin"
+                            break
+                        await asyncio.sleep(0.3)
+                else:
+                    clk, label = repeat, "repeat"   # repeats: the green-↻ button
+                if not clk:
+                    break
+                self.t.push_log(self.id, f"{label} -> start craft {done + 1}/{count}")
+                await self._ex(partial(self.guest.click, clk[0], clk[1], True))
+                await asyncio.sleep(float(timings.get("post_begin", 0.25)))
+                t1 = time.time()
+                while time.time() - t1 < float(timings.get("running_timeout", 3.0)) \
+                        and not self._stop.is_set():
                     await self._ex(self.guest.grab)
-                    if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
-                        clk, label = begin, "begin"
+                    if await self._ex(sensors.craft_running, self.guest, self.cfg):
+                        started = True
                         break
                     await asyncio.sleep(0.3)
-            else:
-                # step 8a — repeat the SAME recipe via the green-↻ repeat button.
-                clk, label = repeat, "repeat"
-            if not clk:
-                self.t.push_log(self.id, f"no '{label}' start button — stopping")
+                if started:
+                    break
+                self.t.push_log(self.id, "not running (no stop sign) — clicking start again")
+            if not started:
+                self.t.push_log(self.id, f"couldn't start craft {done + 1}/{count} — stopping")
                 break
-            self.t.push_log(self.id, f"{label} -> start craft {done + 1}/{count}")
-            await self._ex(partial(self.guest.click, clk[0], clk[1], True))
-            await asyncio.sleep(float(timings.get("post_begin", 0.25)))
             if await self._craft_cycle(gate_power=gate_power):
                 self.t.push_log(self.id, f"craft {done + 1}/{count} complete")
                 done += 1

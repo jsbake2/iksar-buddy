@@ -91,6 +91,43 @@ def progress_full(guest: Guest, cfg: dict) -> bool:
     return n / len(px) >= float(p.get("full_frac", 0.6))
 
 
+def craft_running(guest: Guest, cfg: dict) -> bool:
+    """True if the RED STOP-SIGN is showing in the art-bar's right slot — owner's signal
+    that a craft is actually RUNNING. (Same slot is GREEN ↻ when done.) Used to confirm
+    the start; if it's not running we click Begin again."""
+    r = (cfg.get("running_detect") or {}).get("region")
+    if not r:
+        return False
+    try:
+        px = guest.crop(int(r["x"]), int(r["y"]), int(r["w"]), int(r["h"]))
+    except Exception:
+        return False
+    if not px:
+        return False
+    rd = (cfg.get("running_detect") or {})
+    red = rd.get("red", [147, 62, 37]); tol = int(rd.get("tolerance", 45))
+    n = sum(1 for c in px.values() if matches(c, red, tol))
+    return n >= int(rd.get("min_pixels", 60))
+
+
+def panel_loaded(guest: Guest, cfg: dict) -> bool:
+    """After selecting a recipe, the component panel should show SOMETHING (not a solid
+    color). True if the panel region has real variance/content — a cheap load check."""
+    r = (cfg.get("recipe_select") or {}).get("panel_region")
+    if not r:
+        return True                              # not configured -> don't block
+    try:
+        px = list(guest.crop(int(r["x"]), int(r["y"]), int(r["w"]), int(r["h"])).values())
+    except Exception:
+        return True
+    if not px:
+        return True
+    # variance: count distinct-ish colors; a solid panel is ~1 color
+    base = px[0]
+    diff = sum(1 for c in px if abs(c[0] - base[0]) + abs(c[1] - base[1]) + abs(c[2] - base[2]) > 40)
+    return diff >= int((cfg.get("recipe_select") or {}).get("panel_min_diff", 30))
+
+
 def craft_done(guest: Guest, cfg: dict) -> bool:
     """A craft has ENDED (success OR fail) when ANY of these reappears in the bottom
     bar (owner): the green REPEAT ↻, the Begin button, or the Create button. During an

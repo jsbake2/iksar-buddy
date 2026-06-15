@@ -62,6 +62,15 @@ done_detect:
   repeat: {region: {x: 884, y: 694, w: 38, h: 32}, green: [114, 167, 60], tolerance: 55, min_pixels: 30}
   # Begin/Retry uses the `begin` fingerprint above (gold @784,707).
 
+# Craft-RUNNING detection (owner): the RED STOP-SIGN in the art-bar's right slot means a
+# craft is actually running. Same slot is green ↻ when done. We click Begin until this
+# shows (start-confirm), and a craft can't false-complete until we've seen it running.
+running_detect:
+  region: {x: 852, y: 694, w: 70, h: 34}
+  red: [147, 62, 37]
+  tolerance: 45
+  min_pixels: 60
+
 # --- reaction matching (NO saved library — references captured live) ---------
 # CONFIRMED mechanic: during a craft the bottom bar is [book][1][2][3][4][5][6][stop].
 # 1/2/3 = durability arts, 4/5/6 = progress arts; 3 reaction TYPES, paired 1<->4,
@@ -98,6 +107,7 @@ recipe_select:
   # area (name column; difficulty is filtered out). match_threshold = token-overlap frac.
   match_threshold: 0.6
   focus_attempts: 3                # retry focus+type if the list didn't filter
+  start_attempts: 4                # re-click Begin/Create until the red stop-sign shows (running)
   match_polls: 4                   # poll the list ~4x (post_search apart) before re-typing
   icon_x: 244                      # icon column (the selectable hotspot, left of the name)
   list_region: {x: 225, y: 195, w: 320, h: 485}   # the recipe rows area (OCR'd whole)
@@ -202,5 +212,5 @@ timings:
   post_select: 0.2         # after the single-click load
   post_begin: 0.25         # after Begin/Create/Repeat
   post_focus: 0.15         # after the craft-window safe-spot focus click
-  craft_start_timeout: 4.0 # confirm the craft started (Begin gone) within this
+  running_timeout: 3.0     # after clicking start, wait this long for the red stop-sign
   max_craft_time: 90.0     # bail a single craft if it never completes (avoid a hang)
