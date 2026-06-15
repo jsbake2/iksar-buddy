@@ -86,14 +86,21 @@ class CraftWorker:
         return arts[counter - 1] if 1 <= counter <= len(arts) else None
 
     async def _press(self, seq: str, role: str = "craft") -> bool:
-        """THE chat-safety gate (fail-closed) wrapping every keypress."""
+        """THE chat-safety gate (fail-closed) wrapping every keypress. Single-key craft
+        arts (1-6) go via virsh send-key (type_text): SYNCHRONOUS + instant, so a counter
+        actually lands in its window — ibkey is an async scheduled task that fires LATE
+        and DROPS when filler+counter presses collide. Complex keys (modifiers/F-keys,
+        e.g. mana-recover/camp) still use ibkey (send-key can't express them)."""
         if not await self._ex(self.guest.grab):
             return False
         if not await self._ex(sensors.chat_safe, self.guest, self.cfg):
             self._aborted += 1
             self.t.push_log(self.id, f"inject ABORTED (chat unsafe): {role}")
             return False
-        await self._ex(self.guest.press_keys, seq)
+        if len(seq) == 1 and seq in "0123456789":
+            await self._ex(self.guest.type_text, seq)      # fast synchronous send-key
+        else:
+            await self._ex(self.guest.press_keys, seq)     # ibkey for modifier/F-key specs
         return True
 
     async def _wait_unpaused(self) -> None:
