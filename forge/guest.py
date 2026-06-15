@@ -85,9 +85,18 @@ class Guest:
 
     def eq2_running(self) -> bool:
         """True if the EQ2 client is up in the guest. Crafting (and clicks) require
-        it — firing input at a closed game errors the guest-side AHK."""
-        out = self.exec_ps("if (Get-Process EverQuest2 -ErrorAction SilentlyContinue) {'Y'}")
-        return bool(out and "Y" in out)
+        it — firing input at a closed game errors the guest-side AHK. The PS ALWAYS
+        emits Y/N so an empty result means a guest-exec hiccup (not 'closed'); retry a
+        couple times so a transient hiccup doesn't false-bail the whole job."""
+        ps = "if (Get-Process EverQuest2 -ErrorAction SilentlyContinue) {'Y'} else {'N'}"
+        for _ in range(3):
+            out = (self.exec_ps(ps) or "").strip()
+            if "Y" in out:
+                return True
+            if "N" in out:
+                return False
+            time.sleep(0.5)                       # empty == hiccup -> retry
+        return False
 
     # -- capture (virsh screenshot -> magick crop) -------------------------
     def grab(self) -> bool:
