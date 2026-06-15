@@ -309,23 +309,30 @@ class CraftWorker:
             return 0                              # bailed (chat-unsafe / not in-world)
         self.t.push_log(self.id, f"recipe selected: {name} — running {count} craft(s)")
         create = (self.cfg.get("create", {}) or {}).get("click")
-        done = 0
-        while done < count and not self._stop.is_set():
-            # CREATE opens the craft setup so the gold Begin appears at (784,707) — even
-            # from a polluted post-craft state (art-bar/green-arrow). Owner: "click the
-            # name, then Create." Then we click Begin to actually start crafting.
-            if create:
-                await self._ex(partial(self.guest.click, create[0], create[1], True))
-                await asyncio.sleep(timings.get("post_begin", 0.5))
-            # wait for Begin/Retry (fail-safe: times out if it never appears)
+
+        async def _wait_begin(secs: float) -> bool:
             t0 = time.time()
-            while time.time() - t0 < WAIT_BUTTON_S and not self._stop.is_set():
+            while time.time() - t0 < secs and not self._stop.is_set():
                 await self._ex(self.guest.grab)
                 if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
-                    break
+                    return True
                 await asyncio.sleep(0.4)
-            else:
-                self.t.push_log(self.id, f"no Begin after Create for {name} — skipping")
+            return False
+
+        done = 0
+        while done < count and not self._stop.is_set():
+            # The double-click usually already shows Begin@784,707. Click Begin DIRECTLY
+            # — clicking Create FIRST when Begin is already up breaks the start (verified
+            # live). Only if Begin is absent (polluted state) do we click Create to
+            # reveal it, then wait again.
+            if not await _wait_begin(6.0):
+                if create:
+                    await self._ex(partial(self.guest.click, create[0], create[1], True))
+                    await asyncio.sleep(timings.get("post_begin", 0.5))
+                if not await _wait_begin(8.0):
+                    self.t.push_log(self.id, f"no Begin for {name} — skipping")
+                    break
+            if self._stop.is_set():
                 break
             if self._stop.is_set():
                 break
