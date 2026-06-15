@@ -144,12 +144,14 @@ class CraftWorker:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             return False
         self.t.push_log(self.id, f"matched recipe row -> click {row_click}")
-        await self._ex(self.guest.click, row_click[0], row_click[1])
+        # wait=True: the recipe-select click MUST land (fire-and-forget races the next
+        # action and the recipe never selects -> no Begin).
+        await self._ex(partial(self.guest.click, row_click[0], row_click[1], True))
         await asyncio.sleep(click_settle)
         # park focus on the craft window
         foc = rs.get("focus_click")
         if foc:
-            await self._ex(self.guest.click, foc[0], foc[1])
+            await self._ex(partial(self.guest.click, foc[0], foc[1], True))
             await asyncio.sleep(click_settle)
         await asyncio.sleep(float(timings.get("post_select", 0.5)))
         return True
@@ -270,9 +272,9 @@ class CraftWorker:
             which = await self._ex(sensors.begin_or_retry, self.guest, self.cfg)
             clk = (self.cfg.get(which or "begin", {}) or {}).get("click")
             if clk:
-                # Click Begin/Retry to start the craft. NO Enter confirm — in-world
-                # ENTER opens the chat bar (chat-safety leak); the click alone starts it.
-                await self._ex(self.guest.click, clk[0], clk[1])
+                # Click Begin/Retry to start the craft (wait=True so it lands). NO Enter
+                # confirm — in-world ENTER opens the chat bar; the click alone starts it.
+                await self._ex(partial(self.guest.click, clk[0], clk[1], True))
                 await asyncio.sleep(timings.get("post_begin", 0.5))
             if await self._craft_cycle(gate_power=gate_power):
                 done += 1
