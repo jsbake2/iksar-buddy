@@ -178,7 +178,8 @@ class CraftReflex:
         """React until the craft is DONE (repeat/Begin/Create reappears) or stop/timeout.
         Returns True on a clean completion. The host already confirmed the craft is
         RUNNING before handing off, so we start in the active state and watch for done."""
-        loop_sleep = float(self.r.get("loop_sleep", 0.03))
+        loop_sleep = float(self.r.get("loop_sleep", 0.04))
+        art_interval = float(self.r.get("art_interval", 1.0))
         done_every = float(self.r.get("done_check_interval", 0.5))
         max_t = float(self.r.get("max_craft_time", 90.0))
         debug = bool(self.r.get("debug"))
@@ -203,35 +204,41 @@ class CraftReflex:
                     self.log(f"reflex: debug dump failed: {e}")
             t0 = time.time()
             last_done = 0.0
+            last_filler = 0.0
             while not self.should_stop() and time.time() - t0 < max_t:
                 safe = self._chat_safe(sct)
                 mode = self._mode(sct)
                 n, scores, watch = self._counter(sct)
-                # DEBUG: log scores whenever anything is even close, and save the watch
-                # crop for near-misses + hits so we can see what the live counter looks
-                # like vs the templates and where the confidence threshold should sit.
                 if debug and scores and max(scores) >= 0.30 and dbg_n < 60:
                     key_dbg = self.arts[mode][n - 1] if (n and 1 <= n <= len(self.arts[mode])) else "-"
-                    self.log(f"  scores={scores} best={n} mode={mode} press={key_dbg} safe={safe}")
+                    new = " NEW->press" if (n and n != self._last_counter) else ""
+                    self.log(f"  scores={scores} best={n} mode={mode} key={key_dbg} safe={safe}{new}")
                     if watch is not None:
                         cv2.imwrite(str(dbg_dir / f"watch_{dbg_n:02d}_{max(scores):.2f}_n{n}.png"), watch)
                         dbg_n += 1
+                # COUNTER: press ONCE per event, then LEAVE IT ALONE (owner: re-pressing
+                # interrupts the art's cast). While the same icon lingers, press nothing —
+                # not even filler — until it clears.
                 if n:
-                    key = self.arts[mode][n - 1] if 1 <= n <= len(self.arts[mode]) else None
-                    if key and safe:
-                        self._press(key)
-                        if n != self._last_counter:
+                    if n != self._last_counter:
+                        key = self.arts[mode][n - 1] if 1 <= n <= len(self.arts[mode]) else None
+                        if key and safe:
+                            self._press(key)
                             self.reactions += 1
+                            self.log(f"counter#{n} ({mode}) -> {key}")
                     self._last_counter = n
                     time.sleep(loop_sleep)
                     continue
                 self._last_counter = None
-                if safe:
-                    a = self.arts[mode]
-                    if a:
-                        self._press(a[self._filler_i % len(a)])
-                        self._filler_i += 1
+                # FILLER: pump one art every ~art_interval (owner: ~1s between buttons),
+                # NOT every loop — mashing interrupts the filler cast too. The tight loop
+                # is for fast COUNTER detection, not fast filler.
                 now = time.time()
+                if safe and self.arts[mode] and now - last_filler >= art_interval:
+                    a = self.arts[mode]
+                    self._press(a[self._filler_i % len(a)])
+                    self._filler_i += 1
+                    last_filler = now
                 if now - last_done >= done_every:
                     last_done = now
                     if self._done(sct):

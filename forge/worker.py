@@ -273,7 +273,8 @@ class CraftWorker:
             "chat_input": c.get("chat_input", {}) or {},
             "arts": {"durability": self._arts("durability"), "progress": self._arts("progress")},
             "debug": bool((c.get("reaction", {}) or {}).get("debug", False)),
-            "loop_sleep": float(timings.get("agent_loop_sleep", timings.get("loop_sleep", 0.03))),
+            "art_interval": float(timings.get("art_interval", 1.0)),   # ~1s between FILLER arts (owner spec)
+            "loop_sleep": float(timings.get("agent_loop_sleep", timings.get("loop_sleep", 0.04))),
             "done_check_interval": float(timings.get("done_check_interval", 0.5)),
             "max_craft_time": float(timings.get("max_craft_time", 90.0)),
         }
