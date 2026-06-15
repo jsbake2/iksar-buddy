@@ -212,5 +212,5 @@ timings:
   post_select: 0.2         # after the single-click load
   post_begin: 0.25         # after Begin/Create/Repeat
   post_focus: 0.15         # after the craft-window safe-spot focus click
-  running_timeout: 3.0     # after clicking start, wait this long for the red stop-sign
+  running_timeout: 5.0     # after clicking start, wait this long for the red stop-sign
   max_craft_time: 90.0     # bail a single craft if it never completes (avoid a hang)

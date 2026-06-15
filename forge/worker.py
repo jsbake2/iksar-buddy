@@ -312,11 +312,14 @@ class CraftWorker:
             # START the craft and CONFIRM it's RUNNING (red stop sign). If it's not
             # running, click the start button AGAIN (owner: "click begin again").
             started = False
-            for _ in range(attempts):
+            for attempt in range(attempts):
                 if self._stop.is_set():
                     return done
-                if done == 0:
-                    clk, label = create, "create"   # first craft: Begin if up, else Create
+                if done > 0 and attempt == 0:
+                    clk, label = repeat, "repeat"   # repeats: try the green-↻ first
+                else:
+                    # first craft, or repeat fallback: Begin if it's up, else Create
+                    clk, label = create, "create"
                     t0 = time.time()
                     while time.time() - t0 < 2.5 and not self._stop.is_set():
                         await self._ex(self.guest.grab)
@@ -324,8 +327,6 @@ class CraftWorker:
                             clk, label = begin, "begin"
                             break
                         await asyncio.sleep(0.3)
-                else:
-                    clk, label = repeat, "repeat"   # repeats: the green-↻ button
                 if not clk:
                     break
                 self.t.push_log(self.id, f"{label} -> start craft {done + 1}/{count}")
