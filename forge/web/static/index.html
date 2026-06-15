@@ -88,7 +88,11 @@
       <div class="pane pane-single">
         <div class="field-row">
           <label>Recipe</label>
-          <input type="text" class="bot-recipe" placeholder="leave blank = currently loaded recipe" />
+          <input type="text" class="bot-recipe" placeholder="full recipe name (OCR row match)" />
+        </div>
+        <div class="field-row">
+          <label>Search</label>
+          <input type="text" class="bot-search" placeholder="blank = use recipe name" />
         </div>
         <div class="field-row">
           <label>Quantity</label>
@@ -109,7 +113,7 @@
           <button class="src-btn bot-readlog" title="parse scribed-recipe lines from the EQ2 log">📜 Read recipes from log</button>
           <button class="src-btn bot-addrow" title="add a recipe row by hand">＋ Add recipe</button>
         </div>
-        <div class="queue-head"><span>recipe</span><span>×</span><span></span></div>
+        <div class="queue-head"><span>recipe</span><span>search</span><span>×</span><span></span></div>
         <ul class="queue-list bot-queue"></ul>
         <div class="queue-empty">No recipes — read the journal, read the log, or add by hand.</div>
       </div>

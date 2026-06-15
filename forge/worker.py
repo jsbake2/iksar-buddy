@@ -48,13 +48,14 @@ class CraftWorker:
 
     # -- control (called by the controller) --------------------------------
     def start(self, mode: str, trade_class: str, recipe: str = "",
-              count: int = 1, queue: list | None = None) -> None:
+              count: int = 1, queue: list | None = None, search: str = "") -> None:
         if mode == "writ":
             q = [dict(it, done=0) for it in (queue or [])]
             self._pending = {"mode": "writ", "trade_class": trade_class, "queue": q}
         else:
             self._pending = {"mode": "single", "trade_class": trade_class,
-                             "recipe": recipe or "", "count": max(1, int(count or 1))}
+                             "recipe": recipe or "", "search": search or "",
+                             "count": max(1, int(count or 1))}
         self._paused = False
         # SUPERSEDE any in-flight job: signal it to abort (its loops check _stop), then
         # wake run() which clears _stop and runs the pending job. Prevents a 2nd Start
@@ -109,9 +110,13 @@ class CraftWorker:
             await asyncio.sleep(0.4)
 
     # -- recipe selection --------------------------------------------------
-    async def _select_recipe(self, name: str, trade_class: str) -> bool:
-        """Focus the search field, type the recipe name, filter, click the matching
+    async def _select_recipe(self, name: str, trade_class: str, search: str = "") -> bool:
+        """Focus the search field, type the SEARCH text, filter, click the matching
         row's icon, then park focus on the craft window. Returns False on failure.
+
+        Two-field design (owner): `name` is the full recipe name used for OCR row-
+        matching; `search` is what's actually typed into the box (owner-tuned around
+        EQ2's search-field length limit). When `search` is empty we type the name.
 
         Focusing the EQ2 search box is intermittent (a single ibgclick sometimes only
         activates the window, not the field). So we focus+type+verify in a RETRY loop:
@@ -123,21 +128,7 @@ class CraftWorker:
         timings = self.cfg.get("timings", {})
         click_settle = float(timings.get("click_settle", 0.8))
         type_settle = float(timings.get("pre_type_settle", 1.5))
-        # EQ2's search field TRUNCATES long input (~18 chars), so "rawhide leather
-        # backpack" becomes "rawhide leather ba" and matches unrelated "...leather..."
-        # recipes. Use the TRAILING words that fit — the most distinctive part — so the
-        # list filters precisely (owner-flagged: chop long names to fit the field).
-        full = search_name(name, trade_class)
-        maxlen = int(rs.get("search_maxlen", 18))
-        query = full
-        if len(full) > maxlen:
-            ws = full.split()
-            query = ws[-1]
-            for w in reversed(ws[:-1]):
-                if len(w) + 1 + len(query) <= maxlen:
-                    query = f"{w} {query}"
-                else:
-                    break
+        query = (search or "").strip() or search_name(name, trade_class)   # owner-tuned search text, else full name
         sb = rs.get("search_click")
         attempts = int(rs.get("focus_attempts", 3))
 
@@ -180,13 +171,27 @@ class CraftWorker:
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             return False
-        self.t.push_log(self.id, f"select recipe -> double-click {row_click}")
-        # DOUBLE-click to LOAD (owner does a single mouse click, but the programmatic
-        # ibgclick single-click only HIGHLIGHTS — double reliably loads + shows Begin;
-        # verified live). Do NOT click the safe-spot here (it deselects).
-        await self._ex(partial(self.guest.double_click, row_click[0], row_click[1]))
-        await asyncio.sleep(float(timings.get("post_select", 0.3)))
-        return True
+        # DOUBLE-click the row icon to LOAD, then VERIFY it loaded (Begin/Create appears).
+        # If it didn't load, re-find the row and click again. (ibgclick single-click only
+        # highlights; double loads. The owner's single mouse-click also loads.)
+        for attempt in range(int(rs.get("load_attempts", 3))):
+            if self._stop.is_set():
+                return False
+            self.t.push_log(self.id, f"select recipe -> double-click {row_click}")
+            await self._ex(partial(self.guest.double_click, row_click[0], row_click[1]))
+            await asyncio.sleep(float(timings.get("post_select", 0.3)))
+            t0 = time.time()
+            while time.time() - t0 < 2.0 and not self._stop.is_set():
+                await self._ex(self.guest.grab)
+                if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
+                    return True                  # loaded — Begin/Create is up
+                await asyncio.sleep(0.3)
+            self.t.push_log(self.id, "recipe didn't load — re-finding the row")
+            r2 = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
+            if r2:
+                row_click = r2
+        self.t.push_log(self.id, f"recipe '{name}' didn't load — skipping")
+        return False
 
     async def _focus_craft(self) -> None:
         """Click the mouse-safe spot to FOCUS the craft window so the art keys (1-6) land
@@ -294,12 +299,12 @@ class CraftWorker:
 
     async def _craft_recipe(self, name: str, count: int, trade_class: str,
                             item_idx: int = 0, item_total: int = 0,
-                            gate_power: bool = True) -> int:
+                            gate_power: bool = True, search: str = "") -> int:
         timings = self.cfg.get("timings", {})
         self.t.update_bot(self.id, state="selecting", recipe=name,
                           count={"done": 0, "total": count},
                           item={"idx": item_idx, "total": item_total})
-        if not await self._select_recipe(name, trade_class):
+        if not await self._select_recipe(name, trade_class, search):
             return 0                              # bailed (chat-unsafe / not in-world)
         self.t.push_log(self.id, f"recipe selected: {name} — running {count} craft(s)")
         begin = (self.cfg.get("begin", {}) or {}).get("click")
@@ -377,12 +382,14 @@ class CraftWorker:
                 if self._stop.is_set():
                     break
                 made = await self._craft_recipe(it["name"], it["count"], tc, i, len(q),
-                                                gate_power=False)   # writs barrel forward
+                                                gate_power=False,            # writs barrel forward
+                                                search=it.get("search", ""))
                 it["done"] = made                # ACTUAL crafts done, not assumed
                 self.t.update_bot(self.id, queue=q)
             self.t.push_event(self.id, "craft", "batch complete")
         else:
-            await self._craft_recipe(job["recipe"], job["count"], tc)
+            await self._craft_recipe(job["recipe"], job["count"], tc,
+                                     search=job.get("search", ""))
             self.t.push_event(self.id, "craft", "done")
         self.t.update_bot(self.id, state="done", durability_mode=None)
 

@@ -145,7 +145,8 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
                     c = max(1, int(r.get("count", 1)))
                 except (TypeError, ValueError):
                     c = 1
-                items.append({"name": rn, "count": c})
+                items.append({"name": rn, "count": c,
+                              "search": str(r.get("search", "")).strip()})
             if items:
                 clean[nm] = items
         try:
@@ -229,7 +230,8 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
                   mode=payload.get("mode", "single"),
                   trade_class=payload.get("trade_class", ""),
                   recipe=payload.get("recipe", ""),
-                  count=payload.get("count", 1))
+                  count=payload.get("count", 1),
+                  search=payload.get("search", ""))
         return {"ok": True}
 
     @app.post("/api/bot/{bot_id}/stop")

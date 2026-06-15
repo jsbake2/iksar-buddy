@@ -110,7 +110,7 @@ class ForgeController:
         self.t.push_event(bot_id, "control", "enabled" if on else "disabled")
 
     def configure(self, bot_id: str, **fields) -> None:
-        clean = {k: v for k, v in fields.items() if k in ("trade_class", "mode", "recipe")}
+        clean = {k: v for k, v in fields.items() if k in ("trade_class", "mode", "recipe", "search")}
         if "count" in fields:
             try:
                 clean["count"] = {"done": 0, "total": max(1, int(fields["count"]))}
@@ -123,7 +123,7 @@ class ForgeController:
             self.t.update_bot(bot_id, **clean)
 
     def start(self, bot_id: str, mode: str, trade_class: str,
-              recipe: str = "", count: int = 1) -> None:
+              recipe: str = "", count: int = 1, search: str = "") -> None:
         b = self.t.bot(bot_id)
         w = self.workers.get(bot_id)
         if not b or not w or not b["enabled"]:
@@ -136,7 +136,8 @@ class ForgeController:
             self.t.push_event(bot_id, "craft", f"writ start ({len(b.get('queue', []))} recipes)")
         else:
             recipe = recipe or b.get("recipe", "")   # dashboard shows the saved recipe
-            w.start("single", trade_class, recipe=recipe, count=count)   # as a PLACEHOLDER; the input value can be empty
+            search = search or b.get("search", "")   # owner-tuned search text (empty -> name)
+            w.start("single", trade_class, recipe=recipe, count=count, search=search)
             self.t.push_event(bot_id, "craft", f"single start: {recipe or '(loaded)'} x{count}")
         self.t.update_bot(bot_id, mode=mode, trade_class=trade_class, state="selecting")
 
@@ -164,7 +165,8 @@ class ForgeController:
                 cnt = max(1, int(it.get("count", 1)))
             except (TypeError, ValueError):
                 cnt = 1
-            clean.append({"name": name, "count": cnt, "done": 0})
+            clean.append({"name": name, "count": cnt, "done": 0,
+                          "search": str(it.get("search", "")).strip()})
         self.t.update_bot(bot_id, mode="writ", queue=clean)
         self.t.push_event(bot_id, "queue", f"{len(clean)} recipes queued")
 

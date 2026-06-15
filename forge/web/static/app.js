@@ -117,6 +117,7 @@ function buildBotPanel(bot, tradeClasses) {
     paneWrit: q(".pane-writ"),
     trade,
     recipe: q(".bot-recipe"),
+    search: q(".bot-search"),
     count: q(".bot-count"),
     ocr: q(".bot-ocr"),
     readlog: q(".bot-readlog"),
@@ -164,6 +165,7 @@ function buildBotPanel(bot, tradeClasses) {
     if (c) post(`/api/bot/${id}/config`, { character: c.character, trade_class: c.class });
   };
   refs.recipe.onchange = () => post(`/api/bot/${id}/config`, { recipe: refs.recipe.value });
+  refs.search.onchange = () => post(`/api/bot/${id}/config`, { search: refs.search.value });
   refs.count.onchange = () => post(`/api/bot/${id}/config`, { count: parseInt(refs.count.value) || 1 });
   refs.ocr.onclick = () => post(`/api/bot/${id}/ocr`);
   refs.readlog.onclick = () => post(`/api/bot/${id}/readlog`);
@@ -192,7 +194,8 @@ function buildBotPanel(bot, tradeClasses) {
     const c = selectedCrafter(refs);
     post(`/api/bot/${id}/start`, {
       mode: refs.uiMode, trade_class: c ? c.class : "",
-      recipe: refs.recipe.value, count: parseInt(refs.count.value) || 1,
+      recipe: refs.recipe.value, search: refs.search.value,
+      count: parseInt(refs.count.value) || 1,
     });
   };
   refs.stop.onclick = () => post(`/api/bot/${id}/stop`);
@@ -232,10 +235,12 @@ function pushQueueRow(refs, item) {
   li.className = "qrow" + (item.done >= item.count && item.count ? " done" : "");
   li.innerHTML =
     `<input class="qname" type="text" value="${(item.name || "").replace(/"/g, "&quot;")}" placeholder="recipe name" />` +
+    `<input class="qsearch" type="text" value="${(item.search || "").replace(/"/g, "&quot;")}" placeholder="search (blank=name)" />` +
     `<input class="qcount" type="number" min="1" max="999" value="${item.count || 1}" />` +
     `<button class="qdel" title="remove">×</button>`;
   const id = refs.root.dataset.bot;
   li.querySelector(".qname").onchange = () => saveQueue(id, refs);
+  li.querySelector(".qsearch").onchange = () => saveQueue(id, refs);
   li.querySelector(".qcount").onchange = () => saveQueue(id, refs);
   li.querySelector(".qdel").onclick = () => { li.remove(); saveQueue(id, refs); };
   refs.queue.appendChild(li);
@@ -243,6 +248,7 @@ function pushQueueRow(refs, item) {
 function readQueueDom(refs) {
   return [...refs.queue.querySelectorAll(".qrow")].map((row) => ({
     name: row.querySelector(".qname").value.trim(),
+    search: row.querySelector(".qsearch").value.trim(),
     count: parseInt(row.querySelector(".qcount").value) || 1,
   })).filter((it) => it.name);
 }
@@ -252,7 +258,7 @@ function saveQueue(id, refs) {
 function renderQueue(refs, queue) {
   // only rebuild from telemetry when the queue actually changed AND the user
   // isn't mid-edit (so typing/counts aren't clobbered by the ~1Hz stream).
-  const sig = (queue || []).map((q) => `${q.name}:${q.count}:${q.done}`).join("|");
+  const sig = (queue || []).map((q) => `${q.name}:${q.search || ""}:${q.count}:${q.done}`).join("|");
   if (sig === refs.queueSig || queueRowFocused(refs)) return;
   refs.queueSig = sig;
   refs.queue.innerHTML = "";
@@ -276,6 +282,8 @@ function updateBotPanel(refs, bot) {
   // recipe / count only when not focused
   if (document.activeElement !== refs.recipe && bot.recipe && refs.uiMode === "single")
     if (!refs.recipe.value) refs.recipe.placeholder = bot.recipe;
+  if (document.activeElement !== refs.search && bot.search && refs.uiMode === "single")
+    if (!refs.search.value) refs.search.placeholder = bot.search;
 
   renderQueue(refs, bot.queue);
 

@@ -1,6 +1,9 @@
 # Named profit-craft lists — load one into a bot's queue to craft outside of writs.
 # Built INLINE from the writ pane: edit the queue rows, "Save as…" to name+store the
-# current queue, "Load" to refill it later, "✕" to delete. Each list = recipe -> count.
+# current queue, "Load" to refill it later, "✕" to delete.
+# Each item: name (full recipe, used for OCR row-matching), count, and an optional
+# `search` (what's actually typed in the search box — owner-tuned around EQ2's
+# field-length limit). Blank search => the full name is typed.
 lists:
   leather-bags-test:
-    - {name: rawhide leather backpack, count: 5}
+    - {name: rawhide leather backpack, count: 5, search: rawhide leather back}

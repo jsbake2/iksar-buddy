@@ -55,7 +55,7 @@ class ForgeSim:
         """Persist UI selections (trade_class, mode, recipe, count) without
         starting — so the panel remembers them between renders."""
         clean = {k: v for k, v in fields.items()
-                 if k in ("trade_class", "mode", "recipe", "character")}
+                 if k in ("trade_class", "mode", "recipe", "character", "search")}
         if "count" in fields:
             try:
                 clean["count"] = {"done": 0, "total": max(1, int(fields["count"]))}
@@ -65,7 +65,7 @@ class ForgeSim:
             self.t.update_bot(bot_id, **clean)
 
     def start(self, bot_id: str, mode: str, trade_class: str,
-              recipe: str = "", count: int = 1) -> None:
+              recipe: str = "", count: int = 1, search: str = "") -> None:
         b = self.t.bot(bot_id)
         if not b or not b["enabled"]:
             return
@@ -191,7 +191,8 @@ class ForgeSim:
                 cnt = max(1, int(it.get("count", 1)))
             except (TypeError, ValueError):
                 cnt = 1
-            clean.append({"name": name, "count": cnt, "done": 0})
+            clean.append({"name": name, "count": cnt, "done": 0,
+                          "search": str(it.get("search", "")).strip()})
         self.t.update_bot(bot_id, mode="writ", queue=clean)
         self.t.push_event(bot_id, "queue", f"{len(clean)} recipes queued")
 
