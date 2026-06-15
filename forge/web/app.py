@@ -293,6 +293,25 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
         sim.read_log(bot_id)
         return {"ok": True}
 
+    # -- in-guest reflex agent channel (the agent is an outbound-only HTTP client) --
+    @app.get("/api/agent/{bot_id}/command")
+    async def agent_command(bot_id: str):
+        if not hasattr(sim, "agent_command"):
+            return {"action": "idle", "epoch": 0}
+        return sim.agent_command(bot_id)
+
+    @app.post("/api/agent/{bot_id}/telemetry")
+    async def agent_telemetry(bot_id: str, payload: dict = Body(default={})):
+        if hasattr(sim, "agent_push"):
+            sim.agent_push(bot_id, payload)
+        return {"ok": True}
+
+    @app.get("/api/agent/{bot_id}/status")
+    async def agent_status(bot_id: str):
+        if not hasattr(sim, "agent_status"):
+            return {"alive": False}
+        return sim.agent_status(bot_id)
+
     @app.post("/api/bot/{bot_id}/queue")
     async def queue(bot_id: str, payload: dict = Body(...)):
         if not _bot_ok(bot_id):

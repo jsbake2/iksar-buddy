@@ -55,6 +55,11 @@ class ForgeController:
         self.workers: dict[str, CraftWorker] = {}
         self.stations: dict[str, dict] = {}
         self._frames: dict[str, tuple[float, bytes]] = {}   # bot_id -> (ts, jpeg)
+        # In-guest reflex agent channel (FORGE.md §agent): the agent polls _agent_cmd
+        # (control) and pushes _agent_tele (state + the craft-done handoff signal). Both
+        # keyed by bot_id. epoch bumps on every new command so the agent runs it once.
+        self._agent_cmd: dict[str, dict] = {}
+        self._agent_tele: dict[str, dict] = {}
         for bot in stations.get("bots", []):
             bid = bot["id"]
             g = Guest(bot["dom"], bot.get("width", 1920), bot.get("height", 1080))
@@ -367,6 +372,47 @@ class ForgeController:
         self.keymap = km or {}
         for w in self.workers.values():
             w.keymap = self.keymap
+
+    # -- in-guest reflex agent channel ------------------------------------
+    def agent_command(self, bot_id: str) -> dict:
+        """What the in-guest agent should be doing right now (it polls this). Default
+        idle. The worker sets {action:'react', epoch:N, ...} to hand off a running
+        craft's reaction loop to the agent."""
+        return self._agent_cmd.get(bot_id) or {"action": "idle", "epoch": 0}
+
+    def set_agent_command(self, bot_id: str, action: str, **params) -> int:
+        """Set the agent's command, bumping epoch so the agent runs it exactly once.
+        Returns the new epoch (the worker waits for telemetry tagged with it)."""
+        cur = self._agent_cmd.get(bot_id) or {"epoch": 0}
+        epoch = int(cur.get("epoch", 0)) + 1
+        self._agent_cmd[bot_id] = {"action": action, "epoch": epoch, **params}
+        return epoch
+
+    def agent_push(self, bot_id: str, data: dict) -> None:
+        """Telemetry pushed by the in-guest agent. Stamp arrival time (heartbeat) and
+        surface a few live fields to the dashboard. The worker reads agent_status() to
+        learn when a handed-off craft finished."""
+        rec = dict(data or {})
+        rec["ts"] = time.time()
+        self._agent_tele[bot_id] = rec
+        live = {}
+        for k in ("state", "reactions", "durability_mode", "running", "done"):
+            if k in rec:
+                live[k] = rec[k]
+        if "reactions" in live:
+            self.t.update_bot(bot_id, reactions=int(live.pop("reactions") or 0))
+        if live:
+            self.t.update_bot(bot_id, **{k: v for k, v in live.items()
+                                         if k in ("durability_mode",)})
+        self.t.update_bot(bot_id, agent_seen=rec["ts"])
+
+    def agent_status(self, bot_id: str) -> dict:
+        """Last agent telemetry + its age in seconds (alive = age small)."""
+        rec = self._agent_tele.get(bot_id)
+        if not rec:
+            return {"alive": False, "age": None}
+        return {**rec, "alive": (time.time() - rec["ts"]) < 5.0,
+                "age": time.time() - rec["ts"]}
 
     # -- shutdown (quit EQ2 + power off the VM) ----------------------------
     def shutdown(self, bot_id: str) -> None:
