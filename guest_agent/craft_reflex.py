@@ -134,18 +134,27 @@ class CraftReflex:
             return None
         try:
             crop = _grab(sct, reg["x"], reg["y"], reg["w"], reg["h"])
-            gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
-            gray = cv2.resize(gray, None, fx=5, fy=5, interpolation=cv2.INTER_CUBIC)
-            _, bw = cv2.threshold(gray, 110, 255, cv2.THRESH_BINARY)
-            txt = pytesseract.image_to_string(
-                bw, config="--psm 7 -c tessedit_char_whitelist=0123456789%")
-            m = re.search(r"\d{1,3}", txt)
-            if m:
-                v = int(m.group())
-                return v if 0 <= v <= 100 else None
+            gray = cv2.resize(cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY), None,
+                              fx=6, fy=6, interpolation=cv2.INTER_CUBIC)
+            val, raw = None, ""
+            for th in (110, 90, 130, 70, 150):       # live brightness varies; try a few
+                _, bw = cv2.threshold(gray, th, 255, cv2.THRESH_BINARY)
+                txt = pytesseract.image_to_string(
+                    bw, config="--psm 7 -c tessedit_char_whitelist=0123456789%")
+                m = re.search(r"\d{1,3}", txt)
+                if m and 0 <= int(m.group()) <= 100:
+                    val, raw = int(m.group()), txt.strip()
+                    break
+            if getattr(self, "_debug", False) and getattr(self, "_dur_dbg", 0) < 10:
+                try:
+                    cv2.imwrite(str(Path(r"C:\ib\agent\dbg") / f"dur_{self._dur_dbg:02d}.png"), crop)
+                    self._dur_dbg += 1
+                    self.log(f"  durOCR -> {val} (raw={raw!r})")
+                except Exception:            # noqa: BLE001
+                    pass
+            return val
         except Exception:                    # noqa: BLE001
             return None
-        return None
 
     def _mode(self, sct) -> str:
         """Durability mode via OCR of the percent (cached on an interval — durability
@@ -249,6 +258,8 @@ class CraftReflex:
         done_every = float(self.r.get("done_check_interval", 0.5))
         max_t = float(self.r.get("max_craft_time", 90.0))
         debug = bool(self.r.get("debug"))
+        self._debug = debug
+        self._dur_dbg = 0
         dbg_dir = Path(r"C:\ib\agent\dbg")
         dbg_n = 0
         self._activate_eq2()
