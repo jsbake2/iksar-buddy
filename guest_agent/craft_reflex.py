@@ -62,6 +62,10 @@ class CraftReflex:
         self._templates: list = []
         self._filler_i = 0
         self._last_counter = None
+        self._cnt_baseline = None        # (mean_r, mean_g) when the counter icon appeared
+        self._cnt_resolved = None         # None | "green" (success) | "red" (fail)
+        self._cnt_last_press = 0.0
+        self.fails = 0
 
     # -- sensors (mss, local) ---------------------------------------------
     def _capture_templates(self, sct) -> int:
@@ -73,6 +77,13 @@ class CraftReflex:
             except Exception:                    # noqa: BLE001
                 self._templates.append(None)
         return sum(1 for t in self._templates if t is not None)
+
+    @staticmethod
+    def _mean_rgb(arr):
+        if arr is None:
+            return (0.0, 0.0, 0.0)
+        m = arr.reshape(-1, 3).mean(axis=0)     # BGR
+        return (float(m[2]), float(m[1]), float(m[0]))
 
     def _counter(self, sct):
         """Return (best_counter_n_or_None, [score0,score1,score2], watch_array)."""
@@ -180,6 +191,9 @@ class CraftReflex:
         RUNNING before handing off, so we start in the active state and watch for done."""
         loop_sleep = float(self.r.get("loop_sleep", 0.04))
         art_interval = float(self.r.get("art_interval", 1.0))
+        press_interval = float(self.r.get("counter_press_interval", 0.12))   # mash cadence
+        green_delta = float(self.r.get("green_delta", 16.0))                 # tint thresholds
+        red_delta = float(self.r.get("red_delta", 16.0))
         done_every = float(self.r.get("done_check_interval", 0.5))
         max_t = float(self.r.get("max_craft_time", 90.0))
         debug = bool(self.r.get("debug"))
@@ -209,30 +223,44 @@ class CraftReflex:
                 safe = self._chat_safe(sct)
                 mode = self._mode(sct)
                 n, scores, watch = self._counter(sct)
-                if debug and scores and max(scores) >= 0.30 and dbg_n < 60:
-                    key_dbg = self.arts[mode][n - 1] if (n and 1 <= n <= len(self.arts[mode])) else "-"
-                    new = " NEW->press" if (n and n != self._last_counter) else ""
-                    self.log(f"  scores={scores} best={n} mode={mode} key={key_dbg} safe={safe}{new}")
-                    if watch is not None:
-                        cv2.imwrite(str(dbg_dir / f"watch_{dbg_n:02d}_{max(scores):.2f}_n{n}.png"), watch)
-                        dbg_n += 1
-                # COUNTER: press ONCE per event, then LEAVE IT ALONE (owner: re-pressing
-                # interrupts the art's cast). While the same icon lingers, press nothing —
-                # not even filler — until it clears.
+                mr, mg, mb = self._mean_rgb(watch)
+                # COUNTER: MASH the matching art (owner: push more than once). The icon
+                # tints GREEN when the counter SUCCEEDS, RED when it FAILS, no change while
+                # still uncountered. So we keep pressing until we see green/red, then stop.
                 if n:
-                    if n != self._last_counter:
+                    if n != self._last_counter:                  # new counter -> baseline
+                        self._last_counter = n
+                        self._cnt_baseline = (mr, mg)
+                        self._cnt_resolved = None
+                        self._cnt_last_press = 0.0
+                    if self._cnt_resolved is None and self._cnt_baseline:
+                        dg = mg - self._cnt_baseline[1]
+                        dr = mr - self._cnt_baseline[0]
+                        if dg >= green_delta and dg > dr:
+                            self._cnt_resolved = "green"; self.reactions += 1
+                            self.log(f"counter#{n} ({mode}) SUCCESS (green, dg={dg:.0f})")
+                        elif dr >= red_delta and dr > dg:
+                            self._cnt_resolved = "red"; self.fails += 1
+                            self.log(f"counter#{n} ({mode}) FAILED (red, dr={dr:.0f})")
+                    now = time.time()
+                    if self._cnt_resolved is None and safe and now - self._cnt_last_press >= press_interval:
                         key = self.arts[mode][n - 1] if 1 <= n <= len(self.arts[mode]) else None
-                        if key and safe:
+                        if key:
                             self._press(key)
-                            self.reactions += 1
-                            self.log(f"counter#{n} ({mode}) -> {key}")
-                    self._last_counter = n
+                            self._cnt_last_press = now
+                    if debug and dbg_n < 80:
+                        base = self._cnt_baseline or (0, 0)
+                        self.log(f"  n={n} score={scores[n-1] if scores else 0} rgb=({mr:.0f},{mg:.0f},{mb:.0f}) "
+                                 f"dg={mg-base[1]:.0f} dr={mr-base[0]:.0f} res={self._cnt_resolved} safe={safe}")
+                        if watch is not None:
+                            cv2.imwrite(str(dbg_dir / f"w_{dbg_n:02d}_n{n}_{self._cnt_resolved or 'neu'}.png"), watch)
+                            dbg_n += 1
                     time.sleep(loop_sleep)
                     continue
                 self._last_counter = None
-                # FILLER: pump one art every ~art_interval (owner: ~1s between buttons),
-                # NOT every loop — mashing interrupts the filler cast too. The tight loop
-                # is for fast COUNTER detection, not fast filler.
+                self._cnt_resolved = None
+                self._cnt_baseline = None
+                # FILLER: pump one art every ~art_interval (owner: ~1s between buttons).
                 now = time.time()
                 if safe and self.arts[mode] and now - last_filler >= art_interval:
                     a = self.arts[mode]
@@ -243,8 +271,8 @@ class CraftReflex:
                     last_done = now
                     if self._done(sct):
                         self.done = True
-                        self.log(f"reflex: done ({self.reactions} reactions)")
+                        self.log(f"reflex: done ({self.reactions} success, {self.fails} fail)")
                         return True
                 time.sleep(loop_sleep)
-        self.log(f"reflex: stopped/timeout ({self.reactions} reactions)")
+        self.log(f"reflex: stopped/timeout ({self.reactions} success, {self.fails} fail)")
         return False

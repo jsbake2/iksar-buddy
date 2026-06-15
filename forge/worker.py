@@ -274,6 +274,10 @@ class CraftWorker:
             "arts": {"durability": self._arts("durability"), "progress": self._arts("progress")},
             "debug": bool((c.get("reaction", {}) or {}).get("debug", False)),
             "art_interval": float(timings.get("art_interval", 1.0)),   # ~1s between FILLER arts (owner spec)
+            # counter mashing: push the art until the icon tints green(success)/red(fail)
+            "counter_press_interval": float((c.get("reaction", {}) or {}).get("press_interval", 0.12)),
+            "green_delta": float((c.get("reaction", {}) or {}).get("green_delta", 16.0)),
+            "red_delta": float((c.get("reaction", {}) or {}).get("red_delta", 16.0)),
             "loop_sleep": float(timings.get("agent_loop_sleep", timings.get("loop_sleep", 0.04))),
             "done_check_interval": float(timings.get("done_check_interval", 0.5)),
             "max_craft_time": float(timings.get("max_craft_time", 90.0)),

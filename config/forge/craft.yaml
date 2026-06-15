@@ -93,6 +93,10 @@ reaction:
   confidence: 0.45
   poll_hz: 6                                  # how often to sample (FORGE.md §4.1)
   debug: true                                 # in-guest agent dumps templates + watch crops + scores (TUNING)
+  # COUNTER MASH (owner: push the art until the icon tints green=success / red=fail):
+  press_interval: 0.12                        # mash cadence while a counter is uncountered
+  green_delta: 16                             # watch-region mean-G rise vs onset baseline => SUCCESS
+  red_delta: 16                               # watch-region mean-R rise vs onset baseline => FAIL
 
 # --- recipe selection (writ/single: search the recipe book) ------------------
 # Clear the search (the small X), focus the field, type name+ENTER to filter, click
