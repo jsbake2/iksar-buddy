@@ -122,6 +122,7 @@ function buildBotPanel(bot, tradeClasses) {
     count: q(".bot-count"),
     ocr: q(".bot-ocr"),
     readlog: q(".bot-readlog"),
+    scribe: q(".bot-scribe"),
     addrow: q(".bot-addrow"),
     queue: q(".bot-queue"),
     listsel: q(".bot-listsel"),
@@ -170,6 +171,9 @@ function buildBotPanel(bot, tradeClasses) {
   refs.count.onchange = () => post(`/api/bot/${id}/config`, { count: parseInt(refs.count.value) || 1 });
   refs.ocr.onclick = () => post(`/api/bot/${id}/ocr`);
   refs.readlog.onclick = () => post(`/api/bot/${id}/readlog`);
+  // toggling capture: first click marks the log, second reads only what was scribed since
+  refs.scribe.onclick = () =>
+    post(`/api/bot/${id}/${refs.scribeMarked ? "scriberead" : "scribemark"}`);
   refs.addrow.onclick = () => { pushQueueRow(refs, { name: "", count: 1 }); saveQueue(id, refs); };
   // saved lists: load fills the queue; save names the current queue; delete removes
   refs.listload.onclick = () => {
@@ -292,6 +296,12 @@ function updateBotPanel(refs, bot) {
     if (!refs.recipe.value) refs.recipe.placeholder = bot.recipe;
   if (document.activeElement !== refs.search && bot.search && refs.uiMode === "single")
     if (!refs.search.value) refs.search.placeholder = bot.search;
+
+  if (refs.scribe) {
+    refs.scribeMarked = !!bot.scribe_marked;
+    refs.scribe.textContent = bot.scribe_marked ? "📖 Read scribed ▸" : "📖 Mark for scribe";
+    refs.scribe.classList.toggle("armed", !!bot.scribe_marked);
+  }
 
   renderQueue(refs, bot.queue);
 

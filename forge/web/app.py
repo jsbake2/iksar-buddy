@@ -293,6 +293,20 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
         sim.read_log(bot_id)
         return {"ok": True}
 
+    @app.post("/api/bot/{bot_id}/scribemark")
+    async def scribemark(bot_id: str):
+        if not _bot_ok(bot_id) or not hasattr(sim, "scribe_mark"):
+            return JSONResponse({"error": "unavailable"}, status_code=400)
+        sim.scribe_mark(bot_id)
+        return {"ok": True}
+
+    @app.post("/api/bot/{bot_id}/scriberead")
+    async def scriberead(bot_id: str):
+        if not _bot_ok(bot_id) or not hasattr(sim, "scribe_read"):
+            return JSONResponse({"error": "unavailable"}, status_code=400)
+        sim.scribe_read(bot_id)
+        return {"ok": True}
+
     # -- in-guest reflex agent channel (the agent is an outbound-only HTTP client) --
     @app.get("/api/agent/{bot_id}/command")
     async def agent_command(bot_id: str):

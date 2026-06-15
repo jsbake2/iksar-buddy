@@ -60,6 +60,7 @@ class ForgeController:
         # keyed by bot_id. epoch bumps on every new command so the agent runs it once.
         self._agent_cmd: dict[str, dict] = {}
         self._agent_tele: dict[str, dict] = {}
+        self._scribe_mark: dict[str, int] = {}   # per-bot EQ2-log line count at "mark"
         for bot in stations.get("bots", []):
             bid = bot["id"]
             g = Guest(bot["dom"], bot.get("width", 1920), bot.get("height", 1080))
@@ -196,6 +197,63 @@ class ForgeController:
         self.t.update_bot(bot_id, mode="writ", queue=queue)
         self.t.push_event(bot_id, "ocr", f"journal: {len(queue)} recipes")
 
+    def _log_path(self, bot_id: str):
+        """(guest, EQ2-log-path) for this bot's selected character, or (g, None)."""
+        g = self.guests.get(bot_id)
+        char = self._char_for(bot_id)
+        if not g or not char:
+            return g, None
+        cfg = self.cfg_profile.get("eq2_log", {}) or {}
+        log_dir = (cfg.get("dir")
+                   or r"C:\Users\Public\Daybreak Game Company\Installed Games"
+                      r"\EverQuest II\logs").rstrip("\\")
+        server = (self.cfg_profile.get("char_select", {}) or {}).get("server", "")
+        return g, "\\".join(p for p in (log_dir, server, f"eq2log_{char}.txt") if p)
+
+    # -- scribe capture: mark the log, owner scribes a book, read ONLY the new ----
+    def scribe_mark(self, bot_id: str) -> None:
+        asyncio.create_task(self._scribe_mark_do(bot_id))
+
+    async def _scribe_mark_do(self, bot_id: str) -> None:
+        g, path = self._log_path(bot_id)
+        if not path:
+            self.t.push_log(bot_id, "scribe: pick a crafter first")
+            return
+        out = await asyncio.get_running_loop().run_in_executor(
+            None, g.exec_ps, f"if(Test-Path '{path}'){{(Get-Content '{path}').Count}}else{{-1}}")
+        try:
+            n = int((out or "").strip())
+        except ValueError:
+            n = -1
+        if n < 0:
+            self.t.push_log(bot_id, f"scribe mark: log not found ({path}) — is /log on?")
+            return
+        self._scribe_mark[bot_id] = n
+        self.t.update_bot(bot_id, scribe_marked=True)
+        self.t.push_event(bot_id, "scribe", f"marked log @ {n} lines — scribe the book, then Read scribed")
+
+    def scribe_read(self, bot_id: str) -> None:
+        asyncio.create_task(self._scribe_read_do(bot_id))
+
+    async def _scribe_read_do(self, bot_id: str) -> None:
+        from .recipes import parse_scribed_recipes
+        g, path = self._log_path(bot_id)
+        n = self._scribe_mark.get(bot_id)
+        if not path or n is None:
+            self.t.push_log(bot_id, "scribe read: mark the log first")
+            return
+        out = await asyncio.get_running_loop().run_in_executor(
+            None, g.exec_ps, f"if(Test-Path '{path}'){{Get-Content '{path}' | Select-Object -Skip {n}}}")
+        names = list(parse_scribed_recipes(out or "").keys())
+        if not names:
+            self.t.push_event(bot_id, "scribe", "no new scribed recipes since the mark")
+            self.t.push_log(bot_id, "scribe read: nothing new (scribe AFTER marking)")
+            return
+        queue = [{"name": nm, "count": 1, "done": 0, "search": ""} for nm in names]
+        self.t.update_bot(bot_id, mode="writ", queue=queue, scribe_marked=False)
+        self._scribe_mark.pop(bot_id, None)
+        self.t.push_event(bot_id, "scribe", f"{len(queue)} newly-scribed recipes -> queue (Save as… to name it)")
+
     def read_log(self, bot_id: str) -> None:
         asyncio.create_task(self._read_log(bot_id))
 
@@ -210,12 +268,8 @@ class ForgeController:
             self.t.push_log(bot_id, "read log: no crafter selected")
             self.t.push_event(bot_id, "log", "no character — pick a crafter first")
             return
+        _g, path = self._log_path(bot_id)
         cfg = self.cfg_profile.get("eq2_log", {}) or {}
-        log_dir = (cfg.get("dir")
-                   or r"C:\Users\Public\Daybreak Game Company\Installed Games"
-                      r"\EverQuest II\logs").rstrip("\\")
-        server = (self.cfg_profile.get("char_select", {}) or {}).get("server", "")
-        path = "\\".join(p for p in (log_dir, server, f"eq2log_{char}.txt") if p)
         tail = int(cfg.get("tail", 5000) or 5000)
         self.t.push_event(bot_id, "log", f"reading {char}'s chat log…")
         text = await asyncio.get_running_loop().run_in_executor(
