@@ -168,14 +168,10 @@ class CraftWorker:
             return False
         self.t.push_log(self.id, f"matched recipe row -> double-click {row_click}")
         # DOUBLE-click the row icon to LOAD the recipe (single only highlights it).
+        # DO NOT click the safe-spot here — that DESELECTS the recipe and kills the Begin
+        # button (the start then clicks a stale gold and nothing begins).
         await self._ex(partial(self.guest.double_click, row_click[0], row_click[1]))
-        await asyncio.sleep(click_settle)
-        # park focus on the craft window
-        foc = rs.get("focus_click")
-        if foc:
-            await self._ex(partial(self.guest.click, foc[0], foc[1], True))
-            await asyncio.sleep(click_settle)
-        await asyncio.sleep(float(timings.get("post_select", 0.5)))
+        await asyncio.sleep(float(timings.get("post_select", 0.4)))
         return True
 
     async def _focus_craft(self) -> None:
@@ -239,16 +235,22 @@ class CraftWorker:
         if got:
             self.t.push_log(self.id, f"captured {got} reaction-button references")
         self.t.update_bot(self.id, state="crafting")
-        # wait for the craft to actually START (the Begin/Retry button disappears) so we
-        # don't read the just-clicked pre-craft button as instant completion.
+        # CONFIRM the craft actually STARTED: the Begin button must disappear. If it's
+        # still there, the start click didn't take — BAIL instead of spamming arts into
+        # the combat hotbar (the "only 2,3" symptom). Caller retries the start.
         t0 = time.time()
-        while time.time() - t0 < float(timings.get("craft_start_timeout", 6.0)):
+        started = False
+        while time.time() - t0 < float(timings.get("craft_start_timeout", 4.0)):
             if self._stop.is_set():
                 return False
             await self._ex(self.guest.grab)
             if not await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
+                started = True
                 break
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(0.25)
+        if not started:
+            self.t.push_log(self.id, "craft did NOT start (Begin still up) — not spamming")
+            return False
 
         cycle_start = time.time()
         last_chat_check = cycle_start            # throttle the (slow) chat OCR

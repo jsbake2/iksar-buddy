@@ -162,9 +162,9 @@ class Guest:
                   'if !WinExist("EverQuest II")\n'
                   '    ExitApp\n'
                   'WinActivate("EverQuest II")\n'
-                  'Sleep 400\n'
+                  'Sleep 180\n'
                   f'MouseMove({int(x)}, {int(y)})\n'
-                  'Sleep 200\n'
+                  'Sleep 100\n'
                   f'Click("{int(x)} {int(y)} 2")\n')
         return self.run_ahk(script)
 
@@ -194,13 +194,15 @@ class Guest:
         Send("{Raw}…") via ibrun, the SAME proven mechanism as the login form
         (forge/login.py). Caller must focus the field first (click + settle)."""
         esc = (text or "").replace('"', '""')
+        # recipe names are lowercase+spaces (no Shift), so the slow 55,45 Shift-safe
+        # delay isn't needed — keep it snappy.
         script = ('SendMode "Event"\n'
-                  'SetKeyDelay 55, 45\n'
-                  'Sleep 250\n'
-                  'Send("^a")\nSleep 120\nSend("{Delete}")\nSleep 200\n'  # clear (idempotent retries)
+                  'SetKeyDelay 22, 12\n'
+                  'Sleep 100\n'
+                  'Send("^a")\nSleep 50\nSend("{Delete}")\nSleep 60\n'  # clear (idempotent retries)
                   f'Send("{{Raw}}{esc}")\n')
         if enter:
-            script += 'Sleep 300\nSend("{Enter}")\n'
+            script += 'Sleep 100\nSend("{Enter}")\n'
         return self.run_ahk(script)
 
     # -- input: hotkeys (keys.txt + ibkey AHK task, per guest) -------------
