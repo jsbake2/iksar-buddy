@@ -21,11 +21,17 @@ from __future__ import annotations
 
 import json
 import sys
+import threading
 import time
 import traceback
 from pathlib import Path
 
 import requests
+
+try:
+    from craft_reflex import CraftReflex
+except Exception:                      # noqa: BLE001 — skeleton still runs without it
+    CraftReflex = None
 
 HERE = Path(__file__).resolve().parent
 CFG_PATH = HERE / "agent.json"
@@ -65,6 +71,12 @@ class Agent:
         self.last_epoch = -1
         self.state = "idle"
         self.reactions = 0
+        # reflex (craft react loop) runs in its own thread; the poll loop watches it
+        self.reflex = None
+        self.reflex_thread = None
+        self.react_epoch = 0
+        self.done_epoch = None          # the react_epoch whose craft finished
+        self._stop_flag = False
 
     # -- comms -------------------------------------------------------------
     def poll_command(self) -> dict | None:
@@ -77,7 +89,11 @@ class Agent:
         return None
 
     def push(self, **extra) -> None:
-        body = {"state": self.state, "ver": VERSION, "reactions": self.reactions, **extra}
+        reactions = self.reflex.reactions if self.reflex else self.reactions
+        body = {"state": self.state, "ver": VERSION, "reactions": reactions,
+                "epoch": self.react_epoch,
+                "done": (self.done_epoch == self.react_epoch and self.react_epoch != 0),
+                **extra}
         try:
             self.s.post(self.tele_url, json=body, timeout=4)
         except requests.RequestException:
@@ -106,14 +122,40 @@ class Agent:
             time.sleep(self.period)
 
     def on_command(self, action: str, cmd: dict) -> None:
-        """Dispatch a NEW command. Phase 1: just track state. The Forge counter
-        ruleset (react until done) plugs in here in Phase 4."""
-        if action in ("idle", "stop"):
+        """Dispatch a NEW command (called once per epoch). 'react' = host handed off a
+        running craft: spin the reflex loop in its own thread. 'idle'/'stop' = halt it."""
+        if action == "react":
+            if CraftReflex is None:
+                log("react requested but craft_reflex unavailable")
+                self.state = "error"
+                return
+            self._stop_reflex()
+            self.react_epoch = int(cmd.get("epoch", 0))
+            self.done_epoch = None
+            self._stop_flag = False
+            self.reflex = CraftReflex(cmd, log, should_stop=lambda: self._stop_flag)
+            self.reflex_thread = threading.Thread(target=self._run_reflex, daemon=True)
+            self.reflex_thread.start()
+            self.state = "react"
+        else:                            # idle / stop / anything else -> halt the reflex
+            self._stop_reflex()
             self.state = "idle"
-        elif action == "react":
-            self.state = "react"     # placeholder; craft_reflex.run() lands here next
-        else:
-            self.state = action
+
+    def _run_reflex(self) -> None:
+        try:
+            ok = self.reflex.run()
+        except Exception:                # noqa: BLE001
+            log("reflex crashed:\n" + traceback.format_exc())
+            ok = False
+        if ok:
+            self.done_epoch = self.react_epoch
+        self.state = "idle"
+
+    def _stop_reflex(self) -> None:
+        self._stop_flag = True
+        t = self.reflex_thread
+        if t and t.is_alive():
+            t.join(timeout=2.0)
 
 
 def main() -> int:

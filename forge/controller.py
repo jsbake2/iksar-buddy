@@ -64,7 +64,10 @@ class ForgeController:
             bid = bot["id"]
             g = Guest(bot["dom"], bot.get("width", 1920), bot.get("height", 1080))
             self.guests[bid] = g
-            self.workers[bid] = CraftWorker(g, craft_profile, profile_dir, tele, bid, self.keymap)
+            self.workers[bid] = CraftWorker(
+                g, craft_profile, profile_dir, tele, bid, self.keymap,
+                agent_set=(lambda action, _b=bid, **p: self.set_agent_command(_b, action, **p)),
+                agent_get=(lambda _b=bid: self.agent_status(_b)))
             self.stations[bid] = bot
 
     def _creds(self, bot_id: str) -> tuple[str, str]:

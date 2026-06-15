@@ -30,13 +30,18 @@ WAIT_BUTTON_S = 30.0      # give up waiting for Begin/Retry after this (then idl
 
 class CraftWorker:
     def __init__(self, guest: Guest, profile: dict, profile_dir: Path,
-                 tele: ForgeTelemetry, bot_id: str, keymap: dict | None = None) -> None:
+                 tele: ForgeTelemetry, bot_id: str, keymap: dict | None = None,
+                 agent_set=None, agent_get=None) -> None:
         self.guest = guest
         self.cfg = profile                  # craft.yaml dict (calibration)
         self.profile_dir = profile_dir
         self.t = tele
         self.id = bot_id
         self.keymap = keymap or {}          # camp + arts keys (owner-configurable)
+        # in-guest reflex agent hooks (set by the controller): agent_set(action,**p)->epoch
+        # hands the running craft's reaction loop to the guest; agent_get()->status dict.
+        self._agent_set = agent_set
+        self._agent_get = agent_get
         self._pending: dict | None = None    # next job to run (set by start(), consumed by run())
         self._stop = asyncio.Event()
         self._paused = False
@@ -244,7 +249,67 @@ class CraftWorker:
         self._last_counter = n
         return True                              # counter present -> handled (skip filler)
 
-    # -- one craft cycle ----------------------------------------------------
+    # -- react: hand off to the in-guest agent, else fall back host-side -----
+    def _agent_alive(self) -> bool:
+        if not (self._agent_set and self._agent_get):
+            return False
+        try:
+            return bool(self._agent_get().get("alive"))
+        except Exception:                        # noqa: BLE001
+            return False
+
+    def _ruleset(self) -> dict:
+        """The reaction config the guest agent needs (from craft.yaml + keymap). Sent in
+        the 'react' command so the guest holds no state; one source of truth on the host."""
+        c = self.cfg
+        timings = c.get("timings", {}) or {}
+        return {
+            "reaction": c.get("reaction", {}) or {},
+            "durability_mode": c.get("durability_mode", {}) or {},
+            "done_detect": c.get("done_detect", {}) or {},
+            "begin": c.get("begin", {}) or {},
+            "retry": c.get("retry", {}) or {},
+            "game_present": c.get("game_present", {}) or {},
+            "chat_input": c.get("chat_input", {}) or {},
+            "arts": {"durability": self._arts("durability"), "progress": self._arts("progress")},
+            "loop_sleep": float(timings.get("agent_loop_sleep", timings.get("loop_sleep", 0.03))),
+            "done_check_interval": float(timings.get("done_check_interval", 0.5)),
+            "max_craft_time": float(timings.get("max_craft_time", 90.0)),
+        }
+
+    async def _react(self, gate_power: bool = True) -> bool:
+        """React to counters until the craft completes. Prefer the IN-GUEST agent (fast
+        local mss+cv2 loop, tens-of-ms reactions); fall back to the host-side loop if the
+        agent isn't alive. The host has already confirmed the craft is RUNNING."""
+        if self._agent_alive():
+            return await self._react_via_agent()
+        return await self._craft_cycle(gate_power=gate_power)
+
+    async def _react_via_agent(self) -> bool:
+        """Hand the running craft to the guest agent and wait for its done signal."""
+        await self._focus_craft()                # ensure EQ2 has focus before the agent presses
+        epoch = self._agent_set("react", **self._ruleset())
+        self.t.update_bot(self.id, state="crafting")
+        self.t.push_log(self.id, f"handed craft to in-guest agent (epoch {epoch})")
+        max_t = float(self.cfg.get("timings", {}).get("max_craft_time", 90.0)) + 15.0
+        t0 = time.time()
+        while not self._stop.is_set() and time.time() - t0 < max_t:
+            await self._wait_unpaused()
+            await asyncio.sleep(0.2)
+            st = self._agent_get() or {}
+            if int(st.get("epoch", -1)) == epoch:
+                self.t.update_bot(self.id, reactions=int(st.get("reactions", 0) or 0))
+                if st.get("done"):
+                    self._agent_set("idle")
+                    return True
+            if not st.get("alive"):              # agent died mid-craft -> finish host-side
+                self.t.push_log(self.id, "agent went silent mid-craft — taking over host-side")
+                self._agent_set("idle")
+                return await self._craft_cycle()
+        self._agent_set("idle")
+        return False
+
+    # -- one craft cycle (HOST-SIDE fallback) -------------------------------
     async def _craft_cycle(self, gate_power: bool = True) -> bool:
         """Counter-FIRST loop until the craft completes. When no counter is up, send
         the filler sequence (1-2-3 in durability mode / 4-5-6 in progress mode) then
@@ -361,7 +426,7 @@ class CraftWorker:
             if not started:
                 self.t.push_log(self.id, f"couldn't start craft {done + 1}/{count} — stopping")
                 break
-            if await self._craft_cycle(gate_power=gate_power):
+            if await self._react(gate_power=gate_power):
                 self.t.push_log(self.id, f"craft {done + 1}/{count} complete")
                 done += 1
                 self.t.update_bot(self.id, count={"done": done, "total": count},
