@@ -81,6 +81,7 @@ recipe_select:
   # wrap to two lines, so the OCR region is ~44px tall. match_threshold = fraction of
   # recipe word-tokens that must appear in a row to accept it.
   match_threshold: 0.6
+  focus_attempts: 3                # retry focus+type if the list didn't filter
   result_rows:
     - {region: {x: 246, y: 264, w: 200, h: 46}, click: [244, 282]}   # row 1: OCR name, click icon
     - {region: {x: 246, y: 309, w: 200, h: 40}, click: [244, 325]}   # row 2: OCR name, click icon

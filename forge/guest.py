@@ -123,15 +123,23 @@ class Guest:
         return self.region_png(x, y, w, h)
 
     # -- input: mouse (GUEST-SIDE click, the healer-proven path) -----------
-    def click(self, x: int, y: int) -> bool:
+    def click(self, x: int, y: int, wait: bool = False) -> bool:
         """Left-click at guest pixel (x,y). Uses the SAME mechanism the healer's
         accept-dialog helpers use (validated live): write the pixel coords to
         C:\\ib\\click.txt and fire the 'ibgclick' scheduled task, so an AHK script
         clicks natively INSIDE the guest at true 1920x1080 coords. The host
-        qemu input-send-event path mis-registered in EQ2's UI, so we don't use it."""
+        qemu input-send-event path mis-registered in EQ2's UI, so we don't use it.
+
+        wait=True BLOCKS until the ibgclick task actually finishes (task State back to
+        'Ready'), so the click is GUARANTEED landed before the caller proceeds — use it
+        before typing into a field, where a not-yet-landed focus-click would let the
+        keystrokes leak into the game world."""
         ps = (f"Set-Content C:\\ib\\click.txt '{int(x)} {int(y)}' -NoNewline; "
               f"Start-ScheduledTask -TaskName ibgclick")
-        return self.exec_ps(ps, wait=False) is not None
+        if wait:
+            ps += ("; $n=0; while((Get-ScheduledTask -TaskName ibgclick).State "
+                   "-eq 'Running' -and $n -lt 50){Start-Sleep -Milliseconds 80; $n++}")
+        return self.exec_ps(ps, wait=True if wait else False) is not None
 
     # -- input: typing into the GAME WORLD (virsh send-key scancodes) ------
     def type_text(self, s: str, enter: bool = False) -> None:
@@ -162,6 +170,7 @@ class Guest:
         script = ('SendMode "Event"\n'
                   'SetKeyDelay 55, 45\n'
                   'Sleep 250\n'
+                  'Send("^a")\nSleep 120\nSend("{Delete}")\nSleep 200\n'  # clear (idempotent retries)
                   f'Send("{{Raw}}{esc}")\n')
         if enter:
             script += 'Sleep 300\nSend("{Enter}")\n'

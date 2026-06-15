@@ -98,41 +98,50 @@ class CraftWorker:
 
     # -- recipe selection --------------------------------------------------
     async def _select_recipe(self, name: str, trade_class: str) -> bool:
-        """Focus the search field, type the recipe name, ENTER to filter, click the
-        first result, then park focus on the craft window. Returns False if it bailed.
+        """Focus the search field, type the recipe name, filter, click the matching
+        row's icon, then park focus on the craft window. Returns False on failure.
 
-        CRITICAL (clicks are async ibgclick scheduled-tasks, ~1-2s to register, while
-        type_text is instant): we MUST settle long enough after the focus-click or the
-        letters land in the GAME WORLD as hotkeys (opening windows) — or, if chat is
-        open, in chat. So: long focus settle + a chat-safety gate before typing."""
+        Focusing the EQ2 search box is intermittent (a single ibgclick sometimes only
+        activates the window, not the field). So we focus+type+verify in a RETRY loop:
+        the proof of focus is that the result list FILTERED (match_recipe_row finds the
+        recipe). The focus-click WAITS for the click to land (wait=True) so we never
+        type into a not-yet-focused box, and typing is gated on chat-safety. Only after
+        a verified match do we click the row icon to select it."""
         rs = self.cfg.get("recipe_select", {})
         timings = self.cfg.get("timings", {})
         click_settle = float(timings.get("click_settle", 0.8))
-        type_settle = float(timings.get("pre_type_settle", 1.5))   # focus must be SOLID
-        # optional clear (the X) — coord still unverified, off by default
-        clr = rs.get("clear_click")
-        if rs.get("use_clear") and clr:
-            await self._ex(self.guest.click, clr[0], clr[1])
-            await asyncio.sleep(click_settle)
-        # FOCUS the search field
+        type_settle = float(timings.get("pre_type_settle", 1.5))
+        query = search_name(name, trade_class)
         sb = rs.get("search_click")
-        if sb:
-            await self._ex(self.guest.click, sb[0], sb[1])
-            await asyncio.sleep(type_settle)
-        # gate typing on chat-safety so the name can NEVER land in chat (the invariant)
-        await self._ex(self.guest.grab)
-        if not await self._ex(sensors.chat_safe, self.guest, self.cfg):
-            self._aborted += 1
-            self.t.push_log(self.id, "recipe type ABORTED (chat unsafe / not in-world)")
-            return False
-        # AHK Event-mode {Raw} — EQ2 UI fields ignore virsh send-key (type_text)
-        await self._ex(self.guest.type_field, search_name(name, trade_class), True)
-        await asyncio.sleep(float(timings.get("post_search", 0.6)))
-        # OCR the candidate result rows; click the one that matches the recipe name
-        # (never click a non-matching row -> never craft the wrong recipe).
-        row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
+        attempts = int(rs.get("focus_attempts", 3))
+
+        row_click = None
+        for i in range(1, attempts + 1):
+            if self._stop.is_set():
+                return False
+            # focus the search field — double click (1st may only activate the window),
+            # the 2nd WAITS for the click to land before we type.
+            if sb:
+                await self._ex(self.guest.click, sb[0], sb[1])
+                await asyncio.sleep(click_settle)
+                await self._ex(partial(self.guest.click, sb[0], sb[1], True))
+                await asyncio.sleep(type_settle)
+            # chat-safety gate: never type unless in-world + chat clear (the invariant)
+            await self._ex(self.guest.grab)
+            if not await self._ex(sensors.chat_safe, self.guest, self.cfg):
+                self._aborted += 1
+                self.t.push_log(self.id, "recipe type ABORTED (chat unsafe / not in-world)")
+                return False
+            # AHK Event-mode {Raw} — EQ2 UI fields ignore virsh send-key (type_text)
+            await self._ex(self.guest.type_field, query, True)
+            await asyncio.sleep(float(timings.get("post_search", 0.6)))
+            # verify focus WORKED by the list filtering to a matching row
+            row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
+            if row_click:
+                break
+            self.t.push_log(self.id, f"search not focused (attempt {i}/{attempts}) — retrying")
         if not row_click:
-            self.t.push_log(self.id, f"recipe '{name}' not matched in the result rows — skipping")
+            self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             return False
         self.t.push_log(self.id, f"matched recipe row -> click {row_click}")
         await self._ex(self.guest.click, row_click[0], row_click[1])
