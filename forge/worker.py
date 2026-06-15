@@ -301,9 +301,16 @@ class CraftWorker:
         if not await self._select_recipe(name, trade_class):
             return 0                              # bailed (chat-unsafe / not in-world)
         self.t.push_log(self.id, f"recipe selected: {name} — running {count} craft(s)")
+        create = (self.cfg.get("create", {}) or {}).get("click")
         done = 0
         while done < count and not self._stop.is_set():
-            # wait for Begin/Retry (fail-safe: times out if uncalibrated)
+            # CREATE opens the craft setup so the gold Begin appears at (784,707) — even
+            # from a polluted post-craft state (art-bar/green-arrow). Owner: "click the
+            # name, then Create." Then we click Begin to actually start crafting.
+            if create:
+                await self._ex(partial(self.guest.click, create[0], create[1], True))
+                await asyncio.sleep(timings.get("post_begin", 0.5))
+            # wait for Begin/Retry (fail-safe: times out if it never appears)
             t0 = time.time()
             while time.time() - t0 < WAIT_BUTTON_S and not self._stop.is_set():
                 await self._ex(self.guest.grab)
@@ -311,7 +318,7 @@ class CraftWorker:
                     break
                 await asyncio.sleep(0.4)
             else:
-                self.t.push_log(self.id, f"no Begin/Retry for {name} (calibration?) — skipping")
+                self.t.push_log(self.id, f"no Begin after Create for {name} — skipping")
                 break
             if self._stop.is_set():
                 break
