@@ -88,7 +88,7 @@ recipe_select:
   # recipe word-tokens that must appear in a row to accept it.
   match_threshold: 0.6
   focus_attempts: 3                # retry focus+type if the list didn't filter
-  match_polls: 3                   # poll the list ~3x (post_search apart) before re-typing
+  match_polls: 4                   # poll the list ~4x (post_search apart) before re-typing
   result_rows:
     - {region: {x: 246, y: 264, w: 200, h: 46}, click: [244, 282]}   # row 1: OCR name, click icon
     - {region: {x: 246, y: 309, w: 200, h: 40}, click: [244, 325]}   # row 2: OCR name, click icon
@@ -188,8 +188,8 @@ timings:
   pause_low_mana: 2.5      # longer pause when mana is low (still interruptible)
   # wait=True clicks already CONFIRM the click landed, so settles can be short.
   click_settle: 0.25       # brief UI-react pause after a (confirmed) click
-  pre_type_settle: 0.8     # after the search focus-click, before typing
-  post_search: 0.3         # after name+ENTER, per match poll
+  pre_type_settle: 1.2     # after the search focus-click, before typing
+  post_search: 0.5         # after name+ENTER, per match poll
   post_select: 0.4         # after the double-click load (recipe must register)
   post_begin: 0.3          # after Begin/Create
   post_focus: 0.2          # after the craft-window focus click
