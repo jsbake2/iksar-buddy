@@ -7,3 +7,32 @@
 lists:
   leather-bags-test:
     - {name: rawhide leather backpack, count: 5, search: rawhide leather back}
+
+  # Scribed from a recipe book on Robskin 2026-06-15 (parsed from the EQ2 log).
+  # count defaults to 1; tune counts/search per recipe in the writ pane as needed.
+  scribed-book-1:
+    - {name: Iron Reverent Boots, count: 1}
+    - {name: Burlap Slippers, count: 1}
+    - {name: Tanned Leather Boots, count: 1}
+    - {name: Tranquil Burlap Slippers, count: 1}
+    - {name: Iron Kite Shield, count: 1}
+    - {name: Iron Tower Shield, count: 1}
+    - {name: Imbued Iron Kite Shield, count: 1}
+    - {name: Imbued Iron Tower Shield, count: 1}
+    - {name: Tanned Leather Bandolier, count: 1}
+    - {name: Iron Dirk, count: 1}
+    - {name: Iron Falchion, count: 1}
+    - {name: Iron Flamberge, count: 1}
+    - {name: Iron Short Sword, count: 1}
+    - {name: Iron Stiletto, count: 1}
+    - {name: Blessed Iron Dirk, count: 1}
+    - {name: Blessed Iron Falchion, count: 1}
+    - {name: Blessed Iron Flamberge, count: 1}
+    - {name: Blessed Iron Short Sword, count: 1}
+    - {name: Blessed Iron Stiletto, count: 1}
+    - {name: Imbued Tanned Leather Bandolier, count: 1}
+    - {name: Imbued Iron Dirk, count: 1}
+    - {name: Imbued Iron Falchion, count: 1}
+    - {name: Imbued Iron Flamberge, count: 1}
+    - {name: Imbued Iron Short Sword, count: 1}
+    - {name: Imbued Iron Stiletto, count: 1}
