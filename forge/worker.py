@@ -321,28 +321,26 @@ class CraftWorker:
 
         done = 0
         while done < count and not self._stop.is_set():
-            # The double-click usually already shows Begin@784,707. Click Begin DIRECTLY
-            # — clicking Create FIRST when Begin is already up breaks the start (verified
-            # live). Only if Begin is absent (polluted state) do we click Create to
-            # reveal it, then wait again.
-            if not await _wait_begin(6.0):
-                if create:
-                    await self._ex(partial(self.guest.click, create[0], create[1], True))
-                    await asyncio.sleep(timings.get("post_begin", 0.5))
-                if not await _wait_begin(8.0):
-                    self.t.push_log(self.id, f"no Begin for {name} — skipping")
-                    break
-            if self._stop.is_set():
+            # Start the craft. Two states:
+            #  - loaded recipe -> Begin@784,707 is showing: click Begin (verified: starts it).
+            #  - 'Create | art-bar | green-↻' (post-craft / polluted): NO Begin, CREATE
+            #    starts the next craft directly (owner-confirmed). Don't wait for Begin then.
+            if await _wait_begin(6.0):
+                which = await self._ex(sensors.begin_or_retry, self.guest, self.cfg)
+                clk = (self.cfg.get(which or "begin", {}) or {}).get("click")
+                start = which
+            elif create:
+                clk = create
+                start = "create"
+            else:
+                self.t.push_log(self.id, f"no Begin/Create for {name} — skipping")
                 break
             if self._stop.is_set():
                 break
-            # press Begin/Retry (click + confirm), then run the cycle
-            which = await self._ex(sensors.begin_or_retry, self.guest, self.cfg)
-            clk = (self.cfg.get(which or "begin", {}) or {}).get("click")
-            self.t.push_log(self.id, f"{which} -> start craft {done + 1}/{count}")
+            self.t.push_log(self.id, f"{start} -> start craft {done + 1}/{count}")
             if clk:
-                # Click Begin/Retry to start the craft (wait=True so it lands). NO Enter
-                # confirm — in-world ENTER opens the chat bar; the click alone starts it.
+                # click to start (wait=True so it lands). NO Enter confirm — in-world
+                # ENTER opens the chat bar; the click alone starts the craft.
                 await self._ex(partial(self.guest.click, clk[0], clk[1], True))
                 await asyncio.sleep(timings.get("post_begin", 0.5))
             if await self._craft_cycle(gate_power=gate_power):
