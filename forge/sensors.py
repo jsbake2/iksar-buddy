@@ -71,6 +71,30 @@ def begin_or_retry(guest: Guest, cfg: dict) -> str | None:
     return None
 
 
+def craft_complete_chat(guest: Guest, cfg: dict) -> bool:
+    """AUTHORITATIVE craft-complete signal: the game prints 'You gain tradeskill XP!'
+    / 'You created <item>.' on completion. The button states vary too much to detect
+    reliably (Begin vs Create vs a green retry arrow vs the art bar), so we OCR the top
+    chat lines instead. Returns True if a completion line is currently showing."""
+    reg = (cfg.get("complete_chat", {}) or {}).get("region")
+    if not reg or not guest.grab():
+        return False
+    try:
+        pre = subprocess.run(
+            ["magick", guest.ppm, "-crop",
+             f"{reg['w']}x{reg['h']}+{reg['x']}+{reg['y']}", "+repage",
+             "-colorspace", "Gray", "-threshold", "45%", "png:-"],
+            capture_output=True, timeout=5).stdout
+        if not pre:
+            return False
+        txt = subprocess.run(["tesseract", "stdin", "stdout", "--psm", "6"],
+                             input=pre, capture_output=True, timeout=8
+                             ).stdout.decode(errors="replace").lower()
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return ("tradeskill xp" in txt) or ("you created" in txt) or ("you made" in txt)
+
+
 # ---- chat safety (the inviolable invariant, PROJECT.md §6.2) ----------------
 def game_present(guest: Guest, cfg: dict) -> bool:
     """In-world check: the self power bar (blue) is rendered, proving we're in the

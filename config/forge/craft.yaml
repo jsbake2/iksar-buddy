@@ -145,6 +145,12 @@ chat_input:
   region: {x: 50, y: 1019, w: 208, h: 22}
   bright_threshold: 25
 
+# --- craft-complete chat signal (authoritative completion) -------------------
+# OCR the TOP chat lines for 'You gain tradeskill XP!' / 'You created <item>.' — the
+# button states (Begin/Create/green-arrow/art-bar) vary too much to detect reliably.
+complete_chat:
+  region: {x: 15, y: 715, w: 560, h: 70}
+
 # --- EQ2 chat log (scribed-recipe gathering) ---------------------------------
 # "Read recipes from log" parses scribed-recipe lines (Recipe: "X" put in recipe
 # book) out of the client chat log. EQ2 writes one log per character at

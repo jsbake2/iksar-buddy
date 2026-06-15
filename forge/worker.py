@@ -247,14 +247,24 @@ class CraftWorker:
                 break
             await asyncio.sleep(0.3)
 
+        cycle_start = time.time()
+        last_chat_check = cycle_start            # throttle the (slow) chat OCR
         while not self._stop.is_set():
             await self._wait_unpaused()
             if self._stop.is_set():
                 return False
+            # AUTHORITATIVE completion: the chat 'tradeskill XP / You created' line.
+            # The button states (Begin/Create/green-arrow/art-bar) are too variable to
+            # detect reliably. Throttled + only after the craft has run a few seconds
+            # (so the PREVIOUS craft's line doesn't false-fire).
+            now = time.time()
+            if now - cycle_start > 3.0 and now - last_chat_check > 1.5:
+                last_chat_check = now
+                if await self._ex(sensors.craft_complete_chat, self.guest, self.cfg):
+                    self.t.push_log(self.id, "craft complete (chat: tradeskill XP)")
+                    return True
             await self._ex(self.guest.grab)
-            # COMPLETION FIRST — Begin/Retry returning = craft done. Checked before the
-            # counter so a noisy counter-match can't starve completion (the loop would
-            # otherwise `continue` forever and never see the craft finish).
+            # also accept the Begin/Retry button if it does reappear (fast path)
             if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
                 return True
             mode = await self._ex(sensors.durability_mode, self.guest, self.cfg) or "progress"
