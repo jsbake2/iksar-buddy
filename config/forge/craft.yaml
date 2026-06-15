@@ -84,18 +84,15 @@ recipe_select:
   clear_click:  [443, 181]         # the X clear button (owner-marked; between the glass icon and the ▼)
   search_click: [349, 180]         # search input field — CLICKED + settled BEFORE typing (else keys hit the game)
   focus_click:  [837, 144]         # mouse-safe craft-window spot (keeps focus off hotbar/chat)
-  # The filtered result can land in one of two candidate rows. Per row we OCR the NAME
-  # rectangle (`region`) and, if its words match the searched recipe, click the row's
-  # ICON SQUARE (`click`) — the name text is NOT the selectable hotspot, the icon is
-  # (owner-marked: OCR the yellow/blue name, click the red/green icon). The name can
-  # wrap to two lines, so the OCR region is ~44px tall. match_threshold = fraction of
-  # recipe word-tokens that must appear in a row to accept it.
+  # Rows render at a VARIABLE Y (result count / 2-line name wrap), so we OCR the WHOLE
+  # list, find the recipe by name wherever it is, and click its ICON column at that row's
+  # actual Y (double-click loads it). icon_x = the icon column; list_region = the rows
+  # area (name column; difficulty is filtered out). match_threshold = token-overlap frac.
   match_threshold: 0.6
   focus_attempts: 3                # retry focus+type if the list didn't filter
   match_polls: 4                   # poll the list ~4x (post_search apart) before re-typing
-  result_rows:
-    - {region: {x: 246, y: 264, w: 200, h: 46}, click: [244, 282]}   # row 1: OCR name, click icon
-    - {region: {x: 246, y: 309, w: 200, h: 40}, click: [244, 325]}   # row 2: OCR name, click icon
+  icon_x: 244                      # icon column (the selectable hotspot, left of the name)
+  list_region: {x: 225, y: 195, w: 320, h: 485}   # the recipe rows area (OCR'd whole)
 
 # Click here before pressing arts so keys land in the CRAFT WINDOW, not the hotbar/
 # chat (FORGE.md §5 focus discipline). The owner's "mouse safe" point.

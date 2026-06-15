@@ -298,37 +298,39 @@ def find_character(guest: Guest, cfg: dict, target: str) -> tuple[int, int] | No
 
 
 def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | None:
-    """After a recipe search, the wanted result can land in one of N candidate rows
-    (recipe_select.result_rows). OCR each row's region, match against the searched
-    `name` (token overlap, tolerant of an OCR slip and of extra words like 'pristine'),
-    and return the CLICK point of the best-matching row — or None if none clears the
-    threshold (so we never click/craft the wrong recipe). Owner-confirmed approach."""
+    """Find the searched recipe ANYWHERE in the filtered list and return the click point
+    of its row's ICON (icon_x, actual row Y). The rows render at a variable Y (depends on
+    result count / name wrap), so we OCR the WHOLE list region, group words into rows by
+    Y, score each row by recipe-token overlap, and click the best row above threshold.
+    Returns None if nothing clears it (so we never load the wrong recipe)."""
     rs = cfg.get("recipe_select", {})
-    rows = rs.get("result_rows") or []
+    region = rs.get("list_region") or {"x": 225, "y": 195, "w": 320, "h": 485}
     want = [t for t in re.findall(r"[a-z]+", (name or "").lower()) if len(t) >= 3]
-    if not rows or not want:
+    if not want:
         return None
-    best, best_words, best_score = None, [], 0.0
-    for row in rows:
-        words = _ocr_words(guest, row.get("region", {}))
-        blob = _alpha(" ".join(w["text"] for w in words))
-        if not blob:
-            continue
+    words = [w for w in _ocr_words(guest, region) if w["x"] < region["x"] + 230]  # name col, skip difficulty
+    if not words:
+        return None
+    # group words into rows by Y (a wrapped 2-line name spans ~16px, so bucket ~26px)
+    words.sort(key=lambda w: w["y"])
+    rows: list[list] = []
+    for w in words:
+        if rows and w["y"] - rows[-1][-1]["y"] <= 26:
+            rows[-1].append(w)
+        else:
+            rows.append([w])
+    best, best_score = None, 0.0
+    for ws in rows:
+        blob = _alpha(" ".join(w["text"] for w in ws))
         score = sum(1 for t in want if _contains(blob, t)) / len(want)
-        log.debug("recipe row %s score=%.2f blob=%r", row.get("click"), score, blob)
+        log.debug("recipe row y=%s score=%.2f blob=%r", ws[0]["y"], score, blob)
         if score > best_score:
-            best_score, best, best_words = score, row, words
+            best_score, best = score, ws
     if not best or best_score < float(rs.get("match_threshold", 0.6)):
         return None
-    # Click the row's ICON COLUMN (x from config) at the ACTUAL row Y where the name
-    # OCR'd — the rows shift vertically (name wraps to 1-2 lines), so a fixed Y misses.
-    # The caller DOUBLE-clicks this to load the recipe (single only highlights).
-    clk = best.get("click")
-    if not clk:
-        return None
-    ys = [w["y"] + w["h"] // 2 for w in best_words]
-    y = sum(ys) // len(ys) if ys else int(clk[1])
-    return (int(clk[0]), y)
+    icon_x = int(rs.get("icon_x", 244))
+    y = sum(w["y"] + w["h"] // 2 for w in best) // len(best)   # center of the matched row
+    return (icon_x, y)
 
 
 def _alpha(s: str) -> str:

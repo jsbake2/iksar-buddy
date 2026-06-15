@@ -123,7 +123,21 @@ class CraftWorker:
         timings = self.cfg.get("timings", {})
         click_settle = float(timings.get("click_settle", 0.8))
         type_settle = float(timings.get("pre_type_settle", 1.5))
-        query = search_name(name, trade_class)
+        # EQ2's search field TRUNCATES long input (~18 chars), so "rawhide leather
+        # backpack" becomes "rawhide leather ba" and matches unrelated "...leather..."
+        # recipes. Use the TRAILING words that fit — the most distinctive part — so the
+        # list filters precisely (owner-flagged: chop long names to fit the field).
+        full = search_name(name, trade_class)
+        maxlen = int(rs.get("search_maxlen", 18))
+        query = full
+        if len(full) > maxlen:
+            ws = full.split()
+            query = ws[-1]
+            for w in reversed(ws[:-1]):
+                if len(w) + 1 + len(query) <= maxlen:
+                    query = f"{w} {query}"
+                else:
+                    break
         sb = rs.get("search_click")
         attempts = int(rs.get("focus_attempts", 3))
 
