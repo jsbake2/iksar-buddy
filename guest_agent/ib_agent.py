@@ -32,6 +32,10 @@ try:
     from craft_reflex import CraftReflex
 except Exception:                      # noqa: BLE001 — skeleton still runs without it
     CraftReflex = None
+try:
+    from heal_reflex import HealReflex
+except Exception:                      # noqa: BLE001
+    HealReflex = None
 
 HERE = Path(__file__).resolve().parent
 CFG_PATH = HERE / "agent.json"
@@ -57,6 +61,16 @@ def load_cfg() -> dict:
     except (OSError, ValueError) as e:
         log(f"cfg load failed ({e}); using defaults {cfg}")
     return cfg
+
+
+def _load_local(name: str) -> dict:
+    """Load a ruleset shipped to the guest (e.g. heal.json) when the command doesn't
+    carry one — lets the healer run before the host-brain integration exists."""
+    try:
+        return json.loads((HERE / name).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        log(f"local ruleset {name} load failed: {e}")
+        return {}
 
 
 class Agent:
@@ -89,11 +103,15 @@ class Agent:
         return None
 
     def push(self, **extra) -> None:
-        reactions = self.reflex.reactions if self.reflex else self.reactions
-        body = {"state": self.state, "ver": VERSION, "reactions": reactions,
+        rx = self.reflex
+        body = {"state": self.state, "ver": VERSION,
+                "reactions": getattr(rx, "reactions", self.reactions) if rx else self.reactions,
                 "epoch": self.react_epoch,
                 "done": (self.done_epoch == self.react_epoch and self.react_epoch != 0),
                 **extra}
+        if rx is not None and hasattr(rx, "heals"):        # healer telemetry
+            body["heals"] = getattr(rx, "heals", 0)
+            body["cures"] = getattr(rx, "cures", 0)
         try:
             self.s.post(self.tele_url, json=body, timeout=4)
         except requests.RequestException:
@@ -123,23 +141,33 @@ class Agent:
 
     def on_command(self, action: str, cmd: dict) -> None:
         """Dispatch a NEW command (called once per epoch). 'react' = host handed off a
-        running craft: spin the reflex loop in its own thread. 'idle'/'stop' = halt it."""
+        running craft; 'heal' = run the healer monitor loop; both spin a reflex thread.
+        'idle'/'stop' = halt it."""
         if action == "react":
-            if CraftReflex is None:
-                log("react requested but craft_reflex unavailable")
-                self.state = "error"
+            if not self._start_reflex(CraftReflex, cmd, "react", "craft_reflex"):
                 return
-            self._stop_reflex()
             self.react_epoch = int(cmd.get("epoch", 0))
             self.done_epoch = None
-            self._stop_flag = False
-            self.reflex = CraftReflex(cmd, log, should_stop=lambda: self._stop_flag)
-            self.reflex_thread = threading.Thread(target=self._run_reflex, daemon=True)
-            self.reflex_thread.start()
-            self.state = "react"
+        elif action == "heal":
+            rs = cmd if cmd.get("pixels") else _load_local("heal.json")
+            if not self._start_reflex(HealReflex, rs, "heal", "heal_reflex"):
+                return
         else:                            # idle / stop / anything else -> halt the reflex
             self._stop_reflex()
             self.state = "idle"
+
+    def _start_reflex(self, cls, ruleset, state, name) -> bool:
+        if cls is None or not ruleset:
+            log(f"{state} requested but {name} unavailable / no ruleset")
+            self.state = "error"
+            return False
+        self._stop_reflex()
+        self._stop_flag = False
+        self.reflex = cls(ruleset, log, should_stop=lambda: self._stop_flag)
+        self.reflex_thread = threading.Thread(target=self._run_reflex, daemon=True)
+        self.reflex_thread.start()
+        self.state = state
+        return True
 
     def _run_reflex(self) -> None:
         try:
