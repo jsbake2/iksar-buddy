@@ -21,9 +21,11 @@ log = logging.getLogger("ib.agent.client")
 
 
 class Agent:
-    def __init__(self, host: str, port: int, capture_hz: float = 12.0) -> None:
+    def __init__(self, host: str, port: int, capture_hz: float = 12.0,
+                 no_act: bool = False) -> None:
         self.host, self.port = host, port
         self.capture_hz = capture_hz
+        self.no_act = no_act          # sense-only: log COMMANDs, never inject (validation)
         self.cap = Capture()
         self.guard = ChatGuard(calibration={})
         self.inj = Injector(self.guard)
@@ -74,6 +76,9 @@ class Agent:
         key = msg.data.get("key", "")
         if role.startswith("_"):  # control: _pause/_resume/_estop
             log.info("control: %s", role[1:])
+            return
+        if self.no_act:
+            log.info("cmd %s key=%r -> (sense-only, not pressed)", role, key)
             return
         sent = self.inj.guarded_press(key, self._sampler)
         log.info("cmd %s key=%r -> %s", role, key, "sent" if sent else "BLOCKED(chat-safety)")

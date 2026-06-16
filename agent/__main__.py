@@ -23,6 +23,8 @@ def main() -> None:
     p.add_argument("--brain", default="192.168.122.1", help="brain host (NAT gateway by default)")
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--hz", type=float, default=12.0, help="capture/sense rate")
+    p.add_argument("--no-act", action="store_true",
+                   help="sense-only: stream state but never inject (validation)")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args()
 
@@ -31,7 +33,7 @@ def main() -> None:
     if setproctitle is not None:
         setproctitle.setproctitle("ib")
 
-    agent = Agent(args.brain, args.port, capture_hz=args.hz)
+    agent = Agent(args.brain, args.port, capture_hz=args.hz, no_act=args.no_act)
     try:
         asyncio.run(agent.run())
     except KeyboardInterrupt:
