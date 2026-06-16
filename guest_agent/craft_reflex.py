@@ -65,6 +65,7 @@ class CraftReflex:
         self._cnt_baseline = None        # (mean_r, mean_g) when the counter icon appeared
         self._cnt_resolved = None         # None | "green" (success) | "red" (fail)
         self._cnt_last_press = 0.0
+        self._cnt_key = None              # the art key pressed for the current counter (debug)
         self.fails = 0
 
     # -- sensors (mss, local) ---------------------------------------------
@@ -238,20 +239,41 @@ class CraftReflex:
                         self._cnt_baseline = (mr, mg)
                         self._cnt_resolved = None
                         self._cnt_last_press = 0.0
+                        self._cnt_key = None
+                        # DEBUG: dump the durability/progress bars + mode pixel at onset so we
+                        # can VERIFY the mode the agent picked (the failing counters are
+                        # progress-mode; is the bar actually progress, or misread?).
+                        if debug:
+                            d = self.r.get("durability_mode", {}) or {}
+                            loc = d.get("location") or [857, 261]
+                            mpx = _pixel(sct, loc[0], loc[1])
+                            ck = self.arts["durability"]
+                            self.log(f"counter#{n} ONSET mode={mode} durpx@{loc}={mpx} "
+                                     f"counterkey={ck[n-1] if 1<=n<=len(ck) else '?'}")
+                            try:
+                                cv2.imwrite(str(dbg_dir / f"bars_{dbg_n:02d}_{mode}_n{n}.png"),
+                                            _grab(sct, 560, 250, 340, 40))
+                            except Exception:        # noqa: BLE001
+                                pass
                     if self._cnt_resolved is None and self._cnt_baseline:
                         dg = mg - self._cnt_baseline[1]
                         dr = mr - self._cnt_baseline[0]
                         if dg >= green_delta and dg > dr:
                             self._cnt_resolved = "green"; self.reactions += 1
-                            self.log(f"counter#{n} ({mode}) SUCCESS (green, dg={dg:.0f})")
+                            self.log(f"counter#{n} ({mode}) key={self._cnt_key} SUCCESS (green, dg={dg:.0f} dr={dr:.0f})")
                         elif dr >= red_delta and dr > dg:
                             self._cnt_resolved = "red"; self.fails += 1
-                            self.log(f"counter#{n} ({mode}) FAILED (red, dr={dr:.0f})")
+                            self.log(f"counter#{n} ({mode}) key={self._cnt_key} FAILED (red, dr={dr:.0f} dg={dg:.0f})")
                     now = time.time()
                     if self._cnt_resolved is None and safe and now - self._cnt_last_press >= press_interval:
-                        key = self.arts[mode][n - 1] if 1 <= n <= len(self.arts[mode]) else None
+                        # COUNTERS always use the icon's art (1/2/3), NOT mode-dependent.
+                        # The 4/5/6 are the progress PUMP (filler), they don't counter
+                        # anything — verified: pressing 5 whiffs, pressing 2 clears it.
+                        ck = self.arts["durability"]
+                        key = ck[n - 1] if 1 <= n <= len(ck) else None
                         if key:
                             self._press(key)
+                            self._cnt_key = key
                             self._cnt_last_press = now
                     if debug and dbg_n < 80:
                         base = self._cnt_baseline or (0, 0)
