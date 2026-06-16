@@ -402,13 +402,27 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
             rows[-1].append(w)
         else:
             rows.append([w])
-    best, best_score = None, 0.0
+    # Variant modifiers denote a DIFFERENT recipe: a row carrying "Imbued"/"Blessed"
+    # that the TARGET name does not have is never our recipe (owner rule). Without
+    # this, "Imbued Iron Chainmail Coat" token-matches "Iron Chainmail Coat" 1:1
+    # (the surplus word is invisible to coverage scoring) and we load the wrong row.
+    modifiers = [m.lower() for m in rs.get("variant_modifiers", ["imbued", "blessed"])]
+    name_l = (name or "").lower()
+    forbidden = [m for m in modifiers if m not in name_l]
+    want_len = sum(len(t) for t in want)
+    best, best_score, best_extra = None, 0.0, 1 << 30
     for ws in rows:
         blob = _alpha(" ".join(w["text"] for w in ws))
+        if any(_contains(blob, f) for f in forbidden):
+            log.debug("recipe row y=%s REJECT (variant modifier) blob=%r", ws[0]["y"], blob)
+            continue
         score = sum(1 for t in want if _contains(blob, t)) / len(want)
-        log.debug("recipe row y=%s score=%.2f blob=%r", ws[0]["y"], score, blob)
-        if score > best_score:
-            best_score, best = score, ws
+        # surplus letters beyond the wanted tokens — prefer the EXACT row on ties so
+        # a shorter exact name beats any longer "<prefix> <name> <suffix>" variant.
+        extra = max(0, len(blob) - want_len)
+        log.debug("recipe row y=%s score=%.2f extra=%d blob=%r", ws[0]["y"], score, extra, blob)
+        if score > best_score or (score == best_score and extra < best_extra):
+            best, best_score, best_extra = ws, score, extra
     if not best or best_score < float(rs.get("match_threshold", 0.6)):
         return None
     icon_x = int(rs.get("icon_x", 244))

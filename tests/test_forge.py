@@ -89,3 +89,42 @@ def test_account_lock_unmapped_is_free():
         lk = AccountLock(d)
         # empty account name = no lock needed (always succeeds)
         assert lk.acquire("", "anyone")[0]
+
+
+# ---- recipe row matching (variant disambiguation) --------------------------
+def _row(words, y, x0=240, h=14):
+    """Synthetic OCR row: spread words across the name column at a fixed Y."""
+    return [{"text": t, "x": x0 + i * 18, "y": y, "h": h} for i, t in enumerate(words)]
+
+
+def test_match_recipe_row_rejects_imbued_variant(monkeypatch):
+    """'Iron Chainmail Coat' must NOT match 'Imbued Iron Chainmail Coat' (owner rule:
+    a variant modifier the target lacks is never the right row). Regression for the
+    clear-and-retry thrash when both rows token-cover the target 1:1."""
+    from forge import sensors
+    fake = _row(["Imbued", "Iron", "Chainmail", "Coat"], y=210) + \
+           _row(["Iron", "Chainmail", "Coat"], y=250)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Iron Chainmail Coat")
+    assert pt is not None, "exact row should match"
+    assert abs(pt[1] - 250) <= 8, f"should click the plain row (~y=250), got {pt}"
+
+
+def test_match_recipe_row_prefers_exact_over_suffix(monkeypatch):
+    """On a tie, the exact name beats a longer '<name> of <thing>' variant."""
+    from forge import sensors
+    fake = _row(["Sapphire", "Ring", "of", "Power"], y=210) + \
+           _row(["Sapphire", "Ring"], y=250)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Sapphire Ring")
+    assert pt is not None and abs(pt[1] - 250) <= 8, f"should pick exact 'Sapphire Ring', got {pt}"
+
+
+def test_match_recipe_row_keeps_modifier_when_target_has_it(monkeypatch):
+    """If the target itself IS the imbued variant, that row is allowed."""
+    from forge import sensors
+    fake = _row(["Imbued", "Iron", "Chainmail", "Coat"], y=210) + \
+           _row(["Iron", "Chainmail", "Coat"], y=250)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Imbued Iron Chainmail Coat")
+    assert pt is not None and abs(pt[1] - 210) <= 8, f"should pick the imbued row, got {pt}"
