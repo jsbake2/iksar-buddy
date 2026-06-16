@@ -114,9 +114,8 @@
 .src-btn { flex:1 1 calc(50% - 3px); min-width:120px; padding:9px 8px; border-radius:9px; cursor:pointer;
   font-size:12px; font-weight:600; background:var(--panel2); color:var(--fg); border:1px solid var(--line); transition:.12s; }
 .src-btn:hover { border-color:var(--accent); filter:brightness(1.08); }
-.src-btn.armed { color:var(--good); border-color:color-mix(in srgb,var(--good) 60%,var(--line));
-  background:color-mix(in srgb,var(--good) 14%,transparent); animation:pulse 1.4s ease-in-out infinite; }
-@keyframes pulse { 0%,100% { filter:brightness(1); } 50% { filter:brightness(1.25); } }
+.src-btn.armed { color:var(--good); border-color:color-mix(in srgb,var(--good) 55%,var(--line));
+  background:color-mix(in srgb,var(--good) 12%,transparent); }
 .src-btn.bot-addrow { flex:1 1 100%; color:var(--muted); border-style:dashed; }
 .queue-head { display:grid; grid-template-columns:1.3fr 1fr 52px 30px; gap:8px; font-size:9px;
   text-transform:uppercase; letter-spacing:.6px; color:var(--faint); padding:0 4px; }

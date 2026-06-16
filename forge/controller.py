@@ -245,13 +245,15 @@ class ForgeController:
         out = await asyncio.get_running_loop().run_in_executor(
             None, g.exec_ps, f"if(Test-Path '{path}'){{Get-Content '{path}' | Select-Object -Skip {n}}}")
         names = list(parse_scribed_recipes(out or "").keys())
+        # ALWAYS un-arm (clear the mark + button state) so it can't get stuck armed.
+        self._scribe_mark.pop(bot_id, None)
+        self.t.update_bot(bot_id, scribe_marked=False)
         if not names:
             self.t.push_event(bot_id, "scribe", "no new scribed recipes since the mark")
             self.t.push_log(bot_id, "scribe read: nothing new (scribe AFTER marking)")
             return
         queue = [{"name": nm, "count": 1, "done": 0, "search": ""} for nm in names]
-        self.t.update_bot(bot_id, mode="writ", queue=queue, scribe_marked=False)
-        self._scribe_mark.pop(bot_id, None)
+        self.t.update_bot(bot_id, mode="writ", queue=queue)
         self.t.push_event(bot_id, "scribe", f"{len(queue)} newly-scribed recipes -> queue (Save as… to name it)")
 
     def read_log(self, bot_id: str) -> None:
