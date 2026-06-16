@@ -13,6 +13,7 @@ import time
 from shared import protocol as proto
 from shared.protocol import Message
 
+from . import guest_sense
 from .capture import Capture
 from .chat_guard import ChatGuard
 from .inject import Injector
@@ -30,6 +31,7 @@ class Agent:
         self.guard = ChatGuard(calibration={})
         self.inj = Injector(self.guard)
         self.calibration: dict = {}
+        self._evstate = guest_sense.EventState()   # combat/rez/chat state, like host_agent
         self._writer: asyncio.StreamWriter | None = None
         self._seq = 0
 
@@ -87,20 +89,12 @@ class Agent:
         period = 1.0 / self.capture_hz
         while True:
             t0 = time.time()
-            have = self.cap.grab()
-            chat_safe = self.guard.is_safe(self._sampler) if have else False
-            members = self.cap.read_hp_bars(self.calibration) if have else []
-            await self._send(
-                proto.STATE_EVENT,
-                members=members,
-                own_power=1.0,
-                casting=False,
-                pending_cures=[],
-                ae_incoming=False,
-                group_ward_up=True,
-                chat_safe=chat_safe,
-                aborted_injections=self.guard.aborted_injections,
-            )
+            if self.cap.grab():
+                # full host_sensor-grade read off the in-guest mss frame, processed
+                # into the same STATE_EVENT the brain gets from host_agent (just faster).
+                world = guest_sense.read_world(self.cap._frame)
+                event = self._evstate.to_event(world, aborted=self.guard.aborted_injections)
+                await self._send(proto.STATE_EVENT, **event)
             await asyncio.sleep(max(0.0, period - (time.time() - t0)))
 
     async def _heartbeat_loop(self) -> None:
