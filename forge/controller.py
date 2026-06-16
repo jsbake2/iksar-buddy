@@ -61,6 +61,7 @@ class ForgeController:
         self._agent_cmd: dict[str, dict] = {}
         self._agent_tele: dict[str, dict] = {}
         self._scribe_mark: dict[str, int] = {}   # per-bot EQ2-log line count at "mark"
+        self._shutting_down: set[str] = set()    # bots mid auto-shutdown (don't re-trigger)
         for bot in stations.get("bots", []):
             bid = bot["id"]
             g = Guest(bot["dom"], bot.get("width", 1920), bot.get("height", 1080))
@@ -119,7 +120,10 @@ class ForgeController:
         self.t.push_event(bot_id, "control", "enabled" if on else "disabled")
 
     def configure(self, bot_id: str, **fields) -> None:
-        clean = {k: v for k, v in fields.items() if k in ("trade_class", "mode", "recipe", "search")}
+        clean = {k: v for k, v in fields.items()
+                 if k in ("trade_class", "mode", "recipe", "search")}
+        if "shutdown_when_done" in fields:
+            clean["shutdown_when_done"] = bool(fields["shutdown_when_done"])
         if "count" in fields:
             try:
                 clean["count"] = {"done": 0, "total": max(1, int(fields["count"]))}
@@ -140,6 +144,7 @@ class ForgeController:
         if not self._acquire(bot_id):
             self.t.update_bot(bot_id, state="error")
             return
+        self._shutting_down.discard(bot_id)        # new job -> re-arm auto-shutdown
         if mode == "writ":
             w.start("writ", trade_class, queue=b.get("queue", []))
             self.t.push_event(bot_id, "craft", f"writ start ({len(b.get('queue', []))} recipes)")
@@ -500,6 +505,40 @@ class ForgeController:
         self.t.update_bot(bot_id, vm_running=False)
         self.t.push_event(bot_id, "control", "VM shutdown sent" if ok else "VM shutdown FAILED")
 
+    async def _auto_shutdown(self, bot_id: str) -> None:
+        """List finished + 'shutdown when done' set: camp out, then power off the VM.
+        Triggered once by the run loop when the bot reaches 'done'."""
+        g = self.guests.get(bot_id)
+        if not g:
+            return
+        loop = asyncio.get_running_loop()
+        self.t.push_event(bot_id, "control", "list complete -> camp + power off")
+        # camp out cleanly (same as the Camp button) before pulling the VM down
+        camp = (self.keymap.get("camp") or "Ctrl+-").strip()
+        try:
+            if camp.startswith("/"):
+                ci = (self.cfg_profile.get("chat_input", {}) or {}).get("region")
+                if ci:
+                    await loop.run_in_executor(None, g.click,
+                                               ci["x"] + ci["w"] // 2, ci["y"] + ci["h"] // 2)
+                    await asyncio.sleep(0.4)
+                await loop.run_in_executor(None, g.type_text, camp, True)
+            else:
+                await loop.run_in_executor(None, g.press_keys, camp)
+            self.t.push_event(bot_id, "control", f"camping ({camp})")
+            await asyncio.sleep(float(self.cfg_profile.get("timings", {}).get("camp_wait", 28.0)))
+        except Exception as e:                       # noqa: BLE001 — never let it hang the power-off
+            self.t.push_log(bot_id, f"camp before shutdown failed ({e}); powering off anyway")
+        self._release(bot_id)
+        self.t.update_bot(bot_id, state="off")
+        self.t.push_event(bot_id, "control", "powering off VM")
+        await loop.run_in_executor(None, g.exec_ps,
+                                   "Stop-Process -Name EverQuest2 -Force -ErrorAction SilentlyContinue", False)
+        await asyncio.sleep(2)
+        ok = await loop.run_in_executor(None, g.shutdown_vm)
+        self.t.update_bot(bot_id, vm_running=False)
+        self.t.push_event(bot_id, "control", "VM powered off" if ok else "VM power-off FAILED")
+
     # -- supervisor: run worker tasks + refresh held locks ----------------
     async def run(self) -> None:
         tasks = [asyncio.create_task(w.run()) for w in self.workers.values()]
@@ -508,10 +547,16 @@ class ForgeController:
             while True:
                 # fast (2s): refresh each bot's agent-health flag for the dashboard
                 for bid in list(self.workers):
-                    seen = (self.t.bot(bid) or {}).get("agent_seen")
+                    b = self.t.bot(bid) or {}
+                    seen = b.get("agent_seen")
                     up = bool(seen and (time.time() - seen) < 5.0)
-                    if (self.t.bot(bid) or {}).get("agent_up") != up:
+                    if b.get("agent_up") != up:
                         self.t.update_bot(bid, agent_up=up)
+                    # auto power-off: list finished + the toggle set -> camp + shut down once
+                    if b.get("state") == "done" and b.get("shutdown_when_done") \
+                            and bid not in self._shutting_down:
+                        self._shutting_down.add(bid)
+                        asyncio.create_task(self._auto_shutdown(bid))
                 if tick % 15 == 0:                                    # slow (30s): account locks
                     for bid in list(self.workers):
                         acct = self._account(bid)

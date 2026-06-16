@@ -182,3 +182,9 @@
 .events .k[data-k="power"] { color:var(--warn); }
 .events .k[data-k="launch"] { color:var(--accent2); }
 .events .k[data-k="queue"] { color:var(--accent); }
+
+/* power-off-when-done toggle */
+.shutdone-toggle { display:flex; align-items:center; gap:7px; margin:8px 2px 2px; cursor:pointer;
+  font-size:11px; color:var(--muted); user-select:none; }
+.shutdone-toggle input { accent-color:var(--bad); width:14px; height:14px; cursor:pointer; }
+.shutdone-toggle:hover { color:var(--fg); }

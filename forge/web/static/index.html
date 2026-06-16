@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ib · forge</title>
   <link rel="stylesheet" href="themes.css?v=20260614" />
-  <link rel="stylesheet" href="forge.css?v=20260615d" />
+  <link rel="stylesheet" href="forge.css?v=20260615e" />
 </head>
 <body>
   <!-- top bar -->
@@ -145,6 +145,9 @@
         <button class="big-combat stop bot-stop">⏹ Stop</button>
         <button class="big-combat auto bot-pause">⏸</button>
       </div>
+      <label class="shutdone-toggle" title="when the list/batch finishes, camp out and power off this VM">
+        <input type="checkbox" class="bot-shutdone" /> <span>⏻ Power off VM when list done</span>
+      </label>
       <div class="bot-sysrow">
         <button class="util bot-launch" title="power on the VM and log in this character">▶ Launch</button>
         <button class="util bot-camp" title="camp out to char-select (/camp)">⏏ Camp</button>
@@ -179,6 +182,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260615d"></script>
+  <script src="app.js?v=20260615e"></script>
 </body>
 </html>

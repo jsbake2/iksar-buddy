@@ -140,6 +140,7 @@ function buildBotPanel(bot, tradeClasses) {
     stMode: q(".st-mode"),
     power: q(".bot-power"),
     stPower: q(".st-power"),
+    shutdone: q(".bot-shutdone"),
     start: q(".bot-start"),
     stop: q(".bot-stop"),
     pause: q(".bot-pause"),
@@ -166,6 +167,7 @@ function buildBotPanel(bot, tradeClasses) {
     const c = selectedCrafter(refs);
     if (c) post(`/api/bot/${id}/config`, { character: c.character, trade_class: c.class });
   };
+  refs.shutdone.onchange = () => post(`/api/bot/${id}/config`, { shutdown_when_done: refs.shutdone.checked });
   refs.recipe.onchange = () => post(`/api/bot/${id}/config`, { recipe: refs.recipe.value });
   refs.search.onchange = () => post(`/api/bot/${id}/config`, { search: refs.search.value });
   refs.count.onchange = () => post(`/api/bot/${id}/config`, { count: parseInt(refs.count.value) || 1 });
@@ -307,6 +309,9 @@ function updateBotPanel(refs, bot) {
     refs.scribe.textContent = bot.scribe_marked ? "📖 Read scribed ▸" : "📖 Mark for scribe";
     refs.scribe.classList.toggle("armed", !!bot.scribe_marked);
   }
+
+  if (refs.shutdone && document.activeElement !== refs.shutdone)
+    refs.shutdone.checked = !!bot.shutdown_when_done;
 
   renderQueue(refs, bot.queue);
 
