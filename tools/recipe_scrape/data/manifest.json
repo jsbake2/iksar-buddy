@@ -1,0 +1,105 @@
+{
+  "main": [
+    {
+      "class": "Alchemist",
+      "file": "alchemist.json",
+      "recipes": 5237,
+      "groups": 117,
+      "min_level": 10,
+      "max_level": 130
+    },
+    {
+      "class": "Armorer",
+      "file": "armorer.json",
+      "recipes": 2378,
+      "groups": 117,
+      "min_level": 10,
+      "max_level": 130
+    },
+    {
+      "class": "Artisan",
+      "file": "artisan.json",
+      "recipes": 1129,
+      "groups": 16,
+      "min_level": 1,
+      "max_level": 130
+    },
+    {
+      "class": "Carpenter",
+      "file": "carpenter.json",
+      "recipes": 2030,
+      "groups": 117,
+      "min_level": 10,
+      "max_level": 130
+    },
+    {
+      "class": "Jeweler",
+      "file": "jeweler.json",
+      "recipes": 5808,
+      "groups": 117,
+      "min_level": 10,
+      "max_level": 130
+    },
+    {
+      "class": "Provisioner",
+      "file": "provisioner.json",
+      "recipes": 964,
+      "groups": 117,
+      "min_level": 10,
+      "max_level": 130
+    },
+    {
+      "class": "Sage",
+      "file": "sage.json",
+      "recipes": 9158,
+      "groups": 117,
+      "min_level": 10,
+      "max_level": 130
+    },
+    {
+      "class": "Tailor",
+      "file": "tailor.json",
+      "recipes": 2466,
+      "groups": 117,
+      "min_level": 10,
+      "max_level": 130
+    },
+    {
+      "class": "Weaponsmith",
+      "file": "weaponsmith.json",
+      "recipes": 3544,
+      "groups": 117,
+      "min_level": 10,
+      "max_level": 130
+    },
+    {
+      "class": "Woodworker",
+      "file": "woodworker.json",
+      "recipes": 1604,
+      "groups": 117,
+      "min_level": 10,
+      "max_level": 130
+    }
+  ],
+  "side": [
+    {
+      "class": "Adorner",
+      "file": "adorner.json",
+      "recipes": 1164,
+      "groups": 356
+    },
+    {
+      "class": "Misc",
+      "file": "misc.json",
+      "recipes": 1207,
+      "groups": 700
+    },
+    {
+      "class": "Tinkerer",
+      "file": "tinkerer.json",
+      "recipes": 409,
+      "groups": 157
+    }
+  ],
+  "total_rows": 37098
+}

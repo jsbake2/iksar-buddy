@@ -1,0 +1,6020 @@
+{
+  "10": [
+    {
+      "recipe": "Baked Crab",
+      "recipe_id": "3805867939",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Baked Grouper",
+      "recipe_id": "4262544616",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Blessed Bone Buckler",
+      "recipe_id": "1758428868",
+      "book": "advanced craftsman volume 10",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Bone Club",
+      "recipe_id": "1107776624",
+      "book": "advanced craftsman volume 10",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Club",
+      "recipe_id": "2650492321",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Buckler",
+      "recipe_id": "3476436826",
+      "book": "advanced craftsman volume 10",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bone Club",
+      "recipe_id": "2924412938",
+      "book": "advanced craftsman volume 10",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Candied Fire Melon",
+      "recipe_id": "2835599341",
+      "book": "advanced craftsman volume 10",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Carrot Kalish",
+      "recipe_id": "1796540295",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Firewine",
+      "recipe_id": "581135808",
+      "book": "advanced craftsman volume 10",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Bone Club",
+      "recipe_id": "3948163823",
+      "book": "advanced craftsman volume 10",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Club",
+      "recipe_id": "715558394",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Club",
+      "recipe_id": "2947139430",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Orange Cider",
+      "recipe_id": "4161590846",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine halfling jimba drum",
+      "recipe_id": "212145133",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine tall halfling drum",
+      "recipe_id": "2584365653",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a red holiday candle",
+      "recipe_id": "1885306990",
+      "book": "craftsman essentials volume 10",
+      "category": "TS Essentials"
+    }
+  ],
+  "100": [
+    {
+      "recipe": "Allu'thoa Pepper Puffer",
+      "recipe_id": "3720077145",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Brokenskull Private Reserve",
+      "recipe_id": "2687119604",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bunker Family Meatball",
+      "recipe_id": "1509790333",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "C.R.E.",
+      "recipe_id": "1832212589",
+      "book": "Advanced Provisioner Volume 100",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Cerodon Pie",
+      "recipe_id": "1710838298",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handama Wrapped Fillet",
+      "recipe_id": "2046361661",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Highhold Frost Lager",
+      "recipe_id": "1428862538",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Highhold Sour Toddy",
+      "recipe_id": "146548081",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Malice Mead",
+      "recipe_id": "2607099635",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Peppered Thresher Steak",
+      "recipe_id": "1524083055",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pterodon Club Sandwich",
+      "recipe_id": "2270867147",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sanguine Blanc",
+      "recipe_id": "1695560587",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Soldier's Tot",
+      "recipe_id": "3487553655",
+      "book": "Advanced Provisioner Volume 100",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Stewed Pepper",
+      "recipe_id": "3774557529",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sulfur Cider",
+      "recipe_id": "817613142",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sulfur Tepache",
+      "recipe_id": "1291372908",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tortured Surimi",
+      "recipe_id": "2792090171",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Toutou",
+      "recipe_id": "1734238227",
+      "book": "Provisioner Essentials Volume 100",
+      "category": "TS Essentials"
+    }
+  ],
+  "101": [
+    {
+      "recipe": "Houska",
+      "recipe_id": "534016520",
+      "book": "Provisioner Essentials Volume 101",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tapas",
+      "recipe_id": "644694380",
+      "book": "Provisioner Essentials Volume 101",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Totopo",
+      "recipe_id": "2295229188",
+      "book": "Provisioner Essentials Volume 101",
+      "category": "TS Essentials"
+    }
+  ],
+  "102": [
+    {
+      "recipe": "Flame Ember Juice",
+      "recipe_id": "1125431077",
+      "book": "Provisioner Essentials Volume 102",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Gua-bao",
+      "recipe_id": "2147989798",
+      "book": "Provisioner Essentials Volume 102",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stormwrought Tea",
+      "recipe_id": "2462132526",
+      "book": "Provisioner Essentials Volume 102",
+      "category": "TS Essentials"
+    }
+  ],
+  "103": [
+    {
+      "recipe": "Ada",
+      "recipe_id": "896648908",
+      "book": "Provisioner Essentials Volume 103",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fried Nightmare",
+      "recipe_id": "2070399180",
+      "book": "Provisioner Essentials Volume 103",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jerk Talpidae",
+      "recipe_id": "932859041",
+      "book": "Provisioner Essentials Volume 103",
+      "category": "TS Essentials"
+    }
+  ],
+  "104": [
+    {
+      "recipe": "Blackjack's Distillation",
+      "recipe_id": "2420198295",
+      "book": "Provisioner Essentials Volume 104",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Breaded Cichlid",
+      "recipe_id": "744124260",
+      "book": "Provisioner Essentials Volume 104",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stormwrought Casserole",
+      "recipe_id": "1806430088",
+      "book": "Provisioner Essentials Volume 104",
+      "category": "TS Essentials"
+    }
+  ],
+  "105": [
+    {
+      "recipe": "Endless Void",
+      "recipe_id": "1731255172",
+      "book": "Provisioner Essentials Volume 105",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Khandvi",
+      "recipe_id": "747497805",
+      "book": "Provisioner Essentials Volume 105",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Nanaimo Bar",
+      "recipe_id": "1698011051",
+      "book": "Provisioner Essentials Volume 105",
+      "category": "TS Essentials"
+    }
+  ],
+  "106": [
+    {
+      "recipe": "Arrowroot",
+      "recipe_id": "2085341754",
+      "book": "Provisioner Essentials Volume 106",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chebakia",
+      "recipe_id": "2642845762",
+      "book": "Provisioner Essentials Volume 106",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jaffa",
+      "recipe_id": "178043214",
+      "book": "Provisioner Essentials Volume 106",
+      "category": "TS Essentials"
+    }
+  ],
+  "107": [
+    {
+      "recipe": "Fairy Bread",
+      "recipe_id": "3298361732",
+      "book": "Provisioner Essentials Volume 107",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Nightmare Brew",
+      "recipe_id": "3471727911",
+      "book": "Provisioner Essentials Volume 107",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tincture of the Storm",
+      "recipe_id": "4290971597",
+      "book": "Provisioner Essentials Volume 107",
+      "category": "TS Essentials"
+    }
+  ],
+  "108": [
+    {
+      "recipe": "Atole",
+      "recipe_id": "699501814",
+      "book": "Provisioner Essentials Volume 108",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Roast Talpidae",
+      "recipe_id": "1567755200",
+      "book": "Provisioner Essentials Volume 108",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stormwrought Stew",
+      "recipe_id": "1634333443",
+      "book": "Provisioner Essentials Volume 108",
+      "category": "TS Essentials"
+    }
+  ],
+  "109": [
+    {
+      "recipe": "Double Distilled Jack",
+      "recipe_id": "913532454",
+      "book": "Provisioner Essentials Volume 109",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Greatmole Sandwich",
+      "recipe_id": "2711593547",
+      "book": "Provisioner Essentials Volume 109",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stormwrought Twist",
+      "recipe_id": "2559584294",
+      "book": "Provisioner Essentials Volume 109",
+      "category": "TS Essentials"
+    }
+  ],
+  "11": [
+    {
+      "recipe": "Blessed Bone Knotted Club",
+      "recipe_id": "2293395288",
+      "book": "advanced craftsman volume 11",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Knotted Club",
+      "recipe_id": "3945921268",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Blue Blaze",
+      "recipe_id": "1817919895",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Knotted Club",
+      "recipe_id": "1205799603",
+      "book": "advanced craftsman volume 11",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bone Round Shield",
+      "recipe_id": "1233560216",
+      "book": "advanced craftsman volume 11",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Elephant Steak",
+      "recipe_id": "1379648440",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Bone Knotted Club",
+      "recipe_id": "1044254024",
+      "book": "advanced craftsman volume 11",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Bone Round Shield",
+      "recipe_id": "3869175551",
+      "book": "advanced craftsman volume 11",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Knotted Club",
+      "recipe_id": "252726811",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Knotted Club",
+      "recipe_id": "3087483257",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rusty Cogturner",
+      "recipe_id": "2980696112",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vulrich Steak",
+      "recipe_id": "4022055177",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine Freeport bedside table",
+      "recipe_id": "3603594554",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine gnome resting chair",
+      "recipe_id": "1689815807",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine standard maple double bed",
+      "recipe_id": "2661505723",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine standard single maple bed",
+      "recipe_id": "2397278029",
+      "book": "craftsman essentials volume 11",
+      "category": "TS Essentials"
+    }
+  ],
+  "110": [
+    {
+      "recipe": "Abernethy",
+      "recipe_id": "722839139",
+      "book": "Provisioner's Primer Volume 05",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Amazake",
+      "recipe_id": "326093682",
+      "book": "Provisioner's Primer Volume 01",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Aqua Pura",
+      "recipe_id": "2038248992",
+      "book": "Provisioner's Primer Volume 08",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Archivist Snaps",
+      "recipe_id": "3456000475",
+      "book": "Provisioner's Primer Volume 05",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Aviak Flank",
+      "recipe_id": "445687050",
+      "book": "Provisioner's Primer Volume 04",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Awuidor Punch",
+      "recipe_id": "3928806353",
+      "book": "Provisioner's Primer Volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bixel Wing Noodles",
+      "recipe_id": "942367425",
+      "book": "Provisioner's Primer Volume 06",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Blasted Bitterballen",
+      "recipe_id": "303859558",
+      "book": "Provisioner's Primer Volume 01",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bleak Scone",
+      "recipe_id": "1217341847",
+      "book": "Provisioner's Primer Volume 03",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bonda",
+      "recipe_id": "3614620496",
+      "book": "Provisioner's Primer Volume 03",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bubonian Kimchi",
+      "recipe_id": "2784060721",
+      "book": "Provisioner's Primer Volume 02",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Crawler Brew",
+      "recipe_id": "1599840924",
+      "book": "Provisioner's Primer Volume 08",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Croquette",
+      "recipe_id": "3204068783",
+      "book": "Provisioner's Primer Volume 07",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Custard Toast",
+      "recipe_id": "1781721159",
+      "book": "Provisioner's Primer Volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dolma",
+      "recipe_id": "3835091280",
+      "book": "Provisioner Essentials Volume 110",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elemental Cracker",
+      "recipe_id": "1875907693",
+      "book": "Provisioner's Primer Volume 04",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Eryslai Espresso",
+      "recipe_id": "2461838956",
+      "book": "Provisioner's Primer Volume 09",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Firestorm",
+      "recipe_id": "1692747361",
+      "book": "Provisioner's Primer Volume 05",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Flitter Fricassee",
+      "recipe_id": "1838142785",
+      "book": "Provisioner's Primer Volume 06",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jann Morada",
+      "recipe_id": "4092633876",
+      "book": "Provisioner's Primer Volume 08",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jopal Stew",
+      "recipe_id": "3119930043",
+      "book": "Provisioner's Primer Volume 09",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Judicator's Taftan",
+      "recipe_id": "903606770",
+      "book": "Advanced Provisioner Studies",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Justice Smoothie",
+      "recipe_id": "3075622779",
+      "book": "Advanced Provisioner Studies",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Malarian Stout",
+      "recipe_id": "2798769533",
+      "book": "Provisioner's Primer Volume 10",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Matron's Cobbler",
+      "recipe_id": "2584408777",
+      "book": "Advanced Provisioner Volume 110",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mud Golem Reduction",
+      "recipe_id": "925381031",
+      "book": "Provisioner's Primer Volume 04",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Nimbic Cider",
+      "recipe_id": "4217099056",
+      "book": "Provisioner's Primer Volume 01",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Nosh",
+      "recipe_id": "3686355024",
+      "book": "Provisioner's Primer Volume 02",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Obsidian Void",
+      "recipe_id": "1480602983",
+      "book": "Provisioner Essentials Volume 110",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pakora",
+      "recipe_id": "4198707505",
+      "book": "Provisioner's Primer Volume 07",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Phoenix Egg Omelette",
+      "recipe_id": "3885848112",
+      "book": "Provisioner's Primer Volume 02",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tejuino",
+      "recipe_id": "902226527",
+      "book": "Provisioner Essentials Volume 110",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vegarlson Candies",
+      "recipe_id": "2787045624",
+      "book": "Provisioner's Primer Volume 06",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vegarlson Hefeweizen",
+      "recipe_id": "1751428801",
+      "book": "Provisioner's Primer Volume 03",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wandering Waffle",
+      "recipe_id": "2859637449",
+      "book": "Provisioner's Primer Volume 09",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wilder Mash",
+      "recipe_id": "300209997",
+      "book": "Provisioner's Primer Volume 07",
+      "category": "TS Essentials"
+    }
+  ],
+  "111": [
+    {
+      "recipe": "Bloodguard Bloody Mary",
+      "recipe_id": "4272009346",
+      "book": "Provisioner's Primer Volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bogling Burger",
+      "recipe_id": "3867602025",
+      "book": "Provisioner's Primer Volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shik'Nar Sake",
+      "recipe_id": "2297086072",
+      "book": "Provisioner's Primer Volume 11",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Twice Fried Bogling Burger",
+      "recipe_id": "966934162",
+      "book": "Provisioner's Primer Volume 11",
+      "category": "TS Essentials"
+    }
+  ],
+  "112": [
+    {
+      "recipe": "Deathspeaker's Totte",
+      "recipe_id": "4138627315",
+      "book": "Provisioner's Primer Volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sanctum Sherry",
+      "recipe_id": "844590767",
+      "book": "Provisioner's Primer Volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stonesgrabber",
+      "recipe_id": "940450383",
+      "book": "Provisioner's Primer Volume 12",
+      "category": "TS Essentials"
+    }
+  ],
+  "113": [
+    {
+      "recipe": "Festering Mushroom Mash",
+      "recipe_id": "967018835",
+      "book": "Provisioner's Primer Volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Grimling Gumbo",
+      "recipe_id": "3578630140",
+      "book": "Provisioner's Primer Volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sambata Sangria",
+      "recipe_id": "2490074808",
+      "book": "Provisioner's Primer Volume 13",
+      "category": "TS Essentials"
+    }
+  ],
+  "114": [
+    {
+      "recipe": "Festerling Feast",
+      "recipe_id": "3658454180",
+      "book": "Provisioner's Primer Volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Gor Taku Tacos",
+      "recipe_id": "98482985",
+      "book": "Provisioner's Primer Volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shak Dratha Gulash",
+      "recipe_id": "1772560264",
+      "book": "Provisioner's Primer Volume 14",
+      "category": "TS Essentials"
+    }
+  ],
+  "115": [
+    {
+      "recipe": "Pickled Silkworm",
+      "recipe_id": "1422553560",
+      "book": "Provisioner's Primer Volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Saurek Spritzer",
+      "recipe_id": "3191625531",
+      "book": "Provisioner's Primer Volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shar Vahl Soder",
+      "recipe_id": "2821969711",
+      "book": "Provisioner's Primer Volume 15",
+      "category": "TS Essentials"
+    }
+  ],
+  "116": [
+    {
+      "recipe": "Dried Chrysolis Chips",
+      "recipe_id": "3773778958",
+      "book": "Provisioner's Primer Volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hopling Trailmix",
+      "recipe_id": "1178237106",
+      "book": "Provisioner's Primer Volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shissar Snacks",
+      "recipe_id": "1455195348",
+      "book": "Provisioner's Primer Volume 16",
+      "category": "TS Essentials"
+    }
+  ],
+  "117": [
+    {
+      "recipe": "Candied Needlite",
+      "recipe_id": "3860131647",
+      "book": "Provisioner's Primer Volume 17",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fungus Covered Shroom",
+      "recipe_id": "2328741219",
+      "book": "Provisioner's Primer Volume 17",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sanctum Snacks",
+      "recipe_id": "1791887523",
+      "book": "Provisioner's Primer Volume 17",
+      "category": "TS Essentials"
+    }
+  ],
+  "118": [
+    {
+      "recipe": "Breaded Bogling",
+      "recipe_id": "142683791",
+      "book": "Provisioner's Primer Volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Firefall Candies",
+      "recipe_id": "3507083156",
+      "book": "Provisioner's Primer Volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Grimling Gummies",
+      "recipe_id": "378191192",
+      "book": "Provisioner's Primer Volume 18",
+      "category": "TS Essentials"
+    }
+  ],
+  "119": [
+    {
+      "recipe": "Bogling Sours",
+      "recipe_id": "1458276920",
+      "book": "Provisioner's Primer Volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rockhopper Taffy",
+      "recipe_id": "2780510131",
+      "book": "Provisioner's Primer Volume 19",
+      "category": "TS Essentials"
+    }
+  ],
+  "12": [
+    {
+      "recipe": "Antonican Coffee",
+      "recipe_id": "775030346",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Blessed Bone Cudgel",
+      "recipe_id": "1158862688",
+      "book": "advanced craftsman volume 12",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Buckler",
+      "recipe_id": "3867858073",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Blessed Maple Cudgel",
+      "recipe_id": "4027039312",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Cudgel",
+      "recipe_id": "2724189909",
+      "book": "advanced craftsman volume 12",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Crab Cake",
+      "recipe_id": "3656941205",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Bone Cudgel",
+      "recipe_id": "599208813",
+      "book": "advanced craftsman volume 12",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Cudgel",
+      "recipe_id": "2071045488",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Maple Round Shield",
+      "recipe_id": "2350445649",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Buckler",
+      "recipe_id": "4134835949",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Cudgel",
+      "recipe_id": "1032524079",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Round Shield",
+      "recipe_id": "2362656355",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pan Seared Grouper",
+      "recipe_id": "4091472734",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "The Zombie",
+      "recipe_id": "238455008",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine bone bookcase",
+      "recipe_id": "2508990191",
+      "book": "advanced craftsman volume 12",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine bone dining chair",
+      "recipe_id": "252131323",
+      "book": "advanced craftsman volume 12",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine bone militia bench",
+      "recipe_id": "2394035325",
+      "book": "advanced craftsman volume 12",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine maple bookcase",
+      "recipe_id": "3867410720",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine maple dining chair",
+      "recipe_id": "1105910946",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine short maple shelf",
+      "recipe_id": "2718327581",
+      "book": "craftsman essentials volume 12",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine warped bone bed",
+      "recipe_id": "2345240465",
+      "book": "advanced craftsman volume 12",
+      "category": "TS Advanced"
+    }
+  ],
+  "120": [
+    {
+      "recipe": "Basilisk Eye Tea",
+      "recipe_id": "2731957174",
+      "book": "Acrylia Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bogling Tea",
+      "recipe_id": "1020838158",
+      "book": "Acrylia Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cavern Ant Crunchies",
+      "recipe_id": "4250901925",
+      "book": "Acrylia Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cht'Thk Saute",
+      "recipe_id": "3090745622",
+      "book": "Acrylia Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Deepshade Gulash",
+      "recipe_id": "1348503507",
+      "book": "Acrylia Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dragonfly Crunch",
+      "recipe_id": "32694789",
+      "book": "Acrylia Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Gravel Leaf Tea",
+      "recipe_id": "206356860",
+      "book": "Shadowscream Provisioner Studies",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Grimling Pez",
+      "recipe_id": "2777900056",
+      "book": "Provisioner's Primer Volume 20",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Grizzly Fried Steaks",
+      "recipe_id": "1187935715",
+      "book": "Acrylia Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hogfish Fricassee",
+      "recipe_id": "1317365994",
+      "book": "Advanced Provisioner Studies 20",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Juju Hopling",
+      "recipe_id": "723162784",
+      "book": "Provisioner's Primer Volume 20",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Komodo Stout",
+      "recipe_id": "1736562603",
+      "book": "Acrylia Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Moor Coca",
+      "recipe_id": "1595669083",
+      "book": "Acrylia Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Needlite Egg Omlette",
+      "recipe_id": "658340955",
+      "book": "Acrylia Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pome Pome",
+      "recipe_id": "1388991426",
+      "book": "Advanced Provisioner Studies 20",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Scathe Pilsner",
+      "recipe_id": "750801094",
+      "book": "Acrylia Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shadefiend Sandwich",
+      "recipe_id": "3379818685",
+      "book": "Acrylia Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shadeweaver Sour",
+      "recipe_id": "1817421369",
+      "book": "Acrylia Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shadoweater Slushy",
+      "recipe_id": "76109492",
+      "book": "Acrylia Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shar Vahl Sweetart",
+      "recipe_id": "3726607446",
+      "book": "Provisioner's Primer Volume 20",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shrieking Tonic",
+      "recipe_id": "2014649174",
+      "book": "Advanced Provisioner Studies 20",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Spiced Grimroot Tea",
+      "recipe_id": "4109834788",
+      "book": "Shadowscream Provisioner Studies",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Spider Chips",
+      "recipe_id": "2875309357",
+      "book": "Acrylia Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tegi Meatloaf",
+      "recipe_id": "4070765200",
+      "book": "Shadowscream Provisioner Studies",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Twice Brewed Dusker",
+      "recipe_id": "3530620719",
+      "book": "Acrylia Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Yalkiin's Famed Stew",
+      "recipe_id": "735560525",
+      "book": "Shadowscream Provisioner Studies",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Zelniak Steak Chops",
+      "recipe_id": "790230401",
+      "book": "Advanced Provisioner Studies 20",
+      "category": "TS Advanced"
+    }
+  ],
+  "121": [
+    {
+      "recipe": "Rhino Bubbly",
+      "recipe_id": "1304506931",
+      "book": "Vetrovian Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Smoked Greytusk",
+      "recipe_id": "2826080840",
+      "book": "Vetrovian Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Dried Mahngavi Mango",
+      "recipe_id": "2366887297",
+      "book": "Vetrovian Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    }
+  ],
+  "122": [
+    {
+      "recipe": "Forlorn Muddled Wine",
+      "recipe_id": "633243303",
+      "book": "Vetrovian Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Narra Wood Smoked Jerky",
+      "recipe_id": "1850643121",
+      "book": "Vetrovian Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Star Diopside Fizz",
+      "recipe_id": "526703196",
+      "book": "Vetrovian Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    }
+  ],
+  "123": [
+    {
+      "recipe": "Amnsonia Root Medley",
+      "recipe_id": "985572179",
+      "book": "Vetrovian Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Silverfin Filet",
+      "recipe_id": "1912674803",
+      "book": "Vetrovian Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Syrup",
+      "recipe_id": "3003835558",
+      "book": "Vetrovian Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Rice Wine",
+      "recipe_id": "359468138",
+      "book": "Vetrovian Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    }
+  ],
+  "124": [
+    {
+      "recipe": "Abysmal Sea Catch of the Day",
+      "recipe_id": "3946830683",
+      "book": "Vetrovian Provisioner's Primer Volume IV",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pygmy Citrus Jumble",
+      "recipe_id": "715699862",
+      "book": "Vetrovian Provisioner's Primer Volume IV",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vetrovian Cooler",
+      "recipe_id": "4126683865",
+      "book": "Vetrovian Provisioner's Primer Volume IV",
+      "category": "TS Essentials"
+    }
+  ],
+  "125": [
+    {
+      "recipe": "Bonytail Pastela",
+      "recipe_id": "3771080356",
+      "book": "Plateaus Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cactus Fruit Juice",
+      "recipe_id": "4046768914",
+      "book": "Plateaus Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cactus Fruit Margarita",
+      "recipe_id": "1805567628",
+      "book": "Plateaus Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cactus Quencher",
+      "recipe_id": "1264479645",
+      "book": "Plateaus Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cactus Syrup",
+      "recipe_id": "2425204856",
+      "book": "Plateaus Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Castle Warden Soup",
+      "recipe_id": "4108254724",
+      "book": "Vetrovian Provisioner's Primer Volume V",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Catfish Stew",
+      "recipe_id": "56623838",
+      "book": "Advanced Hizite Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Cold Yogurt Soup",
+      "recipe_id": "2826334086",
+      "book": "Plateaus Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Desert Distillate",
+      "recipe_id": "2648272667",
+      "book": "Advanced Hizite Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Distilled Willow Sorbet",
+      "recipe_id": "1866757266",
+      "book": "Plateaus Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fig Smoothie",
+      "recipe_id": "2381379396",
+      "book": "Plateaus Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fig Wine",
+      "recipe_id": "2355428546",
+      "book": "Plateaus Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fig and Herb Tea",
+      "recipe_id": "3979363439",
+      "book": "Plateaus Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fig and Ricotta Cake",
+      "recipe_id": "1749243711",
+      "book": "Plateaus Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Ruby Reserve",
+      "recipe_id": "2359984061",
+      "book": "Advanced Vetrovian Provisioner's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Goat Kebab",
+      "recipe_id": "445771310",
+      "book": "Plateaus Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Goldami Tagine",
+      "recipe_id": "1778663064",
+      "book": "Plateaus Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Herb Stew",
+      "recipe_id": "852088710",
+      "book": "Plateaus Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hizite Zinger",
+      "recipe_id": "3125002804",
+      "book": "Advanced Hizite Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Kamapor Tea Brined Venison",
+      "recipe_id": "1903949829",
+      "book": "Advanced Vetrovian Provisioner's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Candied Kumquat",
+      "recipe_id": "559452506",
+      "book": "Advanced Vetrovian Provisioner's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Jungle Punch",
+      "recipe_id": "871163152",
+      "book": "Vetrovian Provisioner's Primer Volume V",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mahngavi Amsonia Risotto",
+      "recipe_id": "2686306690",
+      "book": "Vetrovian Provisioner's Primer Volume V",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Olive and Goat Cheese Salad",
+      "recipe_id": "2609678255",
+      "book": "Advanced Hizite Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Stewed Goat with Figs",
+      "recipe_id": "3749350796",
+      "book": "Plateaus Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tenderloin with Fruit Sauce",
+      "recipe_id": "4205425770",
+      "book": "Plateaus Provisioner's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vetrovia Midnight Vintage",
+      "recipe_id": "1999507633",
+      "book": "Advanced Vetrovian Provisioner's Volume V",
+      "category": "TS Advanced"
+    }
+  ],
+  "126": [
+    {
+      "recipe": "Breadfruit Brew",
+      "recipe_id": "3444568038",
+      "book": "Zimaran Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Breadfruit Juice",
+      "recipe_id": "4227049503",
+      "book": "Zimaran Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Breadfruit Syrup",
+      "recipe_id": "1474038094",
+      "book": "Zimaran Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Carp Stew",
+      "recipe_id": "4120407728",
+      "book": "Zimaran Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Carp and Pepitas Pasta",
+      "recipe_id": "2748244618",
+      "book": "Zimaran Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Charger Kebab",
+      "recipe_id": "3589024270",
+      "book": "Zimaran Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Charger Tenderloin",
+      "recipe_id": "3760950801",
+      "book": "Zimaran Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Corymbia Sap Sorbet",
+      "recipe_id": "3494412417",
+      "book": "Zimaran Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Crusted Carp",
+      "recipe_id": "185694960",
+      "book": "Zimaran Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pepitas Pick-Me-Up",
+      "recipe_id": "2339258030",
+      "book": "Zimaran Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pepitas Smoothie",
+      "recipe_id": "2475425713",
+      "book": "Zimaran Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pepitas and Breadfruit Pie",
+      "recipe_id": "3033944588",
+      "book": "Zimaran Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Splendor Smoothie",
+      "recipe_id": "1365635703",
+      "book": "Zimaran Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Splendor Soup",
+      "recipe_id": "393911189",
+      "book": "Zimaran Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stewed Charger with Pepitas",
+      "recipe_id": "2274659224",
+      "book": "Zimaran Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wroughtlands Wine",
+      "recipe_id": "798875965",
+      "book": "Zimaran Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    }
+  ],
+  "128": [
+    {
+      "recipe": "Dasheen and Persimmon Salad",
+      "recipe_id": "897906621",
+      "book": "Advanced Zimaran Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Persimmon Quencher",
+      "recipe_id": "869342985",
+      "book": "Advanced Zimaran Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Seared Prismatic Pike",
+      "recipe_id": "3665451574",
+      "book": "Advanced Zimaran Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Zimaran Zinger",
+      "recipe_id": "1230289676",
+      "book": "Advanced Zimaran Provisioner",
+      "category": "TS Advanced"
+    }
+  ],
+  "13": [
+    {
+      "recipe": "Arched Door Frame of Maple",
+      "recipe_id": "1694908466",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Black Tea",
+      "recipe_id": "1403921734",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Blessed Bone Greatstaff",
+      "recipe_id": "518216589",
+      "book": "advanced craftsman volume 13",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Greatstaff",
+      "recipe_id": "1203951277",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Block of Maple",
+      "recipe_id": "2751576417",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Greatstaff",
+      "recipe_id": "719720410",
+      "book": "advanced craftsman volume 13",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Carrot Muffins",
+      "recipe_id": "1877875137",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Creamed Antonican Coffee",
+      "recipe_id": "597229820",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Half Block of Maple",
+      "recipe_id": "4255557712",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Horizontal Window Frame in Tall Divider of Maple",
+      "recipe_id": "1386613361",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Bone Greatstaff",
+      "recipe_id": "1526370737",
+      "book": "advanced craftsman volume 13",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Greatstaff",
+      "recipe_id": "2520684003",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Greatstaff",
+      "recipe_id": "679759818",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Narrow Divider of Maple",
+      "recipe_id": "4043275287",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Orange Muffins",
+      "recipe_id": "1003502910",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Railing of Maple",
+      "recipe_id": "2726764979",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rectangular Door Frame of Maple",
+      "recipe_id": "419128159",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rounded Tile of Maple",
+      "recipe_id": "45667003",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Short Column of Maple",
+      "recipe_id": "3699256891",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Square Window Frame in Narrow Divider of Maple",
+      "recipe_id": "3813197031",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Square Window Frame in Tall Divider of Maple",
+      "recipe_id": "3494913954",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stair of Maple",
+      "recipe_id": "1637691508",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tall Column of Maple",
+      "recipe_id": "268399552",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tall Divider of Maple",
+      "recipe_id": "1262479752",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tall Window Frame in Narrow Divider of Maple",
+      "recipe_id": "4074427715",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tall Window Frame in Tall Divider of Maple",
+      "recipe_id": "3277283631",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vertical Window Frame in Tall Divider of Maple",
+      "recipe_id": "4266986724",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine faydark wooden stool",
+      "recipe_id": "4189390456",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine halasian bucket",
+      "recipe_id": "2332124000",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine halfling drum",
+      "recipe_id": "3942025980",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine maple high backed chair",
+      "recipe_id": "2226053824",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "plain maple room divider",
+      "recipe_id": "2157025939",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "plain maple tile",
+      "recipe_id": "3946259318",
+      "book": "craftsman essentials volume 13",
+      "category": "TS Essentials"
+    }
+  ],
+  "130": [
+    {
+      "recipe": "Blueberry Goose Breast",
+      "recipe_id": "1946489064",
+      "book": "Advanced Coldwork Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Brew of Lichen",
+      "recipe_id": "3136458968",
+      "book": "Coldwork Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chalcedony Crunch",
+      "recipe_id": "3750023503",
+      "book": "Coldwork Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Crowberry Burbot Blend",
+      "recipe_id": "1377083280",
+      "book": "Advanced Coldwork Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Fox Dressed Grayling",
+      "recipe_id": "3476012834",
+      "book": "Coldwork Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fox Tail Frappe",
+      "recipe_id": "3554425745",
+      "book": "Coldwork Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Golden Sennegrass Charcuterie",
+      "recipe_id": "1413576484",
+      "book": "Advanced Coldwork Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Grayling Kebab",
+      "recipe_id": "1418930787",
+      "book": "Coldwork Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Grayling and Ptarmigan Skewers",
+      "recipe_id": "3419893687",
+      "book": "Coldwork Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hearty Lichen Meal Replacer",
+      "recipe_id": "1413086411",
+      "book": "Coldwork Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lichen Grayling Medley",
+      "recipe_id": "351150213",
+      "book": "Coldwork Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lichen Tea",
+      "recipe_id": "3567471202",
+      "book": "Coldwork Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Puffball Puffer",
+      "recipe_id": "3236320620",
+      "book": "Advanced Coldwork Provisioner",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Reduction of Lichen",
+      "recipe_id": "2529864090",
+      "book": "Coldwork Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sedge Root Blend",
+      "recipe_id": "2656593508",
+      "book": "Coldwork Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sedge Root Reduction",
+      "recipe_id": "1933373173",
+      "book": "Coldwork Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sedge Root Smoothie",
+      "recipe_id": "3171984082",
+      "book": "Coldwork Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sparkling Ptarmigan Pasta",
+      "recipe_id": "4173650236",
+      "book": "Coldwork Provisioner's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sparkling Stew",
+      "recipe_id": "881774180",
+      "book": "Coldwork Provisioner's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Sedge Root Pie",
+      "recipe_id": "2525974158",
+      "book": "Coldwork Provisioners's Primer Volume III",
+      "category": "TS Essentials"
+    }
+  ],
+  "14": [
+    {
+      "recipe": "Blessed Bone Pike",
+      "recipe_id": "283400086",
+      "book": "advanced craftsman volume 14",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Pike",
+      "recipe_id": "2481290452",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Pike",
+      "recipe_id": "3114344439",
+      "book": "advanced craftsman volume 14",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Elephant Sandwich",
+      "recipe_id": "380186831",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Bone Pike",
+      "recipe_id": "4159678130",
+      "book": "advanced craftsman volume 14",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Pike",
+      "recipe_id": "2017824284",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iron Broadhead Crossbow Bolt",
+      "recipe_id": "1852099088",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Pike",
+      "recipe_id": "731329251",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Orange Juice",
+      "recipe_id": "1099614901",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine Kaladim bucket",
+      "recipe_id": "3120924075",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine Kaladim wall chain",
+      "recipe_id": "3655864664",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine bone chest",
+      "recipe_id": "936609586",
+      "book": "advanced craftsman volume 14",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine bone office desk",
+      "recipe_id": "4225304535",
+      "book": "advanced craftsman volume 14",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine bone rocking chair",
+      "recipe_id": "2918527815",
+      "book": "advanced craftsman volume 14",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine comely iron chandelier",
+      "recipe_id": "4282361739",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine large bench",
+      "recipe_id": "1493486784",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine maple chest",
+      "recipe_id": "4150980004",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine roughspun portrait",
+      "recipe_id": "2873564677",
+      "book": "advanced craftsman volume 14",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "iron bodkin arrow",
+      "recipe_id": "2229647530",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "iron bodkin crossbow bolt",
+      "recipe_id": "3830502471",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "iron broadhead arrow",
+      "recipe_id": "1648872177",
+      "book": "craftsman essentials volume 14",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine bone strong box",
+      "recipe_id": "3095053352",
+      "book": "advanced craftsman volume 14",
+      "category": "TS Advanced"
+    }
+  ],
+  "15": [
+    {
+      "recipe": "Blessed Bone Wand",
+      "recipe_id": "2658705028",
+      "book": "advanced craftsman volume 15",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Wand",
+      "recipe_id": "2434939858",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Wand",
+      "recipe_id": "3172619091",
+      "book": "advanced craftsman volume 15",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Bone Wand",
+      "recipe_id": "4051798270",
+      "book": "advanced craftsman volume 15",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Wand",
+      "recipe_id": "4141434638",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Magic Imbued Bone Wand",
+      "recipe_id": "3762433247",
+      "book": "advanced craftsman volume 15",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Magic Imbued Maple Wand",
+      "recipe_id": "4084109845",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Wand",
+      "recipe_id": "198722777",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Orange Fizzlepop",
+      "recipe_id": "2974754387",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vulrich Sandwich",
+      "recipe_id": "2079641466",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine large burlap rug",
+      "recipe_id": "4145485619",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine medium bench",
+      "recipe_id": "1693760108",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine plain gukta vase",
+      "recipe_id": "2531595393",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine simple dresser",
+      "recipe_id": "287744203",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine maple strong box",
+      "recipe_id": "3016889134",
+      "book": "craftsman essentials volume 15",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine severed bone xylophone",
+      "recipe_id": "4004921133",
+      "book": "advanced craftsman volume 15",
+      "category": "TS Advanced"
+    }
+  ],
+  "16": [
+    {
+      "recipe": "Blessed Bone Quarter Staff",
+      "recipe_id": "3420743698",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Quarter Staff",
+      "recipe_id": "2227539174",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Longbow",
+      "recipe_id": "2588829584",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bone Quarter Staff",
+      "recipe_id": "2734504990",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bone Shortbow",
+      "recipe_id": "2360807674",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Crab Bisque",
+      "recipe_id": "1252068827",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Bone Longbow",
+      "recipe_id": "2519157186",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Bone Quarter Staff",
+      "recipe_id": "1265682203",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Bone Shortbow",
+      "recipe_id": "165562636",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Longbow",
+      "recipe_id": "2702088012",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Maple Quarter Staff",
+      "recipe_id": "615963161",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Maple Shortbow",
+      "recipe_id": "65654517",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Longbow",
+      "recipe_id": "2480766084",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Quarter Staff",
+      "recipe_id": "2652004386",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Shortbow",
+      "recipe_id": "2523158428",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Orange Wine",
+      "recipe_id": "410850825",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine alluring bone table",
+      "recipe_id": "3260901293",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine charming bone table",
+      "recipe_id": "1928580292",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine elegant bone stool",
+      "recipe_id": "1079803346",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine medium maple shelf",
+      "recipe_id": "1333930708",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine roughspun rug",
+      "recipe_id": "1805351627",
+      "book": "advanced craftsman volume 16",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine small burlap rug",
+      "recipe_id": "3678000286",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine small weathered keg",
+      "recipe_id": "3484056714",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine small wooden table",
+      "recipe_id": "1809039568",
+      "book": "craftsman essentials volume 16",
+      "category": "TS Essentials"
+    }
+  ],
+  "17": [
+    {
+      "recipe": "Blessed Bone Fighting Baton",
+      "recipe_id": "554056586",
+      "book": "advanced craftsman volume 17",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Fighting Baton",
+      "recipe_id": "1555151154",
+      "book": "craftsman essentials volume 17",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Fighting Baton",
+      "recipe_id": "1478889080",
+      "book": "advanced craftsman volume 17",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Carrot Fizzlepop",
+      "recipe_id": "4205603507",
+      "book": "craftsman essentials volume 17",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Grouper Bisque",
+      "recipe_id": "2842257738",
+      "book": "craftsman essentials volume 17",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Bone Fighting Baton",
+      "recipe_id": "2808609530",
+      "book": "advanced craftsman volume 17",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Fighting Baton",
+      "recipe_id": "3057365168",
+      "book": "craftsman essentials volume 17",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Fighting Baton",
+      "recipe_id": "1406888074",
+      "book": "craftsman essentials volume 17",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine large quaint maple table",
+      "recipe_id": "1912590928",
+      "book": "craftsman essentials volume 17",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine oggokian chair",
+      "recipe_id": "1145655494",
+      "book": "craftsman essentials volume 17",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine standard maple stool",
+      "recipe_id": "1976160988",
+      "book": "craftsman essentials volume 17",
+      "category": "TS Essentials"
+    }
+  ],
+  "18": [
+    {
+      "recipe": "Blessed Bone Sorcerer's Staff",
+      "recipe_id": "3920654014",
+      "book": "advanced craftsman volume 18",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Sorcerer's Staff",
+      "recipe_id": "3231951345",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Sorcerer's Staff",
+      "recipe_id": "3021586852",
+      "book": "advanced craftsman volume 18",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dwarven Stout",
+      "recipe_id": "1037063982",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Bone Sorcerer's Staff",
+      "recipe_id": "243936130",
+      "book": "advanced craftsman volume 18",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Sorcerer's Staff",
+      "recipe_id": "791382663",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Sorcerer's Staff",
+      "recipe_id": "2282788471",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Orange Pie",
+      "recipe_id": "1558495303",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pristine severed bone throne",
+      "recipe_id": "4145501792",
+      "book": "advanced craftsman volume 18",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Pristine smoldering bone torch",
+      "recipe_id": "2902519665",
+      "book": "advanced craftsman volume 18",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Spirit Totem of the Bear",
+      "recipe_id": "1966900928",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spirit Totem of the Rat",
+      "recipe_id": "1135795759",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Totem of the Otter",
+      "recipe_id": "1504641393",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine blackened iron sconce",
+      "recipe_id": "2006026912",
+      "book": "advanced craftsman volume 18",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine bone oval table",
+      "recipe_id": "1060604619",
+      "book": "advanced craftsman volume 18",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine elegant bone table",
+      "recipe_id": "630497593",
+      "book": "advanced craftsman volume 18",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine small quaint maple table",
+      "recipe_id": "1424657671",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine standard maple table",
+      "recipe_id": "1541599235",
+      "book": "craftsman essentials volume 18",
+      "category": "TS Essentials"
+    }
+  ],
+  "19": [
+    {
+      "recipe": "Blessed Bone Bo Staff",
+      "recipe_id": "1508247377",
+      "book": "advanced craftsman volume 19",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blessed Maple Bo Staff",
+      "recipe_id": "1688626758",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bone Bo Staff",
+      "recipe_id": "3992598877",
+      "book": "advanced craftsman volume 19",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Carrot Omelet",
+      "recipe_id": "524682284",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imbued Bone Bo Staff",
+      "recipe_id": "4122467448",
+      "book": "advanced craftsman volume 19",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imbued Maple Bo Staff",
+      "recipe_id": "2905553779",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maple Bo Staff",
+      "recipe_id": "1367937263",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Qeynos Sign",
+      "recipe_id": "3275359842",
+      "book": "advanced craftsman volume 19",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Refuge Island Ice Tea",
+      "recipe_id": "2831022544",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine halfling xylophone",
+      "recipe_id": "814041826",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine iron sconce",
+      "recipe_id": "1478576023",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "iron shuriken",
+      "recipe_id": "3594991342",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "iron throwing axe",
+      "recipe_id": "1158723639",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "iron throwing dagger",
+      "recipe_id": "3658226409",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "iron throwing hammer",
+      "recipe_id": "2034932945",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine halfling hanging chimes",
+      "recipe_id": "3000405062",
+      "book": "craftsman essentials volume 19",
+      "category": "TS Essentials"
+    }
+  ],
+  "20": [
+    {
+      "recipe": "Chocolate Covered Fayberry",
+      "recipe_id": "4089155803",
+      "book": "Provisioner Essentials Volume 20",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elixir of Life",
+      "recipe_id": "170374311",
+      "book": "Advanced Provisioner Volume 20",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Halcyon Plum Cake",
+      "recipe_id": "794965717",
+      "book": "Advanced Provisioner Volume 20",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Lion Steak",
+      "recipe_id": "441873077",
+      "book": "Provisioner Essentials Volume 20",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Oolong Tea",
+      "recipe_id": "810198629",
+      "book": "Provisioner Essentials Volume 20",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pork Chop",
+      "recipe_id": "2206456275",
+      "book": "Provisioner Essentials Volume 20",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Steppes Mountain Coffee",
+      "recipe_id": "2995924999",
+      "book": "Provisioner Essentials Volume 20",
+      "category": "TS Essentials"
+    }
+  ],
+  "21": [
+    {
+      "recipe": "Baked Crayfish",
+      "recipe_id": "784758391",
+      "book": "Provisioner Essentials Volume 21",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Baked Mackerel",
+      "recipe_id": "597759310",
+      "book": "Provisioner Essentials Volume 21",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fayberry Cheesecake",
+      "recipe_id": "2776503904",
+      "book": "Provisioner Essentials Volume 21",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fayberry Juice",
+      "recipe_id": "2264065893",
+      "book": "Provisioner Essentials Volume 21",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Onion Kalish",
+      "recipe_id": "2515471344",
+      "book": "Provisioner Essentials Volume 21",
+      "category": "TS Essentials"
+    }
+  ],
+  "22": [
+    {
+      "recipe": "Creamed Oolong Tea",
+      "recipe_id": "1967014825",
+      "book": "Provisioner Essentials Volume 22",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Creamed Steppes Mountain Coffee",
+      "recipe_id": "3549537325",
+      "book": "Provisioner Essentials Volume 22",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fayberry Fudge",
+      "recipe_id": "3051738340",
+      "book": "Provisioner Essentials Volume 22",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fayberry Muffin",
+      "recipe_id": "1086286580",
+      "book": "Provisioner Essentials Volume 22",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Onion Muffin",
+      "recipe_id": "3294131752",
+      "book": "Provisioner Essentials Volume 22",
+      "category": "TS Essentials"
+    }
+  ],
+  "23": [
+    {
+      "recipe": "Fayberry Fizzlepop",
+      "recipe_id": "925155043",
+      "book": "Provisioner Essentials Volume 23",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lion Sandwich",
+      "recipe_id": "1906510698",
+      "book": "Provisioner Essentials Volume 23",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pork Sandwich",
+      "recipe_id": "1268472011",
+      "book": "Provisioner Essentials Volume 23",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Onion Fizzlepop",
+      "recipe_id": "643992993",
+      "book": "Provisioner Essentials Volume 23",
+      "category": "TS Essentials"
+    }
+  ],
+  "24": [
+    {
+      "recipe": "Blasted Samoflange",
+      "recipe_id": "1199915285",
+      "book": "Provisioner Essentials Volume 24",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Crayfish Stew",
+      "recipe_id": "2193464670",
+      "book": "Provisioner Essentials Volume 24",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hailstorm",
+      "recipe_id": "3850649601",
+      "book": "Provisioner Essentials Volume 24",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mackerel Stew",
+      "recipe_id": "4280925356",
+      "book": "Provisioner Essentials Volume 24",
+      "category": "TS Essentials"
+    }
+  ],
+  "25": [
+    {
+      "recipe": "Beghn's Death-by-Chocolate Cake",
+      "recipe_id": "3012220531",
+      "book": "Provisioner Mastery volume 1",
+      "category": "TS Journeyman"
+    },
+    {
+      "recipe": "Fayberry Pie",
+      "recipe_id": "120908813",
+      "book": "Provisioner Essentials Volume 25",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hair of the Dog",
+      "recipe_id": "1599683187",
+      "book": "Provisioner Mastery volume 1",
+      "category": "TS Journeyman"
+    },
+    {
+      "recipe": "Oolong Kalish Tea",
+      "recipe_id": "1997871873",
+      "book": "Provisioner Essentials Volume 25",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Steppes Mountain Espresso",
+      "recipe_id": "1127341334",
+      "book": "Provisioner Essentials Volume 25",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Onion Omelet",
+      "recipe_id": "461694821",
+      "book": "Provisioner Essentials Volume 25",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "The Jester's Cap",
+      "recipe_id": "2168155777",
+      "book": "Provisioner Mastery volume 1",
+      "category": "TS Journeyman"
+    }
+  ],
+  "26": [
+    {
+      "recipe": "Fayberry Wine",
+      "recipe_id": "3514195317",
+      "book": "Provisioner Essentials Volume 26",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lion Casserole",
+      "recipe_id": "3926955616",
+      "book": "Provisioner Essentials Volume 26",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pork Casserole",
+      "recipe_id": "3847398572",
+      "book": "Provisioner Essentials Volume 26",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Onion Wine",
+      "recipe_id": "45649261",
+      "book": "Provisioner Essentials Volume 26",
+      "category": "TS Essentials"
+    }
+  ],
+  "27": [
+    {
+      "recipe": "Crusted Mackerel",
+      "recipe_id": "689030929",
+      "book": "Provisioner Essentials Volume 27",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Gin and Tonic",
+      "recipe_id": "3702317706",
+      "book": "Provisioner Essentials Volume 27",
+      "category": "TS Essentials"
+    }
+  ],
+  "28": [
+    {
+      "recipe": "Crayfish Casserole",
+      "recipe_id": "740558459",
+      "book": "Provisioner Essentials Volume 28",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vox Breath Beer",
+      "recipe_id": "894152362",
+      "book": "Provisioner Essentials Volume 28",
+      "category": "TS Essentials"
+    }
+  ],
+  "29": [
+    {
+      "recipe": "Beer Braised Pork",
+      "recipe_id": "2642977215",
+      "book": "Provisioner Essentials Volume 29",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mountain Man",
+      "recipe_id": "1355450628",
+      "book": "Provisioner Essentials Volume 29",
+      "category": "TS Essentials"
+    }
+  ],
+  "30": [
+    {
+      "recipe": "Bear Steak",
+      "recipe_id": "1555846149",
+      "book": "Provisioner Essentials Volume 30",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chocolate Covered Wild Apple",
+      "recipe_id": "109318844",
+      "book": "Provisioner Essentials Volume 30",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cucumber Juice",
+      "recipe_id": "1384556490",
+      "book": "Provisioner Essentials Volume 30",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Griffin Steak",
+      "recipe_id": "3739946887",
+      "book": "Provisioner Essentials Volume 30",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rockbud Iron Rations",
+      "recipe_id": "3832388610",
+      "book": "Advanced Provisioner Volume 30",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Underfoot Whiskey",
+      "recipe_id": "308018298",
+      "book": "Advanced Provisioner Volume 30",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Wild Apple Juice",
+      "recipe_id": "3898563777",
+      "book": "Provisioner Essentials Volume 30",
+      "category": "TS Essentials"
+    }
+  ],
+  "31": [
+    {
+      "recipe": "Baked Carp",
+      "recipe_id": "3235060358",
+      "book": "Provisioner Essentials Volume 31",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Baked Shark",
+      "recipe_id": "4022725244",
+      "book": "Provisioner Essentials Volume 31",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Everfrost Coffee",
+      "recipe_id": "3932149286",
+      "book": "Provisioner Essentials Volume 31",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Green Tea",
+      "recipe_id": "1131436047",
+      "book": "Provisioner Essentials Volume 31",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Apple Cheesecake",
+      "recipe_id": "1594203963",
+      "book": "Provisioner Essentials Volume 31",
+      "category": "TS Essentials"
+    }
+  ],
+  "32": [
+    {
+      "recipe": "Cucumber Fizzlepop",
+      "recipe_id": "2556137551",
+      "book": "Provisioner Essentials Volume 32",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fried Cucumber",
+      "recipe_id": "10199013",
+      "book": "Provisioner Essentials Volume 32",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Apple Fizzlepop",
+      "recipe_id": "4034222607",
+      "book": "Provisioner Essentials Volume 32",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Apple Fudge",
+      "recipe_id": "216419307",
+      "book": "Provisioner Essentials Volume 32",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Apple Muffin",
+      "recipe_id": "4033318039",
+      "book": "Provisioner Essentials Volume 32",
+      "category": "TS Essentials"
+    }
+  ],
+  "33": [
+    {
+      "recipe": "Bear Sandwich",
+      "recipe_id": "939294078",
+      "book": "Provisioner Essentials Volume 33",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Griffin Sandwich",
+      "recipe_id": "3902123355",
+      "book": "Provisioner Essentials Volume 33",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Everfrost Coffee",
+      "recipe_id": "2153681034",
+      "book": "Provisioner Essentials Volume 33",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Green Tea",
+      "recipe_id": "2683383745",
+      "book": "Provisioner Essentials Volume 33",
+      "category": "TS Essentials"
+    }
+  ],
+  "34": [
+    {
+      "recipe": "Carp Stew",
+      "recipe_id": "1787364987",
+      "book": "Provisioner Essentials Volume 34",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cucumber Wine",
+      "recipe_id": "4102081908",
+      "book": "Provisioner Essentials Volume 34",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sharkfin Soup",
+      "recipe_id": "124757678",
+      "book": "Provisioner Essentials Volume 34",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Apple Wine",
+      "recipe_id": "3087597535",
+      "book": "Provisioner Essentials Volume 34",
+      "category": "TS Essentials"
+    }
+  ],
+  "35": [
+    {
+      "recipe": "Brasse's Dwarven Battle Bread",
+      "recipe_id": "89955286",
+      "book": "Provisioner Mastery volume 2",
+      "category": "TS Journeyman"
+    },
+    {
+      "recipe": "Cucumber Sandwich",
+      "recipe_id": "2859278788",
+      "book": "Provisioner Essentials Volume 35",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Everfrost Espresso",
+      "recipe_id": "1266162126",
+      "book": "Provisioner Essentials Volume 35",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forget Me Not",
+      "recipe_id": "2103652325",
+      "book": "Provisioner Mastery volume 2",
+      "category": "TS Journeyman"
+    },
+    {
+      "recipe": "Green Tea Kalish",
+      "recipe_id": "376351397",
+      "book": "Provisioner Essentials Volume 35",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "The Queen's Masquerade",
+      "recipe_id": "333136363",
+      "book": "Provisioner Mastery volume 2",
+      "category": "TS Journeyman"
+    },
+    {
+      "recipe": "Wild Apple Pie",
+      "recipe_id": "2521279317",
+      "book": "Provisioner Essentials Volume 35",
+      "category": "TS Essentials"
+    }
+  ],
+  "36": [
+    {
+      "recipe": "Bear Casserole",
+      "recipe_id": "4035714411",
+      "book": "Provisioner Essentials Volume 36",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cucumber Gin and Tonic",
+      "recipe_id": "498442669",
+      "book": "Provisioner Essentials Volume 36",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Griffin Casserole",
+      "recipe_id": "3461667462",
+      "book": "Provisioner Essentials Volume 36",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Child",
+      "recipe_id": "4239221960",
+      "book": "Provisioner Essentials Volume 36",
+      "category": "TS Essentials"
+    }
+  ],
+  "37": [
+    {
+      "recipe": "Arctic Heights",
+      "recipe_id": "3605970493",
+      "book": "Provisioner Essentials Volume 37",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Land Shark",
+      "recipe_id": "1239974958",
+      "book": "Provisioner Essentials Volume 37",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Apple Glazed Carp",
+      "recipe_id": "366184238",
+      "book": "Provisioner Essentials Volume 37",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Apple Glazed Shark",
+      "recipe_id": "924696891",
+      "book": "Provisioner Essentials Volume 37",
+      "category": "TS Essentials"
+    }
+  ],
+  "38": [
+    {
+      "recipe": "Green Tea Grinder",
+      "recipe_id": "1366924845",
+      "book": "Provisioner Essentials Volume 38",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wild Apple Cookie",
+      "recipe_id": "2755979493",
+      "book": "Provisioner Essentials Volume 38",
+      "category": "TS Essentials"
+    }
+  ],
+  "39": [
+    {
+      "recipe": "Cucumber Omelet",
+      "recipe_id": "283316801",
+      "book": "Provisioner Essentials Volume 39",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Frostbite",
+      "recipe_id": "2130089159",
+      "book": "Provisioner Essentials Volume 39",
+      "category": "TS Essentials"
+    }
+  ],
+  "40": [
+    {
+      "recipe": "Browncap Mushroom Tea",
+      "recipe_id": "1866073225",
+      "book": "Provisioner Essentials Volume 40",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chocolate Covered White Peach",
+      "recipe_id": "2262910633",
+      "book": "Provisioner Essentials Volume 40",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elixia",
+      "recipe_id": "1529742953",
+      "book": "Advanced Provisioner Volume 40",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Owlbear Steak",
+      "recipe_id": "2797143959",
+      "book": "Provisioner Essentials Volume 40",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spice of Life",
+      "recipe_id": "4174430948",
+      "book": "Advanced Provisioner Volume 40",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "White Peach Juice",
+      "recipe_id": "1882344485",
+      "book": "Provisioner Essentials Volume 40",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wyrm Steak",
+      "recipe_id": "2277798398",
+      "book": "Provisioner Essentials Volume 40",
+      "category": "TS Essentials"
+    }
+  ],
+  "41": [
+    {
+      "recipe": "Baked Blowfish",
+      "recipe_id": "1173685031",
+      "book": "Provisioner Essentials Volume 41",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Baked Trout",
+      "recipe_id": "1388785858",
+      "book": "Provisioner Essentials Volume 41",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lavastorm Robusta Coffee",
+      "recipe_id": "1013615515",
+      "book": "Provisioner Essentials Volume 41",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pu-erh Tea",
+      "recipe_id": "3182826334",
+      "book": "Provisioner Essentials Volume 41",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "White Peach Cheesecake",
+      "recipe_id": "1314631790",
+      "book": "Provisioner Essentials Volume 41",
+      "category": "TS Essentials"
+    }
+  ],
+  "42": [
+    {
+      "recipe": "Browncap Mushroom Fizzlepop",
+      "recipe_id": "2226458703",
+      "book": "Provisioner Essentials Volume 42",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mushroom Bread",
+      "recipe_id": "933436962",
+      "book": "Provisioner Essentials Volume 42",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "White Peach Cookie",
+      "recipe_id": "1387750411",
+      "book": "Provisioner Essentials Volume 42",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "White Peach Fizzlepop",
+      "recipe_id": "518343870",
+      "book": "Provisioner Essentials Volume 42",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "White Peach Fudge",
+      "recipe_id": "3099645828",
+      "book": "Provisioner Essentials Volume 42",
+      "category": "TS Essentials"
+    }
+  ],
+  "43": [
+    {
+      "recipe": "Iced Lavastorm Robusta Coffee",
+      "recipe_id": "1859872736",
+      "book": "Provisioner Essentials Volume 43",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Pu-erh Tea",
+      "recipe_id": "2782716578",
+      "book": "Provisioner Essentials Volume 43",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Owlbear Sandwich",
+      "recipe_id": "3104814211",
+      "book": "Provisioner Essentials Volume 43",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wyrm Sandwich",
+      "recipe_id": "943769725",
+      "book": "Provisioner Essentials Volume 43",
+      "category": "TS Essentials"
+    }
+  ],
+  "44": [
+    {
+      "recipe": "Browncap Mushroom Kalish",
+      "recipe_id": "4009599908",
+      "book": "Provisioner Essentials Volume 44",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Masu",
+      "recipe_id": "4256392471",
+      "book": "Provisioner Essentials Volume 44",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seared Blowfish",
+      "recipe_id": "2468780671",
+      "book": "Provisioner Essentials Volume 44",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "White Peach Smoothie",
+      "recipe_id": "1389004519",
+      "book": "Provisioner Essentials Volume 44",
+      "category": "TS Essentials"
+    }
+  ],
+  "45": [
+    {
+      "recipe": "Browncap Mushroom Sandwich",
+      "recipe_id": "2221888795",
+      "book": "Provisioner Essentials Volume 45",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Flaming Peach",
+      "recipe_id": "425906891",
+      "book": "Provisioner Essentials Volume 45",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Frizznik's Projectile Gnomish Pudding",
+      "recipe_id": "4211961887",
+      "book": "Provisioner Mastery volume 3",
+      "category": "TS Journeyman"
+    },
+    {
+      "recipe": "Fugu Surprise",
+      "recipe_id": "530577709",
+      "book": "Provisioner Essentials Volume 45",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vampiric Toothache",
+      "recipe_id": "2421149450",
+      "book": "Provisioner Mastery volume 3",
+      "category": "TS Journeyman"
+    },
+    {
+      "recipe": "White Peach Pie",
+      "recipe_id": "495646578",
+      "book": "Provisioner Essentials Volume 45",
+      "category": "TS Essentials"
+    }
+  ],
+  "46": [
+    {
+      "recipe": "Fire in the Hole",
+      "recipe_id": "117293188",
+      "book": "Provisioner Essentials Volume 46",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Owlbear Casserole",
+      "recipe_id": "1175263865",
+      "book": "Provisioner Essentials Volume 46",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sea Foam",
+      "recipe_id": "3257803295",
+      "book": "Provisioner Essentials Volume 46",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Wyrm Casserole",
+      "recipe_id": "1770713188",
+      "book": "Provisioner Essentials Volume 46",
+      "category": "TS Essentials"
+    }
+  ],
+  "47": [
+    {
+      "recipe": "Browncap Mushroom Wine",
+      "recipe_id": "3878787220",
+      "book": "Provisioner Essentials Volume 47",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fugu",
+      "recipe_id": "649986602",
+      "book": "Provisioner Essentials Volume 47",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Trout Oshizushi",
+      "recipe_id": "476978939",
+      "book": "Provisioner Essentials Volume 47",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "White Peach Wine",
+      "recipe_id": "540199580",
+      "book": "Provisioner Essentials Volume 47",
+      "category": "TS Essentials"
+    }
+  ],
+  "48": [
+    {
+      "recipe": "Absinthe",
+      "recipe_id": "2840633284",
+      "book": "Provisioner Essentials Volume 48",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Browncap Mushroom Soup",
+      "recipe_id": "2187919801",
+      "book": "Provisioner Essentials Volume 48",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Green Fairy",
+      "recipe_id": "1653957259",
+      "book": "Provisioner Essentials Volume 48",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "White Peach Sorbet",
+      "recipe_id": "1524135079",
+      "book": "Provisioner Essentials Volume 48",
+      "category": "TS Essentials"
+    }
+  ],
+  "49": [
+    {
+      "recipe": "Fiery Owlbear Steak",
+      "recipe_id": "350306870",
+      "book": "Provisioner Essentials Volume 49",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fiery Wyrm Steak",
+      "recipe_id": "3568438334",
+      "book": "Provisioner Essentials Volume 49",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Herbal Flame",
+      "recipe_id": "1121072487",
+      "book": "Provisioner Essentials Volume 49",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Nagafen's Flame",
+      "recipe_id": "421727587",
+      "book": "Provisioner Essentials Volume 49",
+      "category": "TS Essentials"
+    }
+  ],
+  "50": [
+    {
+      "recipe": "Artichoke Kalish",
+      "recipe_id": "2656935228",
+      "book": "Provisioner Essentials Volume 50",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Caiman Steak",
+      "recipe_id": "937192936",
+      "book": "Provisioner Essentials Volume 50",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chocolate Covered Prickly Pear",
+      "recipe_id": "2859788200",
+      "book": "Provisioner Essentials Volume 50",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hatebringer's Venom",
+      "recipe_id": "1129467572",
+      "book": "Advanced Provisioner Volume 50",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ireheart Stew",
+      "recipe_id": "870279219",
+      "book": "Advanced Provisioner Volume 50",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Prickly Pear Juice",
+      "recipe_id": "321514145",
+      "book": "Provisioner Essentials Volume 50",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sabertooth Steak",
+      "recipe_id": "599810000",
+      "book": "Provisioner Essentials Volume 50",
+      "category": "TS Essentials"
+    }
+  ],
+  "51": [
+    {
+      "recipe": "Baked Eel",
+      "recipe_id": "1633626488",
+      "book": "Provisioner Essentials Volume 51",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Baked Tigershrimp",
+      "recipe_id": "1248176061",
+      "book": "Provisioner Essentials Volume 51",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Darjeeling Tea",
+      "recipe_id": "2199254296",
+      "book": "Provisioner Essentials Volume 51",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Maj'dul Coffee",
+      "recipe_id": "1027192458",
+      "book": "Provisioner Essentials Volume 51",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prickly Pear Cheesecake",
+      "recipe_id": "295437692",
+      "book": "Provisioner Essentials Volume 51",
+      "category": "TS Essentials"
+    }
+  ],
+  "52": [
+    {
+      "recipe": "Artichoke Fizzlepop",
+      "recipe_id": "1892850386",
+      "book": "Provisioner Essentials Volume 52",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Baked Artichoke",
+      "recipe_id": "3597708578",
+      "book": "Provisioner Essentials Volume 52",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prickly Pear Cookie",
+      "recipe_id": "2634530874",
+      "book": "Provisioner Essentials Volume 52",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prickly Pear Fizzlepop",
+      "recipe_id": "351586965",
+      "book": "Provisioner Essentials Volume 52",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prickly Pear Fudge",
+      "recipe_id": "2342863277",
+      "book": "Provisioner Essentials Volume 52",
+      "category": "TS Essentials"
+    }
+  ],
+  "53": [
+    {
+      "recipe": "Caiman Steak Sandwich",
+      "recipe_id": "228949219",
+      "book": "Provisioner Essentials Volume 53",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Darjeeling Tea",
+      "recipe_id": "1154416915",
+      "book": "Provisioner Essentials Volume 53",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Maj'dul Coffee",
+      "recipe_id": "811928049",
+      "book": "Provisioner Essentials Volume 53",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sabertooth Steak Sandwich",
+      "recipe_id": "3513464062",
+      "book": "Provisioner Essentials Volume 53",
+      "category": "TS Essentials"
+    }
+  ],
+  "54": [
+    {
+      "recipe": "Artichoke Tea",
+      "recipe_id": "4051516244",
+      "book": "Provisioner Essentials Volume 54",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Eel Soup",
+      "recipe_id": "4015905080",
+      "book": "Provisioner Essentials Volume 54",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prickly Pear Smoothie",
+      "recipe_id": "401030014",
+      "book": "Provisioner Essentials Volume 54",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seared Tigershrimp",
+      "recipe_id": "1257074932",
+      "book": "Provisioner Essentials Volume 54",
+      "category": "TS Essentials"
+    }
+  ],
+  "55": [
+    {
+      "recipe": "Artery Punch",
+      "recipe_id": "2755332357",
+      "book": "Provisioner Essentials Volume 55",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cerebral Hemorrhage",
+      "recipe_id": "3358039728",
+      "book": "Provisioner Essentials Volume 55",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prickly Pear Crumpet",
+      "recipe_id": "1581718607",
+      "book": "Provisioner Essentials Volume 55",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pureed Artichoke Dip",
+      "recipe_id": "671801938",
+      "book": "Provisioner Essentials Volume 55",
+      "category": "TS Essentials"
+    }
+  ],
+  "56": [
+    {
+      "recipe": "Artichoke Wine",
+      "recipe_id": "3115069877",
+      "book": "Provisioner Essentials Volume 56",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Caiman Casserole",
+      "recipe_id": "727680819",
+      "book": "Provisioner Essentials Volume 56",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prickly Pear Wine",
+      "recipe_id": "653151065",
+      "book": "Provisioner Essentials Volume 56",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sabertooth Casserole",
+      "recipe_id": "1482983107",
+      "book": "Provisioner Essentials Volume 56",
+      "category": "TS Essentials"
+    }
+  ],
+  "57": [
+    {
+      "recipe": "Golden Eye",
+      "recipe_id": "76086419",
+      "book": "Provisioner Essentials Volume 57",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mental Core Breach",
+      "recipe_id": "1449197667",
+      "book": "Provisioner Essentials Volume 57",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pear Glazed Seared Tigershrimp",
+      "recipe_id": "3970095537",
+      "book": "Provisioner Essentials Volume 57",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Unagi",
+      "recipe_id": "2537257731",
+      "book": "Provisioner Essentials Volume 57",
+      "category": "TS Essentials"
+    }
+  ],
+  "58": [
+    {
+      "recipe": "Denmother's Trail Mix",
+      "recipe_id": "2684540199",
+      "book": "Provisioner Essentials Volume 58",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prickly Pear Muffin",
+      "recipe_id": "1684659081",
+      "book": "Provisioner Essentials Volume 58",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "The Overlord",
+      "recipe_id": "2776576655",
+      "book": "Provisioner Essentials Volume 58",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "The Queen",
+      "recipe_id": "3652514648",
+      "book": "Provisioner Essentials Volume 58",
+      "category": "TS Essentials"
+    }
+  ],
+  "59": [
+    {
+      "recipe": "Desert Fever",
+      "recipe_id": "2884772924",
+      "book": "Provisioner Essentials Volume 59",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pear Glazed Caiman Steak",
+      "recipe_id": "1281846259",
+      "book": "Provisioner Essentials Volume 59",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pear Glazed Sabertooth Steak",
+      "recipe_id": "1622355003",
+      "book": "Provisioner Essentials Volume 59",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Quicksand",
+      "recipe_id": "1452906191",
+      "book": "Provisioner Essentials Volume 59",
+      "category": "TS Essentials"
+    }
+  ],
+  "60": [
+    {
+      "recipe": "Charlatan's Sweet Tea",
+      "recipe_id": "1809225683",
+      "book": "Advanced Provisioner Volume 60",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Malicious Caprice",
+      "recipe_id": "3049165067",
+      "book": "Advanced Provisioner Volume 60",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "aviak steak",
+      "recipe_id": "1196635158",
+      "book": "Provisioner Essentials Volume 60",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "chocolate covered xegonberry",
+      "recipe_id": "4120124645",
+      "book": "Provisioner Essentials Volume 60",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "ravasect steak",
+      "recipe_id": "1345589730",
+      "book": "Provisioner Essentials Volume 60",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "squash beer",
+      "recipe_id": "2058331352",
+      "book": "Provisioner Essentials Volume 60",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "squash cider",
+      "recipe_id": "1166974459",
+      "book": "Provisioner Essentials Volume 60",
+      "category": "TS Essentials"
+    }
+  ],
+  "61": [
+    {
+      "recipe": "aviak sandwich",
+      "recipe_id": "2521966944",
+      "book": "Provisioner Essentials Volume 61",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "ravasect sandwich",
+      "recipe_id": "532338279",
+      "book": "Provisioner Essentials Volume 61",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "xegonberry cheesecake",
+      "recipe_id": "1647527221",
+      "book": "Provisioner Essentials Volume 61",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "xegonberry juice",
+      "recipe_id": "3771812387",
+      "book": "Provisioner Essentials Volume 61",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "xegonberry sparkling juice",
+      "recipe_id": "4184118773",
+      "book": "Provisioner Essentials Volume 61",
+      "category": "TS Essentials"
+    }
+  ],
+  "62": [
+    {
+      "recipe": "Xegonberry Fudge",
+      "recipe_id": "2473547711",
+      "book": "Provisioner Essentials Volume 62",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "soaring cappuccino",
+      "recipe_id": "196557370",
+      "book": "Provisioner Essentials Volume 62",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "soaring espresso",
+      "recipe_id": "1090443697",
+      "book": "Provisioner Essentials Volume 62",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "xegonberry cookie",
+      "recipe_id": "1856404324",
+      "book": "Provisioner Essentials Volume 62",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "xegonberry pie",
+      "recipe_id": "667062452",
+      "book": "Provisioner Essentials Volume 62",
+      "category": "TS Essentials"
+    }
+  ],
+  "63": [
+    {
+      "recipe": "baked squash",
+      "recipe_id": "3715293084",
+      "book": "Provisioner Essentials Volume 63",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "sparkling sweet iced chai tea",
+      "recipe_id": "1075539198",
+      "book": "Provisioner Essentials Volume 63",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "squash casserole",
+      "recipe_id": "2764235302",
+      "book": "Provisioner Essentials Volume 63",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "sweet chai tea",
+      "recipe_id": "2967247759",
+      "book": "Provisioner Essentials Volume 63",
+      "category": "TS Essentials"
+    }
+  ],
+  "64": [
+    {
+      "recipe": "baked flying fish",
+      "recipe_id": "1647206956",
+      "book": "Provisioner Essentials Volume 64",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "seasoned aviak sandwich",
+      "recipe_id": "3598821791",
+      "book": "Provisioner Essentials Volume 64",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "soaring espresso macchiato",
+      "recipe_id": "148313664",
+      "book": "Provisioner Essentials Volume 64",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "xegonberry wine",
+      "recipe_id": "365878219",
+      "book": "Provisioner Essentials Volume 64",
+      "category": "TS Essentials"
+    }
+  ],
+  "65": [
+    {
+      "recipe": "grilled flying fish",
+      "recipe_id": "280846425",
+      "book": "Provisioner Essentials Volume 65",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "seasoned ravasect sandwich",
+      "recipe_id": "2239494639",
+      "book": "Provisioner Essentials Volume 65",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "soaring espresso latte",
+      "recipe_id": "1151559693",
+      "book": "Provisioner Essentials Volume 65",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "xegonberry brandy",
+      "recipe_id": "22723872",
+      "book": "Provisioner Essentials Volume 65",
+      "category": "TS Essentials"
+    }
+  ],
+  "66": [
+    {
+      "recipe": "black-eye chai",
+      "recipe_id": "1392096579",
+      "book": "Provisioner Essentials Volume 66",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "iced black-eye chai",
+      "recipe_id": "1722462016",
+      "book": "Provisioner Essentials Volume 66",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "xegonberry cobbler",
+      "recipe_id": "2011781882",
+      "book": "Provisioner Essentials Volume 66",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "xegonberry sorbet",
+      "recipe_id": "114795212",
+      "book": "Provisioner Essentials Volume 66",
+      "category": "TS Essentials"
+    }
+  ],
+  "67": [
+    {
+      "recipe": "narcoleptic sweet-talk",
+      "recipe_id": "2143499539",
+      "book": "Provisioner Essentials Volume 67",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "rosewood sling",
+      "recipe_id": "2636952020",
+      "book": "Provisioner Essentials Volume 67",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "squash cobbler",
+      "recipe_id": "2896715788",
+      "book": "Provisioner Essentials Volume 67",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "squash pie",
+      "recipe_id": "929343186",
+      "book": "Provisioner Essentials Volume 67",
+      "category": "TS Essentials"
+    }
+  ],
+  "68": [
+    {
+      "recipe": "dancing halfling",
+      "recipe_id": "2657626640",
+      "book": "Provisioner Essentials Volume 68",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "flying fish stew",
+      "recipe_id": "435413933",
+      "book": "Provisioner Essentials Volume 68",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "flying freddy",
+      "recipe_id": "1192591190",
+      "book": "Provisioner Essentials Volume 68",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "seasoned flying fish roll",
+      "recipe_id": "3878431363",
+      "book": "Provisioner Essentials Volume 68",
+      "category": "TS Essentials"
+    }
+  ],
+  "69": [
+    {
+      "recipe": "Bosprite Squash Muffin",
+      "recipe_id": "1181490834",
+      "book": "Provisioner Essentials Volume 69",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bosprite Wine",
+      "recipe_id": "736348108",
+      "book": "Provisioner Essentials Volume 69",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Gigglegibbery Juice",
+      "recipe_id": "933112269",
+      "book": "Provisioner Essentials Volume 69",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Screewoggins' Surprise",
+      "recipe_id": "1853592688",
+      "book": "Provisioner Essentials Volume 69",
+      "category": "TS Essentials"
+    }
+  ],
+  "70": [
+    {
+      "recipe": "Chocolate Covered Cranberry",
+      "recipe_id": "2585082966",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chocolate chip cocoa cookies",
+      "recipe_id": "2926040008",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Fizzlepop",
+      "recipe_id": "3741793874",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Juice",
+      "recipe_id": "4121647555",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Grilled Barracuda",
+      "recipe_id": "2498954552",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "King Prawn Bisque",
+      "recipe_id": "3594581869",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Salted King Prawns",
+      "recipe_id": "2445401442",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sanguine Slurry",
+      "recipe_id": "1940578062",
+      "book": "Advanced Provisioner Volume 70",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Seared Barracuda Steak",
+      "recipe_id": "3659907377",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seared Prawn Salad",
+      "recipe_id": "3914616384",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Strifebringer's Provision",
+      "recipe_id": "2125544412",
+      "book": "Advanced Provisioner Volume 70",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Succulent Cider",
+      "recipe_id": "432239411",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Juice",
+      "recipe_id": "3545057399",
+      "book": "Provisioner Essentials Volume 70",
+      "category": "TS Essentials"
+    }
+  ],
+  "71": [
+    {
+      "recipe": "Barracuda Soup",
+      "recipe_id": "3746712585",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Buttered King Prawns",
+      "recipe_id": "1827981626",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cabilis Cocoa Mocha",
+      "recipe_id": "1531748339",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Beer",
+      "recipe_id": "1827205131",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Cheesecake",
+      "recipe_id": "3010115746",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Cocoa Smoothie",
+      "recipe_id": "3455345810",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Leaf Wrapped Baked Succulent",
+      "recipe_id": "2093415876",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seared Succulent Sandwich",
+      "recipe_id": "549289236",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Kalish",
+      "recipe_id": "1793909239",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Smoothie",
+      "recipe_id": "4192892188",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet and Sour King Prawn Soup",
+      "recipe_id": "4177116093",
+      "book": "Provisioner Essentials Volume 71",
+      "category": "TS Essentials"
+    }
+  ],
+  "72": [
+    {
+      "recipe": "Barracuda Bone Soup",
+      "recipe_id": "3793888518",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cabilis Cocoa Bars",
+      "recipe_id": "2536128634",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Flavored Beer",
+      "recipe_id": "806239779",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Glazed Succulent Steaks",
+      "recipe_id": "875409200",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Pie",
+      "recipe_id": "2185366825",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "King Prawn Crisps",
+      "recipe_id": "2449434970",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sparkling Cranberry Juice",
+      "recipe_id": "1617787001",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Lager",
+      "recipe_id": "2528052440",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent and Torsis Tea Fizzlepop",
+      "recipe_id": "1743782983",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweetened Barracuda Blood Kalish",
+      "recipe_id": "3223040759",
+      "book": "Provisioner Essentials Volume 72",
+      "category": "TS Essentials"
+    }
+  ],
+  "73": [
+    {
+      "recipe": "Barracuda and Prawn Kebabs",
+      "recipe_id": "3500608402",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cabilis Cocoa Liqueur",
+      "recipe_id": "1767684862",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Cookie",
+      "recipe_id": "769696907",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Glazed King Prawn Skewers",
+      "recipe_id": "1956162199",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Martini",
+      "recipe_id": "2316100657",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Wine",
+      "recipe_id": "380040255",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Flame Skewered Spicy Barracuda",
+      "recipe_id": "1117980975",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "King Prawn Cocktail",
+      "recipe_id": "1659275013",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Roasted Barracuda Steak with Cranberry Sauce",
+      "recipe_id": "2639833440",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Whipped Cabilis Cocoa",
+      "recipe_id": "2411811128",
+      "book": "Provisioner Essentials Volume 73",
+      "category": "TS Essentials"
+    }
+  ],
+  "74": [
+    {
+      "recipe": "Cranberry Glazed Roasted Lichenclover Root",
+      "recipe_id": "3344114903",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fried Barracuda Roll",
+      "recipe_id": "609630159",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lichenclover Seasoned King Prawn Omelet",
+      "recipe_id": "793623819",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sparkling Succulent Wine",
+      "recipe_id": "1658553079",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spiced Torsis Tea",
+      "recipe_id": "1947102148",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Bisque",
+      "recipe_id": "557319822",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Dip",
+      "recipe_id": "1859302221",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Martini",
+      "recipe_id": "97302489",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Sour Cocktail",
+      "recipe_id": "1549033664",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweetened Cocoa Smoothie",
+      "recipe_id": "2441443739",
+      "book": "Provisioner Essentials Volume 74",
+      "category": "TS Essentials"
+    }
+  ],
+  "75": [
+    {
+      "recipe": "Barracuda Roll",
+      "recipe_id": "906153253",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cabilis Cocoa Mousse",
+      "recipe_id": "2267492481",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Cream Liqueur",
+      "recipe_id": "726625478",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Margarita",
+      "recipe_id": "1818003239",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Tea Cake",
+      "recipe_id": "2345012898",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Torsis Tea",
+      "recipe_id": "2414194727",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Steamed King Prawn Dumplings",
+      "recipe_id": "2052307323",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Mead",
+      "recipe_id": "1920632282",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent Tonic",
+      "recipe_id": "242244938",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Teren Field Ration",
+      "recipe_id": "104799444",
+      "book": "Provisioner Essentials Volume 75",
+      "category": "TS Essentials"
+    }
+  ],
+  "76": [
+    {
+      "recipe": "After Dark",
+      "recipe_id": "569388772",
+      "book": "Provisioner Essentials Volume 76",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Barracuda Casserole",
+      "recipe_id": "4288883473",
+      "book": "Provisioner Essentials Volume 76",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cabilis Cocoa Birthday Cake",
+      "recipe_id": "2427794267",
+      "book": "Provisioner Essentials Volume 76",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cabilis Cocoa Sweet Bread",
+      "recipe_id": "2508648045",
+      "book": "Provisioner Essentials Volume 76",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Caramel Pie",
+      "recipe_id": "1947054152",
+      "book": "Provisioner Essentials Volume 76",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Cocoa Twist",
+      "recipe_id": "3671436543",
+      "book": "Provisioner Essentials Volume 76",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Fruitcake",
+      "recipe_id": "62004700",
+      "book": "Provisioner Essentials Volume 76",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Sour",
+      "recipe_id": "2301025341",
+      "book": "Provisioner Essentials Volume 76",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry Stinger",
+      "recipe_id": "4007938831",
+      "book": "Provisioner Essentials Volume 76",
+      "category": "TS Essentials"
+    }
+  ],
+  "77": [
+    {
+      "recipe": "Cranberry Schnapps",
+      "recipe_id": "2797280936",
+      "book": "Provisioner Essentials Volume 77",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Cabilis Cocoa",
+      "recipe_id": "1699381959",
+      "book": "Provisioner Essentials Volume 77",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "King Prawn Stuffed Succulent",
+      "recipe_id": "3007695613",
+      "book": "Provisioner Essentials Volume 77",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "King Prawn in Cranberry Sauce",
+      "recipe_id": "1646452302",
+      "book": "Provisioner Essentials Volume 77",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sour Cranberry Brandy",
+      "recipe_id": "910835436",
+      "book": "Provisioner Essentials Volume 77",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sparkling Cranberry Wine",
+      "recipe_id": "4176671147",
+      "book": "Provisioner Essentials Volume 77",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Succulent and King Prawn Pie",
+      "recipe_id": "3939252083",
+      "book": "Provisioner Essentials Volume 77",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sugar Glazed Succulent Roast",
+      "recipe_id": "2942989901",
+      "book": "Provisioner Essentials Volume 77",
+      "category": "TS Essentials"
+    }
+  ],
+  "78": [
+    {
+      "recipe": "Cabilis Cocoa Pastries",
+      "recipe_id": "4015529884",
+      "book": "Provisioner Essentials Volume 78",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cocoa Dusted Cranberry Tarts",
+      "recipe_id": "2737787659",
+      "book": "Provisioner Essentials Volume 78",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cranberry-filled Sweet Pastries",
+      "recipe_id": "1368487268",
+      "book": "Provisioner Essentials Volume 78",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Creamed Torsis Tea",
+      "recipe_id": "1490916278",
+      "book": "Provisioner Essentials Volume 78",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spicy Seafood Burger",
+      "recipe_id": "1453172770",
+      "book": "Provisioner Essentials Volume 78",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Brewed Torsis Tea",
+      "recipe_id": "2972344549",
+      "book": "Provisioner Essentials Volume 78",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Teren Tranquil Tipple",
+      "recipe_id": "4103819320",
+      "book": "Provisioner Essentials Volume 78",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Torsis Tea Ice Cream",
+      "recipe_id": "210790069",
+      "book": "Provisioner Essentials Volume 78",
+      "category": "TS Essentials"
+    }
+  ],
+  "79": [
+    {
+      "recipe": "Cocoa-dusted Wedding Cake",
+      "recipe_id": "2846552054",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Crispy Fried King Prawn Heads",
+      "recipe_id": "1875709430",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Drachnid Bliss",
+      "recipe_id": "1906708958",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Headless Cockatrice",
+      "recipe_id": "1885009350",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Juicy Cranberry Cobbler",
+      "recipe_id": "61645032",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lichenclover Root Crisps",
+      "recipe_id": "1963417292",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Luscious Cranberry Pie with Cream",
+      "recipe_id": "3538636335",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Overthere Ale",
+      "recipe_id": "2112957363",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sarnak Negotiator",
+      "recipe_id": "2616214508",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tottering Brute",
+      "recipe_id": "789202354",
+      "book": "Provisioner Essentials Volume 79",
+      "category": "TS Essentials"
+    }
+  ],
+  "80": [
+    {
+      "recipe": "Creamed Caynar Drink",
+      "recipe_id": "776008247",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Essence of Growth",
+      "recipe_id": "4181550069",
+      "book": "Advanced Provisioner Volume 80",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Fearstalker Pasta",
+      "recipe_id": "2317853168",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Flame-Grilled Kobold Chop",
+      "recipe_id": "1243900503",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kobold Blended Tea",
+      "recipe_id": "4065164772",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lapsang Tea Sorbet",
+      "recipe_id": "2551072723",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Fizzlepop",
+      "recipe_id": "4164512734",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Tea",
+      "recipe_id": "2752140510",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Meat Steak",
+      "recipe_id": "3728776088",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Palmfruit and Octopus Casserole",
+      "recipe_id": "3145199602",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plain Caynar Coffee",
+      "recipe_id": "23137131",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pureed Fearstalker Smoothie",
+      "recipe_id": "3576834578",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sauteed Bamboo Shoot",
+      "recipe_id": "1614083521",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seahorse Roe Hors D'Oeuvre",
+      "recipe_id": "862140755",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Steaming Lapsang Tea",
+      "recipe_id": "3062306953",
+      "book": "Provisioner Essentials Volume 80",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Toasted Greenroot",
+      "recipe_id": "2361666759",
+      "book": "Advanced Provisioner Volume 80",
+      "category": "TS Advanced"
+    }
+  ],
+  "81": [
+    {
+      "recipe": "Blended Palmfruit Martini",
+      "recipe_id": "1251124195",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Caynar Nutbread",
+      "recipe_id": "2771956115",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Caynarbutter and Palmfruit Jelly Sandwich",
+      "recipe_id": "4132048919",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kejekan Palmfruit Frappe",
+      "recipe_id": "2215658579",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Arm Sashimi",
+      "recipe_id": "2550227199",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Meat Mead",
+      "recipe_id": "1063183418",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Palmfruit Cider",
+      "recipe_id": "1735236664",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seahorse Roe Sashimi",
+      "recipe_id": "224705764",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seahorse Roe and Palmfruit Souffle",
+      "recipe_id": "1547188392",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sour Cherry Whiskey",
+      "recipe_id": "3957522043",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Steaming Caynar Coffee",
+      "recipe_id": "4285852208",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stir Fried Octopus with Bamboo Shoot",
+      "recipe_id": "1300566473",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stir Fried Palmfruit with Cherry",
+      "recipe_id": "2423114980",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Cherry Cider",
+      "recipe_id": "1042023779",
+      "book": "Provisioner Essentials Volume 81",
+      "category": "TS Essentials"
+    }
+  ],
+  "82": [
+    {
+      "recipe": "Grilled Gazer Chop",
+      "recipe_id": "249895469",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Grilled Octopus Steak",
+      "recipe_id": "1505571910",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hot Bamboo Shoot Tea",
+      "recipe_id": "2338626734",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kejekan Kalish",
+      "recipe_id": "3931917623",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Liquified Gazer Liqueur",
+      "recipe_id": "760578209",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Cheesecake",
+      "recipe_id": "866642508",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Liqueur",
+      "recipe_id": "3808184868",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Milkshake",
+      "recipe_id": "2804807296",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Sweetbread",
+      "recipe_id": "2853259926",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Meat Sandwich",
+      "recipe_id": "3314726372",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Palmfruit Blended Tea",
+      "recipe_id": "902216455",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Palmfruit Liqueur",
+      "recipe_id": "740671083",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pickled Seahorse Roe",
+      "recipe_id": "1479472529",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet and Sour Seahorse Roe Soup",
+      "recipe_id": "1195432667",
+      "book": "Provisioner Essentials Volume 82",
+      "category": "TS Essentials"
+    }
+  ],
+  "83": [
+    {
+      "recipe": "Caynar Nut Casserole",
+      "recipe_id": "832040233",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cherry Glazed Seahorse Roe",
+      "recipe_id": "1038524839",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Creamed Cherry Coffee",
+      "recipe_id": "4134206752",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dried Palmfruit Bar",
+      "recipe_id": "3442618555",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Gazer Flavored Frappe",
+      "recipe_id": "1769077679",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Caynar Coffee",
+      "recipe_id": "24009471",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kejekan Palmfruit Parfait",
+      "recipe_id": "71665092",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Smoothie",
+      "recipe_id": "3011984733",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Palmfruit Smoothie",
+      "recipe_id": "1808974450",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Refreshing Roper Juice",
+      "recipe_id": "1926226132",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Roast Gazer with Gravy",
+      "recipe_id": "29895232",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Roper Stump Roast",
+      "recipe_id": "1024815626",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seared Octopus with Cherry Glaze",
+      "recipe_id": "510445803",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Whipped Marr Cherry Frappe",
+      "recipe_id": "4187585481",
+      "book": "Provisioner Essentials Volume 83",
+      "category": "TS Essentials"
+    }
+  ],
+  "84": [
+    {
+      "recipe": "Bamboo Shoot Stirred Frappe",
+      "recipe_id": "2170841361",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bamboo and Fearstalker Stew",
+      "recipe_id": "1076995299",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Caynar Sparkling Wine",
+      "recipe_id": "4214519505",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fearstalker Meat Lager",
+      "recipe_id": "2624028076",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fried Octopus Roll",
+      "recipe_id": "3427645978",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Liquified Seahorse Roe",
+      "recipe_id": "2796445324",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Crepe",
+      "recipe_id": "1336618787",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Mousse",
+      "recipe_id": "1934434776",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Meat Martini",
+      "recipe_id": "2782226230",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Tentacle Rum",
+      "recipe_id": "2723340965",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Palmfruit Stuffed Octopus",
+      "recipe_id": "1489868032",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Palmfruit and Cherry Trifle",
+      "recipe_id": "3406156891",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seahorse Shake",
+      "recipe_id": "393621005",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Strong-Brewed Cherry Beer",
+      "recipe_id": "3261583430",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sugared Palmfruit Pastry",
+      "recipe_id": "405997514",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tossed Bamboo Shoot Salad",
+      "recipe_id": "4200491245",
+      "book": "Provisioner Essentials Volume 84",
+      "category": "TS Essentials"
+    }
+  ],
+  "85": [
+    {
+      "recipe": "Caynar Nut Turnover",
+      "recipe_id": "2546534835",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Curried Palmfruit Stew",
+      "recipe_id": "476242582",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Deep Fried Roper Strand",
+      "recipe_id": "1192906570",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fried Kobold Fingers",
+      "recipe_id": "328105646",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Frothed Kejekan Frappe",
+      "recipe_id": "108805071",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kejekan Sparkling Wine",
+      "recipe_id": "3949576313",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kobold Blood Wine",
+      "recipe_id": "1790275873",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lapsang Leaf Wrapped Palmfruit",
+      "recipe_id": "4003453234",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lapsang Tea Twister",
+      "recipe_id": "1157457794",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Sucker Stew",
+      "recipe_id": "139023060",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Palmfruit and Lapsang Fizzlepop",
+      "recipe_id": "522396527",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seahorse Roe Consommee",
+      "recipe_id": "3805128498",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spiced Bamboo Shoot Tea",
+      "recipe_id": "1392991585",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweetened Roper Fizzlepop",
+      "recipe_id": "3931733472",
+      "book": "Provisioner Essentials Volume 85",
+      "category": "TS Essentials"
+    }
+  ],
+  "86": [
+    {
+      "recipe": "Blended Caynar Nut Shake",
+      "recipe_id": "3053283994",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Braised Baby Bamboo Shoot",
+      "recipe_id": "2126449776",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Caynar Nut Frappe",
+      "recipe_id": "1669328039",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dried Marr Cherry Bar",
+      "recipe_id": "4108731251",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kejekan Caynar Cream Brew",
+      "recipe_id": "2134716395",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kejekan Champagne",
+      "recipe_id": "3049844108",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kejekan Dessert Wine",
+      "recipe_id": "1858842006",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Sorbet",
+      "recipe_id": "1360852225",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Turnover",
+      "recipe_id": "317717166",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus and Seahorse Wrap",
+      "recipe_id": "1000871783",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Palmfruit and Cherry Chutney",
+      "recipe_id": "3841906578",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seahorse Scented Sorbet",
+      "recipe_id": "3115482519",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweetened Lapsang Tea",
+      "recipe_id": "3427945930",
+      "book": "Provisioner Essentials Volume 86",
+      "category": "TS Essentials"
+    }
+  ],
+  "87": [
+    {
+      "recipe": "Bamboo Remoulade Topped Octopus",
+      "recipe_id": "1253040637",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bamboo Stew",
+      "recipe_id": "1497685979",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Caynar Nut Encrusted Octopus Filet",
+      "recipe_id": "3155617545",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Caynar Nut Infused Beer",
+      "recipe_id": "829230953",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Caynar Vinaigrette Seahorse Salad",
+      "recipe_id": "1498372217",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cherry Glazed Kobold Roast",
+      "recipe_id": "725069632",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Crushed Caynar Nut Snap",
+      "recipe_id": "152741104",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Frosted Lapsang Julep",
+      "recipe_id": "451104222",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Frothed Caynar Coffee",
+      "recipe_id": "3738126789",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kobold Rum",
+      "recipe_id": "1315651291",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Lager",
+      "recipe_id": "1805279074",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Caynar Nut Milkshake",
+      "recipe_id": "2156355889",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Marr Cherry Wine",
+      "recipe_id": "3451404389",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Whipped Cream Topped Cherry Pie",
+      "recipe_id": "2257062888",
+      "book": "Provisioner Essentials Volume 87",
+      "category": "TS Essentials"
+    }
+  ],
+  "88": [
+    {
+      "recipe": "Blended Bamboo Brew",
+      "recipe_id": "1539915726",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chunky Gazer Fizzlepop",
+      "recipe_id": "2983155072",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Giant Caynar Nut Pancake",
+      "recipe_id": "1389158855",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Grilled Gazer Kebab",
+      "recipe_id": "1950378741",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Marr Cherry Tea",
+      "recipe_id": "3760777879",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Iced Roper Tea",
+      "recipe_id": "3938254498",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kejekan Special Cheesecake",
+      "recipe_id": "721816105",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lapsang Iced Tea",
+      "recipe_id": "3701886294",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marr Cherry Cobbler",
+      "recipe_id": "4032512334",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seahorse Cider",
+      "recipe_id": "880321583",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seahorse Roe Blue Cheese",
+      "recipe_id": "3805055699",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seahorse Roe Trifle",
+      "recipe_id": "640530454",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spiced Caynar Nut Brew",
+      "recipe_id": "4259877092",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Toasted Fearstalker Toes",
+      "recipe_id": "1328327528",
+      "book": "Provisioner Essentials Volume 88",
+      "category": "TS Essentials"
+    }
+  ],
+  "89": [
+    {
+      "recipe": "Bamboo Seasoned Octopus Chop",
+      "recipe_id": "1525809424",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Blended Seahorse Shake",
+      "recipe_id": "195496943",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cherry Marrtini",
+      "recipe_id": "2647811429",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fiery Sweet Cherry Trifle",
+      "recipe_id": "89522097",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Flame-Grilled Roper Steak",
+      "recipe_id": "81973696",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Flaming Bamboo Shooter",
+      "recipe_id": "3634954147",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Gazer Flavored Rum",
+      "recipe_id": "3219188504",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kejekan Palmfruit Juice",
+      "recipe_id": "4188816615",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lapsang Lager",
+      "recipe_id": "3490757839",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lapsang Leaf Wrapped Octopus",
+      "recipe_id": "4078147302",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lapsang Marinated Palmfruit Steak",
+      "recipe_id": "3524563047",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Meat Kedgeree",
+      "recipe_id": "491661861",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Steak in Bamboo Sauce",
+      "recipe_id": "1302600652",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Octopus Steak with Seahorse Gravy",
+      "recipe_id": "567182571",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spiced Caynar Nut Rum",
+      "recipe_id": "818447743",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sweet Palmfruit Shake",
+      "recipe_id": "1580893116",
+      "book": "Provisioner Essentials Volume 89",
+      "category": "TS Essentials"
+    }
+  ],
+  "90": [
+    {
+      "recipe": "Ashenbone Bread",
+      "recipe_id": "755454245",
+      "book": "Advanced Provisioner Volume 90",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ashenbone Java",
+      "recipe_id": "3080201180",
+      "book": "Advanced Provisioner Volume 90",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Exotic Meat Pie",
+      "recipe_id": "1146129807",
+      "book": "Provisioner Essentials Volume 91",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Giant Exotic Meat Pie",
+      "recipe_id": "3670201760",
+      "book": "Provisioner Essentials Volume 92",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Giant Panther Chops",
+      "recipe_id": "2901679484",
+      "book": "Provisioner Essentials Volume 92",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Giant Raptor Steak",
+      "recipe_id": "1542943807",
+      "book": "Provisioner Essentials Volume 92",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Giant Seasoned Fruit Basket",
+      "recipe_id": "2968578018",
+      "book": "Provisioner Essentials Volume 92",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kromzek Facemelter",
+      "recipe_id": "2830242474",
+      "book": "Advanced Provisioner Volume 91",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Midnight Black",
+      "recipe_id": "3321478683",
+      "book": "Advanced Provisioner Volume 91",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Panther Chops",
+      "recipe_id": "3630055849",
+      "book": "Provisioner Essentials Volume 91",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Provisioner's Picnic",
+      "recipe_id": "2699680817",
+      "book": "Provisioner Essentials Volume 90",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Provisioner's Picnic Setting Kit",
+      "recipe_id": "3933628802",
+      "book": "Provisioner Essentials Volume 90",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Provisioner's Supply Cart",
+      "recipe_id": "228830137",
+      "book": "Advanced Provisioner Volume 90",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Raptor Steak",
+      "recipe_id": "1081686972",
+      "book": "Provisioner Essentials Volume 91",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rose Wedding Cake",
+      "recipe_id": "1609034492",
+      "book": "Advanced Provisioner Volume 90",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Seasoned Fruit Basket",
+      "recipe_id": "2930600158",
+      "book": "Provisioner Essentials Volume 91",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seer's Tea",
+      "recipe_id": "2617346219",
+      "book": "Advanced Provisioner Volume 91",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Small Exotic Meat Pie",
+      "recipe_id": "3421534262",
+      "book": "Provisioner Essentials Volume 91",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Small Panther Chops",
+      "recipe_id": "153297681",
+      "book": "Provisioner Essentials Volume 91",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Small Raptor Steak",
+      "recipe_id": "2256302616",
+      "book": "Provisioner Essentials Volume 91",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Small Seasoned Fruit Basket",
+      "recipe_id": "3032396022",
+      "book": "Provisioner Essentials Volume 91",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Strong Kromzek Facemelter",
+      "recipe_id": "2704578257",
+      "book": "Advanced Provisioner Volume 92",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Strong Midnight Black",
+      "recipe_id": "3648545974",
+      "book": "Advanced Provisioner Volume 92",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Strong Seer's Tea",
+      "recipe_id": "619069295",
+      "book": "Advanced Provisioner Volume 92",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Strong Stumbler's Wine",
+      "recipe_id": "4186383035",
+      "book": "Advanced Provisioner Volume 92",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Stumbler's Wine",
+      "recipe_id": "3842439190",
+      "book": "Advanced Provisioner Volume 91",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Weak Kromzek Facemelter",
+      "recipe_id": "4185604340",
+      "book": "Advanced Provisioner Volume 91",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Weak Midnight Black",
+      "recipe_id": "160646994",
+      "book": "Advanced Provisioner Volume 91",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Weak Seer's Tea",
+      "recipe_id": "1678870906",
+      "book": "Advanced Provisioner Volume 91",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Weak Stumbler's Wine",
+      "recipe_id": "694944095",
+      "book": "Advanced Provisioner Volume 91",
+      "category": "TS Advanced"
+    }
+  ],
+  "93": [
+    {
+      "recipe": "Small Exotic Meat Flank",
+      "recipe_id": "717266308",
+      "book": "Provisioner Essentials Volume 93",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Small Panther Stew",
+      "recipe_id": "1498913076",
+      "book": "Provisioner Essentials Volume 93",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Small Raptor Sandwich",
+      "recipe_id": "2222234142",
+      "book": "Provisioner Essentials Volume 93",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Small Seasoned Fruit Pie",
+      "recipe_id": "1351083913",
+      "book": "Provisioner Essentials Volume 93",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Weak Battle Swill",
+      "recipe_id": "4289649063",
+      "book": "Provisioner Essentials Volume 93",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Weak Chaos Mead",
+      "recipe_id": "1226233656",
+      "book": "Provisioner Essentials Volume 93",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Weak Combat Ale",
+      "recipe_id": "2088936918",
+      "book": "Provisioner Essentials Volume 93",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Weak Evervictorious Rum",
+      "recipe_id": "445054904",
+      "book": "Provisioner Essentials Volume 93",
+      "category": "TS Essentials"
+    }
+  ],
+  "94": [
+    {
+      "recipe": "Battle Swill",
+      "recipe_id": "2914484849",
+      "book": "Provisioner Essentials Volume 94",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chaos Mead",
+      "recipe_id": "1098116476",
+      "book": "Provisioner Essentials Volume 94",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Combat Ale",
+      "recipe_id": "1961336722",
+      "book": "Provisioner Essentials Volume 94",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Evervictorious Rum",
+      "recipe_id": "3540720795",
+      "book": "Provisioner Essentials Volume 94",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Exotic Meat Flank",
+      "recipe_id": "2599554236",
+      "book": "Provisioner Essentials Volume 94",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Panther Stew",
+      "recipe_id": "2255155189",
+      "book": "Provisioner Essentials Volume 94",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Raptor Sandwich",
+      "recipe_id": "890565847",
+      "book": "Provisioner Essentials Volume 94",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Seasoned Fruit Pie",
+      "recipe_id": "2016767366",
+      "book": "Provisioner Essentials Volume 94",
+      "category": "TS Essentials"
+    }
+  ],
+  "95": [
+    {
+      "recipe": "Giant Exotic Meat Flank",
+      "recipe_id": "2732488470",
+      "book": "Provisioner Essentials Volume 95",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Giant Panther Stew",
+      "recipe_id": "536073300",
+      "book": "Provisioner Essentials Volume 95",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Giant Raptor Sandwich",
+      "recipe_id": "1489962945",
+      "book": "Provisioner Essentials Volume 95",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Giant Seasoned Fruit Pie",
+      "recipe_id": "1309543179",
+      "book": "Provisioner Essentials Volume 95",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Monsoon",
+      "recipe_id": "163788866",
+      "book": "Advanced Provisioner Volume 96",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Stormborn Souffle",
+      "recipe_id": "2097995607",
+      "book": "Advanced Provisioner Volume 96",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Strong Battle Swill",
+      "recipe_id": "1800218634",
+      "book": "Provisioner Essentials Volume 95",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Strong Chaos Mead",
+      "recipe_id": "2342292649",
+      "book": "Provisioner Essentials Volume 95",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Strong Combat Ale",
+      "recipe_id": "3188260423",
+      "book": "Provisioner Essentials Volume 95",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Strong Evervictorious Rum",
+      "recipe_id": "4102060703",
+      "book": "Provisioner Essentials Volume 95",
+      "category": "TS Essentials"
+    }
+  ],
+  "96": [
+    {
+      "recipe": "Blended Hylocereus Smoothie",
+      "recipe_id": "2405296554",
+      "book": "Provisioner Essentials Volume 96",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Far Seas Hardtack",
+      "recipe_id": "627884785",
+      "book": "Provisioner Essentials Volume 96",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handama Bitter",
+      "recipe_id": "1626400440",
+      "book": "Provisioner Essentials Volume 96",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handama Iced Tea",
+      "recipe_id": "698109586",
+      "book": "Provisioner Essentials Volume 96",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handama Wrap",
+      "recipe_id": "2629462570",
+      "book": "Provisioner Essentials Volume 96",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Salt Crusted Jerky",
+      "recipe_id": "3522608309",
+      "book": "Provisioner Essentials Volume 96",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spiced Fruit Salad",
+      "recipe_id": "4096318738",
+      "book": "Provisioner Essentials Volume 96",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sulfur Smoothie",
+      "recipe_id": "2226180707",
+      "book": "Provisioner Essentials Volume 96",
+      "category": "TS Essentials"
+    }
+  ],
+  "97": [
+    {
+      "recipe": "Cultist Plum Wine",
+      "recipe_id": "408850444",
+      "book": "Provisioner Essentials Volume 97",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dried Thresher Stick",
+      "recipe_id": "4054247279",
+      "book": "Provisioner Essentials Volume 97",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ferrin's Shark Souffle",
+      "recipe_id": "4193735624",
+      "book": "Provisioner Essentials Volume 97",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handama Black Tea",
+      "recipe_id": "3683711432",
+      "book": "Provisioner Essentials Volume 97",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hylocereus Fruit Juice",
+      "recipe_id": "1196516248",
+      "book": "Provisioner Essentials Volume 97",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kith Pepper Smoothie",
+      "recipe_id": "153478134",
+      "book": "Provisioner Essentials Volume 97",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kithicor Cake",
+      "recipe_id": "292779073",
+      "book": "Provisioner Essentials Volume 97",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Refuge Wrap",
+      "recipe_id": "1017715705",
+      "book": "Provisioner Essentials Volume 97",
+      "category": "TS Essentials"
+    }
+  ],
+  "98": [
+    {
+      "recipe": "Fin Kabob",
+      "recipe_id": "4210602868",
+      "book": "Provisioner Essentials Volume 98",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hylocereus Palinka",
+      "recipe_id": "2413821235",
+      "book": "Provisioner Essentials Volume 98",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Phantom Fillet",
+      "recipe_id": "3689187779",
+      "book": "Provisioner Essentials Volume 98",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Phantom Sea Jumble",
+      "recipe_id": "301479009",
+      "book": "Provisioner Essentials Volume 98",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sulfur Squeeze",
+      "recipe_id": "1143263430",
+      "book": "Provisioner Essentials Volume 98",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Thresher Fin Soup",
+      "recipe_id": "3450421442",
+      "book": "Provisioner Essentials Volume 98",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Herb Tea",
+      "recipe_id": "568776779",
+      "book": "Provisioner Essentials Volume 98",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Sea Tequila",
+      "recipe_id": "160471117",
+      "book": "Provisioner Essentials Volume 98",
+      "category": "TS Essentials"
+    }
+  ],
+  "99": [
+    {
+      "recipe": "Allu'thoa Black Label",
+      "recipe_id": "3837663917",
+      "book": "Provisioner Essentials Volume 99",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bilgewater",
+      "recipe_id": "2087412434",
+      "book": "Provisioner Essentials Volume 99",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Icariine",
+      "recipe_id": "1828438736",
+      "book": "Provisioner Essentials Volume 99",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kith Spiced Rum",
+      "recipe_id": "1681577985",
+      "book": "Provisioner Essentials Volume 99",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prepared Dreadfruit",
+      "recipe_id": "794578735",
+      "book": "Provisioner Essentials Volume 99",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sulfur Salsa",
+      "recipe_id": "1301139426",
+      "book": "Provisioner Essentials Volume 99",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Urzarach Curry",
+      "recipe_id": "2084771973",
+      "book": "Provisioner Essentials Volume 99",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Zombified Thresher",
+      "recipe_id": "2918312630",
+      "book": "Provisioner Essentials Volume 99",
+      "category": "TS Essentials"
+    }
+  ]
+}

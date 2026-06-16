@@ -16,3 +16,9 @@ dist/
 # os / editor
 .DS_Store
 *.swp
+
+# recipe scraper: logs (contain session cookies) + raw page cache + recon dumps
+tools/recipe_scrape/*.log
+tools/recipe_scrape/run.log
+tools/recipe_scrape/data/raw_books/
+tools/recipe_scrape/recon_out/

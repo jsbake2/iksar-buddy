@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>iksar_buddy — Recipe Browser</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">ib</span>
+      <div>
+        <div class="title">Recipe Browser</div>
+        <div class="sub" id="subcount">loading…</div>
+      </div>
+    </div>
+    <div class="top-controls">
+      <div class="seg" id="viewtoggle" role="tablist" aria-label="View">
+        <button class="seg-btn active" data-view="tree">Tree</button>
+        <button class="seg-btn" data-view="table">Table</button>
+      </div>
+      <label class="theme">Theme
+        <select id="theme">
+          <option value="midnight">midnight</option>
+          <option value="grafana">grafana</option>
+          <option value="amber">amber</option>
+          <option value="paper">paper</option>
+          <option value="defiler">defiler</option>
+          <option value="iksar">iksar</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- class rail -->
+    <nav class="rail" id="rail">
+      <div class="rail-group">
+        <div class="rail-head">Crafting classes</div>
+        <ul id="rail-main"></ul>
+      </div>
+      <div class="rail-group">
+        <div class="rail-head">Skill-based / misc</div>
+        <ul id="rail-side"></ul>
+      </div>
+    </nav>
+
+    <!-- main content -->
+    <main class="content">
+      <div class="toolbar">
+        <input id="search" class="search" type="search" placeholder="Filter recipes in this class…  (name, tier, book)">
+        <div class="chips" id="catchips"></div>
+        <div class="lvlrange">
+          <span class="lbl">Lvl</span>
+          <input id="lmin" class="lvlbox" type="number" min="1" max="130" placeholder="min">
+          <span class="dash">–</span>
+          <input id="lmax" class="lvlbox" type="number" min="1" max="130" placeholder="max">
+        </div>
+        <div class="grow"></div>
+        <div class="resultcount" id="resultcount"></div>
+      </div>
+
+      <div id="view" class="view"></div>
+    </main>
+
+    <!-- selection tray -->
+    <aside class="tray" id="tray" aria-label="Selected recipes">
+      <div class="tray-head">
+        <span>Craft list</span>
+        <span class="badge" id="traycount">0</span>
+      </div>
+      <ul class="tray-list" id="traylist"></ul>
+      <div class="tray-actions">
+        <button id="export-yaml" class="btn primary" disabled>Export list (YAML)</button>
+        <button id="copy-names" class="btn" disabled>Copy names</button>
+        <button id="clear-sel" class="btn ghost" disabled>Clear</button>
+      </div>
+      <div class="tray-hint">Click a recipe row to add it. Export drops a <code>lists.yaml</code>-shaped block for the crafter.</div>
+    </aside>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

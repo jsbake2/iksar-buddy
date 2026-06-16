@@ -1,0 +1,6808 @@
+{
+  "1": [
+    {
+      "recipe": "Alder Club",
+      "recipe_id": "2756839793",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Alder Knotted Club",
+      "recipe_id": "1524516182",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ambush (Journeyman)",
+      "recipe_id": "336442429",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Atrophy (Journeyman)",
+      "recipe_id": "796361908",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Backstab (Journeyman)",
+      "recipe_id": "184222318",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bash (Journeyman)",
+      "recipe_id": "3012998630",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Berserk Rage (Expert)",
+      "recipe_id": "2390350487",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Berserk Rage (Journeyman)",
+      "recipe_id": "2972504",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Body Check (Journeyman)",
+      "recipe_id": "513681854",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bronze Assault Axe",
+      "recipe_id": "561059052",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Battle Hammer",
+      "recipe_id": "1509475835",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Dirk",
+      "recipe_id": "3941179683",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Falchion",
+      "recipe_id": "750977280",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Flamberge",
+      "recipe_id": "947285956",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Long Sword",
+      "recipe_id": "4180870116",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Rapier",
+      "recipe_id": "450462023",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Sai",
+      "recipe_id": "3737663254",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Short Sword",
+      "recipe_id": "1600106208",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Stiletto",
+      "recipe_id": "3343292598",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Cataclysm (Journeyman)",
+      "recipe_id": "1237718797",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Charm (Journeyman)",
+      "recipe_id": "3907080005",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Clarion (Expert)",
+      "recipe_id": "4253362295",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Clarion (Journeyman)",
+      "recipe_id": "1951938044",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Condemn (Journeyman)",
+      "recipe_id": "667270786",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Crystal Blast (Expert)",
+      "recipe_id": "4187014871",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Crystal Blast (Journeyman)",
+      "recipe_id": "335474762",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dawnstrike (Expert)",
+      "recipe_id": "2892707947",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dawnstrike (Journeyman)",
+      "recipe_id": "4148367595",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Death Swarm (Expert)",
+      "recipe_id": "1346526472",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Death Swarm (Journeyman)",
+      "recipe_id": "2690105589",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dire Balm (Expert)",
+      "recipe_id": "1719339780",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dire Balm (Journeyman)",
+      "recipe_id": "2350202265",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dissolve (Expert)",
+      "recipe_id": "334997194",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dissolve (Journeyman)",
+      "recipe_id": "3823254327",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Divine Smite (Expert)",
+      "recipe_id": "2212275739",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Divine Smite (Journeyman)",
+      "recipe_id": "1849625875",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dread Essence",
+      "recipe_id": "987702557",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Earthen Avatar (Expert)",
+      "recipe_id": "3073385838",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Earthen Avatar (Journeyman)",
+      "recipe_id": "1959575122",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Buckler",
+      "recipe_id": "4179969963",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Club",
+      "recipe_id": "1902307420",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Cudgel",
+      "recipe_id": "3477671314",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Knotted Club",
+      "recipe_id": "3703308732",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Round Shield",
+      "recipe_id": "2381868801",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Emberstrike (Journeyman)",
+      "recipe_id": "3082607701",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Entrance (Expert)",
+      "recipe_id": "209649633",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Entrance (Journeyman)",
+      "recipe_id": "3785184489",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Faith Strike (Expert)",
+      "recipe_id": "373687844",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Faith Strike (Journeyman)",
+      "recipe_id": "3257658160",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fashioned Lead Bracelet",
+      "recipe_id": "989671691",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fashioned Rawhide Leather Belt",
+      "recipe_id": "1241182996",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fashioned Simple Ring",
+      "recipe_id": "3283012147",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fashioned Simple Stud Earring",
+      "recipe_id": "1294086821",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Flash of Steel (Expert)",
+      "recipe_id": "2857287571",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Flash of Steel (Journeyman)",
+      "recipe_id": "1202525339",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Frozen Palm (Journeyman)",
+      "recipe_id": "2907715469",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Gushing Wound (Journeyman)",
+      "recipe_id": "1120380361",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Harl's Rousing Tune (Journeyman)",
+      "recipe_id": "1124545477",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Haze (Journeyman)",
+      "recipe_id": "3906699437",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Heal Servant (Journeyman)",
+      "recipe_id": "1003318362",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Heart of Thule",
+      "recipe_id": "1644979514",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hemorrhage (Expert)",
+      "recipe_id": "3500670855",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hemorrhage (Journeyman)",
+      "recipe_id": "986302746",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ice Storm (Journeyman)",
+      "recipe_id": "605205155",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imprecate (Expert)",
+      "recipe_id": "1389659438",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imprecate (Journeyman)",
+      "recipe_id": "3699377377",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Insidious Whisper (Expert)",
+      "recipe_id": "2907400478",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Insidious Whisper (Journeyman)",
+      "recipe_id": "1857548834",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Invocation (Expert)",
+      "recipe_id": "3144769650",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Invocation (Journeyman)",
+      "recipe_id": "1361008367",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Judgment (Expert)",
+      "recipe_id": "2928632003",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Judgment (Journeyman)",
+      "recipe_id": "3028408659",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jum Jum Cider",
+      "recipe_id": "1460967875",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jum Jum Muffins",
+      "recipe_id": "3587299827",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lesser Caustic Poison",
+      "recipe_id": "1434600174",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lesser Hemotoxin",
+      "recipe_id": "3557955597",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lesser Noxious Remedy",
+      "recipe_id": "1914740632",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lightning Strike (Expert)",
+      "recipe_id": "3882702549",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Lightning Strike (Journeyman)",
+      "recipe_id": "855686081",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Magma Chamber (Journeyman)",
+      "recipe_id": "3407204680",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Malice (Expert)",
+      "recipe_id": "63269585",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Malice (Journeyman)",
+      "recipe_id": "4090558252",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Medusa Gaze (Journeyman)",
+      "recipe_id": "379584844",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Meliorate (Expert)",
+      "recipe_id": "860431668",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Meliorate (Journeyman)",
+      "recipe_id": "3851735895",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mesmerize (Expert)",
+      "recipe_id": "1980786399",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mesmerize (Journeyman)",
+      "recipe_id": "4291656532",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Meteor Fist (Journeyman)",
+      "recipe_id": "529178614",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ministration (Expert)",
+      "recipe_id": "542537212",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ministration (Journeyman)",
+      "recipe_id": "2603078008",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Misfortune's Kiss (Journeyman)",
+      "recipe_id": "2110071731",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mock (Expert)",
+      "recipe_id": "2457181394",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mock (Journeyman)",
+      "recipe_id": "3378361426",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Nature's Salve (Expert)",
+      "recipe_id": "3462750061",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Nature's Salve (Journeyman)",
+      "recipe_id": "1077010082",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Necrotic Reconstruction (Journeyman)",
+      "recipe_id": "3428203866",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Night Strike (Journeyman)",
+      "recipe_id": "3781897115",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Overpower (Expert)",
+      "recipe_id": "2164528543",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Overpower (Journeyman)",
+      "recipe_id": "1827126935",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Painbringer (Expert)",
+      "recipe_id": "4019174801",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Painbringer (Journeyman)",
+      "recipe_id": "961694706",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pandemic (Journeyman)",
+      "recipe_id": "168358284",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Paranoia (Journeyman)",
+      "recipe_id": "3080627168",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Personae Reflection (Journeyman)",
+      "recipe_id": "2868481098",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Provoke (Expert)",
+      "recipe_id": "1427014855",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Provoke (Journeyman)",
+      "recipe_id": "3704854860",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pummel (Expert)",
+      "recipe_id": "1272529466",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Pummel (Journeyman)",
+      "recipe_id": "3177176965",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Puncture (Expert)",
+      "recipe_id": "3894619689",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Puncture (Journeyman)",
+      "recipe_id": "3816203657",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Quick Strike (Expert)",
+      "recipe_id": "2913044141",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Quick Strike (Journeyman)",
+      "recipe_id": "2801011981",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Quick Swipe (Expert)",
+      "recipe_id": "3211119249",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Quick Swipe (Journeyman)",
+      "recipe_id": "1131420357",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Bandolier",
+      "recipe_id": "1886244756",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Boots",
+      "recipe_id": "2226194372",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Raxxyl's Rousing Tune (Journeyman)",
+      "recipe_id": "1765110921",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rear Shot (Journeyman)",
+      "recipe_id": "2686184249",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rebuke (Journeyman)",
+      "recipe_id": "2475087321",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rejuvenation (Expert)",
+      "recipe_id": "3111416532",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rejuvenation (Journeyman)",
+      "recipe_id": "33936976",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rob (Journeyman)",
+      "recipe_id": "3643044796",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rupture (Expert)",
+      "recipe_id": "1600437134",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rupture (Journeyman)",
+      "recipe_id": "3037367571",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rush (Journeyman)",
+      "recipe_id": "1505159556",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sandra's Deafening Strike (Expert)",
+      "recipe_id": "3390280985",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sandra's Deafening Strike (Journeyman)",
+      "recipe_id": "973474020",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shanghai (Journeyman)",
+      "recipe_id": "2592141076",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Silent Threat (Expert)",
+      "recipe_id": "1958668924",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Silent Threat (Journeyman)",
+      "recipe_id": "2724404255",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Slurred Insult (Expert)",
+      "recipe_id": "348300391",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Slurred Insult (Journeyman)",
+      "recipe_id": "3232713075",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Solar Flare (Expert)",
+      "recipe_id": "3341572123",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Solar Flare (Journeyman)",
+      "recipe_id": "3710050699",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Soulrot (Expert)",
+      "recipe_id": "1943478865",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Soulrot (Journeyman)",
+      "recipe_id": "2236727278",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sunfish Roll",
+      "recipe_id": "1359739912",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sylvan Bloom (Expert)",
+      "recipe_id": "4128417521",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sylvan Bloom (Journeyman)",
+      "recipe_id": "2017863486",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Thorncoat (Journeyman)",
+      "recipe_id": "1784806285",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Thornskin (Journeyman)",
+      "recipe_id": "1261149857",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Threadbare Slippers",
+      "recipe_id": "1857164785",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Thuri's Doleful Thrust (Expert)",
+      "recipe_id": "3504478422",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Thuri's Doleful Thrust (Journeyman)",
+      "recipe_id": "76543426",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Assault Axe",
+      "recipe_id": "833173279",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Battle Hammer",
+      "recipe_id": "3289257519",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Crescent Axe",
+      "recipe_id": "2310230039",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Dirk",
+      "recipe_id": "3093188817",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Falchion",
+      "recipe_id": "2588659308",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Flamberge",
+      "recipe_id": "2093271672",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Javelin",
+      "recipe_id": "3410550093",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Long Sword",
+      "recipe_id": "4218071678",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Morning Star",
+      "recipe_id": "1998483295",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Rapier",
+      "recipe_id": "2688614220",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Sai",
+      "recipe_id": "595944482",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Short Spear",
+      "recipe_id": "2116445089",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Short Sword",
+      "recipe_id": "2979224705",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Spatha",
+      "recipe_id": "3937060840",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Stiletto",
+      "recipe_id": "1909348314",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Sackcloth Cuffs",
+      "recipe_id": "820988559",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tranquil Sackcloth Slippers",
+      "recipe_id": "3371016701",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tranquil Threadbare Cuffs",
+      "recipe_id": "3398800669",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Threadbare Mitts",
+      "recipe_id": "138200214",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Threadbare Slippers",
+      "recipe_id": "2148174955",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ultraviolet Beam (Expert)",
+      "recipe_id": "767105137",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ultraviolet Beam (Journeyman)",
+      "recipe_id": "3719071116",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Undead Knight (Expert)",
+      "recipe_id": "2255256772",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Undead Knight (Journeyman)",
+      "recipe_id": "1353812647",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Velium Winds (Expert)",
+      "recipe_id": "2579372928",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Velium Winds (Journeyman)",
+      "recipe_id": "1331949027",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vengeful Arrow (Expert)",
+      "recipe_id": "3181932075",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Vengeful Arrow (Journeyman)",
+      "recipe_id": "1396693323",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Viscerate (Journeyman)",
+      "recipe_id": "3334511562",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Waking Dragon (Expert)",
+      "recipe_id": "1250095020",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waking Dragon (Journeyman)",
+      "recipe_id": "2666463928",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Woven Rawhide Boots",
+      "recipe_id": "1164764199",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Woven Rawhide Bracers",
+      "recipe_id": "2092627290",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Woven Rawhide Gloves",
+      "recipe_id": "1681028051",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Woven Waxed Boots",
+      "recipe_id": "1629696480",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Woven Waxed Bracers",
+      "recipe_id": "246986439",
+      "book": "Advanced Artisan Volume 1",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "fried frog leg",
+      "recipe_id": "4104234135",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine simple candelabra",
+      "recipe_id": "1486210533",
+      "book": "artisan essentials volume 1",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "simple black coffee",
+      "recipe_id": "1751324747",
+      "book": "artisan essentials volume 2",
+      "category": "TS Essentials"
+    }
+  ],
+  "121": [
+    {
+      "recipe": "Svarni Barding of Criticals",
+      "recipe_id": "820060514",
+      "book": "Vetrovian Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Barding of the Expert",
+      "recipe_id": "2474969855",
+      "book": "Vetrovian Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Hackamore of Conservation",
+      "recipe_id": "2920302615",
+      "book": "Vetrovian Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Hackamore of Skill",
+      "recipe_id": "3295371636",
+      "book": "Vetrovian Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Reins of Mastery",
+      "recipe_id": "2436661912",
+      "book": "Vetrovian Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Saddle of Brawn",
+      "recipe_id": "1418030152",
+      "book": "Vetrovian Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Saddle of Parry",
+      "recipe_id": "289237369",
+      "book": "Vetrovian Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Saddle of the Artisan",
+      "recipe_id": "2405447060",
+      "book": "Vetrovian Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Stirrups of Proficiency",
+      "recipe_id": "115670919",
+      "book": "Vetrovian Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    }
+  ],
+  "122": [
+    {
+      "recipe": "Svarni Barding of Health",
+      "recipe_id": "3552006334",
+      "book": "Vetrovian Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Barding of Power",
+      "recipe_id": "105178166",
+      "book": "Vetrovian Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Hackamore of Harvesting",
+      "recipe_id": "2679419606",
+      "book": "Vetrovian Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Hackamore of Proficiency",
+      "recipe_id": "2410710422",
+      "book": "Vetrovian Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Reins of Striding",
+      "recipe_id": "3649447849",
+      "book": "Vetrovian Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Saddle of the Pioneer",
+      "recipe_id": "599702635",
+      "book": "Vetrovian Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Shoes of Ability",
+      "recipe_id": "2800779853",
+      "book": "Vetrovian Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    }
+  ],
+  "123": [
+    {
+      "recipe": "Svarni Barding of Industry",
+      "recipe_id": "755790928",
+      "book": "Vetrovian Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Breeching of Durability",
+      "recipe_id": "245128380",
+      "book": "Vetrovian Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Hackamore of Evolution",
+      "recipe_id": "106527773",
+      "book": "Vetrovian Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Hackamore of Status",
+      "recipe_id": "2983928539",
+      "book": "Vetrovian Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Saddle of Ability",
+      "recipe_id": "3022314588",
+      "book": "Vetrovian Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Saddle of the Innovator",
+      "recipe_id": "3370475993",
+      "book": "Vetrovian Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Shoes of Progress",
+      "recipe_id": "2403789400",
+      "book": "Vetrovian Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    }
+  ],
+  "124": [
+    {
+      "recipe": "Svarni Barding of Practice",
+      "recipe_id": "3922812035",
+      "book": "Vetrovian Crafter's Primer Volume IV",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Breeching of Ability",
+      "recipe_id": "755232872",
+      "book": "Vetrovian Crafter's Primer Volume IV",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Hackamore of Flight",
+      "recipe_id": "4022359674",
+      "book": "Vetrovian Crafter's Primer Volume IV",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Reins of Conservation",
+      "recipe_id": "1147884256",
+      "book": "Vetrovian Crafter's Primer Volume IV",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Saddle of Evasion",
+      "recipe_id": "2836625114",
+      "book": "Vetrovian Crafter's Primer Volume IV",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Saddle of Harvesting",
+      "recipe_id": "2081184411",
+      "book": "Vetrovian Crafter's Primer Volume IV",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Stirrups of Ability",
+      "recipe_id": "150989623",
+      "book": "Vetrovian Crafter's Primer Volume IV",
+      "category": "TS Essentials"
+    }
+  ],
+  "125": [
+    {
+      "recipe": "Forlorn Barding of Bolstering",
+      "recipe_id": "2222214883",
+      "book": "Master Vetrovian Crafter's Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Barding of Criticals",
+      "recipe_id": "1936205862",
+      "book": "Master Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Barding of Health",
+      "recipe_id": "2446814296",
+      "book": "Master Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Barding of Power",
+      "recipe_id": "2940940304",
+      "book": "Master Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Barding of Practice",
+      "recipe_id": "718853579",
+      "book": "Master Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Barding of Striking",
+      "recipe_id": "682415345",
+      "book": "Master Vetrovian Crafter's Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Barding of the Potent",
+      "recipe_id": "909424671",
+      "book": "Master Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Breeching of Ability",
+      "recipe_id": "1652257106",
+      "book": "Master Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Breeching of Durability",
+      "recipe_id": "1072946249",
+      "book": "Master Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Breeching of Striking",
+      "recipe_id": "1944240821",
+      "book": "Master Vetrovian Crafter's Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Hackamore of Conservation",
+      "recipe_id": "1138309435",
+      "book": "Master Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Hackamore of Doublestrike",
+      "recipe_id": "105067490",
+      "book": "Master Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Hackamore of Evolution",
+      "recipe_id": "926350568",
+      "book": "Master Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Hackamore of Harvesting",
+      "recipe_id": "1248897122",
+      "book": "Master Vetrovian Crafter's Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Hackamore of Proficiency",
+      "recipe_id": "3721976903",
+      "book": "Master Vetrovian Crafter's Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Hackamore of Progress",
+      "recipe_id": "653713176",
+      "book": "Master Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Hackamore of Skill",
+      "recipe_id": "3424190391",
+      "book": "Master Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Hackamore of Status",
+      "recipe_id": "2176330902",
+      "book": "Master Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Reins of Expertise",
+      "recipe_id": "2411623572",
+      "book": "Master Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Reins of Mastery",
+      "recipe_id": "2472108556",
+      "book": "Master Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Reins of Striding",
+      "recipe_id": "4274867492",
+      "book": "Master Vetrovian Crafter's Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Saddle of Brawn",
+      "recipe_id": "1631722050",
+      "book": "Master Vetrovian Crafter's Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Saddle of Doublestrike",
+      "recipe_id": "1692770973",
+      "book": "Master Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Saddle of Durability",
+      "recipe_id": "2066611062",
+      "book": "Master Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Saddle of Evasion",
+      "recipe_id": "241180281",
+      "book": "Master Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Saddle of Fervor",
+      "recipe_id": "3719279148",
+      "book": "Master Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Saddle of Harvesting",
+      "recipe_id": "3125803944",
+      "book": "Master Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Saddle of Parry",
+      "recipe_id": "1387552829",
+      "book": "Master Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Saddle of the Artisan",
+      "recipe_id": "2445532121",
+      "book": "Master Vetrovian Crafter's Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Saddle of the Pioneer",
+      "recipe_id": "587553752",
+      "book": "Master Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Shoes of Fervor",
+      "recipe_id": "3380921145",
+      "book": "Master Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Shoes of Progress",
+      "recipe_id": "2266739835",
+      "book": "Master Vetrovian Crafter's Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forlorn Shoes of Striking",
+      "recipe_id": "1018031441",
+      "book": "Master Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Stirrups of Ability",
+      "recipe_id": "2945221524",
+      "book": "Master Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forlorn Stirrups of Proficiency",
+      "recipe_id": "75570963",
+      "book": "Master Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Barding of Bolstering",
+      "recipe_id": "1919476829",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Barding of Criticals",
+      "recipe_id": "3605319155",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Barding of Health",
+      "recipe_id": "3187207801",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Barding of Industry",
+      "recipe_id": "1436027719",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Barding of Power",
+      "recipe_id": "180868549",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Barding of Practice",
+      "recipe_id": "3889647028",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Barding of Striking",
+      "recipe_id": "2881496865",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Barding of the Expert",
+      "recipe_id": "1232995998",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Barding of the Potent",
+      "recipe_id": "2959345208",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Breeching of Ability",
+      "recipe_id": "2489834476",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Breeching of Durability",
+      "recipe_id": "4076618806",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Breeching of Extended Fervor",
+      "recipe_id": "3650523910",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Breeching of Striking",
+      "recipe_id": "3597543264",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Hackamore of Conservation",
+      "recipe_id": "1878440730",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Hackamore of Doublestrike",
+      "recipe_id": "3365078639",
+      "book": "Advanced Hizite Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Hackamore of Evolution",
+      "recipe_id": "4198065303",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Hackamore of Harvesting",
+      "recipe_id": "3898692386",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Hackamore of Proficiency",
+      "recipe_id": "282543160",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Hackamore of Progress",
+      "recipe_id": "3039948976",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Hackamore of Skill",
+      "recipe_id": "1608503327",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Hackamore of Status",
+      "recipe_id": "244447062",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Reins of Conservation",
+      "recipe_id": "2291730988",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Reins of Expertise",
+      "recipe_id": "1461753953",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Reins of Mastery",
+      "recipe_id": "1271369465",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of Ability",
+      "recipe_id": "2234481893",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of Brawn",
+      "recipe_id": "3794725266",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of Doublestrike",
+      "recipe_id": "4279126518",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of Durability",
+      "recipe_id": "3053309691",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of Evasion",
+      "recipe_id": "2884434860",
+      "book": "Advanced Hizite Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of Fervor",
+      "recipe_id": "733157522",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of Harvesting",
+      "recipe_id": "2522904969",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of Parry",
+      "recipe_id": "4147676648",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of the Artisan",
+      "recipe_id": "1595141716",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of the Innovator",
+      "recipe_id": "292919170",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Saddle of the Pioneer",
+      "recipe_id": "4221286189",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Shoes of Ability",
+      "recipe_id": "2049249035",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Shoes of Fervor",
+      "recipe_id": "1812473580",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Shoes of Progress",
+      "recipe_id": "485515024",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Shoes of Striking",
+      "recipe_id": "2598104162",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Stirrups of Ability",
+      "recipe_id": "167798337",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Stirrups of Proficiency",
+      "recipe_id": "3693081574",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hizite Stirrups of Striking",
+      "recipe_id": "3578145127",
+      "book": "Advanced Hizite Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Barding of Industry",
+      "recipe_id": "696528742",
+      "book": "Master Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Barding of the Expert",
+      "recipe_id": "3513794739",
+      "book": "Master Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Breeching of Extended Fervor",
+      "recipe_id": "2508431228",
+      "book": "Master Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Hackamore of Flight",
+      "recipe_id": "2759923070",
+      "book": "Master Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Reins of Conservation",
+      "recipe_id": "2420492721",
+      "book": "Master Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Saddle of Ability",
+      "recipe_id": "2649997176",
+      "book": "Master Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Saddle of the Innovator",
+      "recipe_id": "2306593199",
+      "book": "Master Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Shoes of Ability",
+      "recipe_id": "295822812",
+      "book": "Master Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karuupa Stirrups of Striking",
+      "recipe_id": "1541413469",
+      "book": "Master Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Barding of Bolstering",
+      "recipe_id": "3877122248",
+      "book": "Advanced Vetrovian Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Barding of Criticals",
+      "recipe_id": "427481659",
+      "book": "Advanced Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Barding of Health",
+      "recipe_id": "1023998310",
+      "book": "Advanced Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Barding of Industry",
+      "recipe_id": "3180305382",
+      "book": "Advanced Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Barding of Power",
+      "recipe_id": "3310993933",
+      "book": "Advanced Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Barding of Practice",
+      "recipe_id": "2552157735",
+      "book": "Advanced Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Barding of Striking",
+      "recipe_id": "2637346770",
+      "book": "Advanced Vetrovian Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Barding of the Expert",
+      "recipe_id": "3941084882",
+      "book": "Advanced Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Barding of the Potent",
+      "recipe_id": "2498123534",
+      "book": "Advanced Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Breeching of Ability",
+      "recipe_id": "18288505",
+      "book": "Advanced Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Breeching of Durability",
+      "recipe_id": "2369118117",
+      "book": "Advanced Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Breeching of Extended Fervor",
+      "recipe_id": "2024740840",
+      "book": "Advanced Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Breeching of Striking",
+      "recipe_id": "435171496",
+      "book": "Advanced Vetrovian Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Hackamore of Conservation",
+      "recipe_id": "4010191877",
+      "book": "Advanced Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Hackamore of Doublestrike",
+      "recipe_id": "2407592084",
+      "book": "Advanced Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Hackamore of Evolution",
+      "recipe_id": "2247163652",
+      "book": "Advanced Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Hackamore of Flight",
+      "recipe_id": "2651839710",
+      "book": "Advanced Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Hackamore of Harvesting",
+      "recipe_id": "1817201363",
+      "book": "Advanced Vetrovian Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Hackamore of Proficiency",
+      "recipe_id": "1864294315",
+      "book": "Advanced Vetrovian Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Hackamore of Progress",
+      "recipe_id": "2669267154",
+      "book": "Advanced Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Hackamore of Skill",
+      "recipe_id": "1979181181",
+      "book": "Advanced Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Hackamore of Status",
+      "recipe_id": "1075379455",
+      "book": "Advanced Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Reins of Conservation",
+      "recipe_id": "3194723039",
+      "book": "Advanced Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Reins of Expertise",
+      "recipe_id": "4105613357",
+      "book": "Advanced Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Reins of Mastery",
+      "recipe_id": "3897665205",
+      "book": "Advanced Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Reins of Striding",
+      "recipe_id": "1064148301",
+      "book": "Advanced Vetrovian Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of Ability",
+      "recipe_id": "3017665558",
+      "book": "Advanced Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of Brawn",
+      "recipe_id": "3571218785",
+      "book": "Advanced Vetrovian Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of Doublestrike",
+      "recipe_id": "1347083185",
+      "book": "Advanced Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of Durability",
+      "recipe_id": "4075698176",
+      "book": "Advanced Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of Evasion",
+      "recipe_id": "1685253220",
+      "book": "Advanced Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of Fervor",
+      "recipe_id": "3200502791",
+      "book": "Advanced Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of Harvesting",
+      "recipe_id": "378564246",
+      "book": "Advanced Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of Parry",
+      "recipe_id": "950440480",
+      "book": "Advanced Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of the Artisan",
+      "recipe_id": "402659503",
+      "book": "Advanced Vetrovian Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of the Innovator",
+      "recipe_id": "3001270222",
+      "book": "Advanced Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Saddle of the Pioneer",
+      "recipe_id": "1477287777",
+      "book": "Advanced Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Shoes of Ability",
+      "recipe_id": "2348747425",
+      "book": "Advanced Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Shoes of Fervor",
+      "recipe_id": "2744529188",
+      "book": "Advanced Vetrovian Crafter's Volume V",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Shoes of Progress",
+      "recipe_id": "3014970711",
+      "book": "Advanced Vetrovian Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Shoes of Striking",
+      "recipe_id": "2486961331",
+      "book": "Advanced Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Stirrups of Ability",
+      "recipe_id": "3315495305",
+      "book": "Advanced Vetrovian Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Stirrups of Proficiency",
+      "recipe_id": "2139741098",
+      "book": "Advanced Vetrovian Crafter's Volume IV",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mahngavi Stirrups of Striking",
+      "recipe_id": "4056184913",
+      "book": "Advanced Vetrovian Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Plateaus Barding of Bolstering",
+      "recipe_id": "2308872980",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Barding of Criticals",
+      "recipe_id": "4107788716",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Barding of Health",
+      "recipe_id": "2986598706",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Barding of Industry",
+      "recipe_id": "1965471393",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Barding of Power",
+      "recipe_id": "687143322",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Barding of Practice",
+      "recipe_id": "4112457268",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Barding of the Expert",
+      "recipe_id": "918869703",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Barding of the Potent",
+      "recipe_id": "2170478734",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Breeching of Ability",
+      "recipe_id": "1871815845",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Breeching of Durability",
+      "recipe_id": "3761510326",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Hackamore of Conservation",
+      "recipe_id": "1611510865",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Hackamore of Doublestrike",
+      "recipe_id": "1969733002",
+      "book": "Plateaus Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Hackamore of Evolution",
+      "recipe_id": "3908122391",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Hackamore of Harvesting",
+      "recipe_id": "2606258686",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Hackamore of Proficiency",
+      "recipe_id": "35592120",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Hackamore of Progress",
+      "recipe_id": "1709970172",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Hackamore of Skill",
+      "recipe_id": "2399285843",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Hackamore of Status",
+      "recipe_id": "2376299506",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Reins of Conservation",
+      "recipe_id": "3706803074",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Reins of Expertise",
+      "recipe_id": "681199672",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Reins of Mastery",
+      "recipe_id": "880631456",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of Ability",
+      "recipe_id": "3511100747",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of Brawn",
+      "recipe_id": "3058085948",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of Doublestrike",
+      "recipe_id": "775298179",
+      "book": "Plateaus Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of Durability",
+      "recipe_id": "134837534",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of Evasion",
+      "recipe_id": "2313148403",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of Harvesting",
+      "recipe_id": "2577102530",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of Parry",
+      "recipe_id": "3574311351",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of the Artisan",
+      "recipe_id": "3806811569",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of the Innovator",
+      "recipe_id": "1859078107",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Saddle of the Pioneer",
+      "recipe_id": "2216781684",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Shoes of Ability",
+      "recipe_id": "3425405181",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Shoes of Progress",
+      "recipe_id": "3452439141",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Stirrups of Ability",
+      "recipe_id": "674449950",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plateaus Stirrups of Proficiency",
+      "recipe_id": "2745508799",
+      "book": "Plateaus Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Barding of Bolstering",
+      "recipe_id": "485379969",
+      "book": "Vetrovian Crafter's Primer Volume V",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Barding of the Potent",
+      "recipe_id": "2782704056",
+      "book": "Vetrovian Crafter's Primer Volume V",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Hackamore of Doublestrike",
+      "recipe_id": "846482289",
+      "book": "Vetrovian Crafter's Primer Volume V",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Hackamore of Progress",
+      "recipe_id": "1338256030",
+      "book": "Vetrovian Crafter's Primer Volume V",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Reins of Expertise",
+      "recipe_id": "2332844148",
+      "book": "Vetrovian Crafter's Primer Volume V",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Svarni Saddle of Durability",
+      "recipe_id": "1327137765",
+      "book": "Vetrovian Crafter's Primer Volume V",
+      "category": "TS Essentials"
+    }
+  ],
+  "126": [
+    {
+      "recipe": "Handcrafted Zimaran Barding of Bolstering",
+      "recipe_id": "2507753318",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Barding of Criticals",
+      "recipe_id": "2137715197",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Barding of Health",
+      "recipe_id": "202643198",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Barding of Industry",
+      "recipe_id": "3496777815",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Barding of Power",
+      "recipe_id": "2739530187",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Barding of the Expert",
+      "recipe_id": "187696318",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Barding of the Potent",
+      "recipe_id": "2197183444",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Breeching of Ability",
+      "recipe_id": "1937144023",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Breeching of Durability",
+      "recipe_id": "3385862908",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Hackamore of Doublestrike",
+      "recipe_id": "3948368692",
+      "book": "Zimaran Crafter's Primer Volume I",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Hackamore of Evolution",
+      "recipe_id": "3239381597",
+      "book": "Zimaran Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Hackamore of Harvesting",
+      "recipe_id": "1004681696",
+      "book": "Zimaran Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Hackamore of Proficiency",
+      "recipe_id": "737880818",
+      "book": "Zimaran Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Hackamore of Progress",
+      "recipe_id": "1235991705",
+      "book": "Zimaran Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Hackamore of Skill",
+      "recipe_id": "2739248182",
+      "book": "Zimaran Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Hackamore of Status",
+      "recipe_id": "3375706648",
+      "book": "Zimaran Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Reins of Expertise",
+      "recipe_id": "359569985",
+      "book": "Zimaran Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Reins of Mastery",
+      "recipe_id": "160009433",
+      "book": "Zimaran Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of Ability",
+      "recipe_id": "3474879433",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of Brawn",
+      "recipe_id": "2820662974",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of Doublestrike",
+      "recipe_id": "1856864676",
+      "book": "Zimaran Crafter's Primer Volume II",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of Durability",
+      "recipe_id": "2520357792",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of Evasion",
+      "recipe_id": "40028066",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of Harvesting",
+      "recipe_id": "663519502",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of Parry",
+      "recipe_id": "1589033446",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of the Artisan",
+      "recipe_id": "2094512911",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of the Innovator",
+      "recipe_id": "1396413858",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Saddle of the Pioneer",
+      "recipe_id": "3117790477",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Shoes of Ability",
+      "recipe_id": "2492424815",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Shoes of Progress",
+      "recipe_id": "2371065666",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Stirrups of Ability",
+      "recipe_id": "2744015439",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Handcrafted Zimaran Stirrups of Proficiency",
+      "recipe_id": "2656170438",
+      "book": "Zimaran Crafter's Primer Volume III",
+      "category": "TS Essentials"
+    }
+  ],
+  "130": [
+    {
+      "recipe": "Mastercrafted Coldwork Barding of Bolstering",
+      "recipe_id": "2962456036",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Barding of Criticals",
+      "recipe_id": "4202877775",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Barding of Health",
+      "recipe_id": "260513480",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Barding of Industry",
+      "recipe_id": "3361400561",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Barding of Power",
+      "recipe_id": "648137593",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Barding of Striking",
+      "recipe_id": "4220948242",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Barding of the Expert",
+      "recipe_id": "2804878878",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Barding of the Potent",
+      "recipe_id": "266613126",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Breeching of Ability",
+      "recipe_id": "1453081173",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Breeching of Durability",
+      "recipe_id": "531273246",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Breeching of Extended Fervor",
+      "recipe_id": "4211689298",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Breeching of Striking",
+      "recipe_id": "4194843100",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Hackamore of Doublestrike",
+      "recipe_id": "2763459670",
+      "book": "Advanced Coldwork Crafter's Volume I",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Hackamore of Evolution",
+      "recipe_id": "393197247",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Hackamore of Harvesting",
+      "recipe_id": "833638842",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Hackamore of Proficiency",
+      "recipe_id": "4253128208",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Hackamore of Progress",
+      "recipe_id": "3931659442",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Hackamore of Skill",
+      "recipe_id": "11959325",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Hackamore of Status",
+      "recipe_id": "1324493004",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Reins of Expertise",
+      "recipe_id": "3111227617",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Reins of Mastery",
+      "recipe_id": "2778105465",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of Ability",
+      "recipe_id": "3581531350",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of Brawn",
+      "recipe_id": "2994225569",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of Doublestrike",
+      "recipe_id": "4019474547",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of Durability",
+      "recipe_id": "3654927554",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of Evasion",
+      "recipe_id": "2274026768",
+      "book": "Advanced Coldwork Crafter's Volume II",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of Fervor",
+      "recipe_id": "3913842987",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of Harvesting",
+      "recipe_id": "606046520",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of Parry",
+      "recipe_id": "3680410452",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of the Artisan",
+      "recipe_id": "859300973",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of the Innovator",
+      "recipe_id": "4280590082",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Saddle of the Pioneer",
+      "recipe_id": "365608877",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Shoes of Ability",
+      "recipe_id": "704381051",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Shoes of Fervor",
+      "recipe_id": "1080965200",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Shoes of Progress",
+      "recipe_id": "208291477",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Shoes of Striking",
+      "recipe_id": "4031229072",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Stirrups of Ability",
+      "recipe_id": "644249853",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Stirrups of Proficiency",
+      "recipe_id": "844036966",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mastercrafted Coldwork Stirrups of Striking",
+      "recipe_id": "1791368921",
+      "book": "Advanced Coldwork Crafter's Volume III",
+      "category": "TS Advanced"
+    }
+  ],
+  "2": [
+    {
+      "recipe": "Alder Buckler",
+      "recipe_id": "2416702023",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Alder Cudgel",
+      "recipe_id": "1154773493",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Alder Round Shield",
+      "recipe_id": "3987570090",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ambush (Expert)",
+      "recipe_id": "440131492",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Atrophy (Expert)",
+      "recipe_id": "3264491452",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Backstab (Expert)",
+      "recipe_id": "2226095009",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bash (Expert)",
+      "recipe_id": "1036137513",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Body Check (Expert)",
+      "recipe_id": "4109377315",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Crescent Axe",
+      "recipe_id": "2383872089",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Javelin",
+      "recipe_id": "3602821088",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Morning Star",
+      "recipe_id": "1891254033",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Short Spear",
+      "recipe_id": "3081909413",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Spatha",
+      "recipe_id": "2882014968",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Cataclysm (Expert)",
+      "recipe_id": "1116970157",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Charm (Expert)",
+      "recipe_id": "2449656048",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Condemn (Expert)",
+      "recipe_id": "3391493514",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Emberstrike (Expert)",
+      "recipe_id": "1674654017",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Fashioned Waxed Leather Belt",
+      "recipe_id": "1551348938",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Frozen Palm (Expert)",
+      "recipe_id": "371299081",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Gushing Wound (Expert)",
+      "recipe_id": "435129673",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Harl's Rousing Tune (Expert)",
+      "recipe_id": "1462354698",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Haze (Expert)",
+      "recipe_id": "3019089965",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Heal Servant (Expert)",
+      "recipe_id": "815327226",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ice Storm (Expert)",
+      "recipe_id": "2674071079",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Magma Chamber (Expert)",
+      "recipe_id": "3225443048",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Medusa Gaze (Expert)",
+      "recipe_id": "2566160515",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Meteor Fist (Expert)",
+      "recipe_id": "3377949077",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Misfortune's Kiss (Expert)",
+      "recipe_id": "1741396515",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Necrotic Reconstruction (Expert)",
+      "recipe_id": "1107475605",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Night Strike (Expert)",
+      "recipe_id": "1866443348",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Pandemic (Expert)",
+      "recipe_id": "71211541",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Paranoia (Expert)",
+      "recipe_id": "216991588",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Personae Reflection (Expert)",
+      "recipe_id": "3491367935",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Raxxyl's Rousing Tune (Expert)",
+      "recipe_id": "1001146770",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rear Shot (Expert)",
+      "recipe_id": "459952061",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rebuke (Expert)",
+      "recipe_id": "2645605952",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rob (Expert)",
+      "recipe_id": "885512372",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rush (Expert)",
+      "recipe_id": "2978904243",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sackcloth Slippers",
+      "recipe_id": "2115311615",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Shanghai (Expert)",
+      "recipe_id": "2494989453",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Thorncoat (Expert)",
+      "recipe_id": "2273464453",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Thornskin (Expert)",
+      "recipe_id": "835197204",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tranquil Sackcloth Mitts",
+      "recipe_id": "4064680708",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Viscerate (Expert)",
+      "recipe_id": "3449098346",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waxed Leather Bandolier",
+      "recipe_id": "1048585421",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waxed Leather Boots",
+      "recipe_id": "2846618506",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Woven Waxed Gloves",
+      "recipe_id": "1628859157",
+      "book": "Advanced Artisan Volume 2",
+      "category": "TS Advanced"
+    }
+  ],
+  "3": [
+    {
+      "recipe": "Acid (Expert)",
+      "recipe_id": "2064903215",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Acid (Journeyman)",
+      "recipe_id": "2532329255",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Aggressive Defense (Expert)",
+      "recipe_id": "1521801763",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Aggressive Defense (Journeyman)",
+      "recipe_id": "2862696414",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Alder Greatstaff",
+      "recipe_id": "1027626260",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Arched Door Frame of Elm",
+      "recipe_id": "3777838846",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Battery and Assault (Expert)",
+      "recipe_id": "2719889452",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Battery and Assault (Journeyman)",
+      "recipe_id": "1958989391",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Black Coffee",
+      "recipe_id": "3822144329",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Block of Elm",
+      "recipe_id": "1641898402",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bloodcoil (Expert)",
+      "recipe_id": "1629810515",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bloodcoil (Journeyman)",
+      "recipe_id": "973916115",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Brainburst (Expert)",
+      "recipe_id": "568417045",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Brainburst (Journeyman)",
+      "recipe_id": "1526914208",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Brainshock (Expert)",
+      "recipe_id": "3940156175",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Brainshock (Journeyman)",
+      "recipe_id": "1052241435",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bronze Hand Axe",
+      "recipe_id": "2562125661",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Kite Shield",
+      "recipe_id": "4274162263",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Parrying Blade",
+      "recipe_id": "90278747",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Sabre",
+      "recipe_id": "1553809301",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Scimitar",
+      "recipe_id": "3918752761",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Scourge",
+      "recipe_id": "2631045054",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Tower Shield",
+      "recipe_id": "1910591977",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Deadly Shot (Expert)",
+      "recipe_id": "1156642873",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Deadly Shot (Journeyman)",
+      "recipe_id": "1336243097",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Deer Steak",
+      "recipe_id": "3635429984",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Divine Strike (Expert)",
+      "recipe_id": "2393411548",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Divine Strike (Journeyman)",
+      "recipe_id": "2247951484",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Greatstaff",
+      "recipe_id": "820487843",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fanatical Healing (Expert)",
+      "recipe_id": "2825112317",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Fanatical Healing (Journeyman)",
+      "recipe_id": "2081302505",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fiery Annihilation (Expert)",
+      "recipe_id": "2400257062",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Fiery Annihilation (Journeyman)",
+      "recipe_id": "3560516774",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Glacial Lance (Expert)",
+      "recipe_id": "668842383",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Glacial Lance (Journeyman)",
+      "recipe_id": "699439883",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Half Block of Elm",
+      "recipe_id": "3460585013",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Healing Arrow (Expert)",
+      "recipe_id": "1472245272",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Healing Arrow (Journeyman)",
+      "recipe_id": "2558490127",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hold the Line (Expert)",
+      "recipe_id": "4188686664",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hold the Line (Journeyman)",
+      "recipe_id": "796376875",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Horizontal Window Frame in Tall Divider of Elm",
+      "recipe_id": "2786125168",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ice Storm (Journeyman)",
+      "recipe_id": "605205155",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Icefall (Expert)",
+      "recipe_id": "310940452",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Icefall (Journeyman)",
+      "recipe_id": "1235270564",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ignore Pain (Expert)",
+      "recipe_id": "812581165",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ignore Pain (Journeyman)",
+      "recipe_id": "3825396793",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Incinerate (Expert)",
+      "recipe_id": "3567998461",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Incinerate (Journeyman)",
+      "recipe_id": "3667738212",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Innoruuk's Caress (Expert)",
+      "recipe_id": "2491887259",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Innoruuk's Caress (Journeyman)",
+      "recipe_id": "450080596",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lucky Gambit (Expert)",
+      "recipe_id": "2054481901",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Lucky Gambit (Journeyman)",
+      "recipe_id": "2896761230",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Luda's Nefarious Wail (Expert)",
+      "recipe_id": "2650785122",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Luda's Nefarious Wail (Journeyman)",
+      "recipe_id": "2479468283",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mend (Expert)",
+      "recipe_id": "103233553",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mend (Journeyman)",
+      "recipe_id": "3955528473",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Narrow Divider of Elm",
+      "recipe_id": "892143909",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Nature's Elixir (Expert)",
+      "recipe_id": "3843051374",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Nature's Elixir (Journeyman)",
+      "recipe_id": "3997549774",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Nature's Embrace (Expert)",
+      "recipe_id": "74959976",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Nature's Embrace (Journeyman)",
+      "recipe_id": "3347797844",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pandemic (Journeyman)",
+      "recipe_id": "168358284",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Perfect Shrill (Expert)",
+      "recipe_id": "3529108360",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Perfect Shrill (Journeyman)",
+      "recipe_id": "3698294801",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Plague (Expert)",
+      "recipe_id": "770507937",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Plague (Journeyman)",
+      "recipe_id": "3222187945",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Prayer of Healing (Expert)",
+      "recipe_id": "3906918784",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Prayer of Healing (Journeyman)",
+      "recipe_id": "723665596",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Putrefy (Expert)",
+      "recipe_id": "2775357879",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Putrefy (Journeyman)",
+      "recipe_id": "749831228",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Raging Blow (Expert)",
+      "recipe_id": "1139818259",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Raging Blow (Journeyman)",
+      "recipe_id": "3450126044",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Railing of Elm",
+      "recipe_id": "2103598608",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Satchel",
+      "recipe_id": "2216040386",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Skullcap",
+      "recipe_id": "813836117",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rectangular Door Frame of Elm",
+      "recipe_id": "1714877495",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Restoration (Expert)",
+      "recipe_id": "825274820",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Restoration (Journeyman)",
+      "recipe_id": "513552856",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ritual Healing (Expert)",
+      "recipe_id": "2875087175",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ritual Healing (Journeyman)",
+      "recipe_id": "2685129447",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rounded Tile of Elm",
+      "recipe_id": "111166274",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sackcloth Cap",
+      "recipe_id": "2138416518",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sacrificial Restoration (Expert)",
+      "recipe_id": "3149477535",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sacrificial Restoration (Journeyman)",
+      "recipe_id": "3911191428",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Searing Shot (Expert)",
+      "recipe_id": "463366675",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Searing Shot (Journeyman)",
+      "recipe_id": "2513103836",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Short Column of Elm",
+      "recipe_id": "1669013453",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Song of Magic (Expert)",
+      "recipe_id": "759555891",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Song of Magic (Journeyman)",
+      "recipe_id": "638610579",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Songster's Luck (Expert)",
+      "recipe_id": "2773070204",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Songster's Luck (Journeyman)",
+      "recipe_id": "1898208360",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Square Window Frame in Narrow Divider of Elm",
+      "recipe_id": "2871941867",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Square Window Frame in Tall Divider of Elm",
+      "recipe_id": "1872249563",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Stair of Elm",
+      "recipe_id": "172389778",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tall Column of Elm",
+      "recipe_id": "3104657216",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tall Divider of Elm",
+      "recipe_id": "1958709568",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tall Window Frame in Narrow Divider of Elm",
+      "recipe_id": "2207912451",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tall Window Frame in Tall Divider of Elm",
+      "recipe_id": "4190324708",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Taunting Blow (Expert)",
+      "recipe_id": "2687454034",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Taunting Blow (Journeyman)",
+      "recipe_id": "3122787010",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tempest (Expert)",
+      "recipe_id": "3799959950",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tempest (Journeyman)",
+      "recipe_id": "3964183063",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Threadbare Cap",
+      "recipe_id": "535177316",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Hand Axe",
+      "recipe_id": "3524081279",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Kite Shield",
+      "recipe_id": "348086775",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Parrying Blade",
+      "recipe_id": "2090791875",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Sabre",
+      "recipe_id": "545744139",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Scimitar",
+      "recipe_id": "2737353435",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Scourge",
+      "recipe_id": "4172213466",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Tower Shield",
+      "recipe_id": "2816315370",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Torment (Expert)",
+      "recipe_id": "601687380",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Torment (Journeyman)",
+      "recipe_id": "770404045",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Sackcloth Cap",
+      "recipe_id": "1791223196",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tranquil Threadbare Cap",
+      "recipe_id": "3801179998",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vertical Window Frame in Tall Divider of Elm",
+      "recipe_id": "2030376325",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Waxed Leather Satchel",
+      "recipe_id": "2411643076",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waxed Leather Skullcap",
+      "recipe_id": "3754717958",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Woven Rawhide Skullcap",
+      "recipe_id": "2610936521",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Woven Waxed Skullcap",
+      "recipe_id": "357783411",
+      "book": "Advanced Artisan Volume 3",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "plain elm room divider",
+      "recipe_id": "247314527",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "plain elm tile",
+      "recipe_id": "1521346594",
+      "book": "artisan essentials volume 3",
+      "category": "TS Essentials"
+    }
+  ],
+  "4": [
+    {
+      "recipe": "Abandoned Fury (Expert)",
+      "recipe_id": "462689456",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Abandoned Fury (Journeyman)",
+      "recipe_id": "362970921",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Aegolism (Expert)",
+      "recipe_id": "307362159",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Aegolism (Journeyman)",
+      "recipe_id": "3297513228",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Alder Pike",
+      "recipe_id": "544013556",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Armored (Expert)",
+      "recipe_id": "2357858631",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Armored (Journeyman)",
+      "recipe_id": "89590988",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Aspect of the Forest (Expert)",
+      "recipe_id": "1343692463",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Aspect of the Forest (Journeyman)",
+      "recipe_id": "3728973664",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bodyguard (Expert)",
+      "recipe_id": "3944319906",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bodyguard (Journeyman)",
+      "recipe_id": "4044829234",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bronze Chainmail Boots",
+      "recipe_id": "680853997",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Chainmail Coif",
+      "recipe_id": "2330378976",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Flail",
+      "recipe_id": "4106833558",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Karabela",
+      "recipe_id": "1728223313",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Sceptre",
+      "recipe_id": "2562356928",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Shamshir",
+      "recipe_id": "79854618",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Tribal Spear",
+      "recipe_id": "2854064411",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Cabbage Stew",
+      "recipe_id": "1286382666",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Creamed Black Coffee",
+      "recipe_id": "2396701207",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Crouching Tiger (Expert)",
+      "recipe_id": "2990298350",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Crouching Tiger (Journeyman)",
+      "recipe_id": "1716632058",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dark Blade (Expert)",
+      "recipe_id": "1152481460",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dark Blade (Journeyman)",
+      "recipe_id": "2933870121",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Pike",
+      "recipe_id": "3214479916",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fashioned Sackcloth Scarf",
+      "recipe_id": "1027312924",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Fashioned Threadbare Scarf",
+      "recipe_id": "1412146319",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Flow Like Wind (Expert)",
+      "recipe_id": "2330763856",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Flow Like Wind (Journeyman)",
+      "recipe_id": "1225800044",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forward Charge (Expert)",
+      "recipe_id": "135870227",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forward Charge (Journeyman)",
+      "recipe_id": "2177116824",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Harbinger (Expert)",
+      "recipe_id": "2397486998",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Harbinger (Journeyman)",
+      "recipe_id": "1480280565",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ice Spears (Expert)",
+      "recipe_id": "3345785264",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ice Spears (Journeyman)",
+      "recipe_id": "755144493",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Knight's Stance (Expert)",
+      "recipe_id": "3863717081",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Knight's Stance (Journeyman)",
+      "recipe_id": "4232387913",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lesser Elemental Remedy",
+      "recipe_id": "852633077",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lucan's Pact (Expert)",
+      "recipe_id": "335577374",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Lucan's Pact (Journeyman)",
+      "recipe_id": "3228396554",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lucidity (Expert)",
+      "recipe_id": "3306144672",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Lucidity (Journeyman)",
+      "recipe_id": "1264271983",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Premonition (Expert)",
+      "recipe_id": "4221319771",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Premonition (Journeyman)",
+      "recipe_id": "759286840",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Bracers",
+      "recipe_id": "2217236906",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Pouch",
+      "recipe_id": "2541636892",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sackcloth Cuffs",
+      "recipe_id": "75034063",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Smoldering Fists (Expert)",
+      "recipe_id": "4224260028",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Smoldering Fists (Journeyman)",
+      "recipe_id": "4036795420",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tenacity (Expert)",
+      "recipe_id": "280317683",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tenacity (Journeyman)",
+      "recipe_id": "3302532071",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Threadbare Cuffs",
+      "recipe_id": "3162325802",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Chainmail Boots",
+      "recipe_id": "3467217658",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Chainmail Coif",
+      "recipe_id": "3576812719",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Crossbow Bolt",
+      "recipe_id": "3090389954",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Flail",
+      "recipe_id": "3448554115",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Karabela",
+      "recipe_id": "3966737323",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Sceptre",
+      "recipe_id": "1258383002",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Shamshir",
+      "recipe_id": "2410643424",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Tribal Spear",
+      "recipe_id": "3954808515",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Sackcloth Shawl",
+      "recipe_id": "702704175",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tranquil Threadbare Shawl",
+      "recipe_id": "3550000573",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Unflinching Will (Expert)",
+      "recipe_id": "2832904619",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Unflinching Will (Journeyman)",
+      "recipe_id": "1489972310",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vacuum Field (Expert)",
+      "recipe_id": "2995188376",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Vacuum Field (Journeyman)",
+      "recipe_id": "1020425047",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Waxed Leather Bracers",
+      "recipe_id": "672605325",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waxed Leather Pouch",
+      "recipe_id": "1129251227",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waxed Leather Shoulder Pads",
+      "recipe_id": "1995938315",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Woven Rawhide Shoulder Pads",
+      "recipe_id": "4059707232",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Woven Waxed Shoulder Pads",
+      "recipe_id": "2989319377",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Wrath Stance (Expert)",
+      "recipe_id": "1989797890",
+      "book": "Advanced Artisan Volume 4",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Wrath Stance (Journeyman)",
+      "recipe_id": "2733901078",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "tin broadhead arrow",
+      "recipe_id": "32261481",
+      "book": "artisan essentials volume 4",
+      "category": "TS Essentials"
+    }
+  ],
+  "5": [
+    {
+      "recipe": "Alder Wand",
+      "recipe_id": "2329294",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Armor of Nature (Expert)",
+      "recipe_id": "4145676863",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Armor of Nature (Journeyman)",
+      "recipe_id": "4233071007",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Armor of Seasons (Expert)",
+      "recipe_id": "3783840546",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Armor of Seasons (Journeyman)",
+      "recipe_id": "282461744",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bronze Chainmail Bracers",
+      "recipe_id": "4274546868",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Chainmail Mantle",
+      "recipe_id": "3648915009",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Claymore",
+      "recipe_id": "3814529874",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Great Flail",
+      "recipe_id": "262297943",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Katana",
+      "recipe_id": "3549649896",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Mace",
+      "recipe_id": "1472883728",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Maul",
+      "recipe_id": "848191843",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bum Rush (Expert)",
+      "recipe_id": "4216425198",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bum Rush (Journeyman)",
+      "recipe_id": "3781112702",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Cabbage Fizzlepop",
+      "recipe_id": "874549666",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chains of Torment (Expert)",
+      "recipe_id": "3148121597",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Chains of Torment (Journeyman)",
+      "recipe_id": "1447505653",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dancing Blade (Expert)",
+      "recipe_id": "2251263753",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dancing Blade (Journeyman)",
+      "recipe_id": "2619422361",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Daro's Dull Blade (Expert)",
+      "recipe_id": "4286152611",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Daro's Dull Blade (Journeyman)",
+      "recipe_id": "353847614",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Deer Sandwich",
+      "recipe_id": "2285169706",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Wand",
+      "recipe_id": "4223362683",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Forced Hesitation (Expert)",
+      "recipe_id": "1489635848",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Forced Hesitation (Journeyman)",
+      "recipe_id": "573148605",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Gut Kick (Expert)",
+      "recipe_id": "3542734591",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Gut Kick (Journeyman)",
+      "recipe_id": "2848608586",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Holy Armor (Expert)",
+      "recipe_id": "797289749",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Holy Armor (Journeyman)",
+      "recipe_id": "2790830238",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Kidney Stab (Expert)",
+      "recipe_id": "1163038437",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Kidney Stab (Journeyman)",
+      "recipe_id": "2830181869",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Knee Break (Expert)",
+      "recipe_id": "3636012381",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Knee Break (Journeyman)",
+      "recipe_id": "852956096",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lockdown (Expert)",
+      "recipe_id": "3290363980",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Lockdown (Journeyman)",
+      "recipe_id": "314773039",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Marisha Kur's Blessing (Expert)",
+      "recipe_id": "851681336",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Marisha Kur's Blessing (Journeyman)",
+      "recipe_id": "1587877736",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Masked Strike (Expert)",
+      "recipe_id": "640972739",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Masked Strike (Journeyman)",
+      "recipe_id": "1010486867",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Netherous Bind (Expert)",
+      "recipe_id": "4019557371",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Netherous Bind (Journeyman)",
+      "recipe_id": "3032333179",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Penitent Kick (Expert)",
+      "recipe_id": "2321152086",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Penitent Kick (Journeyman)",
+      "recipe_id": "1552158261",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Quicksand (Expert)",
+      "recipe_id": "3328672621",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Quicksand (Journeyman)",
+      "recipe_id": "730081381",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Sheath",
+      "recipe_id": "3600923514",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Shoulder Pads",
+      "recipe_id": "3123880274",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Roundhouse (Expert)",
+      "recipe_id": "1875992772",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Roundhouse (Journeyman)",
+      "recipe_id": "2243909209",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Roundhouse Kick (Expert)",
+      "recipe_id": "3427780980",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Roundhouse Kick (Journeyman)",
+      "recipe_id": "3594612964",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Runic Armor (Expert)",
+      "recipe_id": "3192744927",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Runic Armor (Journeyman)",
+      "recipe_id": "1411603778",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sackcloth Shawl",
+      "recipe_id": "2121405515",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sacred Armor (Expert)",
+      "recipe_id": "578895695",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sacred Armor (Journeyman)",
+      "recipe_id": "2582682571",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shackle (Expert)",
+      "recipe_id": "269023063",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Shackle (Journeyman)",
+      "recipe_id": "168185543",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shroud of Armor (Expert)",
+      "recipe_id": "1705624231",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Shroud of Armor (Journeyman)",
+      "recipe_id": "1805625662",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sneak Attack (Expert)",
+      "recipe_id": "3246964353",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sneak Attack (Journeyman)",
+      "recipe_id": "3403494689",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Soulrend (Expert)",
+      "recipe_id": "3299981808",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Soulrend (Journeyman)",
+      "recipe_id": "3193060933",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spinechiller Blood (Expert)",
+      "recipe_id": "2506820416",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Spinechiller Blood (Journeyman)",
+      "recipe_id": "1475716062",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Threadbare Shawl",
+      "recipe_id": "2567995522",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Chainmail Bracers",
+      "recipe_id": "87764741",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Chainmail Mantle",
+      "recipe_id": "4269134366",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Claymore",
+      "recipe_id": "2331109549",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Great Flail",
+      "recipe_id": "1372270702",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Katana",
+      "recipe_id": "3906901894",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Mace",
+      "recipe_id": "1644950503",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Maul",
+      "recipe_id": "122683028",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vengeful Arrow II (Expert)",
+      "recipe_id": "2537355509",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Vengeful Arrow II (Journeyman)",
+      "recipe_id": "2730251627",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Waxed Leather Sheath",
+      "recipe_id": "2779356341",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waxed Leather Shoulder Pads",
+      "recipe_id": "1995938315",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine generic elm bed",
+      "recipe_id": "2058793570",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine gukta bucket",
+      "recipe_id": "2753660089",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine alder strong box",
+      "recipe_id": "1213138559",
+      "book": "Advanced Artisan Volume 5",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "pristine elm strong box",
+      "recipe_id": "1139265913",
+      "book": "artisan essentials volume 5",
+      "category": "TS Essentials"
+    }
+  ],
+  "6": [
+    {
+      "recipe": "Alder Longbow",
+      "recipe_id": "2780317974",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Alder Quarter Staff",
+      "recipe_id": "891389055",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Alder Shortbow",
+      "recipe_id": "2287190209",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Chainmail Coat",
+      "recipe_id": "2764862159",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Chainmail Gloves",
+      "recipe_id": "478501794",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Double Headed Axe",
+      "recipe_id": "716445884",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Lance",
+      "recipe_id": "272632126",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Sledge",
+      "recipe_id": "180119055",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Tablet",
+      "recipe_id": "1542887935",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Tulwar",
+      "recipe_id": "3503684133",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Voulge",
+      "recipe_id": "1604756168",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Crystal Blast II (Expert)",
+      "recipe_id": "3601856533",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Crystal Blast II (Journeyman)",
+      "recipe_id": "1019334280",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dissolve II (Expert)",
+      "recipe_id": "2433880491",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dissolve II (Journeyman)",
+      "recipe_id": "2333911099",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Double-Cross (Expert)",
+      "recipe_id": "959416416",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Double-Cross (Journeyman)",
+      "recipe_id": "846857152",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Longbow",
+      "recipe_id": "1289169105",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Quarter Staff",
+      "recipe_id": "565830762",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Shortbow",
+      "recipe_id": "2377840819",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Evade (Expert)",
+      "recipe_id": "1060316992",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Evade (Journeyman)",
+      "recipe_id": "3536882760",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Faith Strike II (Expert)",
+      "recipe_id": "3087880477",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Faith Strike II (Journeyman)",
+      "recipe_id": "2718165133",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fashioned Lapis Lazuli Earring",
+      "recipe_id": "459722335",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Fashioned Malachite Earring",
+      "recipe_id": "1404492765",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hemorrhage II (Expert)",
+      "recipe_id": "1410394966",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hemorrhage II (Journeyman)",
+      "recipe_id": "3195985355",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Intercept (Expert)",
+      "recipe_id": "1022009022",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Intercept (Journeyman)",
+      "recipe_id": "2275097146",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jum Jum Cookie",
+      "recipe_id": "1975520109",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jum Jum Fizzlepop",
+      "recipe_id": "2876575953",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lesser Arcane Remedy",
+      "recipe_id": "1276600877",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mug (Expert)",
+      "recipe_id": "989051986",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mug (Journeyman)",
+      "recipe_id": "885381067",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Overpower II (Expert)",
+      "recipe_id": "3358937957",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Overpower II (Journeyman)",
+      "recipe_id": "3322099964",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Painbringer II (Expert)",
+      "recipe_id": "838756250",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Painbringer II (Journeyman)",
+      "recipe_id": "3851651726",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pummel II (Expert)",
+      "recipe_id": "4209721658",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Pummel II (Journeyman)",
+      "recipe_id": "1932942513",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Gloves",
+      "recipe_id": "1705002341",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rupture II (Expert)",
+      "recipe_id": "2356629103",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rupture II (Journeyman)",
+      "recipe_id": "35901344",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sackcloth Mitts",
+      "recipe_id": "14552588",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Solar Flare II (Expert)",
+      "recipe_id": "179298431",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Solar Flare II (Journeyman)",
+      "recipe_id": "279009775",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Soulrot II (Expert)",
+      "recipe_id": "2500835631",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Soulrot II (Journeyman)",
+      "recipe_id": "458963168",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tarven's Crippling Crescendo (Expert)",
+      "recipe_id": "865752456",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tarven's Crippling Crescendo (Journeyman)",
+      "recipe_id": "3185046110",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Threadbare Mitts",
+      "recipe_id": "102094001",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Chainmail Coat",
+      "recipe_id": "63437830",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Chainmail Gloves",
+      "recipe_id": "213728905",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Double Headed Axe",
+      "recipe_id": "3937429058",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Lance",
+      "recipe_id": "475517249",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Sledge",
+      "recipe_id": "1994894501",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Tablet",
+      "recipe_id": "432016731",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Tulwar",
+      "recipe_id": "274956624",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Voulge",
+      "recipe_id": "2668681661",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Sackcloth Pantaloons",
+      "recipe_id": "2761340299",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tranquil Threadbare Pantaloons",
+      "recipe_id": "3327298693",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ultraviolet Beam II (Expert)",
+      "recipe_id": "1541965282",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ultraviolet Beam II (Journeyman)",
+      "recipe_id": "2885490719",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vexing Verses (Expert)",
+      "recipe_id": "800819916",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Vexing Verses (Journeyman)",
+      "recipe_id": "3731138431",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Vine Net (Expert)",
+      "recipe_id": "4287101879",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Vine Net (Journeyman)",
+      "recipe_id": "4027534047",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Waking Dragon II (Expert)",
+      "recipe_id": "2351604854",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waking Dragon II (Journeyman)",
+      "recipe_id": "1481066850",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Waxed Leather Gloves",
+      "recipe_id": "1588604745",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine alder bookcase",
+      "recipe_id": "2950509951",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine alder chest",
+      "recipe_id": "800051183",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine alder dining chair",
+      "recipe_id": "2409082817",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine bronze sconce",
+      "recipe_id": "293106632",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine elm dining chair",
+      "recipe_id": "3246015640",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine large alder militia table",
+      "recipe_id": "867226085",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine oval alder table",
+      "recipe_id": "3473033372",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine primitive elm bookcase",
+      "recipe_id": "3704951472",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine sackcloth portrait",
+      "recipe_id": "1325744228",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine sackcloth rug",
+      "recipe_id": "92414331",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine small alder desk",
+      "recipe_id": "1514728995",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine small alder militia table",
+      "recipe_id": "3331981549",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine standard alder table",
+      "recipe_id": "3695060636",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine sturdy alder chair",
+      "recipe_id": "2663352119",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine troll chair",
+      "recipe_id": "2610946602",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine rawhide leather backpack",
+      "recipe_id": "1526007952",
+      "book": "artisan essentials volume 6",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine waxed leather backpack",
+      "recipe_id": "1129940875",
+      "book": "Advanced Artisan Volume 6",
+      "category": "TS Advanced"
+    }
+  ],
+  "7": [
+    {
+      "recipe": "Abomination (Expert)",
+      "recipe_id": "2103722406",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Abomination (Journeyman)",
+      "recipe_id": "3323323682",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Alder Fighting Baton",
+      "recipe_id": "1185576487",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Aspect of Darkness (Expert)",
+      "recipe_id": "2915987814",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Aspect of Darkness (Journeyman)",
+      "recipe_id": "3118498217",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Aspect of Genius (Expert)",
+      "recipe_id": "596176542",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Aspect of Genius (Journeyman)",
+      "recipe_id": "3765728674",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Assault (Expert)",
+      "recipe_id": "3965247694",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Assault (Journeyman)",
+      "recipe_id": "1703279941",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Beatdown (Expert)",
+      "recipe_id": "1302783963",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Beatdown (Journeyman)",
+      "recipe_id": "1470651979",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bloodbath (Expert)",
+      "recipe_id": "4521988",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bloodbath (Journeyman)",
+      "recipe_id": "3987122956",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bronze Chainmail Leggings",
+      "recipe_id": "2555485757",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Dagger",
+      "recipe_id": "108699240",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Great Sword",
+      "recipe_id": "1616850032",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Kris",
+      "recipe_id": "3847902813",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Ritual Dagger",
+      "recipe_id": "2483178482",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Vanguard Sabatons",
+      "recipe_id": "2685103849",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze War Mace",
+      "recipe_id": "573675332",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Caltrops (Expert)",
+      "recipe_id": "3930519045",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Caltrops (Journeyman)",
+      "recipe_id": "3832585628",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Crescent Strike (Expert)",
+      "recipe_id": "2440332168",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Crescent Strike (Journeyman)",
+      "recipe_id": "2585856040",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Death Cloud (Expert)",
+      "recipe_id": "3828208137",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Death Cloud (Journeyman)",
+      "recipe_id": "339234804",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Deny (Expert)",
+      "recipe_id": "720064645",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Deny (Journeyman)",
+      "recipe_id": "1342756656",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Depressing Chant (Expert)",
+      "recipe_id": "3252948568",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Depressing Chant (Journeyman)",
+      "recipe_id": "3391881097",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Deteriorate (Expert)",
+      "recipe_id": "1602721467",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Deteriorate (Journeyman)",
+      "recipe_id": "627314958",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dire Balm II (Expert)",
+      "recipe_id": "2224697571",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dire Balm II (Journeyman)",
+      "recipe_id": "3752990819",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elemental Aspect (Expert)",
+      "recipe_id": "1355260057",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Elemental Aspect (Journeyman)",
+      "recipe_id": "1254693129",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Fighting Baton",
+      "recipe_id": "362508406",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ensnare (Expert)",
+      "recipe_id": "1930824509",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ensnare (Journeyman)",
+      "recipe_id": "4207613622",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fortify Elements (Expert)",
+      "recipe_id": "1657147586",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Fortify Elements (Journeyman)",
+      "recipe_id": "3944418633",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Hangman's Noose (Expert)",
+      "recipe_id": "3312039919",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Hangman's Noose (Journeyman)",
+      "recipe_id": "2655100783",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Holdup (Expert)",
+      "recipe_id": "3912635626",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Holdup (Journeyman)",
+      "recipe_id": "531663189",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Holy Circle (Expert)",
+      "recipe_id": "2917302929",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Holy Circle (Journeyman)",
+      "recipe_id": "2067756274",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Intimidation (Expert)",
+      "recipe_id": "1604007873",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Intimidation (Journeyman)",
+      "recipe_id": "1422834785",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jum Jum Pie",
+      "recipe_id": "4182136864",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Karana's Hold (Expert)",
+      "recipe_id": "40899158",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Karana's Hold (Journeyman)",
+      "recipe_id": "4066742187",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Meliorate II (Expert)",
+      "recipe_id": "1952177701",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Meliorate II (Journeyman)",
+      "recipe_id": "4253467566",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ministration II (Expert)",
+      "recipe_id": "3358497420",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ministration II (Journeyman)",
+      "recipe_id": "943392625",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Nature's Salve II (Expert)",
+      "recipe_id": "4041853325",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Nature's Salve II (Journeyman)",
+      "recipe_id": "487219845",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Power of Mind (Expert)",
+      "recipe_id": "2670586986",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Power of Mind (Journeyman)",
+      "recipe_id": "1240472073",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Quick Swipe II (Expert)",
+      "recipe_id": "1387247851",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Quick Swipe II (Journeyman)",
+      "recipe_id": "4280895234",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Pants",
+      "recipe_id": "948476488",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Tunic",
+      "recipe_id": "4037574712",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rejuvenation II (Expert)",
+      "recipe_id": "3761602845",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rejuvenation II (Journeyman)",
+      "recipe_id": "380837026",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Root (Expert)",
+      "recipe_id": "2438705525",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Root (Journeyman)",
+      "recipe_id": "3396573685",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sackcloth Pantaloons",
+      "recipe_id": "36266662",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sackcloth Robe",
+      "recipe_id": "3076678646",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sackcloth Vest",
+      "recipe_id": "519589459",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Shadow Bind (Expert)",
+      "recipe_id": "534456381",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Shadow Bind (Journeyman)",
+      "recipe_id": "857720620",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sign of Pacification (Expert)",
+      "recipe_id": "1240966883",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sign of Pacification (Journeyman)",
+      "recipe_id": "1110988594",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sylvan Bloom II (Expert)",
+      "recipe_id": "3365810193",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sylvan Bloom II (Journeyman)",
+      "recipe_id": "628988697",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Threadbare Pantaloons",
+      "recipe_id": "2200661799",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Threadbare Robe",
+      "recipe_id": "808676548",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Threadbare Vest",
+      "recipe_id": "195447297",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Chainmail Leggings",
+      "recipe_id": "2165645042",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Dagger",
+      "recipe_id": "2422573076",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Great Sword",
+      "recipe_id": "426696748",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Kris",
+      "recipe_id": "929520002",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Ritual Dagger",
+      "recipe_id": "283028992",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Vanguard Sabatons",
+      "recipe_id": "2294141055",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin War Mace",
+      "recipe_id": "1433371376",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Unholy Covenant (Expert)",
+      "recipe_id": "4194762220",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Unholy Covenant (Journeyman)",
+      "recipe_id": "972711632",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Verlien's Keen of Despair (Expert)",
+      "recipe_id": "1922982658",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Verlien's Keen of Despair (Journeyman)",
+      "recipe_id": "2178305183",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Waxed Leather Pants",
+      "recipe_id": "3215915347",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waxed Leather Tunic",
+      "recipe_id": "2005852963",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "White Tea",
+      "recipe_id": "2791516762",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Woven Rawhide Pants",
+      "recipe_id": "3192995265",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Woven Waxed Pants",
+      "recipe_id": "2585716742",
+      "book": "Advanced Artisan Volume 7",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine generic elm chair",
+      "recipe_id": "2918007572",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine primitive elm chair",
+      "recipe_id": "2588503450",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine troll wooden crate",
+      "recipe_id": "2967488203",
+      "book": "artisan essentials volume 7",
+      "category": "TS Essentials"
+    }
+  ],
+  "8": [
+    {
+      "recipe": "Abuse (Expert)",
+      "recipe_id": "2898537019",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Abuse (Journeyman)",
+      "recipe_id": "2733785506",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Alder Sorcerer's Staff",
+      "recipe_id": "543307836",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bash II (Expert)",
+      "recipe_id": "3726596079",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bash II (Journeyman)",
+      "recipe_id": "1347147296",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Blasphemy (Expert)",
+      "recipe_id": "1793068961",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Blasphemy (Journeyman)",
+      "recipe_id": "1691771960",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Body Check II (Expert)",
+      "recipe_id": "837141311",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Body Check II (Journeyman)",
+      "recipe_id": "1070835878",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bronze Great Spear",
+      "recipe_id": "321175124",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Vanguard Barbute",
+      "recipe_id": "2230344987",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Vanguard Spaulders",
+      "recipe_id": "374286410",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze War Hammer",
+      "recipe_id": "1046777437",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze War Maul",
+      "recipe_id": "1005251094",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Challenge (Expert)",
+      "recipe_id": "3262334273",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Challenge (Journeyman)",
+      "recipe_id": "3427086040",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Chromatic Storm (Expert)",
+      "recipe_id": "509568523",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Chromatic Storm (Journeyman)",
+      "recipe_id": "72474523",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Copper Idol",
+      "recipe_id": "2840762192",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Copper Symbol",
+      "recipe_id": "3894099893",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dark Nebula (Expert)",
+      "recipe_id": "7175990",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dark Nebula (Journeyman)",
+      "recipe_id": "3139230642",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Sorcerer's Staff",
+      "recipe_id": "1386362123",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Enrage (Expert)",
+      "recipe_id": "3622892295",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Enrage (Journeyman)",
+      "recipe_id": "974346255",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Fashioned Copper Hoop",
+      "recipe_id": "1378699592",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Fashioned Lead Hoop",
+      "recipe_id": "3689108894",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Flash of Steel II (Expert)",
+      "recipe_id": "928617555",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Flash of Steel II (Journeyman)",
+      "recipe_id": "3104642460",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Ice Storm II (Expert)",
+      "recipe_id": "4144369714",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ice Storm II (Journeyman)",
+      "recipe_id": "451263290",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Jum Jum Trail Mix",
+      "recipe_id": "368321561",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lapis Lazuli Orb",
+      "recipe_id": "2662225014",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Lead Idol",
+      "recipe_id": "2069490369",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lead Symbol",
+      "recipe_id": "2935315300",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Lightning Strike II (Expert)",
+      "recipe_id": "4291165631",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Lightning Strike II (Journeyman)",
+      "recipe_id": "732434603",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Malachite Orb",
+      "recipe_id": "1513012317",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Neophyte's Caustic Poison",
+      "recipe_id": "1015655552",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ogre Swill",
+      "recipe_id": "2684178413",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pandemic II (Expert)",
+      "recipe_id": "3213624660",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Pandemic II (Journeyman)",
+      "recipe_id": "911284447",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Puncture II (Expert)",
+      "recipe_id": "662147240",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Puncture II (Journeyman)",
+      "recipe_id": "692190001",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Quick Strike II (Expert)",
+      "recipe_id": "2207850754",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Quick Strike II (Journeyman)",
+      "recipe_id": "231579853",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Leather Tome",
+      "recipe_id": "3432669864",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Whip",
+      "recipe_id": "3580185649",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Righteousness (Expert)",
+      "recipe_id": "92871788",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Righteousness (Journeyman)",
+      "recipe_id": "3545557519",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rush II (Expert)",
+      "recipe_id": "1161675423",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rush II (Journeyman)",
+      "recipe_id": "245582266",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sandra's Deafening Strike II (Expert)",
+      "recipe_id": "3585143105",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Sandra's Deafening Strike II (Journeyman)",
+      "recipe_id": "3485354193",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shout (Expert)",
+      "recipe_id": "1550749546",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Shout (Journeyman)",
+      "recipe_id": "2978817122",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Simple Minds (Expert)",
+      "recipe_id": "1381325456",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Simple Minds (Journeyman)",
+      "recipe_id": "1493225776",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Snipe (Expert)",
+      "recipe_id": "3147106826",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Snipe (Journeyman)",
+      "recipe_id": "3770491530",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spirit Totem of the Beetle",
+      "recipe_id": "3116639148",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Spirit Totem of the Frog",
+      "recipe_id": "2022632121",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Storm of Lightning (Expert)",
+      "recipe_id": "2154820912",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Storm of Lightning (Journeyman)",
+      "recipe_id": "2948822316",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Thuri's Doleful Thrust II (Expert)",
+      "recipe_id": "4267095628",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Thuri's Doleful Thrust II (Journeyman)",
+      "recipe_id": "680214575",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Great Spear",
+      "recipe_id": "1619712417",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Vanguard Barbute",
+      "recipe_id": "3674939783",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Vanguard Spaulders",
+      "recipe_id": "2450034608",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin War Hammer",
+      "recipe_id": "1276508378",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin War Maul",
+      "recipe_id": "4138318934",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Torture (Expert)",
+      "recipe_id": "312231284",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Torture (Journeyman)",
+      "recipe_id": "2604751103",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Sackcloth Robe",
+      "recipe_id": "2234224857",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Tranquil Sackcloth Vest",
+      "recipe_id": "3847812381",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waxed Leather Tome",
+      "recipe_id": "1578725270",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Waxed Whip",
+      "recipe_id": "2198033133",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Woven Rawhide Tunic",
+      "recipe_id": "1987127217",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine elm bedside table",
+      "recipe_id": "1864299350",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine elm dining table",
+      "recipe_id": "359249936",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine rawhide leather quiver",
+      "recipe_id": "4263352677",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine rawhide leather sack",
+      "recipe_id": "2801544034",
+      "book": "artisan essentials volume 8",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "pristine waxed leather quiver",
+      "recipe_id": "2367012522",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "pristine waxed leather sack",
+      "recipe_id": "746606081",
+      "book": "Advanced Artisan Volume 8",
+      "category": "TS Advanced"
+    }
+  ],
+  "9": [
+    {
+      "recipe": "Alder Bo Staff",
+      "recipe_id": "1743529341",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ambush II (Expert)",
+      "recipe_id": "2717938839",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Ambush II (Journeyman)",
+      "recipe_id": "2889228046",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bloodlust (Expert)",
+      "recipe_id": "487075754",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bloodlust (Journeyman)",
+      "recipe_id": "2472324709",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Bronze Claws",
+      "recipe_id": "2011058398",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Gavel",
+      "recipe_id": "2627855888",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Katar",
+      "recipe_id": "3300271896",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Knuckles",
+      "recipe_id": "276575177",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Spiked Hammer",
+      "recipe_id": "1477537260",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Vanguard Cuirass",
+      "recipe_id": "1558589961",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Vanguard Gauntlets",
+      "recipe_id": "1391259685",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Vanguard Greaves",
+      "recipe_id": "922825712",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Bronze Vanguard Gussets",
+      "recipe_id": "1913503815",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Brutality (Expert)",
+      "recipe_id": "403722018",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Brutality (Journeyman)",
+      "recipe_id": "2741103526",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Call to Arms (Expert)",
+      "recipe_id": "1312091418",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Call to Arms (Journeyman)",
+      "recipe_id": "1164011194",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Calm Tranquility (Expert)",
+      "recipe_id": "2712409242",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Calm Tranquility (Journeyman)",
+      "recipe_id": "450736158",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Clarion II (Expert)",
+      "recipe_id": "596286767",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Clarion II (Journeyman)",
+      "recipe_id": "767358646",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Dawnstrike II (Expert)",
+      "recipe_id": "3719466782",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Dawnstrike II (Journeyman)",
+      "recipe_id": "3605464254",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Death Swarm II (Expert)",
+      "recipe_id": "1837246630",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Death Swarm II (Journeyman)",
+      "recipe_id": "3119498674",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Divine Inspiration (Expert)",
+      "recipe_id": "2457857676",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Divine Inspiration (Journeyman)",
+      "recipe_id": "2253463107",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Divine Smite II (Expert)",
+      "recipe_id": "1292734730",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Divine Smite II (Journeyman)",
+      "recipe_id": "2398161462",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Elm Bo Staff",
+      "recipe_id": "194961825",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Emberstrike II (Expert)",
+      "recipe_id": "2452413568",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Emberstrike II (Journeyman)",
+      "recipe_id": "2017651229",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Glacial Lance II (Expert)",
+      "recipe_id": "2612005989",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Glacial Lance II (Journeyman)",
+      "recipe_id": "1097067745",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Imprecate II (Expert)",
+      "recipe_id": "3157099454",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Imprecate II (Journeyman)",
+      "recipe_id": "2818798449",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Insidious Whisper II (Expert)",
+      "recipe_id": "1892044827",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Insidious Whisper II (Journeyman)",
+      "recipe_id": "1600835591",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Invocation II (Expert)",
+      "recipe_id": "1379908511",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Invocation II (Journeyman)",
+      "recipe_id": "10913412",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Misfortune's Kiss II (Expert)",
+      "recipe_id": "3444914158",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Misfortune's Kiss II (Journeyman)",
+      "recipe_id": "423156474",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Mock II (Expert)",
+      "recipe_id": "1011742440",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Mock II (Journeyman)",
+      "recipe_id": "846962033",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Night Strike II (Expert)",
+      "recipe_id": "4222269822",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Night Strike II (Journeyman)",
+      "recipe_id": "801592426",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Pond Juice",
+      "recipe_id": "4289026747",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Provoke II (Expert)",
+      "recipe_id": "1392702009",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Provoke II (Journeyman)",
+      "recipe_id": "3672108978",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rawhide Fistwraps",
+      "recipe_id": "3795079543",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Rob II (Expert)",
+      "recipe_id": "3636915880",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Rob II (Journeyman)",
+      "recipe_id": "2213463592",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Shanghai II (Expert)",
+      "recipe_id": "1610888887",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Shanghai II (Journeyman)",
+      "recipe_id": "2380766655",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Silent Threat II (Expert)",
+      "recipe_id": "2248972108",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Silent Threat II (Journeyman)",
+      "recipe_id": "1810840644",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Slurred Insult II (Expert)",
+      "recipe_id": "1588604950",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Slurred Insult II (Journeyman)",
+      "recipe_id": "93853846",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Sunfish Casserole",
+      "recipe_id": "1765934482",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Claws",
+      "recipe_id": "3957264258",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Gavel",
+      "recipe_id": "10533196",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Katar",
+      "recipe_id": "1488418884",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Knuckles",
+      "recipe_id": "1073649036",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Spiked Hammer",
+      "recipe_id": "1353649039",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Vanguard Cuirass",
+      "recipe_id": "2804097926",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Vanguard Gauntlets",
+      "recipe_id": "2219290518",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Vanguard Greaves",
+      "recipe_id": "3435405951",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tin Vanguard Gussets",
+      "recipe_id": "2311639496",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Threadbare Robe",
+      "recipe_id": "723916128",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Tranquil Threadbare Vest",
+      "recipe_id": "2428109827",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Unholy Hunger (Expert)",
+      "recipe_id": "3719979413",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Unholy Hunger (Journeyman)",
+      "recipe_id": "191338486",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Velium Winds II (Expert)",
+      "recipe_id": "1683878918",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Velium Winds II (Journeyman)",
+      "recipe_id": "3744223362",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "Waxed Fistwraps",
+      "recipe_id": "3422810437",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "Woven Waxed Tunic",
+      "recipe_id": "1379857014",
+      "book": "Advanced Artisan Volume 9",
+      "category": "TS Advanced"
+    },
+    {
+      "recipe": "a pristine generic elm table",
+      "recipe_id": "1314544634",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    },
+    {
+      "recipe": "a pristine tin sconce",
+      "recipe_id": "1651528711",
+      "book": "artisan essentials volume 9",
+      "category": "TS Essentials"
+    }
+  ]
+}
