@@ -182,6 +182,8 @@ class CraftWorker:
                 continue
             # Proof the search worked = the row appears in the filtered list. Poll for it.
             for _ in range(int(rs.get("match_polls", 5))):
+                if self._stop.is_set():        # STOP must bail mid-select, not after it
+                    return False
                 await asyncio.sleep(post_search)
                 row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
                 if row_click:
