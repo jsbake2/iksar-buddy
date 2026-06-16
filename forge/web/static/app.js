@@ -171,9 +171,14 @@ function buildBotPanel(bot, tradeClasses) {
   refs.count.onchange = () => post(`/api/bot/${id}/config`, { count: parseInt(refs.count.value) || 1 });
   refs.ocr.onclick = () => post(`/api/bot/${id}/ocr`);
   refs.readlog.onclick = () => post(`/api/bot/${id}/readlog`);
-  // toggling capture: first click marks the log, second reads only what was scribed since
-  refs.scribe.onclick = () =>
-    post(`/api/bot/${id}/${refs.scribeMarked ? "scriberead" : "scribemark"}`);
+  // toggling capture: first click marks the log, second reads only what was scribed since.
+  // Send the dropdown's crafter so the backend knows whose log to read even if the
+  // crafter dropdown's onchange never fired (it shows a default without registering).
+  refs.scribe.onclick = () => {
+    const c = selectedCrafter(refs);
+    post(`/api/bot/${id}/${refs.scribeMarked ? "scriberead" : "scribemark"}`,
+         c ? { character: c.character, trade_class: c.class } : {});
+  };
   refs.addrow.onclick = () => { pushQueueRow(refs, { name: "", count: 1 }); saveQueue(id, refs); };
   // saved lists: load fills the queue; save names the current queue; delete removes
   refs.listload.onclick = () => {
