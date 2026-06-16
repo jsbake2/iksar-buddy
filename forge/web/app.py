@@ -322,6 +322,17 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
             return {"action": "idle", "epoch": 0}
         return sim.agent_command(bot_id)
 
+    @app.post("/api/agent/{bot_id}/command")
+    async def set_agent_command(bot_id: str, payload: dict = Body(default={})):
+        """Externally set what an agent should do (e.g. trigger the healer's 'heal'
+        loop, or 'idle' to stop it). The agent picks it up on its next poll."""
+        if not hasattr(sim, "set_agent_command"):
+            return JSONResponse({"error": "unavailable"}, status_code=400)
+        action = str(payload.get("action", "idle"))
+        params = {k: v for k, v in (payload or {}).items() if k != "action"}
+        epoch = sim.set_agent_command(bot_id, action, **params)
+        return {"ok": True, "epoch": epoch}
+
     @app.post("/api/agent/{bot_id}/telemetry")
     async def agent_telemetry(bot_id: str, payload: dict = Body(default={})):
         if hasattr(sim, "agent_push"):
