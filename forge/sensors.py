@@ -380,28 +380,43 @@ def find_character(guest: Guest, cfg: dict, target: str) -> tuple[int, int] | No
     return (row_x, pick["y"] + pick["h"] // 2)
 
 
-def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | None:
-    """Find the searched recipe ANYWHERE in the filtered list and return the click point
-    of its row's ICON (icon_x, actual row Y). The rows render at a variable Y (depends on
-    result count / name wrap), so we OCR the WHOLE list region, group words into rows by
-    Y, score each row by recipe-token overlap, and click the best row above threshold.
-    Returns None if nothing clears it (so we never load the wrong recipe)."""
+def _recipe_rows(guest: Guest, cfg: dict) -> list[list]:
+    """OCR the recipe-list region -> rows (each a list of word dicts), name column only.
+    Rows render at a variable Y (result count / 2-line name wrap), so we group words by Y."""
     rs = cfg.get("recipe_select", {})
     region = rs.get("list_region") or {"x": 225, "y": 195, "w": 320, "h": 485}
-    want = [t for t in re.findall(r"[a-z]+", (name or "").lower()) if len(t) >= 3]
-    if not want:
-        return None
     words = [w for w in _ocr_words(guest, region) if w["x"] < region["x"] + 230]  # name col, skip difficulty
     if not words:
-        return None
-    # group words into rows by Y (a wrapped 2-line name spans ~16px, so bucket ~26px)
+        return []
     words.sort(key=lambda w: w["y"])
     rows: list[list] = []
     for w in words:
-        if rows and w["y"] - rows[-1][-1]["y"] <= 26:
+        if rows and w["y"] - rows[-1][-1]["y"] <= 26:   # wrapped 2-line name ~16px
             rows[-1].append(w)
         else:
             rows.append([w])
+    return rows
+
+
+def recipe_row_blobs(guest: Guest, cfg: dict) -> list[str]:
+    """Diagnostic: the OCR'd name-column text of each result row, as seen by the matcher.
+    Logged on a failed match so 'not found' is never silent (wrong list name? unfiltered
+    list? focus race? — the blobs tell you which)."""
+    return [_alpha(" ".join(w["text"] for w in ws)) for ws in _recipe_rows(guest, cfg)]
+
+
+def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | None:
+    """Find the searched recipe ANYWHERE in the filtered list and return the click point
+    of its row's ICON (icon_x, actual row Y). Score each row by recipe-token overlap and
+    click the best above threshold. Returns None if nothing clears it (never load the
+    wrong recipe). A lone result with partial coverage is taken (sole-result fast path)."""
+    rs = cfg.get("recipe_select", {})
+    want = [t for t in re.findall(r"[a-z]+", (name or "").lower()) if len(t) >= 3]
+    if not want:
+        return None
+    rows = _recipe_rows(guest, cfg)
+    if not rows:
+        return None
     # Variant modifiers denote a DIFFERENT recipe: a row carrying "Imbued"/"Blessed"
     # that the TARGET name does not have is never our recipe (owner rule). Without
     # this, "Imbued Iron Chainmail Coat" token-matches "Iron Chainmail Coat" 1:1
@@ -410,7 +425,7 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
     name_l = (name or "").lower()
     forbidden = [m for m in modifiers if m not in name_l]
     want_len = sum(len(t) for t in want)
-    best, best_score, best_extra = None, 0.0, 1 << 30
+    scored = []   # (score, extra, row)
     for ws in rows:
         blob = _alpha(" ".join(w["text"] for w in ws))
         if any(_contains(blob, f) for f in forbidden):
@@ -421,9 +436,17 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
         # a shorter exact name beats any longer "<prefix> <name> <suffix>" variant.
         extra = max(0, len(blob) - want_len)
         log.debug("recipe row y=%s score=%.2f extra=%d blob=%r", ws[0]["y"], score, extra, blob)
-        if score > best_score or (score == best_score and extra < best_extra):
-            best, best_score, best_extra = ws, score, extra
-    if not best or best_score < float(rs.get("match_threshold", 0.6)):
+        scored.append((score, extra, ws))
+    if not scored:
+        return None
+    scored.sort(key=lambda s: (-s[0], s[1]))   # best coverage, then most-exact
+    best_score, _, best = scored[0]
+    threshold = float(rs.get("match_threshold", 0.6))
+    # Sole-result fast path: exactly one (non-rejected) row and it shares SOMETHING with
+    # the target — take it even below threshold. EQ2 filtered to one row, so a partial
+    # OCR of a single obvious match shouldn't be dismissed as "not found".
+    sole = len(scored) == 1 and best_score >= float(rs.get("sole_result_floor", 0.34))
+    if best_score < threshold and not sole:
         return None
     icon_x = int(rs.get("icon_x", 244))
     y = sum(w["y"] + w["h"] // 2 for w in best) // len(best)   # center of the matched row

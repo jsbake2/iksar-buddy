@@ -172,6 +172,14 @@ class CraftWorker:
                 await self._ex(partial(self.guest.type_field, query, True, (sb[0], sb[1])))
             else:
                 await self._ex(self.guest.type_field, query, True)
+            # Verify the query actually reached the search box. If focus raced and the
+            # keystrokes didn't land, the list never filtered — re-type now instead of
+            # burning the whole poll budget OCR'ing an unfiltered list (the silent-fail
+            # case behind "1 obvious result but it moved on").
+            await self._ex(self.guest.grab)
+            if not await self._ex(sensors.search_landed, self.guest, self.cfg, query):
+                self.t.push_log(self.id, f"search '{query}' did NOT land (focus race) — retyping (attempt {i}/{attempts})")
+                continue
             # Proof the search worked = the row appears in the filtered list. Poll for it.
             for _ in range(int(rs.get("match_polls", 5))):
                 await asyncio.sleep(post_search)
@@ -180,8 +188,11 @@ class CraftWorker:
                     break
             if row_click:
                 break
-            # row not found — re-clear + re-type (atomic focus again) and try once more.
-            self.t.push_log(self.id, f"'{name}' not in filtered list (attempt {i}/{attempts}) — retrying")
+            # Row not found though the search landed — log what the OCR actually SAW so
+            # this is never silent (wrong list name vs unfiltered list vs OCR miss).
+            seen = await self._ex(sensors.recipe_row_blobs, self.guest, self.cfg)
+            self.t.push_log(self.id, f"'{name}' not in filtered list (attempt {i}/{attempts}) "
+                                     f"— rows seen: {seen or '[]'} — retrying")
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             return False

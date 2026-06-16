@@ -128,3 +128,20 @@ def test_match_recipe_row_keeps_modifier_when_target_has_it(monkeypatch):
     monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
     pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Imbued Iron Chainmail Coat")
     assert pt is not None and abs(pt[1] - 210) <= 8, f"should pick the imbued row, got {pt}"
+
+
+def test_match_recipe_row_sole_result_partial_ocr(monkeypatch):
+    """A single result with a garbled token (2/3 coverage but it's the only row) is
+    still taken — the sole-result fast path. Regression for '1 obvious result, dismissed'."""
+    from forge import sensors
+    fake = _row(["Iron", "Revenan", "Mantle"], y=240)   # 'revenant' OCR'd as 'revenan'
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Iron Revenant Mantle")
+    assert pt is not None and abs(pt[1] - 240) <= 8, f"sole result should be taken, got {pt}"
+
+
+def test_match_recipe_row_no_rows_returns_none(monkeypatch):
+    """No OCR rows (unfiltered/empty) -> None, not a crash."""
+    from forge import sensors
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: [])
+    assert sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Iron Coat") is None
