@@ -381,10 +381,11 @@ def find_character(guest: Guest, cfg: dict, target: str) -> tuple[int, int] | No
 
 
 def _ocr_line(guest: Guest, region: dict) -> str:
-    """OCR a single-line box, trying BOTH polarities and keeping the longer result.
-    Recipe rows zebra-stripe, so a fixed threshold leaves some rows white-on-black, which
-    tesseract can't read in isolation — negating to black-on-white recovers them. Returns
-    the alpha blob (e.g. 'tindirk'). Used for the per-row result boxes."""
+    """OCR a result-row box, trying BOTH polarities and keeping the longer result. Recipe
+    rows zebra-stripe (fixed threshold leaves some white-on-black, unreadable in isolation —
+    negating recovers them), and a long recipe name WRAPS to 2 lines, so we OCR as a block
+    (psm 6) over a box tall enough for 2 lines and concat. Returns the alpha blob
+    ('aggressivedefenseiijourneyman')."""
     r = region or {}
     if not r or not guest.grab():
         return ""
@@ -396,7 +397,7 @@ def _ocr_line(guest: Guest, region: dict) -> str:
             pre = subprocess.run(base + neg + ["png:-"], capture_output=True, timeout=6).stdout
             if not pre:
                 continue
-            txt = subprocess.run(["tesseract", "stdin", "stdout", "--psm", "7"],
+            txt = subprocess.run(["tesseract", "stdin", "stdout", "--psm", "6"],
                                  input=pre, capture_output=True, timeout=8).stdout.decode(errors="replace")
             blob = _alpha(txt)
             if len(blob) > len(best):

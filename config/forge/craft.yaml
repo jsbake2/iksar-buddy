@@ -121,12 +121,14 @@ recipe_select:
   # Explicit per-row OCR boxes + click points (owner-calibrated 2026-06-17, color-matched
   # markup). Each slot: OCR the `ocr` box -> recipe name; on the best EXACT match (Imbued/
   # Blessed rejected) click `click`. Deterministic; preferred over list_region when present.
+  # h=42 covers the FULL row slot (incl. a 2-line wrapped name like "Aggressive Defense II
+  # / (Journeyman)"); _ocr_line reads the box as a block (psm 6) and concatenates the lines.
   result_rows:
-    - {ocr: {x: 258, y: 268, w: 207, h: 30}, click: [245, 291]}
-    - {ocr: {x: 258, y: 313, w: 207, h: 30}, click: [244, 326]}
-    - {ocr: {x: 258, y: 356, w: 207, h: 29}, click: [245, 368]}
-    - {ocr: {x: 258, y: 397, w: 207, h: 28}, click: [244, 410]}
-    - {ocr: {x: 258, y: 437, w: 205, h: 31}, click: [244, 452]}
+    - {ocr: {x: 258, y: 266, w: 207, h: 42}, click: [245, 291]}
+    - {ocr: {x: 258, y: 311, w: 207, h: 42}, click: [244, 326]}
+    - {ocr: {x: 258, y: 354, w: 207, h: 42}, click: [245, 368]}
+    - {ocr: {x: 258, y: 396, w: 207, h: 42}, click: [244, 410]}
+    - {ocr: {x: 258, y: 437, w: 205, h: 42}, click: [244, 452]}
 
 # Click here before pressing arts so keys land in the CRAFT WINDOW, not the hotbar/
 # chat (FORGE.md §5 focus discipline). The owner's "mouse safe" point.
@@ -238,3 +240,8 @@ timings:
   running_timeout: 5.0     # after clicking start, wait this long for the red stop-sign
   max_craft_time: 90.0     # bail a single craft if it never completes (avoid a hang)
   mana_wait: 25.0          # low mana between crafts: recover + wait up to this, then press on
+
+# Writ FLAVOR-TEXT prefixes — stripped when matching the OCR'd writ name to the recipe DB
+# (jeweler "Rune of …", alchemy "Essence of …"). Add more as they surface; the full name is
+# kept when IT directly matches the DB. (recipes.resolve_writ)
+writ_flavor_prefixes: ["Rune of", "Essence of"]
