@@ -1,8 +1,21 @@
 # iksar_buddy — Open Tasks
 
-_Updated 2026-06-16 (owner notes folded in + icon feasibility crawled). Grouped by area._
+_Updated 2026-06-17 (owner notes folded in + icon feasibility crawled). Grouped by area._
 
 ---
+
+## 📌 PINNED — recipe scrape is INCOMPLETE (investigate)
+The EQ2U scrape (`tools/recipe_scrape/`, 33,853 names) is **missing real recipes**. Surfaced
+2026-06-17 by a vm2 Sage writ: **"Rune of Puncture III"** and **"Essence of Aggressive
+Defense II"** (both real Journeyman spells) returned **0 hits** — the writ DB-verify flags them
+⚠ unverified. "Nature's Salve III" WAS present, so it's a partial gap, not all-Sage.
+- **Likely cause:** a book CATEGORY we filtered out. `WANT_CATEGORIES` in scrape.py keeps only
+  TS Essentials/Advanced/Apprentice/Journeyman/Shadow + Tinkering/Adornments. Categories like
+  **Ancient Spells, Grandmaster Spells, TS Quest, Faction, Public Research** were excluded —
+  some Journeyman-tier spells may live there. OR the EQ2U name differs from the in-game name.
+- **To do:** find which book/category holds "Rune of Puncture" etc. on EQ2U; widen
+  WANT_CATEGORIES (or add a spell-specific pull) and re-aggregate. Until then, writs with those
+  recipes show ⚠ unverified (still craftable — the cleaned name searches fine).
 
 ## ✅ Done recently (context)
 - In-guest reflex agent (crafter): fast counter loop, 12 Hz.
