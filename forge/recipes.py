@@ -6,7 +6,64 @@ text logic, no I/O, no deps — unit-testable. The OCR *capture* (screenshot reg
 """
 from __future__ import annotations
 
+import difflib
+import json
+import pathlib
 import re
+
+# Scraped recipe DB (by_class + side JSON), used to verify OCR'd writ names against real
+# recipes. Located relative to the repo/app root; absent until the scrape is deployed.
+_DATA_DIR = pathlib.Path(__file__).resolve().parents[1] / "tools" / "recipe_scrape" / "data"
+_RECIPE_NAMES: set[str] | None = None
+
+
+def recipe_names() -> set[str]:
+    """All canonical recipe names from the scraped DB (cached). Empty if not deployed."""
+    global _RECIPE_NAMES
+    if _RECIPE_NAMES is None:
+        names: set[str] = set()
+        for sub in ("by_class", "side"):
+            d = _DATA_DIR / sub
+            if d.exists():
+                for f in d.glob("*.json"):
+                    try:
+                        for items in json.loads(f.read_text(encoding="utf-8")).values():
+                            for r in items:
+                                if r.get("recipe"):
+                                    names.add(r["recipe"])
+                    except (OSError, ValueError):
+                        pass
+        _RECIPE_NAMES = names
+    return _RECIPE_NAMES
+
+
+def verify_writ_detail(items: dict[str, int], cutoff: float = 0.72) -> list[tuple[str, str | None, int]]:
+    """For each OCR'd writ name, [(raw, canonical_or_None, count)] — snapped to the DB
+    (exact, else closest fuzzy match; None if nothing resembles a real recipe). When the DB
+    isn't available, canonical == raw (pass-through)."""
+    names = recipe_names()
+    low = {n.lower(): n for n in names}
+    pool = list(names)
+    out = []
+    for raw, count in items.items():
+        if not names:
+            out.append((raw, raw, count)); continue
+        canon = low.get(raw.lower().strip())
+        if not canon:
+            m = difflib.get_close_matches(raw, pool, n=1, cutoff=cutoff)
+            canon = m[0] if m else None
+        out.append((raw, canon, count))
+    return out
+
+
+def verify_writ(items: dict[str, int], cutoff: float = 0.72) -> dict[str, int]:
+    """Snap each OCR'd writ recipe to the canonical DB name; drop unmatched. Returns
+    {canonical_name: count}."""
+    out: dict[str, int] = {}
+    for _raw, canon, count in verify_writ_detail(items, cutoff):
+        if canon:
+            out[canon] = out.get(canon, 0) + count
+    return out
 
 # Anchor on a trailing "(done/total)" count; capture everything before it.
 _COUNT_RE = re.compile(r"^(.*?)\s*\((\d+)/(\d+)\)\s*$")

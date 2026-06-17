@@ -660,11 +660,13 @@ def ocr_journal(guest: Guest, cfg: dict, trade_class: str = "") -> dict[str, int
     scale = j.get("scale_percent", 150)
     psm = j.get("tesseract_psm", 4)
     try:
-        # magick: crop -> upscale -> grayscale -> equalize -> blur -> otsu -> PNG
+        # magick: crop -> upscale -> grayscale -> NEGATE (writ text is light-on-dark; tesseract
+        # wants dark-on-light) -> blur -> threshold -> PNG.
+        neg = ["-negate"] if j.get("negate", True) else []
         pre = subprocess.run(
             ["magick", guest.ppm, "-crop", f"{reg['w']}x{reg['h']}+{reg['x']}+{reg['y']}",
-             "+repage", "-resize", f"{scale}%", "-colorspace", "Gray",
-             "-equalize", "-blur", "0x0.5", "-threshold", "55%", "png:-"],
+             "+repage", "-resize", f"{scale}%", "-colorspace", "Gray", *neg,
+             "-blur", "0x0.5", "-threshold", f"{j.get('threshold_pct', 60)}%", "png:-"],
             capture_output=True, timeout=6).stdout
         if not pre:
             return {}

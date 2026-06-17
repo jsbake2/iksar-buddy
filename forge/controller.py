@@ -18,7 +18,7 @@ import yaml
 
 from shared.account_lock import AccountLock
 
-from . import sensors
+from . import recipes, sensors
 from .guest import Guest
 from .login import LoginDriver, WORLD, load_accounts
 from .telemetry import ForgeTelemetry
@@ -196,11 +196,23 @@ class ForgeController:
         if not g or not b:
             return
         self.t.push_event(bot_id, "ocr", "reading journal…")
-        items = await asyncio.get_running_loop().run_in_executor(
+        raw = await asyncio.get_running_loop().run_in_executor(
             None, partial(sensors.ocr_journal, g, self.cfg_profile, b.get("trade_class", "")))
-        queue = [{"name": n, "count": c, "done": 0} for n, c in items.items()]
+        # Verify each OCR'd name against the scraped recipe DB: snap to the canonical recipe
+        # (fixes OCR noise / case) and DROP anything that doesn't resemble a real recipe.
+        detail = recipes.verify_writ_detail(raw)
+        queue, dropped = [], 0
+        for rawname, canon, count in detail:
+            if canon:
+                queue.append({"name": canon, "count": count, "done": 0})
+                if rawname != canon:
+                    self.t.push_log(bot_id, f"writ OCR '{rawname}' -> DB '{canon}'")
+            else:
+                dropped += 1
+                self.t.push_log(bot_id, f"writ OCR '{rawname}' -> no DB match, dropped")
         self.t.update_bot(bot_id, mode="writ", queue=queue)
-        self.t.push_event(bot_id, "ocr", f"journal: {len(queue)} recipes")
+        msg = f"journal: {len(queue)} recipes (DB-verified)" + (f", {dropped} dropped" if dropped else "")
+        self.t.push_event(bot_id, "ocr", msg)
 
     def _log_path(self, bot_id: str):
         """(guest, EQ2-log-path) for this bot's selected character, or (g, None)."""

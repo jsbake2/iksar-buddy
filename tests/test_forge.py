@@ -213,3 +213,19 @@ def test_match_recipe_row_per_row_target_is_imbued(monkeypatch):
     texts = {268: "imbuedironcoat", 313: "ironcoat"}
     monkeypatch.setattr(sensors, "_ocr_line", lambda guest, r: texts.get(r["y"], ""))
     assert sensors.match_recipe_row(None, cfg, "Imbued Iron Coat") == (245, 291)
+
+
+# ---- writ DB verification --------------------------------------------------
+def test_verify_writ_snaps_and_drops(monkeypatch):
+    from forge import recipes
+    monkeypatch.setattr(recipes, "_RECIPE_NAMES",
+                        {"Iron Katana", "Burlap Pantaloons", "Iron Vanguard Spaulders"})
+    out = recipes.verify_writ({"an iron katana": 1, "Burlap Pantaloons": 2, "Xyzzy Nonsense Item": 1})
+    assert out == {"Iron Katana": 1, "Burlap Pantaloons": 2}   # katana fixed, nonsense dropped
+
+def test_verify_writ_detail_mapping(monkeypatch):
+    from forge import recipes
+    monkeypatch.setattr(recipes, "_RECIPE_NAMES", {"Iron Katana"})
+    d = recipes.verify_writ_detail({"an iron katana": 1, "Glorp Wobble": 1})
+    assert ("an iron katana", "Iron Katana", 1) in d
+    assert ("Glorp Wobble", None, 1) in d
