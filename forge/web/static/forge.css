@@ -12,7 +12,9 @@
 @media (max-width:1080px){ .bots { grid-template-columns:1fr; } }
 
 /* ---- bot panel ---- */
-.bot-panel { display:flex; flex-direction:column; gap:13px; transition:opacity .2s, filter .2s; }
+/* min-width:0 so a long unbreakable child (recipe/book name) can't blow the 1fr grid
+   column out past the viewport and balloon the width:100% live frame. */
+.bot-panel { display:flex; flex-direction:column; gap:13px; min-width:0; transition:opacity .2s, filter .2s; }
 .bot-panel.disabled { opacity:.5; filter:grayscale(.5); }
 
 .bot-head { display:flex; align-items:center; gap:11px; }
