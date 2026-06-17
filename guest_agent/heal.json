@@ -1,0 +1,64 @@
+{
+  "_README": "Healer ruleset for heal_reflex (Jenskin/Defiler). PIXELS regenerated 2026-06-17 from the LIVE host calibration (group_bars x0=33,x1=139,hp_base_y=120,pitch=75) and verified against a full-res guest screenshot. Coords are absolute screen px @ 1920x1080. ACTIONS are the dino keybind macros (unchanged). game_present + chat_input enforce the chat-safety invariant IN-GUEST (heal_reflex._safe): no key is pressed unless the own power bar is visible (in-world) AND the chat input bar is dark. HP bars deplete right->left: standard sample x=90 (~54% of track) fires below ~half HP; critical x=60 (~25%) fires below ~quarter. Cures are OMITTED this pass (no nox/ele/tra locs) until a live detriment is available to calibrate the cure cells.",
+
+  "tick": 0.1,
+  "tol": 14,
+  "cure_present_clr": [0, 0, 0],
+
+  "game_present": { "region": { "x": 19, "y": 44, "w": 109, "h": 6 }, "blue": [113, 113, 240], "tolerance": 40, "min_pixels": 20 },
+  "chat_input":   { "region": { "x": 50, "y": 1019, "w": 208, "h": 22 }, "bright_threshold": 25 },
+
+  "pixels": {
+    "self_mana":   { "loc": [45, 46], "clr": [113, 113, 240] },
+    "group_check": {
+      "0": { "loc": [17, 120], "clr": [0, 0, 0] },
+      "1": { "loc": [17, 195], "clr": [0, 0, 0] },
+      "2": { "loc": [17, 270], "clr": [0, 0, 0] },
+      "3": { "loc": [17, 345], "clr": [0, 0, 0] },
+      "4": { "loc": [17, 420], "clr": [0, 0, 0] },
+      "5": { "loc": [17, 495], "clr": [0, 0, 0] }
+    },
+    "standard": {
+      "0": { "action": "heal_0_std", "loc": [90, 120], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "1": { "action": "heal_1_std", "loc": [90, 195], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "2": { "action": "heal_2_std", "loc": [90, 270], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "3": { "action": "heal_3_std", "loc": [90, 345], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "4": { "action": "heal_4_std", "loc": [90, 420], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "5": { "action": "heal_5_std", "loc": [90, 495], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] }
+    },
+    "critical": {
+      "0": { "action": "heal_0_cri", "loc": [60, 120], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "1": { "action": "heal_1_cri", "loc": [60, 195], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "2": { "action": "heal_2_cri", "loc": [60, 270], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "3": { "action": "heal_3_cri", "loc": [60, 345], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "4": { "action": "heal_4_cri", "loc": [60, 420], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] },
+      "5": { "action": "heal_5_cri", "loc": [60, 495], "clr": [0, 255, 0], "alt_clr": [0, 222, 0] }
+    }
+  },
+
+  "actions": {
+    "heal_0_std": { "action": "5,4" },
+    "heal_1_std": { "action": "Alt#1,4" },
+    "heal_2_std": { "action": "Alt#2,4" },
+    "heal_3_std": { "action": "Alt#3,4" },
+    "heal_4_std": { "action": "Alt#4,4" },
+    "heal_5_std": { "action": "Alt#5,4" },
+    "heal_0_cri": { "action": "5,3" },
+    "heal_1_cri": { "action": "Alt#1,3" },
+    "heal_2_cri": { "action": "Alt#2,3" },
+    "heal_3_cri": { "action": "Alt#3,3" },
+    "heal_4_cri": { "action": "Alt#4,3" },
+    "heal_5_cri": { "action": "Alt#5,3" },
+    "heal_group_std": { "action": "7" },
+    "heal_group_cri": { "action": "4" },
+    "cure_nox_0": { "action": "5,Ctrl#6" },
+    "cure_nox_1": { "action": "Alt#1,Ctrl#6" },
+    "cure_nox_2": { "action": "Alt#2,Ctrl#6" },
+    "cure_ele_0": { "action": "5,Ctrl#7" },
+    "cure_ele_1": { "action": "Alt#1,Ctrl#7" },
+    "cure_ele_2": { "action": "Alt#2,Ctrl#7" },
+    "cure_tra_0": { "action": "5,Ctrl#8" },
+    "cure_tra_1": { "action": "Alt#1,Ctrl#8" },
+    "cure_tra_2": { "action": "Alt#2,Ctrl#8" }
+  }
+}
