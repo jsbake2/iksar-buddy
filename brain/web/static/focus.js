@@ -124,8 +124,11 @@ function applyState(s) {
     const c = BY_ID[b.dataset.id];
     if (!c) return;
     const missing = c.kind === "role" && state.roleSlot[c.role] === undefined;
-    // override/reset buttons control state, not injection -> always live
-    const dis = (c.kind === "override" || c.kind === "post") ? false : (!state.running || missing);
+    // Manual fire works DISARMED — arming gates only the autonomous loop, never the
+    // owner's hotkeys. A button is dead only if its target role isn't present, or if
+    // chat is unsafe (the inject would be aborted server-side either way).
+    const dis = (c.kind === "override" || c.kind === "post")
+      ? false : (missing || state.chat_safe === false);
     b.classList.toggle("disabled", dis);
   });
 }
@@ -137,7 +140,7 @@ function fire(c, btn) {
     const slot = state.roleSlot[c.role];
     if (slot === undefined) { flash(btn, "no " + c.role); return; }
     url = `/api/act/${c.action}/${slot}`;
-    msg = state.running ? "sent" : "disarmed";
+    msg = state.chat_safe === false ? "chat busy" : "sent";
   } else if (c.kind === "override") {
     url = `/api/override/${c.action}`;          // state control: works disarmed
     msg = "set";
@@ -146,7 +149,7 @@ function fire(c, btn) {
     msg = "ok";
   } else {
     url = `/api/act/${c.action}`;
-    msg = state.running ? "sent" : "disarmed";
+    msg = state.chat_safe === false ? "chat busy" : "sent";
   }
   fetch(url, { method: "POST" }).catch(() => {});
   flash(btn, msg);
