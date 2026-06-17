@@ -344,6 +344,14 @@ class CraftWorker:
                 if st.get("done"):
                     self._agent_set("idle")
                     return True
+                # Reflex ended WITHOUT completing (state back to idle, not done) = the craft
+                # never went active — recipe couldn't start (missing materials / Begin disabled).
+                # Skip rather than false-complete (the chemistry 'rail').
+                if st.get("state") == "idle" and time.time() - t0 > 5.0:
+                    self._agent_set("idle")
+                    self.t.push_log(self.id, "craft never went active (no reactions — missing "
+                                             "materials / didn't start) — skipping recipe")
+                    return False
             if not st.get("alive"):              # agent died mid-craft -> finish host-side
                 self.t.push_log(self.id, "agent went silent mid-craft — taking over host-side")
                 self._agent_set("idle")

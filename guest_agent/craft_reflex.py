@@ -225,6 +225,8 @@ class CraftReflex:
             t0 = time.time()
             last_done = 0.0
             last_filler = 0.0
+            saw_active = False                                   # have we seen a real counter yet?
+            active_grace = float(self.r.get("active_grace", 12.0))
             while not self.should_stop() and time.time() - t0 < max_t:
                 safe = self._chat_safe(sct)
                 mode = self._mode(sct)
@@ -234,6 +236,7 @@ class CraftReflex:
                 # tints GREEN when the counter SUCCEEDS, RED when it FAILS, no change while
                 # still uncountered. So we keep pressing until we see green/red, then stop.
                 if n:
+                    saw_active = True                            # a counter = the craft is really running
                     if n != self._last_counter:                  # new counter -> baseline
                         self._last_counter = n
                         self._cnt_baseline = (mr, mg)
@@ -296,7 +299,15 @@ class CraftReflex:
                     last_filler = now
                 if now - last_done >= done_every:
                     last_done = now
-                    if self._done(sct):
+                    if not saw_active:
+                        # Never saw a counter -> the craft never went active (recipe couldn't
+                        # start: missing materials / Begin disabled). Don't treat the loaded
+                        # 'Create' button as 'done' (the false-complete that railed chemistry).
+                        if now - t0 >= active_grace:
+                            self.log(f"reflex: no counter in {active_grace:.0f}s — craft not "
+                                     f"active (missing mats / didn't start), bailing")
+                            return False
+                    elif self._done(sct):
                         self.done = True
                         self.log(f"reflex: done ({self.reactions} success, {self.fails} fail)")
                         return True
