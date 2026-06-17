@@ -370,6 +370,18 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             await brain.send("command", role=action, key=key,
                              target_slot=slot, manual=True, reason=f"manual {action}")
             return {"ok": True, "action": action, "slot": slot}
+        # food: target the tank (F2), consume (Ctrl+0), wait for the cast, then
+        # target self (F1) and consume again. One-shot manual macro.
+        if action == "food":
+            gtk = brain.cfg.ability_map.get("group_target_keys") or ["F1", "F2", "F3", "F4", "F5", "F6"]
+            tslot = int(brain.cfg.ability_map.get("tank_slot", 1))
+            tank_key = gtk[tslot] if 0 <= tslot < len(gtk) else "F2"
+            self_key = gtk[0] if gtk else "F1"
+            seq = f"{tank_key},Ctrl+0,pause_1,{self_key},Ctrl+0"
+            telemetry.push_event("manual", "food -> tank + self")
+            await brain.send("command", role="food", key=seq,
+                             target_slot=None, manual=True, reason="food: tank then self (Ctrl+0)")
+            return {"ok": True, "action": "food"}
         # spell_attack: target the TANK first so EQ2 implied-targeting lands the
         # offensive cast on the tank's target instead of whatever's selected.
         if action == "spell_attack":
