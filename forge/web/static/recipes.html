@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>iksar_buddy — Recipes</title>
   <link rel="stylesheet" href="themes.css?v=20260614">
-  <link rel="stylesheet" href="recipes.css?v=20260616b">
+  <link rel="stylesheet" href="recipes.css?v=20260616c">
 </head>
 <body>
   <header class="topbar">
@@ -58,6 +58,9 @@
       <div class="toolbar">
         <input id="search" class="search" type="search" placeholder="Filter recipes in this class…  (name, tier, book)">
         <div class="chips" id="catchips"></div>
+        <select id="stationsel" class="ctlsel" title="filter by crafting station (table)">
+          <option value="all">All stations</option>
+        </select>
         <div class="lvlrange">
           <span class="lbl">Lvl</span>
           <input id="lmin" class="lvlbox" type="number" min="1" max="130" placeholder="min">
@@ -99,6 +102,6 @@
   </div>
 
   <div id="toast" class="toast"></div>
-  <script src="recipes.js?v=20260616b"></script>
+  <script src="recipes.js?v=20260616c"></script>
 </body>
 </html>

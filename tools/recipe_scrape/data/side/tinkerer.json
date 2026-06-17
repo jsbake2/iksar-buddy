@@ -4,37 +4,43 @@
       "recipe": "Void Etched Coating",
       "recipe_id": "379747619",
       "book": "Acrylia Tinkers Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Void Etched Coating [2H]",
       "recipe_id": "1371269446",
       "book": "Acrylia Tinkers Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Void Etched Injector",
       "recipe_id": "2858407512",
       "book": "Acrylia Tinkers Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Void Etched Injector [2H]",
       "recipe_id": "2279638472",
       "book": "Acrylia Tinkers Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Void Etched Insight",
       "recipe_id": "430403898",
       "book": "Acrylia Tinkers Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Void Etched Insight [2H]",
       "recipe_id": "2660485685",
       "book": "Acrylia Tinkers Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Acrylia Tinkers Primer Volume II": [
@@ -42,37 +48,43 @@
       "recipe": "Extended Void Etched Coating",
       "recipe_id": "4172150262",
       "book": "Acrylia Tinkers Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Void Etched Coating [2H]",
       "recipe_id": "3105624481",
       "book": "Acrylia Tinkers Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Void Etched Injector",
       "recipe_id": "1544093579",
       "book": "Acrylia Tinkers Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Void Etched Injector [2H]",
       "recipe_id": "3110491627",
       "book": "Acrylia Tinkers Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Void Etched Insight",
       "recipe_id": "4155046383",
       "book": "Acrylia Tinkers Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Void Etched Insight [2H]",
       "recipe_id": "1983132370",
       "book": "Acrylia Tinkers Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Acrylia Tinkers Primer Volume III": [
@@ -80,55 +92,64 @@
       "recipe": "Acrylia Forcelink",
       "recipe_id": "3591793412",
       "book": "Acrylia Tinkers Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Acrylia Painlink",
       "recipe_id": "4283070202",
       "book": "Acrylia Tinkers Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Acrylia Powerlink",
       "recipe_id": "1601034199",
       "book": "Acrylia Tinkers Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Void Etched Coating",
       "recipe_id": "2479570098",
       "book": "Acrylia Tinkers Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Void Etched Coating [2H]",
       "recipe_id": "1885772988",
       "book": "Acrylia Tinkers Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Void Etched Injector",
       "recipe_id": "768744651",
       "book": "Acrylia Tinkers Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Void Etched Injector [2H]",
       "recipe_id": "3668526015",
       "book": "Acrylia Tinkers Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Void Etched Insight",
       "recipe_id": "2630758571",
       "book": "Acrylia Tinkers Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Void Etched Insight [2H]",
       "recipe_id": "3209609167",
       "book": "Acrylia Tinkers Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Advanced Coldwork Tinkerer's Volume I": [
@@ -136,13 +157,15 @@
       "recipe": "Extended Coldforged Coating [2H] of the Coldwork",
       "recipe_id": "3101689794",
       "book": "Advanced Coldwork Tinkerer's Volume I",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Coldforged Coating of the Coldwork",
       "recipe_id": "1822376622",
       "book": "Advanced Coldwork Tinkerer's Volume I",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Coldwork Tinkerer's Volume II": [
@@ -150,13 +173,15 @@
       "recipe": "Extended Coldforged Insight [2H] of the Coldwork",
       "recipe_id": "1702369036",
       "book": "Advanced Coldwork Tinkerer's Volume II",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Coldforged Insight of the Coldwork",
       "recipe_id": "4152783305",
       "book": "Advanced Coldwork Tinkerer's Volume II",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Coldwork Tinkerer's Volume III": [
@@ -164,19 +189,22 @@
       "recipe": "Mastercrafted Coldwork Forcelink",
       "recipe_id": "3651855224",
       "book": "Advanced Coldwork Tinkerer's Volume III",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mastercrafted Coldwork Painlink",
       "recipe_id": "272682864",
       "book": "Advanced Coldwork Tinkerer's Volume III",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mastercrafted Coldwork Powerlink",
       "recipe_id": "3041826948",
       "book": "Advanced Coldwork Tinkerer's Volume III",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Hizite Tinkerer's Volume I": [
@@ -184,67 +212,78 @@
       "recipe": "Ensorcelled Hizite Injector",
       "recipe_id": "3565988421",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Injector [2H]",
       "recipe_id": "256770049",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Magnification",
       "recipe_id": "3994577914",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Magnification [2H]",
       "recipe_id": "3838773316",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Injector",
       "recipe_id": "2218867702",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Injector [2H]",
       "recipe_id": "1171866958",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Hizite Forcelink",
       "recipe_id": "1151638376",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Hizite Painlink",
       "recipe_id": "176579440",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Hizite Powerlink",
       "recipe_id": "2706566869",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Ensorcelled Hizite Injector",
       "recipe_id": "4085513101",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Ensorcelled Hizite Injector [2H]",
       "recipe_id": "2750264922",
       "book": "Advanced Hizite Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Advanced Hizite Tinkerer's Volume II": [
@@ -252,67 +291,78 @@
       "recipe": "Ensorcelled Hizite Alacrity",
       "recipe_id": "663933963",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Coating",
       "recipe_id": "1290225511",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Coating [2H]",
       "recipe_id": "87533414",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Stratagem",
       "recipe_id": "4132932086",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Stratagem [2H]",
       "recipe_id": "1744714839",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Alacrity",
       "recipe_id": "2002732472",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Coating",
       "recipe_id": "472569556",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Stratagem",
       "recipe_id": "2795116613",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Stratagem [2H]",
       "recipe_id": "761887000",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Ensorcelled Hizite Stratagem",
       "recipe_id": "3512260670",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Ensorcelled Hizite Stratagem [2H]",
       "recipe_id": "3411905036",
       "book": "Advanced Hizite Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Advanced Hizite Tinkerer's Volume III": [
@@ -320,115 +370,134 @@
       "recipe": "Ensorcelled Hizite Insight",
       "recipe_id": "401329612",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Insight [2H]",
       "recipe_id": "415246678",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Intensity",
       "recipe_id": "1104133075",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Intensity [2H]",
       "recipe_id": "1255995372",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Readiness",
       "recipe_id": "1600262308",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Weaponry",
       "recipe_id": "3241506687",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Ensorcelled Hizite Weaponry [2H]",
       "recipe_id": "2694434856",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Coating [2H]",
       "recipe_id": "1335943721",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Insight",
       "recipe_id": "1193696383",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Insight [2H]",
       "recipe_id": "1381461017",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Intensity",
       "recipe_id": "285354592",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Intensity [2H]",
       "recipe_id": "4960931",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Readiness",
       "recipe_id": "263160087",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Weaponry",
       "recipe_id": "2449008332",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Ensorcelled Hizite Weaponry [2H]",
       "recipe_id": "3926824295",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Ensorcelled Hizite Coating",
       "recipe_id": "1810372271",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Ensorcelled Hizite Coating [2H]",
       "recipe_id": "2845053245",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Ensorcelled Hizite Insight",
       "recipe_id": "820288516",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Ensorcelled Hizite Insight [2H]",
       "recipe_id": "3026427661",
       "book": "Advanced Hizite Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Advanced Vetrovian Tinkerer's Volume I": [
@@ -436,13 +505,15 @@
       "recipe": "Extended Dreadfell Stratagem",
       "recipe_id": "1803561800",
       "book": "Advanced Vetrovian Tinkerer's Volume I",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Dreadfell Stratagem [2H]",
       "recipe_id": "750286540",
       "book": "Advanced Vetrovian Tinkerer's Volume I",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Vetrovian Tinkerer's Volume II": [
@@ -450,13 +521,15 @@
       "recipe": "Extended Dreadfell Coating",
       "recipe_id": "221118570",
       "book": "Advanced Vetrovian Tinkerer's Volume II",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Dreadfell Coating [2H]",
       "recipe_id": "1349490594",
       "book": "Advanced Vetrovian Tinkerer's Volume II",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Vetrovian Tinkerer's Volume III": [
@@ -464,13 +537,15 @@
       "recipe": "Extended Dreadfell Insight",
       "recipe_id": "2780707466",
       "book": "Advanced Vetrovian Tinkerer's Volume III",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Dreadfell Insight [2H]",
       "recipe_id": "741018263",
       "book": "Advanced Vetrovian Tinkerer's Volume III",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Vetrovian Tinkerer's Volume IV": [
@@ -478,13 +553,15 @@
       "recipe": "Extended Dreadfell Injector",
       "recipe_id": "4264865323",
       "book": "Advanced Vetrovian Tinkerer's Volume IV",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Dreadfell Injector [2H]",
       "recipe_id": "3973126331",
       "book": "Advanced Vetrovian Tinkerer's Volume IV",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Vetrovian Tinkerer's Volume V": [
@@ -492,13 +569,15 @@
       "recipe": "Personal Home Depot",
       "recipe_id": "3531054213",
       "book": "Advanced Vetrovian Tinkerer's Volume V",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Personal Scroll Depot",
       "recipe_id": "2904732809",
       "book": "Advanced Vetrovian Tinkerer's Volume V",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Zimaran Tinkerer's Volume I": [
@@ -506,13 +585,15 @@
       "recipe": "Extended Zimaran Coating [2H] of the Felfeather's",
       "recipe_id": "460730254",
       "book": "Advanced Zimaran Tinkerer's Volume I",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Zimaran Coating of the Felfeather's",
       "recipe_id": "3450259008",
       "book": "Advanced Zimaran Tinkerer's Volume I",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Zimaran Tinkerer's Volume II": [
@@ -520,13 +601,15 @@
       "recipe": "Extended Zimaran Insight [2H] of the Felfeather's",
       "recipe_id": "447843487",
       "book": "Advanced Zimaran Tinkerer's Volume II",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Zimaran Insight of the Felfeather's",
       "recipe_id": "2962589490",
       "book": "Advanced Zimaran Tinkerer's Volume II",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Advanced Zimaran Tinkerer's Volume III": [
@@ -534,19 +617,22 @@
       "recipe": "Mastercrafted Zimaran Forcelink",
       "recipe_id": "372569264",
       "book": "Advanced Zimaran Tinkerer's Volume III",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mastercrafted Zimaran Painlink",
       "recipe_id": "1590281433",
       "book": "Advanced Zimaran Tinkerer's Volume III",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mastercrafted Zimaran Powerlink",
       "recipe_id": "901681051",
       "book": "Advanced Zimaran Tinkerer's Volume III",
-      "category": "TS Advanced"
+      "category": "TS Advanced",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.001": [
@@ -554,19 +640,22 @@
       "recipe": "Automated Finishing Saw",
       "recipe_id": "558488619",
       "book": "Apprentice Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Automated Rounding Hammer",
       "recipe_id": "2659959049",
       "book": "Apprentice Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mis-Calibrated Gnomish Crosstrainers",
       "recipe_id": "1590708058",
       "book": "Apprentice Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.002": [
@@ -574,19 +663,22 @@
       "recipe": "Automated Finishing Hammer",
       "recipe_id": "2796439589",
       "book": "Apprentice Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Gnomish Cyclone Generator of Ultimate Evil",
       "recipe_id": "4138751653",
       "book": "Apprentice Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mechanical Threaded Needle",
       "recipe_id": "2952982793",
       "book": "Apprentice Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.003": [
@@ -594,13 +686,15 @@
       "recipe": "Reinforced Gnomeproof Beaker",
       "recipe_id": "1172336437",
       "book": "Apprentice Blueprints 0.003",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Troll Snot Flinger",
       "recipe_id": "136430154",
       "book": "Apprentice Blueprints 0.003",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.004": [
@@ -608,13 +702,15 @@
       "recipe": "Gnomish Ring Press",
       "recipe_id": "2831748284",
       "book": "Apprentice Blueprints 0.004",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Gnomish Self-Inking Quill",
       "recipe_id": "4258587563",
       "book": "Apprentice Blueprints 0.004",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.005": [
@@ -622,13 +718,15 @@
       "recipe": "Feng-shui Environmental Reader",
       "recipe_id": "1475722505",
       "book": "Apprentice Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Izzitedibilforpepl Probe",
       "recipe_id": "3702206171",
       "book": "Apprentice Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.006": [
@@ -636,13 +734,15 @@
       "recipe": "Full Spectrum Goggles",
       "recipe_id": "2432148545",
       "book": "Apprentice Blueprints 0.006",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Spring-Loaded Gnomish Stilts",
       "recipe_id": "3960465457",
       "book": "Apprentice Blueprints 0.006",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.007": [
@@ -650,13 +750,15 @@
       "recipe": "Goggles of the Bats",
       "recipe_id": "4094693680",
       "book": "Apprentice Blueprints 0.007",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Miscalibrated Lifestone",
       "recipe_id": "3179207812",
       "book": "Apprentice Blueprints 0.007",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.008": [
@@ -664,13 +766,15 @@
       "recipe": "Iron Snake Basket",
       "recipe_id": "4105242138",
       "book": "Apprentice Blueprints 0.008",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Spider on a String",
       "recipe_id": "2095529417",
       "book": "Apprentice Blueprints 0.008",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.009": [
@@ -678,13 +782,15 @@
       "recipe": "Gnomish Diving Goggles",
       "recipe_id": "1333705526",
       "book": "Apprentice Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mis-calibrated Manastone",
       "recipe_id": "3516849923",
       "book": "Apprentice Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.010": [
@@ -692,19 +798,22 @@
       "recipe": "Gnomish Net Launcher",
       "recipe_id": "2986560088",
       "book": "Apprentice Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Loosely Wired Heart Stopper",
       "recipe_id": "2083361104",
       "book": "Apprentice Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Refined Troll Snot Flinger",
       "recipe_id": "2057850305",
       "book": "Apprentice Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Apprentice Blueprints 0.011": [
@@ -712,19 +821,22 @@
       "recipe": "Gnomish Anti-Camo Goggles",
       "recipe_id": "1482085028",
       "book": "Apprentice Blueprints 0.011",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mist Generator",
       "recipe_id": "4073880647",
       "book": "Apprentice Blueprints 0.011",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Noxious Environmental Suit",
       "recipe_id": "928172219",
       "book": "Apprentice Blueprints 0.011",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Bloodbound Forcelink": [
@@ -732,7 +844,8 @@
       "recipe": "Bloodbound Forcelink",
       "recipe_id": "4089611562",
       "book": "Bloodbound Forcelink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Bloodbound Painlink": [
@@ -740,7 +853,8 @@
       "recipe": "Bloodbound Painlink",
       "recipe_id": "1266784178",
       "book": "Bloodbound Painlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Bloodbound Powerlink": [
@@ -748,7 +862,8 @@
       "recipe": "Bloodbound Powerlink",
       "recipe_id": "2568112471",
       "book": "Bloodbound Powerlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Bloodbound Tinkerer's Volume I": [
@@ -756,13 +871,15 @@
       "recipe": "Extended Bloodbound Stratagem",
       "recipe_id": "2877394473",
       "book": "Bloodbound Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Bloodbound Stratagem [2H]",
       "recipe_id": "3252334369",
       "book": "Bloodbound Tinkerer's Volume I",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Bloodbound Tinkerer's Volume II": [
@@ -770,13 +887,15 @@
       "recipe": "Extended Bloodbound Coating",
       "recipe_id": "1622484385",
       "book": "Bloodbound Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Bloodbound Coating [2H]",
       "recipe_id": "1119581253",
       "book": "Bloodbound Tinkerer's Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Bloodbound Tinkerer's Volume III": [
@@ -784,13 +903,15 @@
       "recipe": "Extended Bloodbound Insight",
       "recipe_id": "1731544639",
       "book": "Bloodbound Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Bloodbound Insight [2H]",
       "recipe_id": "375282428",
       "book": "Bloodbound Tinkerer's Volume III",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Bloodbound Tinkerer's Volume IV": [
@@ -798,13 +919,15 @@
       "recipe": "Extended Bloodbound Injector",
       "recipe_id": "3225947411",
       "book": "Bloodbound Tinkerer's Volume IV",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Bloodbound Injector [2H]",
       "recipe_id": "439385744",
       "book": "Bloodbound Tinkerer's Volume IV",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Call of the Tinkerer": [
@@ -812,7 +935,8 @@
       "recipe": "Call of the Tinkerer",
       "recipe_id": "3542808620",
       "book": "Blueprint: Call of the Tinkerer",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Collapsible Fishing Pole": [
@@ -820,7 +944,8 @@
       "recipe": "Collapsible Fishing Pole",
       "recipe_id": "3113980971",
       "book": "Blueprint: Collapsible Fishing Pole",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Gnomish Luclin Boots": [
@@ -828,7 +953,8 @@
       "recipe": "Gnomish Luclin Boots",
       "recipe_id": "4284580169",
       "book": "Blueprint: Gnomish Luclin Boots",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Hotwired Gnomish Hoverpad": [
@@ -836,7 +962,8 @@
       "recipe": "Hotwired Gnomish Hoverpad",
       "recipe_id": "3354875709",
       "book": "Blueprint: Hotwired Gnomish Hoverpad",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Hovering Device": [
@@ -844,7 +971,8 @@
       "recipe": "Gnomish Hovering Device",
       "recipe_id": "3655099352",
       "book": "Blueprint: Hovering Device",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Magnetized Generator": [
@@ -852,7 +980,8 @@
       "recipe": "Magnetized Generator",
       "recipe_id": "703815101",
       "book": "Blueprint: Magnetized Generator",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Overclocked Hovering Device": [
@@ -860,7 +989,8 @@
       "recipe": "Overclocked Gnomish Hovering Device",
       "recipe_id": "3611021698",
       "book": "Blueprint: Overclocked Hovering Device",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Personal Depots": [
@@ -868,49 +998,57 @@
       "recipe": "Personal Adornment Depot",
       "recipe_id": "3080292301",
       "book": "Blueprint: Personal Depots",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Personal Ammo Depot",
       "recipe_id": "564714653",
       "book": "Blueprint: Personal Depots",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Personal Collectible Depot",
       "recipe_id": "598747028",
       "book": "Blueprint: Personal Depots",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Personal Food & Drink Depot",
       "recipe_id": "3946249363",
       "book": "Blueprint: Personal Depots",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Personal Fuel Depot",
       "recipe_id": "912336549",
       "book": "Blueprint: Personal Depots",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Personal Harvest Depot (large)",
       "recipe_id": "3772427804",
       "book": "Blueprint: Personal Depots",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Personal Lore & Legend Depot",
       "recipe_id": "1548038907",
       "book": "Blueprint: Personal Depots",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Personal Poison, Potion, & Totem Depot",
       "recipe_id": "2688184082",
       "book": "Blueprint: Personal Depots",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Reconstructor": [
@@ -918,7 +1056,8 @@
       "recipe": "Mechanized Platinum Repository of Reconstruction",
       "recipe_id": "900483098",
       "book": "Blueprint: Reconstructor",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Safety Recaller": [
@@ -926,7 +1065,8 @@
       "recipe": "Gnomish Safety Recaller",
       "recipe_id": "3883255086",
       "book": "Blueprint: Safety Recaller",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Wormhole Generator (Eidolon Jungle)": [
@@ -934,7 +1074,8 @@
       "recipe": "Wormhole Generator: Eidolon Jungle",
       "recipe_id": "2750629252",
       "book": "Blueprint: Wormhole Generator (Eidolon Jungle)",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Wormhole Generator (Moors of Ykesha)": [
@@ -942,7 +1083,8 @@
       "recipe": "Wormhole Generator: Moors of Ykesha",
       "recipe_id": "2808723895",
       "book": "Blueprint: Wormhole Generator (Moors of Ykesha)",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Wormhole Generator (Obol Plains)": [
@@ -950,7 +1092,8 @@
       "recipe": "Wormhole Generator: Obol Plains",
       "recipe_id": "2892658026",
       "book": "Blueprint: Wormhole Generator (Obol Plains)",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Wormhole Generator (Odus)": [
@@ -958,7 +1101,8 @@
       "recipe": "Wormhole Generator: Odus",
       "recipe_id": "2240897008",
       "book": "Blueprint: Wormhole Generator (Odus)",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Wormhole Generator (Withered Lands)": [
@@ -966,7 +1110,8 @@
       "recipe": "Wormhole Generator: Withered Lands",
       "recipe_id": "81112152",
       "book": "Blueprint: Wormhole Generator (Withered Lands)",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Wormhole Generator: Antonica": [
@@ -974,7 +1119,8 @@
       "recipe": "Wormhole Generator: Antonica",
       "recipe_id": "2816403088",
       "book": "Blueprint: Wormhole Generator: Antonica",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Blueprint: Wormhole Generator: Commonlands": [
@@ -982,7 +1128,8 @@
       "recipe": "Wormhole Generator: Commonlands",
       "recipe_id": "1502726285",
       "book": "Blueprint: Wormhole Generator: Commonlands",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Coldwork Tinkerer's Primer Volume I": [
@@ -990,19 +1137,22 @@
       "recipe": "Extended Coldforged Coating [2H] of the Mountaineer",
       "recipe_id": "3414457783",
       "book": "Coldwork Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Coldforged Coating of the Mountaineer",
       "recipe_id": "2221966346",
       "book": "Coldwork Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Handcrafted Coldwork Energy Inverter",
       "recipe_id": "1204229126",
       "book": "Coldwork Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Coldwork Tinkerer's Primer Volume II": [
@@ -1010,13 +1160,15 @@
       "recipe": "Extended Coldforged Insight [2H] of the Mountaineer",
       "recipe_id": "1164244677",
       "book": "Coldwork Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Coldforged Insight of the Mountaineer",
       "recipe_id": "651557374",
       "book": "Coldwork Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Coldwork Tinkerer's Primer Volume III": [
@@ -1024,19 +1176,22 @@
       "recipe": "Handcrafted Coldwork Forcelink",
       "recipe_id": "182178348",
       "book": "Coldwork Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Handcrafted Coldwork Painlink",
       "recipe_id": "1484264443",
       "book": "Coldwork Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Handcrafted Coldwork Powerlink",
       "recipe_id": "977785759",
       "book": "Coldwork Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.001": [
@@ -1044,13 +1199,15 @@
       "recipe": "Elemental Environmental Suit",
       "recipe_id": "2447917830",
       "book": "Dabbler's Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Frayed Heart Thingymabob",
       "recipe_id": "2974280585",
       "book": "Dabbler's Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.002": [
@@ -1058,13 +1215,15 @@
       "recipe": "Arcane Environmental Suit",
       "recipe_id": "3278095226",
       "book": "Dabbler's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Gnomish Parachute Pack",
       "recipe_id": "3682952181",
       "book": "Dabbler's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.003": [
@@ -1072,13 +1231,15 @@
       "recipe": "Clockwork Manservant",
       "recipe_id": "3823656511",
       "book": "Dabbler's Blueprints 0.003",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Windup Golden Monkey",
       "recipe_id": "1831213735",
       "book": "Dabbler's Blueprints 0.003",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.004": [
@@ -1086,13 +1247,15 @@
       "recipe": "Miscalibrated Automated Shears",
       "recipe_id": "1204775128",
       "book": "Dabbler's Blueprints 0.004",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Rose Colored Goggles",
       "recipe_id": "3734823762",
       "book": "Dabbler's Blueprints 0.004",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.005": [
@@ -1100,25 +1263,29 @@
       "recipe": "Automated Gnomish Plane",
       "recipe_id": "3246079071",
       "book": "Dabbler's Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Gnomish Portable Smokescreen",
       "recipe_id": "1604865001",
       "book": "Dabbler's Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Miscalibrated Automated Pickaxe",
       "recipe_id": "1380587591",
       "book": "Dabbler's Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Miscalibrated Automated Watersafe Net",
       "recipe_id": "385201375",
       "book": "Dabbler's Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.006": [
@@ -1126,19 +1293,22 @@
       "recipe": "Gnomish Level",
       "recipe_id": "3576818019",
       "book": "Dabbler's Blueprints 0.006",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Gnomish Thermometer",
       "recipe_id": "2910786933",
       "book": "Dabbler's Blueprints 0.006",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Heart Stopper",
       "recipe_id": "746432236",
       "book": "Dabbler's Blueprints 0.006",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.007": [
@@ -1146,13 +1316,15 @@
       "recipe": "Gnomerific Magnifiying Device",
       "recipe_id": "2272172563",
       "book": "Dabbler's Blueprints 0.007",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Gnomish Quick Erasealler",
       "recipe_id": "2481550628",
       "book": "Dabbler's Blueprints 0.007",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.008": [
@@ -1160,19 +1332,22 @@
       "recipe": "Automated External Defibrillator",
       "recipe_id": "470761895",
       "book": "Dabbler's Blueprints 0.008",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Automated Honing Stone",
       "recipe_id": "39921221",
       "book": "Dabbler's Blueprints 0.008",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Gnomish Gas Mask",
       "recipe_id": "2840682613",
       "book": "Dabbler's Blueprints 0.008",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.009": [
@@ -1180,19 +1355,22 @@
       "recipe": "Gnomeproof Thumb Cap",
       "recipe_id": "2104243351",
       "book": "Dabbler's Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Gnomish Toughened Ring Press",
       "recipe_id": "751502501",
       "book": "Dabbler's Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Chemistry Set",
       "recipe_id": "1809683507",
       "book": "Dabbler's Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dabbler's Blueprints 0.010": [
@@ -1200,19 +1378,22 @@
       "recipe": "Jar of Spiders",
       "recipe_id": "1290598935",
       "book": "Dabbler's Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Desk",
       "recipe_id": "2561430813",
       "book": "Dabbler's Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Forge",
       "recipe_id": "3863790436",
       "book": "Dabbler's Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dreadfell Forcelink": [
@@ -1220,7 +1401,8 @@
       "recipe": "Dreadfell Forcelink",
       "recipe_id": "2335870112",
       "book": "Dreadfell Forcelink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dreadfell Painlink": [
@@ -1228,7 +1410,8 @@
       "recipe": "Dreadfell Painlink",
       "recipe_id": "1141860569",
       "book": "Dreadfell Painlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Dreadfell Powerlink": [
@@ -1236,7 +1419,8 @@
       "recipe": "Dreadfell Powerlink",
       "recipe_id": "564328906",
       "book": "Dreadfell Powerlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Emergency Protocol Ablatement Blueprint": [
@@ -1244,7 +1428,8 @@
       "recipe": "Detrimental Ablatement and Mutilation Negation",
       "recipe_id": "58684163",
       "book": "Emergency Protocol Ablatement Blueprint",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Emergency Protocol Assault Crawler Blueprint": [
@@ -1252,7 +1437,8 @@
       "recipe": "Tinkered Assault Crawler",
       "recipe_id": "674492864",
       "book": "Emergency Protocol Assault Crawler Blueprint",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Emergency Protocol Blueprints": [
@@ -1260,7 +1446,8 @@
       "recipe": "Master Control Core",
       "recipe_id": "1116564087",
       "book": "Emergency Protocol Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.001": [
@@ -1268,19 +1455,22 @@
       "recipe": "Gnomish Divining Rod",
       "recipe_id": "1712015339",
       "book": "Experimenter's Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Cooking Set",
       "recipe_id": "1853736130",
       "book": "Experimenter's Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Sewing Table",
       "recipe_id": "3798632766",
       "book": "Experimenter's Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.002": [
@@ -1288,25 +1478,29 @@
       "recipe": "Calibrated Automated Pickaxe",
       "recipe_id": "2036211796",
       "book": "Experimenter's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Calibrated Automated Watersafe Net",
       "recipe_id": "3917831780",
       "book": "Experimenter's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Woodworking Kit",
       "recipe_id": "2297653261",
       "book": "Experimenter's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Work Bench",
       "recipe_id": "257520965",
       "book": "Experimenter's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.003": [
@@ -1314,13 +1508,15 @@
       "recipe": "Calibrated Automated Shears",
       "recipe_id": "3886934370",
       "book": "Experimenter's Blueprints 0.003",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Rebreather",
       "recipe_id": "1249898754",
       "book": "Experimenter's Blueprints 0.003",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.004": [
@@ -1328,7 +1524,8 @@
       "recipe": "Gnomish Gent's Mechanicized Facade",
       "recipe_id": "3716571876",
       "book": "Experimenter's Blueprints 0.004",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.005": [
@@ -1336,13 +1533,15 @@
       "recipe": "Gigglegibber's Secret of Death",
       "recipe_id": "2308450661",
       "book": "Experimenter's Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Overclocked Gnomish Crosstrainers",
       "recipe_id": "1235755170",
       "book": "Experimenter's Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.006": [
@@ -1350,13 +1549,15 @@
       "recipe": "Gnarmy!",
       "recipe_id": "1587062088",
       "book": "Experimenter's Blueprints 0.006",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Go Fasta Pocket Cyclone",
       "recipe_id": "4190242506",
       "book": "Experimenter's Blueprints 0.006",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.007": [
@@ -1364,13 +1565,15 @@
       "recipe": "\"Reliable\" Gnomish Pacemaker",
       "recipe_id": "2493173358",
       "book": "Experimenter's Blueprints 0.007",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mental Projectormifcator",
       "recipe_id": "1827839189",
       "book": "Experimenter's Blueprints 0.007",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.008": [
@@ -1378,13 +1581,15 @@
       "recipe": "Gnomish Flotation Device",
       "recipe_id": "2003157189",
       "book": "Experimenter's Blueprints 0.008",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Qeynos' Classified Information of Bulkward",
       "recipe_id": "2739084338",
       "book": "Experimenter's Blueprints 0.008",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.009": [
@@ -1392,13 +1597,15 @@
       "recipe": "Guide: Roots.  The Fabric of Life.",
       "recipe_id": "2185331617",
       "book": "Experimenter's Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Overclocked Lifestone",
       "recipe_id": "2516473733",
       "book": "Experimenter's Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Experimenter's Blueprints 0.010": [
@@ -1406,19 +1613,22 @@
       "recipe": "Freeport Classified Information of Armament",
       "recipe_id": "2920867008",
       "book": "Experimenter's Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Never-ending Bag of \"The Good Stuff\"",
       "recipe_id": "423516029",
       "book": "Experimenter's Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Overclocked Manastone",
       "recipe_id": "4179514370",
       "book": "Experimenter's Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 101": [
@@ -1426,13 +1636,15 @@
       "recipe": "Tinkered Injector",
       "recipe_id": "1182853566",
       "book": "Innovation Tinkering Volume 101",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Injector [2H]",
       "recipe_id": "1681771599",
       "book": "Innovation Tinkering Volume 101",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 102": [
@@ -1440,13 +1652,15 @@
       "recipe": "Extended Tinkered Injector",
       "recipe_id": "324108280",
       "book": "Innovation Tinkering Volume 102",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Tinkered Injector [2H]",
       "recipe_id": "3336958646",
       "book": "Innovation Tinkering Volume 102",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 103": [
@@ -1454,13 +1668,15 @@
       "recipe": "Maintained Tinkered Injector",
       "recipe_id": "1125462643",
       "book": "Innovation Tinkering Volume 103",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Tinkered Injector [2H]",
       "recipe_id": "535016006",
       "book": "Innovation Tinkering Volume 103",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 104": [
@@ -1468,13 +1684,15 @@
       "recipe": "Tinkered Coating",
       "recipe_id": "659307207",
       "book": "Innovation Tinkering Volume 104",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Coating [2H]",
       "recipe_id": "131762102",
       "book": "Innovation Tinkering Volume 104",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 105": [
@@ -1482,13 +1700,15 @@
       "recipe": "Extended Tinkered Coating",
       "recipe_id": "3422387565",
       "book": "Innovation Tinkering Volume 105",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Tinkered Coating [2H]",
       "recipe_id": "3496674612",
       "book": "Innovation Tinkering Volume 105",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 106": [
@@ -1496,13 +1716,15 @@
       "recipe": "Maintained Tinkered Coating",
       "recipe_id": "3216211109",
       "book": "Innovation Tinkering Volume 106",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Tinkered Coating [2H]",
       "recipe_id": "3349716846",
       "book": "Innovation Tinkering Volume 106",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 107": [
@@ -1510,13 +1732,15 @@
       "recipe": "Tinkered Insight",
       "recipe_id": "1398256701",
       "book": "Innovation Tinkering Volume 107",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Insight [2H]",
       "recipe_id": "2431389165",
       "book": "Innovation Tinkering Volume 107",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 108": [
@@ -1524,13 +1748,15 @@
       "recipe": "Extended Tinkered Insight",
       "recipe_id": "829227101",
       "book": "Innovation Tinkering Volume 108",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Tinkered Insight [2H]",
       "recipe_id": "2661184673",
       "book": "Innovation Tinkering Volume 108",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 109": [
@@ -1538,13 +1764,15 @@
       "recipe": "Maintained Tinkered Insight",
       "recipe_id": "3946272381",
       "book": "Innovation Tinkering Volume 109",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Tinkered Insight [2H]",
       "recipe_id": "3247206563",
       "book": "Innovation Tinkering Volume 109",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Innovation Tinkering Volume 110": [
@@ -1552,19 +1780,22 @@
       "recipe": "Mechanized Forcelink",
       "recipe_id": "2151263048",
       "book": "Innovation Tinkering Volume 110",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mechanized Painlink",
       "recipe_id": "1666062799",
       "book": "Innovation Tinkering Volume 110",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Mechanized Powerlink",
       "recipe_id": "155326363",
       "book": "Innovation Tinkering Volume 110",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master Tinkerer Blueprints 1.0": [
@@ -1572,37 +1803,43 @@
       "recipe": "Powered Carbonite Cloak",
       "recipe_id": "728893528",
       "book": "Master Tinkerer Blueprints 1.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Powered Ruthenium Cloak",
       "recipe_id": "4274904649",
       "book": "Master Tinkerer Blueprints 1.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Illuminated Polearm",
       "recipe_id": "2258762659",
       "book": "Master Tinkerer Blueprints 1.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Ratchet Wrench",
       "recipe_id": "4273943782",
       "book": "Master Tinkerer Blueprints 1.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Sonic Drill",
       "recipe_id": "2621170183",
       "book": "Master Tinkerer Blueprints 1.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkerer's Thaumic Powered Backpack",
       "recipe_id": "363305921",
       "book": "Master Tinkerer Blueprints 1.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master Tinkerer Blueprints 2.0": [
@@ -1610,37 +1847,43 @@
       "recipe": "Tinkered Buckler of the Great Gear",
       "recipe_id": "3397205039",
       "book": "Master Tinkerer Blueprints 2.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Buzzblade",
       "recipe_id": "2966076817",
       "book": "Master Tinkerer Blueprints 2.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Mechanized Blade",
       "recipe_id": "3126033676",
       "book": "Master Tinkerer Blueprints 2.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Mechanized Bow",
       "recipe_id": "1198895329",
       "book": "Master Tinkerer Blueprints 2.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Powered Wrench",
       "recipe_id": "908837954",
       "book": "Master Tinkerer Blueprints 2.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Shield of the Great Gear",
       "recipe_id": "349285526",
       "book": "Master Tinkerer Blueprints 2.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master Tinkerer Blueprints 3.0": [
@@ -1648,19 +1891,22 @@
       "recipe": "Tan Galvanic Effluxator Attire",
       "recipe_id": "2577222692",
       "book": "Master Tinkerer Blueprints 3.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tan Galvanic Luminphial Attire",
       "recipe_id": "817834455",
       "book": "Master Tinkerer Blueprints 3.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tan Galvanic Scorch-Stack Attire",
       "recipe_id": "3626157147",
       "book": "Master Tinkerer Blueprints 3.0",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.001": [
@@ -1668,13 +1914,15 @@
       "recipe": "Enigma of Tunare",
       "recipe_id": "3618774061",
       "book": "Master's Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Eye of Agamatoo",
       "recipe_id": "1571562240",
       "book": "Master's Blueprints 0.001",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.002": [
@@ -1682,25 +1930,29 @@
       "recipe": "Overclocked Automated Pickaxe",
       "recipe_id": "1177119406",
       "book": "Master's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Overclocked Automated Watersafe Net",
       "recipe_id": "2517638779",
       "book": "Master's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Screewoggins' Bag of Spices",
       "recipe_id": "1245450069",
       "book": "Master's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Woodelf Eye for the Troll Guy",
       "recipe_id": "3004148608",
       "book": "Master's Blueprints 0.002",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.003": [
@@ -1708,19 +1960,22 @@
       "recipe": "Behavioral Modificatinator Stereopticon",
       "recipe_id": "2165852803",
       "book": "Master's Blueprints 0.003",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Measure Twicer",
       "recipe_id": "2910234860",
       "book": "Master's Blueprints 0.003",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Overclocked Automated Shears",
       "recipe_id": "635555524",
       "book": "Master's Blueprints 0.003",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.004": [
@@ -1728,13 +1983,15 @@
       "recipe": "Gnomish Shades",
       "recipe_id": "4206173812",
       "book": "Master's Blueprints 0.004",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Turkey Launcher",
       "recipe_id": "1734593328",
       "book": "Master's Blueprints 0.004",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.005": [
@@ -1742,13 +1999,15 @@
       "recipe": "Exothermic Lifestone",
       "recipe_id": "3161381292",
       "book": "Master's Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Exothermic Manastone",
       "recipe_id": "517875331",
       "book": "Master's Blueprints 0.005",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.006": [
@@ -1756,13 +2015,15 @@
       "recipe": "Gnomish Matron's Mechanicized Facade",
       "recipe_id": "2033498597",
       "book": "Master's Blueprints 0.006",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Firework",
       "recipe_id": "2396633184",
       "book": "Master's Blueprints 0.006",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.007": [
@@ -1770,13 +2031,15 @@
       "recipe": "Sneakoscopic Goggles",
       "recipe_id": "2439336638",
       "book": "Master's Blueprints 0.007",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Thaumatoscopic Goggles",
       "recipe_id": "3894079901",
       "book": "Master's Blueprints 0.007",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.008": [
@@ -1784,13 +2047,15 @@
       "recipe": "Clockwork Cow Catapult",
       "recipe_id": "2996613076",
       "book": "Master's Blueprints 0.008",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Heat Guided Message in a Bottle",
       "recipe_id": "1797379640",
       "book": "Master's Blueprints 0.008",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.009": [
@@ -1798,19 +2063,22 @@
       "recipe": "Outfitter's Cranial Capacitor",
       "recipe_id": "1935966051",
       "book": "Master's Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Sparklomatic Firework",
       "recipe_id": "1140162795",
       "book": "Master's Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Typhoonamatic Generator",
       "recipe_id": "1598019058",
       "book": "Master's Blueprints 0.009",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.010": [
@@ -1818,19 +2086,22 @@
       "recipe": "Elemental Environmental Shield",
       "recipe_id": "735464908",
       "book": "Master's Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Noxious Environmental Shield",
       "recipe_id": "3488361565",
       "book": "Master's Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Scholar's Cranial Capacitor",
       "recipe_id": "3578192129",
       "book": "Master's Blueprints 0.010",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.011": [
@@ -1838,19 +2109,22 @@
       "recipe": "Arcane Environmental Shield",
       "recipe_id": "266198303",
       "book": "Master's Blueprints 0.011",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Craftsman's Cranial Capacitor",
       "recipe_id": "1487275568",
       "book": "Master's Blueprints 0.011",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Defibrillating Heart Stopper",
       "recipe_id": "2519199771",
       "book": "Master's Blueprints 0.011",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.012": [
@@ -1858,25 +2132,29 @@
       "recipe": "Portable Chemistry Set v2.0",
       "recipe_id": "49782283",
       "book": "Master's Blueprints 0.012",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Desk v2.0",
       "recipe_id": "3977175483",
       "book": "Master's Blueprints 0.012",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Forge v2.0",
       "recipe_id": "1728752837",
       "book": "Master's Blueprints 0.012",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Tinkered Vision Enhancer",
       "recipe_id": "3224112754",
       "book": "Master's Blueprints 0.012",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Master's Blueprints 0.013": [
@@ -1884,31 +2162,36 @@
       "recipe": "Portable Cooking Set v2.0",
       "recipe_id": "461797808",
       "book": "Master's Blueprints 0.013",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Sewing Table v2.0",
       "recipe_id": "1255888731",
       "book": "Master's Blueprints 0.013",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Woodworking Kit v2.0",
       "recipe_id": "3142273340",
       "book": "Master's Blueprints 0.013",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Portable Work Bench v2.0",
       "recipe_id": "946170330",
       "book": "Master's Blueprints 0.013",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "The B.F.C. 3000",
       "recipe_id": "3704540224",
       "book": "Master's Blueprints 0.013",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Plateaus Tinkerer's Primer Volume I": [
@@ -1916,67 +2199,78 @@
       "recipe": "Extended Plateaus Injector",
       "recipe_id": "70434002",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Plateaus Injector [2H]",
       "recipe_id": "3344139768",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Plateaus Injector",
       "recipe_id": "1945140393",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Plateaus Injector [2H]",
       "recipe_id": "560428780",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Alacrity",
       "recipe_id": "550955867",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Energy Inverter",
       "recipe_id": "2372145123",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Forcelink",
       "recipe_id": "3212989114",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Injector",
       "recipe_id": "1426009441",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Injector [2H]",
       "recipe_id": "2378481847",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Painlink",
       "recipe_id": "4044625693",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Powerlink",
       "recipe_id": "4041525370",
       "book": "Plateaus Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Plateaus Tinkerer's Primer Volume II": [
@@ -1984,61 +2278,71 @@
       "recipe": "Extended Plateaus Coating",
       "recipe_id": "158843078",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Plateaus Stratagem",
       "recipe_id": "2960848848",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Plateaus Stratagem [2H]",
       "recipe_id": "2942111310",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Plateaus Stratagem",
       "recipe_id": "3350738859",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Plateaus Stratagem [2H]",
       "recipe_id": "1231682906",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Coating",
       "recipe_id": "1505382773",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Coating [2H]",
       "recipe_id": "332876019",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Readiness",
       "recipe_id": "873334127",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Stratagem",
       "recipe_id": "3770115683",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Stratagem [2H]",
       "recipe_id": "3855239937",
       "book": "Plateaus Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Plateaus Tinkerer's Primer Volume III": [
@@ -2046,79 +2350,92 @@
       "recipe": "Extended Plateaus Coating [2H]",
       "recipe_id": "1497370044",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Plateaus Insight",
       "recipe_id": "3028971553",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Plateaus Insight [2H]",
       "recipe_id": "3525634877",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Plateaus Coating",
       "recipe_id": "2125791421",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Plateaus Coating [2H]",
       "recipe_id": "3212115624",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Plateaus Insight",
       "recipe_id": "3276320858",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Plateaus Insight [2H]",
       "recipe_id": "873469993",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Insight",
       "recipe_id": "3829916050",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Insight [2H]",
       "recipe_id": "2561912434",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Intensity",
       "recipe_id": "2944665982",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Intensity [2H]",
       "recipe_id": "2894163219",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Weaponry",
       "recipe_id": "2857984692",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Plateaus Weaponry [2H]",
       "recipe_id": "1322410629",
       "book": "Plateaus Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Bionic Forcelink": [
@@ -2126,7 +2443,8 @@
       "recipe": "Bionic Forcelink",
       "recipe_id": "4020797309",
       "book": "Recipe: Bionic Forcelink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Bionic Painlink": [
@@ -2134,7 +2452,8 @@
       "recipe": "Bionic Painlink",
       "recipe_id": "1122880793",
       "book": "Recipe: Bionic Painlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Bionic Powerlink": [
@@ -2142,7 +2461,8 @@
       "recipe": "Bionic Powerlink",
       "recipe_id": "1725154222",
       "book": "Recipe: Bionic Powerlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Cybernetic Forcelink": [
@@ -2150,7 +2470,8 @@
       "recipe": "Cybernetic Forcelink",
       "recipe_id": "1077822926",
       "book": "Recipe: Cybernetic Forcelink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Cybernetic Painlink": [
@@ -2158,7 +2479,8 @@
       "recipe": "Cybernetic Painlink",
       "recipe_id": "3737924272",
       "book": "Recipe: Cybernetic Painlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Cybernetic Powerlink": [
@@ -2166,7 +2488,8 @@
       "recipe": "Cybernetic Powerlink",
       "recipe_id": "3376806173",
       "book": "Recipe: Cybernetic Powerlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Empyral Forcelink": [
@@ -2174,7 +2497,8 @@
       "recipe": "Empyral Forcelink",
       "recipe_id": "483366138",
       "book": "Recipe: Empyral Forcelink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Stove & Keg"
     }
   ],
   "Recipe: Empyral Painlink": [
@@ -2182,7 +2506,8 @@
       "recipe": "Empyral Painlink",
       "recipe_id": "2625045003",
       "book": "Recipe: Empyral Painlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Stove & Keg"
     }
   ],
   "Recipe: Empyral Powerlink": [
@@ -2190,7 +2515,8 @@
       "recipe": "Empyral Powerlink",
       "recipe_id": "2511611945",
       "book": "Recipe: Empyral Powerlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Stove & Keg"
     }
   ],
   "Recipe: Rigged Forcelink": [
@@ -2198,7 +2524,8 @@
       "recipe": "Rigged Forcelink",
       "recipe_id": "2469859164",
       "book": "Recipe: Rigged Forcelink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Rigged Painlink": [
@@ -2206,7 +2533,8 @@
       "recipe": "Rigged Painlink",
       "recipe_id": "24271831",
       "book": "Recipe: Rigged Painlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Rigged Powerlink": [
@@ -2214,7 +2542,8 @@
       "recipe": "Rigged Powerlink",
       "recipe_id": "441234319",
       "book": "Recipe: Rigged Powerlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Recipe: Voidpiercer's Forcelink": [
@@ -2222,7 +2551,8 @@
       "recipe": "Voidpiercer's Forcelink",
       "recipe_id": "1125852904",
       "book": "Recipe: Voidpiercer's Forcelink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Stove & Keg"
     }
   ],
   "Recipe: Voidpiercer's Painlink": [
@@ -2230,7 +2560,8 @@
       "recipe": "Voidpiercer's Painlink",
       "recipe_id": "1296898098",
       "book": "Recipe: Voidpiercer's Painlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Stove & Keg"
     }
   ],
   "Recipe: Voidpiercer's Powerlink": [
@@ -2238,7 +2569,8 @@
       "recipe": "Voidpiercer's Powerlink",
       "recipe_id": "3395328571",
       "book": "Recipe: Voidpiercer's Powerlink",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Stove & Keg"
     }
   ],
   "Spidermech Aggressor Blueprints": [
@@ -2246,31 +2578,36 @@
       "recipe": "Repaired Spidermech Aggressor Abdomen",
       "recipe_id": "3646746921",
       "book": "Spidermech Aggressor Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Repaired Spidermech Aggressor Cephalothorax",
       "recipe_id": "3468036881",
       "book": "Spidermech Aggressor Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Repaired Spidermech Aggressor Exhaust Valve",
       "recipe_id": "2144602662",
       "book": "Spidermech Aggressor Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Repaired Spidermech Aggressor Eyes",
       "recipe_id": "3481556946",
       "book": "Spidermech Aggressor Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Spidermech Aggressor",
       "recipe_id": "2114511341",
       "book": "Spidermech Aggressor Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Spidermech Defender Blueprints": [
@@ -2278,31 +2615,36 @@
       "recipe": "Repaired Spidermech Abdomen",
       "recipe_id": "2666534503",
       "book": "Spidermech Defender Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Repaired Spidermech Cephalothorax",
       "recipe_id": "326649402",
       "book": "Spidermech Defender Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Repaired Spidermech Exhaust Valve",
       "recipe_id": "4009216598",
       "book": "Spidermech Defender Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Repaired Spidermech Eyes",
       "recipe_id": "3586874795",
       "book": "Spidermech Defender Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Spidermech Defender",
       "recipe_id": "967050915",
       "book": "Spidermech Defender Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkered Training Kit": [
@@ -2310,7 +2652,8 @@
       "recipe": "Tinkering Training Kit",
       "recipe_id": "2542064255",
       "book": "Tinkered Training Kit",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkerer's Competition Blueprints": [
@@ -2318,13 +2661,15 @@
       "recipe": "Clockwork Energizer",
       "recipe_id": "432593602",
       "book": "Tinkerer's Competition Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Electromagnetic Sparklet",
       "recipe_id": "1436116531",
       "book": "Tinkerer's Competition Blueprints",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 01": [
@@ -2332,13 +2677,15 @@
       "recipe": "Machined Injector",
       "recipe_id": "2219994115",
       "book": "Tinkers Primer Volume 01",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Machined Injector [2H]",
       "recipe_id": "2274524728",
       "book": "Tinkers Primer Volume 01",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 02": [
@@ -2346,13 +2693,15 @@
       "recipe": "Extended Machined Injector",
       "recipe_id": "3270854444",
       "book": "Tinkers Primer Volume 02",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Machined Injector [2H]",
       "recipe_id": "2319561857",
       "book": "Tinkers Primer Volume 02",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 03": [
@@ -2360,13 +2709,15 @@
       "recipe": "Maintained Machined Injector",
       "recipe_id": "3098659745",
       "book": "Tinkers Primer Volume 03",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Machined Injector [2H]",
       "recipe_id": "2234216166",
       "book": "Tinkers Primer Volume 03",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 04": [
@@ -2374,13 +2725,15 @@
       "recipe": "Machined Coating",
       "recipe_id": "2937431902",
       "book": "Tinkers Primer Volume 04",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Machined Coating [2H]",
       "recipe_id": "591403334",
       "book": "Tinkers Primer Volume 04",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 05": [
@@ -2388,13 +2741,15 @@
       "recipe": "Extended Machined Coating",
       "recipe_id": "1635840497",
       "book": "Tinkers Primer Volume 05",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Machined Coating [2H]",
       "recipe_id": "2648743628",
       "book": "Tinkers Primer Volume 05",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 06": [
@@ -2402,13 +2757,15 @@
       "recipe": "Maintained Machined Coating",
       "recipe_id": "1331090554",
       "book": "Tinkers Primer Volume 06",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Machined Coating [2H]",
       "recipe_id": "4156804485",
       "book": "Tinkers Primer Volume 06",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 07": [
@@ -2416,13 +2773,15 @@
       "recipe": "Machined Insight",
       "recipe_id": "2685446983",
       "book": "Tinkers Primer Volume 07",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Machined Insight [2H]",
       "recipe_id": "3966253621",
       "book": "Tinkers Primer Volume 07",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 08": [
@@ -2430,13 +2789,15 @@
       "recipe": "Extended Machined Insight",
       "recipe_id": "1854275048",
       "book": "Tinkers Primer Volume 08",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Machined Insight [2H]",
       "recipe_id": "1388887487",
       "book": "Tinkers Primer Volume 08",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 09": [
@@ -2444,13 +2805,15 @@
       "recipe": "Maintained Machined Insight",
       "recipe_id": "1079236707",
       "book": "Tinkers Primer Volume 09",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Machined Insight [2H]",
       "recipe_id": "954986230",
       "book": "Tinkers Primer Volume 09",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 10": [
@@ -2458,25 +2821,29 @@
       "recipe": "Machined Energy Inverter",
       "recipe_id": "844877374",
       "book": "Tinkers Primer Volume 10",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Machined Forcelink",
       "recipe_id": "713158338",
       "book": "Tinkers Primer Volume 10",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Machined Painlink",
       "recipe_id": "3511143585",
       "book": "Tinkers Primer Volume 10",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Machined Powerlink",
       "recipe_id": "2751091217",
       "book": "Tinkers Primer Volume 10",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 11": [
@@ -2484,13 +2851,15 @@
       "recipe": "Voidpiercer's Injector",
       "recipe_id": "2822482203",
       "book": "Tinkers Primer Volume 11",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Voidpiercer's Injector [2H]",
       "recipe_id": "390362667",
       "book": "Tinkers Primer Volume 11",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 12": [
@@ -2498,13 +2867,15 @@
       "recipe": "Extended Voidpiercer's Injector",
       "recipe_id": "3401245093",
       "book": "Tinkers Primer Volume 12",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Voidpiercer's Injector [2H]",
       "recipe_id": "2057032680",
       "book": "Tinkers Primer Volume 12",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 13": [
@@ -2512,13 +2883,15 @@
       "recipe": "Maintained Voidpiercer's Injector",
       "recipe_id": "3220477944",
       "book": "Tinkers Primer Volume 13",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Voidpiercer's Injector [2H]",
       "recipe_id": "4143897753",
       "book": "Tinkers Primer Volume 13",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 14": [
@@ -2526,13 +2899,15 @@
       "recipe": "Voidpiercer's Coating",
       "recipe_id": "1098444309",
       "book": "Tinkers Primer Volume 14",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Voidpiercer's Coating [2H]",
       "recipe_id": "1295487520",
       "book": "Tinkers Primer Volume 14",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 15": [
@@ -2540,13 +2915,15 @@
       "recipe": "Extended Voidpiercer's Coating",
       "recipe_id": "3163873854",
       "book": "Tinkers Primer Volume 15",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Voidpiercer's Coating [2H]",
       "recipe_id": "2082921091",
       "book": "Tinkers Primer Volume 15",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 16": [
@@ -2554,13 +2931,15 @@
       "recipe": "Maintained Voidpiercer's Coating",
       "recipe_id": "3404601468",
       "book": "Tinkers Primer Volume 16",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Voidpiercer's Coating [2H]",
       "recipe_id": "1371214414",
       "book": "Tinkers Primer Volume 16",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 17": [
@@ -2568,13 +2947,15 @@
       "recipe": "Voidpiercer's Insight",
       "recipe_id": "2073056351",
       "book": "Tinkers Primer Volume 17",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Voidpiercer's Insight [2H]",
       "recipe_id": "2160178804",
       "book": "Tinkers Primer Volume 17",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 18": [
@@ -2582,13 +2963,15 @@
       "recipe": "Extended Voidpiercer's Insight",
       "recipe_id": "4202263608",
       "book": "Tinkers Primer Volume 18",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Voidpiercer's Insight [2H]",
       "recipe_id": "2164987182",
       "book": "Tinkers Primer Volume 18",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 19": [
@@ -2596,13 +2979,15 @@
       "recipe": "Maintained Voidpiercer's Insight",
       "recipe_id": "3925575202",
       "book": "Tinkers Primer Volume 19",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Maintained Voidpiercer's Insight [2H]",
       "recipe_id": "3045479080",
       "book": "Tinkers Primer Volume 19",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Tinkers Primer Volume 20": [
@@ -2610,25 +2995,29 @@
       "recipe": "Veilwalker's Energy Inverter",
       "recipe_id": "1099822742",
       "book": "Tinkers Primer Volume 20",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Veilwalker's Forcelink",
       "recipe_id": "4010450306",
       "book": "Tinkers Primer Volume 20",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Veilwalker's Painlink",
       "recipe_id": "3759092249",
       "book": "Tinkers Primer Volume 20",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Veilwalker's Powerlink",
       "recipe_id": "1718690129",
       "book": "Tinkers Primer Volume 20",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Vetrovian Tinkerer's Primer Volume I": [
@@ -2636,13 +3025,15 @@
       "recipe": "Extended Forlorn Stratagem",
       "recipe_id": "2103493853",
       "book": "Vetrovian Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Forlorn Stratagem [2H]",
       "recipe_id": "2928411034",
       "book": "Vetrovian Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Vetrovian Tinkerer's Primer Volume II": [
@@ -2650,13 +3041,15 @@
       "recipe": "Extended Forlorn Coating",
       "recipe_id": "410195576",
       "book": "Vetrovian Tinkerer's Primer Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Forlorn Coating [2H]",
       "recipe_id": "1183807543",
       "book": "Vetrovian Tinkerer's Primer Volume II",
-      "category": "Tinkering"
+      "category": "Tinkering",
+      "station": "Work Bench"
     }
   ],
   "Vetrovian Tinkerer's Primer Volume III": [
@@ -2664,13 +3057,15 @@
       "recipe": "Extended Forlorn Insight",
       "recipe_id": "1444026068",
       "book": "Vetrovian Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Forlorn Insight [2H]",
       "recipe_id": "2891484595",
       "book": "Vetrovian Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Vetrovian Tinkerer's Primer Volume IV": [
@@ -2678,13 +3073,15 @@
       "recipe": "Extended Forlorn Injector",
       "recipe_id": "2118592783",
       "book": "Vetrovian Tinkerer's Primer Volume IV",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Forlorn Injector [2H]",
       "recipe_id": "1851512845",
       "book": "Vetrovian Tinkerer's Primer Volume IV",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Vetrovian Tinkerer's Primer Volume V": [
@@ -2692,25 +3089,29 @@
       "recipe": "Forlorn Energy Inverter",
       "recipe_id": "227809532",
       "book": "Vetrovian Tinkerer's Primer Volume V",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Forlorn Forcelink",
       "recipe_id": "1880900978",
       "book": "Vetrovian Tinkerer's Primer Volume V",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Forlorn Painlink",
       "recipe_id": "3214744756",
       "book": "Vetrovian Tinkerer's Primer Volume V",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Forlorn Powerlink",
       "recipe_id": "1880416101",
       "book": "Vetrovian Tinkerer's Primer Volume V",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Zimaran Tinkerer's Primer Volume I": [
@@ -2718,19 +3119,22 @@
       "recipe": "Extended Zimaran Coating [2H] of the Hooluk's",
       "recipe_id": "1746032123",
       "book": "Zimaran Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Zimaran Coating of the Hooluk's",
       "recipe_id": "625541348",
       "book": "Zimaran Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Handcrafted Zimaran Energy Inverter",
       "recipe_id": "3342271257",
       "book": "Zimaran Tinkerer's Primer Volume I",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Zimaran Tinkerer's Primer Volume II": [
@@ -2738,13 +3142,15 @@
       "recipe": "Extended Zimaran Insight [2H] of the Hooluk's",
       "recipe_id": "984444246",
       "book": "Zimaran Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Extended Zimaran Insight of the Hooluk's",
       "recipe_id": "1640369925",
       "book": "Zimaran Tinkerer's Primer Volume II",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ],
   "Zimaran Tinkerer's Primer Volume III": [
@@ -2752,19 +3158,22 @@
       "recipe": "Handcrafted Zimaran Forcelink",
       "recipe_id": "3309684196",
       "book": "Zimaran Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Handcrafted Zimaran Painlink",
       "recipe_id": "384899154",
       "book": "Zimaran Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     },
     {
       "recipe": "Handcrafted Zimaran Powerlink",
       "recipe_id": "3132605568",
       "book": "Zimaran Tinkerer's Primer Volume III",
-      "category": "TS Essentials"
+      "category": "TS Essentials",
+      "station": "Work Bench"
     }
   ]
 }

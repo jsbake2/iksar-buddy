@@ -14,7 +14,7 @@ themeSel.onchange = () => { document.documentElement.dataset.theme = themeSel.va
 
 const state = {
   manifest: null, cls: null, isSide: false, items: [], cache: {},
-  view: "tree", search: "", cat: "all", lmin: null, lmax: null,
+  view: "tree", search: "", cat: "all", station: "all", lmin: null, lmax: null,
   sort: { key: "level", dir: 1 },
   sel: new Map(),       // key -> {recipe, book, category, level, cls}
   lists: {}, bots: [],
@@ -75,8 +75,16 @@ async function selectClass(cls, isSide) {
   }
   state.items = state.cache[cls];
   state.cat = "all"; state.search = ""; $("search").value = "";
-  state.lmin = state.lmax = null; $("lmin").value = ""; $("lmax").value = "";
-  buildChips(); render();
+  state.station = "all"; state.lmin = state.lmax = null; $("lmin").value = ""; $("lmax").value = "";
+  buildChips(); buildStations(); render();
+}
+
+function buildStations() {
+  const stations = [...new Set(state.items.map(i => i.station || "Unknown"))].sort();
+  const sel = $("stationsel"); sel.replaceChildren();
+  sel.appendChild(Object.assign(el("option", null, "All stations"), { value: "all" }));
+  for (const s of stations) sel.appendChild(Object.assign(el("option", null, s), { value: s }));
+  sel.value = state.station;
 }
 
 // ---- filtering / render (tree + table) ------------------------------------
@@ -91,6 +99,7 @@ function filtered() {
   const q = state.search.toLowerCase();
   return state.items.filter(i => {
     if (state.cat !== "all" && i.category !== state.cat) return false;
+    if (state.station !== "all" && (i.station || "Unknown") !== state.station) return false;
     if (state.lmin != null && (i.level == null || i.level < state.lmin)) return false;
     if (state.lmax != null && (i.level == null || i.level > state.lmax)) return false;
     if (q && !(i.recipe.toLowerCase().includes(q) || (i.book || "").toLowerCase().includes(q) || catLabel(i.category).toLowerCase().includes(q))) return false;
@@ -115,6 +124,7 @@ function recipeRow(it) {
   const tick = el("span", "tickbox"); tick.textContent = "✓";
   const mid = el("div"); mid.appendChild(el("div", "rname", it.recipe)); mid.appendChild(el("div", "rbook", it.book || ""));
   const right = el("div", "rrow-right");
+  if (it.station && it.station !== "Unknown") right.appendChild(el("span", "station-chip", it.station));
   right.appendChild(el("span", "tier-chip " + (isAdvanced(it.category) ? "adv" : isEssential(it.category) ? "ess" : ""), catLabel(it.category)));
   right.appendChild(starEl(it.recipe));
   row.append(tick, mid, right);
@@ -156,8 +166,8 @@ function renderTree(items) {
 function renderTable(items) {
   const view = $("view"); view.replaceChildren();
   if (!items.length) { view.appendChild(emptyMsg()); return; }
-  const cols = state.isSide ? [["recipe", "Recipe"], ["category", "Type"], ["groupKey", "Book"]]
-                            : [["recipe", "Recipe"], ["level", "Lvl"], ["category", "Type"], ["book", "Book"]];
+  const cols = state.isSide ? [["recipe", "Recipe"], ["station", "Station"], ["category", "Type"], ["groupKey", "Book"]]
+                            : [["recipe", "Recipe"], ["level", "Lvl"], ["station", "Station"], ["category", "Type"], ["book", "Book"]];
   const sorted = [...items].sort(cmp(state.sort.key, state.sort.dir));
   const table = el("table", "flat"); const thr = el("tr"); thr.appendChild(el("th", null, ""));
   for (const [key, label] of cols) {
@@ -176,7 +186,7 @@ function renderTable(items) {
       const td = el("td");
       if (key === "category") td.innerHTML = `<span class="tier-chip ${isAdvanced(it.category) ? "adv" : isEssential(it.category) ? "ess" : ""}">${catLabel(it.category)}</span>`;
       else if (key === "level") { td.textContent = it.level ?? "—"; td.className = "muted"; }
-      else if (key === "book" || key === "groupKey") { td.textContent = it[key] || ""; td.className = "muted"; }
+      else if (key === "book" || key === "groupKey" || key === "station") { td.textContent = it[key] || ""; td.className = "muted"; }
       else td.textContent = it[key] ?? "";
       tr.appendChild(td);
     }
@@ -327,6 +337,7 @@ function toast(msg, kind) { const t = $("toast"); t.textContent = msg; t.classNa
 
 // ---- wiring ---------------------------------------------------------------
 $("search").oninput = (e) => { state.search = e.target.value.trim(); render(); };
+$("stationsel").onchange = (e) => { state.station = e.target.value; render(); };
 $("lmin").oninput = (e) => { state.lmin = e.target.value ? +e.target.value : null; render(); };
 $("lmax").oninput = (e) => { state.lmax = e.target.value ? +e.target.value : null; render(); };
 document.querySelectorAll(".seg-btn").forEach(b => b.onclick = () => {

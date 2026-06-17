@@ -23,6 +23,11 @@ DATA = ROOT / "tools" / "recipe_scrape" / "data"
 RAW = DATA / "raw_books"          # cache of each book page (resume-friendly)
 SECRETS = yaml.safe_load((ROOT / "config" / "secrets.yaml").read_text())["eq2wire"]
 
+# recipe_id -> crafting station (built by fetch_bench.py from DBG Census). Optional:
+# absent until fetch_bench.py is run; recipes then just get station "Unknown".
+_BENCH_PATH = ROOT / "tools" / "recipe_scrape" / "data" / "census_bench.json"
+BENCH = json.loads(_BENCH_PATH.read_text()) if _BENCH_PATH.exists() else {}
+
 BASE = "https://u.eq2wire.com"
 INDEX_URL = f"{BASE}/soe2/recipebooks/level"
 UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -199,6 +204,7 @@ def main():
                         "class": cls, "level": bk["level"], "category": bk["category"],
                         "book": bk["name"], "book_id": bk["id"],
                         "recipe": r["name"], "recipe_id": r["recipe_id"],
+                        "station": BENCH.get(r["recipe_id"], "Unknown"),
                     })
             if i % 25 == 0 or i == len(sel):
                 print(f"  [{i}/{len(sel)}] {bk['name']} L{bk['level']} -> {len(recs)} recipes "
@@ -214,7 +220,7 @@ def write_outputs(rows: list[dict]):
     import csv
     csv_path = DATA / "recipes_all.csv"
     with csv_path.open("w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=["class", "level", "category", "book",
+        w = csv.DictWriter(f, fieldnames=["class", "level", "category", "station", "book",
                                           "recipe", "recipe_id", "book_id"])
         w.writeheader()
         for r in sorted(rows, key=lambda x: (x["class"], x["level"] or 0, x["recipe"])):
@@ -227,7 +233,7 @@ def write_outputs(rows: list[dict]):
         key = r["level"] if r["class"] not in SIDE else r["book"]
         by_class[r["class"]][key].append(
             {"recipe": r["recipe"], "recipe_id": r["recipe_id"],
-             "book": r["book"], "category": r["category"]})
+             "book": r["book"], "category": r["category"], "station": r["station"]})
     cls_dir = DATA / "by_class"; cls_dir.mkdir(exist_ok=True)
     side_dir = DATA / "side"; side_dir.mkdir(exist_ok=True)
     for d in (cls_dir, side_dir):                 # clear stale class files from prior runs
