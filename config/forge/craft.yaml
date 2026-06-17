@@ -212,7 +212,7 @@ eq2_log:
 # From owner-marked quest-area-blue.png (the writ "I need to make…" panel, right side).
 # Writs aren't run until the owner hits crafter L20; TUNE against a real writ then.
 journal_ocr:
-  region: {x: 1585, y: 255, w: 410, h: 150}   # quest-tracker writ objectives (light-on-dark)
+  region: {x: 1585, y: 255, w: 410, h: 300}   # quest-tracker writ objectives (light-on-dark)
   scale_percent: 250
   tesseract_psm: 6
   negate: true                                  # writ text is light-on-dark -> negate for OCR
