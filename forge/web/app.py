@@ -411,6 +411,12 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
             with contextlib.suppress(Exception):
                 await websocket.close()
 
+    # Scraped recipe data for the in-dashboard recipe browser (recipes.html). Mounted
+    # before the catch-all so /recipedata/* serves the per-class JSON same-origin.
+    RECIPE_DATA = Path(__file__).resolve().parents[2] / "tools" / "recipe_scrape" / "data"
+    if RECIPE_DATA.exists():
+        app.mount("/recipedata", StaticFiles(directory=str(RECIPE_DATA)), name="recipedata")
+
     if STATIC.exists():
         app.mount("/", StaticFiles(directory=str(STATIC), html=True), name="static")
 

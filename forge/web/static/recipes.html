@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>iksar_buddy — Recipes</title>
+  <link rel="stylesheet" href="themes.css?v=20260614">
+  <link rel="stylesheet" href="recipes.css?v=20260616">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <a class="logo" href="/" title="back to dashboard">ib</a>
+      <div>
+        <div class="title">Recipe Browser <span class="muted" style="font-weight:400">· build &amp; ship craft lists</span></div>
+        <div class="sub" id="subcount">loading…</div>
+      </div>
+    </div>
+    <div class="top-controls">
+      <a class="km-link" href="/" title="back to the crafting dashboard">← dashboard</a>
+      <div class="seg" id="viewtoggle">
+        <button class="seg-btn active" data-view="tree">Tree</button>
+        <button class="seg-btn" data-view="table">Table</button>
+      </div>
+      <label class="theme">Theme
+        <select id="theme">
+          <option value="midnight">midnight</option>
+          <option value="grafana">grafana</option>
+          <option value="amber">amber</option>
+          <option value="paper">paper</option>
+          <option value="defiler">defiler</option>
+          <option value="iksar">iksar</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="rail" id="rail">
+      <div class="rail-group">
+        <div class="rail-head">Crafting classes</div>
+        <ul id="rail-main"></ul>
+      </div>
+      <div class="rail-group">
+        <div class="rail-head">Skill-based / misc</div>
+        <ul id="rail-side"></ul>
+      </div>
+      <div class="rail-group">
+        <div class="rail-head">Saved lists</div>
+        <ul id="rail-lists"></ul>
+      </div>
+    </nav>
+
+    <main class="content">
+      <div class="toolbar">
+        <input id="search" class="search" type="search" placeholder="Filter recipes in this class…  (name, tier, book)">
+        <div class="chips" id="catchips"></div>
+        <div class="lvlrange">
+          <span class="lbl">Lvl</span>
+          <input id="lmin" class="lvlbox" type="number" min="1" max="130" placeholder="min">
+          <span class="dash">–</span>
+          <input id="lmax" class="lvlbox" type="number" min="1" max="130" placeholder="max">
+        </div>
+        <div class="grow"></div>
+        <button id="addall" class="btn small" title="Add every recipe matching the current filters">+ Add filtered</button>
+        <div class="resultcount" id="resultcount"></div>
+      </div>
+      <div id="view" class="view"></div>
+    </main>
+
+    <aside class="tray" id="tray">
+      <div class="tray-head">
+        <span>Craft list</span>
+        <span class="badge" id="traycount">0</span>
+      </div>
+      <ul class="tray-list" id="traylist"></ul>
+
+      <div class="tray-build">
+        <input id="listname" class="listname" type="text" placeholder="list name (e.g. jeweler-t2-fill)">
+        <div class="tray-row">
+          <button id="save-list" class="btn primary" disabled>💾 Save list</button>
+          <button id="export-yaml" class="btn" disabled title="download a lists.yaml block">⤓ YAML</button>
+        </div>
+        <div class="tray-head" style="border:0;padding:10px 0 4px"><span>Send to crafter</span></div>
+        <div class="tray-row">
+          <select id="botsel" class="botsel"></select>
+          <button id="clear-sel" class="btn ghost" disabled title="clear selection">✕</button>
+        </div>
+        <div class="tray-row">
+          <button id="send-queue" class="btn" disabled>↪ Load queue</button>
+          <button id="send-start" class="btn primary" disabled>▶ Send &amp; Start</button>
+        </div>
+        <div class="tray-hint">Click recipes to add. <b>Save list</b> → appears in every bot's Load dropdown. <b>Send &amp; Start</b> loads the queue into the chosen crafter and begins (writ mode).</div>
+      </div>
+    </aside>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="recipes.js?v=20260616"></script>
+</body>
+</html>
