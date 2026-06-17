@@ -456,10 +456,11 @@ def recipe_row_blobs(guest: Guest, cfg: dict) -> list[str]:
 
 
 def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | None:
-    """Click point of the result row whose name matches `name`: highest token-coverage,
-    REJECTING Imbued/Blessed variants the target lacks, tiebreaking to the most-EXACT row
-    (fewest surplus letters). Uses per-row OCR boxes when calibrated, else one grouped
-    region. None if nothing clears threshold (a lone partial result is still taken)."""
+    """Click point of the result row whose name matches `name`: full token-coverage AND no
+    surplus WORD (a row with an extra word — 'Tranquil'/'Imbued'/'Blessed' Burlap Pantaloons,
+    or '… of Power' — is a DIFFERENT recipe and is rejected, never crafted in place of the
+    plain target). Tiebreak to the most-exact row. Per-row OCR boxes when calibrated, else one
+    grouped region. None if nothing qualifies (skip beats crafting the wrong item)."""
     rs = cfg.get("recipe_select", {})
     want = [t for t in re.findall(r"[a-z]+", (name or "").lower()) if len(t) >= 3]
     if not want:
@@ -470,6 +471,10 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
     name_l = (name or "").lower()
     forbidden = [m for m in modifiers if m not in name_l]
     want_len = sum(len(t) for t in want)
+    # Surplus-letter budget beyond the target tokens: OCR noise (a stray glyph or two) is fine,
+    # but a whole extra WORD (~5+ chars) means a different recipe -> reject. Roman/quality tails
+    # are already part of `want` for tier'd names, so this targets prefix/suffix variants.
+    max_extra = int(rs.get("max_extra_chars", 4))
     scored = []   # (score, extra, click)
     for blob, click in _row_candidates(guest, cfg):
         if not blob:
@@ -478,7 +483,10 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
             log.debug("recipe row click=%s REJECT (variant) blob=%r", click, blob)
             continue
         score = sum(1 for t in want if _contains(blob, t)) / len(want)
-        extra = max(0, len(blob) - want_len)   # surplus letters: prefer the exact row on ties
+        extra = max(0, len(blob) - want_len)
+        if extra > max_extra:                  # extra word -> different recipe (Tranquil/of-X)
+            log.debug("recipe row click=%s REJECT (extra word, %d) blob=%r", click, extra, blob)
+            continue
         log.debug("recipe row click=%s score=%.2f extra=%d blob=%r", click, score, extra, blob)
         scored.append((score, extra, click))
     if not scored:

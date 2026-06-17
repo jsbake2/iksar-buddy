@@ -248,3 +248,28 @@ def test_join_wrapped_reattaches_tail():
             "  (Journeyman).\n")
     items = parse_ocr_items(text)
     assert any("Aggressive Defense" in k and "Journeyman" in k for k in items), items
+
+
+def test_resolve_writ_strips_flavor_prefix(monkeypatch):
+    # 'Essence of …' flavor text stripped to the real recipe; full name kept if it'd match.
+    r = _db(monkeypatch, ["Aggressive Defense II (Journeyman)", "Puncture III (Journeyman)"])
+    out = {raw: (res, ver) for raw, res, ver, _ in r.resolve_writ(
+        {"an Essence of Aggressive Defense Il (Journeyman)": 1, "Rune of Puncture |ll (Journeyman)": 1})}
+    assert out["an Essence of Aggressive Defense Il (Journeyman)"] == ("Aggressive Defense II (Journeyman)", True)
+    assert out["Rune of Puncture |ll (Journeyman)"] == ("Puncture III (Journeyman)", True)
+
+
+def test_match_recipe_row_rejects_extra_word_picks_exact(monkeypatch):
+    """'Burlap Pantaloons' must pick the exact row, NOT 'Tranquil Burlap Pantaloons'."""
+    from forge import sensors
+    fake = _row(["Tranquil", "Burlap", "Pantaloons"], y=210) + _row(["Burlap", "Pantaloons"], y=250)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda g, r: fake)
+    pt = sensors.match_recipe_row(None, {"recipe_select": {}}, "Burlap Pantaloons")
+    assert pt is not None and abs(pt[1] - 250) <= 8, f"should pick exact Burlap Pantaloons, got {pt}"
+
+def test_match_recipe_row_extra_word_only_variant_skips(monkeypatch):
+    """If ONLY the extra-word variant is present, skip (None) — never craft the wrong recipe."""
+    from forge import sensors
+    fake = _row(["Tranquil", "Burlap", "Pantaloons"], y=210)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda g, r: fake)
+    assert sensors.match_recipe_row(None, {"recipe_select": {}}, "Burlap Pantaloons") is None
