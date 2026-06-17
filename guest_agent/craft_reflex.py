@@ -258,6 +258,8 @@ class CraftReflex:
                                             _grab(sct, 560, 250, 340, 40))
                             except Exception:        # noqa: BLE001
                                 pass
+                    # STATS ONLY (not load-bearing): note the first green/red tint for the
+                    # dashboard. This does NOT gate pressing — see below.
                     if self._cnt_resolved is None and self._cnt_baseline:
                         dg = mg - self._cnt_baseline[1]
                         dr = mr - self._cnt_baseline[0]
@@ -268,7 +270,13 @@ class CraftReflex:
                             self._cnt_resolved = "red"; self.fails += 1
                             self.log(f"counter#{n} ({mode}) key={self._cnt_key} FAILED (red, dr={dr:.0f} dg={dg:.0f})")
                     now = time.time()
-                    if self._cnt_resolved is None and safe and now - self._cnt_last_press >= press_interval:
+                    # MASH the art the ENTIRE time the icon is visible. Do NOT stop on a
+                    # color-resolved green/red: the pink #3 icon has red accents and
+                    # false-resolves 'red' on its own onset frame, which (when it gated
+                    # pressing) made us press once and quit before the event cleared —
+                    # bleeding durability to a ~33% craft death. The icon vanishing
+                    # (n -> None) is the real "event over" signal and ends the mash.
+                    if safe and now - self._cnt_last_press >= press_interval:
                         # COUNTERS always use the icon's art (1/2/3), NOT mode-dependent.
                         # The 4/5/6 are the progress PUMP (filler), they don't counter
                         # anything — verified: pressing 5 whiffs, pressing 2 clears it.
