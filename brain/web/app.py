@@ -275,6 +275,16 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         if ov is None:
             return JSONResponse({"error": "unknown override"}, status_code=400)
         await brain.apply_override(ov)
+        # Force In Combat = engage NOW: target the TANK then press attack, so we
+        # assist onto the tank's target (EQ2 implied-target) rather than nothing.
+        # Manual, so it fires even while the auto-loop is disarmed.
+        if name == "force_combat":
+            akey = brain.cfg.key_for("attack")
+            if akey and akey != "none":
+                slot = int(brain.cfg.ability_map.get("tank_slot", 0))
+                telemetry.push_event("manual", "force combat -> assist tank")
+                await brain.send("command", role="attack", key=akey, target_slot=slot,
+                                 manual=True, reason="force combat: assist tank")
         return {"ok": True, "override": ov.value}
 
     @app.post("/api/spice/restart")
@@ -349,6 +359,17 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             telemetry.push_event("manual", f"{action.replace('_', ' ')} -> slot {slot}")
             await brain.send("command", role=action, key=key,
                              target_slot=slot, manual=True, reason=f"manual {action}")
+            return {"ok": True, "action": action, "slot": slot}
+        # spell_attack: target the TANK first so EQ2 implied-targeting lands the
+        # offensive cast on the tank's target instead of whatever's selected.
+        if action == "spell_attack":
+            key = brain.cfg.key_for("spell_attack")
+            if not key or key == "none":
+                return JSONResponse({"error": "no spell_attack key mapped"}, status_code=400)
+            slot = int(brain.cfg.ability_map.get("tank_slot", 0))
+            telemetry.push_event("manual", "spell attack -> tank")
+            await brain.send("command", role="spell_attack", key=key,
+                             target_slot=slot, manual=True, reason="spell attack (assist tank)")
             return {"ok": True, "action": action, "slot": slot}
         role = _GROUP_ACTIONS.get(action)
         if role is None:

@@ -151,11 +151,12 @@ class Brain:
             if entered and self.sm.state == State.IN_COMBAT:
                 akey = self.cfg.key_for("attack")
                 if akey and akey != "none":
+                    tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
                     await self.send("command", role="attack", key=akey,
-                                    target_slot=None, manual=False,
-                                    reason="combat start -> assist")
+                                    target_slot=tank_slot, manual=False,
+                                    reason="combat start -> assist tank")
                     self._last_assist = time.time()
-                    log.info("combat start: assist (attack '%s')", akey)
+                    log.info("combat start: assist tank (attack '%s')", akey)
 
         # Map each member's lit detriment cells to display type-labels. The 5
         # cells are ASSUMED to correspond positionally to the 5 cure categories;
