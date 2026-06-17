@@ -175,15 +175,9 @@ class CraftWorker:
                 await self._ex(partial(self.guest.type_field, query, True, (sb[0], sb[1])))
             else:
                 await self._ex(self.guest.type_field, query, True)
-            # Verify the query actually reached the search box. If focus raced and the
-            # keystrokes didn't land, the list never filtered — re-type now instead of
-            # burning the whole poll budget OCR'ing an unfiltered list (the silent-fail
-            # case behind "1 obvious result but it moved on").
-            await self._ex(self.guest.grab)
-            if not await self._ex(sensors.search_landed, self.guest, self.cfg, query):
-                self.t.push_log(self.id, f"search '{query}' did NOT land (focus race) — retyping (attempt {i}/{attempts})")
-                continue
-            # Proof the search worked = the row appears in the filtered list. Poll for it.
+            # Poll for the recipe to appear in the filtered list. The type fires async
+            # (AHK ibrun, fire-and-forget), so these post_search sleeps ALSO give the
+            # keystrokes time to land + EQ2 time to filter before we read.
             for _ in range(int(rs.get("match_polls", 5))):
                 if self._stop.is_set():        # STOP must bail mid-select, not after it
                     return False
@@ -193,8 +187,16 @@ class CraftWorker:
                     break
             if row_click:
                 break
-            # Row not found though the search landed — log what the OCR actually SAW so
-            # this is never silent (wrong list name vs unfiltered list vs OCR miss).
+            # No match. Now that the box has had time to render, distinguish a FOCUS RACE
+            # (query never reached the box -> retype helps) from a genuine not-in-list
+            # (wrong name / not in the OCR'd rows). Checked here, NOT right after typing —
+            # an immediate check races the async type and false-fails every time.
+            await self._ex(self.guest.grab)
+            if not await self._ex(sensors.search_landed, self.guest, self.cfg, query):
+                self.t.push_log(self.id, f"search '{query}' did NOT land (focus race) — retyping (attempt {i}/{attempts})")
+                continue
+            # Search landed but no row matched — log what the OCR actually SAW so this is
+            # never silent (wrong name vs unfiltered list vs OCR miss).
             seen = await self._ex(sensors.recipe_row_blobs, self.guest, self.cfg)
             self.t.push_log(self.id, f"'{name}' not in filtered list (attempt {i}/{attempts}) "
                                      f"— rows seen: {seen or '[]'} — retrying")
