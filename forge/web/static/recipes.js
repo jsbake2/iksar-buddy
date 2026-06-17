@@ -18,7 +18,9 @@ const state = {
   sort: { key: "level", dir: 1 },
   sel: new Map(),       // key -> {recipe, book, category, level, cls}
   lists: {}, bots: [],
+  favs: new Set(),      // favorited recipe NAMES (protected list, survives Delete all)
 };
+const FAV = "favorites";   // reserved list name holding starred recipes
 
 const CAT_LABEL = { "TS Essentials": "Essentials", "TS Advanced": "Advanced", "TS Apprentice": "Apprentice",
   "TS Journeyman": "Journeyman", "TS Shadow": "Shadow", "TS Shadowed": "Shadowed", "Tinkering": "Tinkering", "Adornments": "Adornments" };
@@ -101,13 +103,20 @@ function render() {
   if (state.view === "table") renderTable(items); else renderTree(items);
   renderTray();
 }
+function starEl(name) {
+  const s = el("span", "star" + (state.favs.has(name) ? " on" : ""), state.favs.has(name) ? "★" : "☆");
+  s.title = state.favs.has(name) ? "unfavorite" : "favorite (kept through Delete all)";
+  s.onclick = (e) => { e.stopPropagation(); toggleFav(name); };
+  return s;
+}
 function recipeRow(it) {
   const row = el("div", "rrow");
   if (state.sel.has(selKey(state.cls, it))) row.classList.add("sel");
   const tick = el("span", "tickbox"); tick.textContent = "✓";
   const mid = el("div"); mid.appendChild(el("div", "rname", it.recipe)); mid.appendChild(el("div", "rbook", it.book || ""));
-  const right = el("div");
+  const right = el("div", "rrow-right");
   right.appendChild(el("span", "tier-chip " + (isAdvanced(it.category) ? "adv" : isEssential(it.category) ? "ess" : ""), catLabel(it.category)));
+  right.appendChild(starEl(it.recipe));
   row.append(tick, mid, right);
   row.onclick = () => { toggleSel(it); render(); };
   return row;
@@ -157,6 +166,7 @@ function renderTable(items) {
     th.onclick = () => { if (state.sort.key === key) state.sort.dir *= -1; else state.sort = { key, dir: 1 }; render(); };
     thr.appendChild(th);
   }
+  thr.appendChild(el("th", null, ""));   // star column
   const head = el("thead"); head.appendChild(thr); table.appendChild(head);
   const body = el("tbody");
   for (const it of sorted) {
@@ -170,6 +180,7 @@ function renderTable(items) {
       else td.textContent = it[key] ?? "";
       tr.appendChild(td);
     }
+    const star = el("td"); star.appendChild(starEl(it.recipe)); tr.appendChild(star);
     tr.onclick = () => { toggleSel(it); render(); }; body.appendChild(tr);
   }
   table.appendChild(body); view.appendChild(table);
@@ -203,16 +214,44 @@ function renderTray() {
 async function loadLists() {
   try { state.lists = (await (await fetch("/api/forgelists")).json()).lists || {}; }
   catch { state.lists = {}; }
+  state.favs = new Set((state.lists[FAV] || []).map(r => r.name));
+  renderLists();
+}
+function renderLists() {
   const ul = $("rail-lists"); ul.replaceChildren();
-  for (const name of Object.keys(state.lists).sort()) {
+  if (state.favs.size) {                 // ★ favorites pinned + protected (no delete ✕)
+    const li = el("li", "fav");
+    li.innerHTML = `<span class="name">★ Favorites</span><span class="count">${state.favs.size}</span>`;
+    li.title = "load favorites into the craft list";
+    li.onclick = () => { (state.lists[FAV] || []).forEach(addRow); render(); toast(`Loaded ★ favorites (${state.favs.size})`); };
+    ul.appendChild(li);
+  }
+  const names = Object.keys(state.lists).filter(n => n !== FAV).sort();
+  for (const name of names) {
     const li = el("li");
-    li.innerHTML = `<span class="name" title="load ${name} into the tray">${name}</span><span class="count">${state.lists[name].length}</span>`;
-    li.onclick = () => { for (const r of state.lists[name]) addRow(r); $("listname").value = name; render(); toast(`Loaded "${name}" (${state.lists[name].length})`); };
+    li.innerHTML = `<span class="name" title="load ${name} into the craft list">${name}</span><span class="count">${state.lists[name].length}</span>`;
+    li.onclick = () => { state.lists[name].forEach(addRow); $("listname").value = name; render(); toast(`Loaded "${name}" (${state.lists[name].length})`); };
     const del = el("span", "del", "✕"); del.title = "delete saved list";
     del.onclick = async (e) => { e.stopPropagation(); if (!confirm(`Delete saved list "${name}"?`)) return; delete state.lists[name]; await putLists(); loadLists(); toast(`Deleted "${name}"`); };
     li.appendChild(del); ul.appendChild(li);
   }
-  if (!Object.keys(state.lists).length) ul.appendChild(el("li", "muted", "— none yet —"));
+  if (!names.length && !state.favs.size) ul.appendChild(el("li", "muted", "— none yet —"));
+}
+async function toggleFav(name) {
+  if (state.favs.has(name)) state.favs.delete(name); else state.favs.add(name);
+  state.lists[FAV] = [...state.favs].map(n => ({ name: n, count: 1, search: "" }));
+  if (!state.lists[FAV].length) delete state.lists[FAV];
+  try { await putLists(); } catch { toast("Couldn't save favorite", "bad"); }
+  renderLists(); render();               // refresh the star icons + favorites entry
+}
+async function deleteAll() {
+  const names = Object.keys(state.lists).filter(n => n !== FAV);
+  if (!names.length) { toast("No saved lists to delete"); return; }
+  if (!confirm(`Delete all ${names.length} saved list(s)?  ★ Favorites are kept.`)) return;
+  const keep = {}; if (state.lists[FAV]) keep[FAV] = state.lists[FAV];
+  state.lists = keep;
+  try { await putLists(); loadLists(); toast(`Deleted ${names.length} list(s) — favorites kept`, "good"); }
+  catch { toast("Delete failed", "bad"); }
 }
 function selRows() { return [...state.sel.values()].map(v => ({ name: v.recipe, count: v.count || 1, search: v.search || "" })); }
 async function putLists() {
@@ -258,6 +297,7 @@ async function send(start) {
     loadBots();
   } catch (e) { toast(`Send failed (${e.message})`, "bad"); }
 }
+$("del-all").onclick = deleteAll;
 $("send-queue").onclick = () => send(false);
 $("send-start").onclick = () => send(true);
 $("clear-sel").onclick = () => { state.sel.clear(); render(); };

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>iksar_buddy — Recipes</title>
   <link rel="stylesheet" href="themes.css?v=20260614">
-  <link rel="stylesheet" href="recipes.css?v=20260616">
+  <link rel="stylesheet" href="recipes.css?v=20260616b">
 </head>
 <body>
   <header class="topbar">
@@ -46,7 +46,10 @@
         <ul id="rail-side"></ul>
       </div>
       <div class="rail-group">
-        <div class="rail-head">Saved lists</div>
+        <div class="rail-head rail-head-row">
+          <span>Saved lists</span>
+          <button id="del-all" class="mini-btn" title="delete every saved list (★ favorites are kept)">delete all</button>
+        </div>
         <ul id="rail-lists"></ul>
       </div>
     </nav>
@@ -96,6 +99,6 @@
   </div>
 
   <div id="toast" class="toast"></div>
-  <script src="recipes.js?v=20260616"></script>
+  <script src="recipes.js?v=20260616b"></script>
 </body>
 </html>
