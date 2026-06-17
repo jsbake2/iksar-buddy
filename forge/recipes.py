@@ -37,32 +37,103 @@ def recipe_names() -> set[str]:
     return _RECIPE_NAMES
 
 
-def verify_writ_detail(items: dict[str, int], cutoff: float = 0.72) -> list[tuple[str, str | None, int]]:
-    """For each OCR'd writ name, [(raw, canonical_or_None, count)] — snapped to the DB
-    (exact, else closest fuzzy match; None if nothing resembles a real recipe). When the DB
-    isn't available, canonical == raw (pass-through)."""
+# Roman-numeral runs OCR badly (the font's capital I reads as l / | / 1): "III" -> "|ll",
+# "II" -> "Il". Normalize a standalone run of those glyphs back to the roman of that length.
+_ROMAN_FIX = re.compile(r"(?<=\s)([IilL|1]{2,4})(?=\s|\(|\)|\.|$)")
+_ROMAN = {2: "II", 3: "III", 4: "IV"}
+_TIER_RE = re.compile(r"(?:^|\s)(IX|IV|VI{0,3}|V|I{1,3}|X)(?=\s|\(|$)")
+
+
+def _fix_roman(s: str) -> str:
+    return _ROMAN_FIX.sub(lambda m: _ROMAN.get(len(m.group(1)), m.group(1)), s)
+
+
+def _tier(name: str) -> str:
+    """The roman-numeral tier in a recipe name ('III'), or '' if none."""
+    m = _TIER_RE.search(name)
+    return m.group(1) if m else ""
+
+
+def _join_wrapped(text: str) -> str:
+    """Merge wrapped continuation lines back onto their objective. A line that doesn't start
+    a new objective (no 'need to create' / leading '-') is glued to the previous one — fixes
+    a recipe whose '(Journeyman)' tail wrapped to the next line."""
+    out: list[str] = []
+    for raw in re.split(r"[\n\r]+", text):
+        ls = raw.strip()
+        if not ls:
+            continue
+        starts = bool(re.search(r"(?:eed|need)\s+to", ls, re.I)) or ls.startswith("-")
+        if not starts and out:
+            out[-1] += " " + ls
+        else:
+            out.append(ls)
+    return "\n".join(out)
+
+
+def _clean_writ_name(raw: str) -> str:
+    s = re.sub(r"^\s*an?\s+", "", (raw or "").strip(), flags=re.I)   # drop a/an
+    return _fix_roman(s).strip(" .")
+
+
+_QUALITIES = ["Apprentice", "Journeyman", "Adept", "Expert", "Master", "Grandmaster"]
+_RECIPE_INDEX: tuple[dict, list] | None = None
+
+
+def _decompose(name: str) -> tuple[str, str, str]:
+    """(base, tier, quality) — base name without the roman tier or the '(Quality)' tag."""
+    n = _fix_roman(name)
+    quality = ""
+    qm = re.search(r"\(([^)]*)\)", n)
+    if qm:
+        q = difflib.get_close_matches(qm.group(1).strip(), _QUALITIES, n=1, cutoff=0.6)
+        quality = q[0] if q else qm.group(1).strip()
+    n = _PARENS_RE.sub("", n).strip()
+    tier = _tier(n)
+    base = re.sub(r"(?:^|\s)" + re.escape(tier) + r"$", "", n).strip() if tier else n
+    return base, tier, quality
+
+
+def _recipe_index() -> tuple[dict, list]:
+    """{base_lower: [(tier, quality, canonical)]}, [unique base names] — cached."""
+    global _RECIPE_INDEX
+    if _RECIPE_INDEX is None:
+        idx: dict[str, list] = {}
+        bases: dict[str, str] = {}
+        for n in recipe_names():
+            b, t, q = _decompose(n)
+            idx.setdefault(b.lower(), []).append((t, q, n))
+            bases.setdefault(b.lower(), b)
+        _RECIPE_INDEX = (idx, list(bases.values()))
+    return _RECIPE_INDEX
+
+
+def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86) -> list[tuple[str, str, bool, int]]:
+    """[(raw, resolved, verified, count)] for each OCR'd writ objective.
+
+    Decompose into (base, tier, quality) and match the BASE name STRICTLY — then require the
+    same tier (and quality when known). resolved = canonical DB recipe on a confident match
+    (verified=True), else the cleaned OCR name (verified=False). We never substitute a wrong
+    recipe — a different base ('Rune of Puncture' vs 'Lung Puncture') or tier is left
+    unverified for the owner to check, not crafted blind."""
     names = recipe_names()
-    low = {n.lower(): n for n in names}
-    pool = list(names)
     out = []
+    idx, base_list = _recipe_index() if names else ({}, [])
     for raw, count in items.items():
-        if not names:
-            out.append((raw, raw, count)); continue
-        canon = low.get(raw.lower().strip())
-        if not canon:
-            m = difflib.get_close_matches(raw, pool, n=1, cutoff=cutoff)
-            canon = m[0] if m else None
-        out.append((raw, canon, count))
-    return out
-
-
-def verify_writ(items: dict[str, int], cutoff: float = 0.72) -> dict[str, int]:
-    """Snap each OCR'd writ recipe to the canonical DB name; drop unmatched. Returns
-    {canonical_name: count}."""
-    out: dict[str, int] = {}
-    for _raw, canon, count in verify_writ_detail(items, cutoff):
-        if canon:
-            out[canon] = out.get(canon, 0) + count
+        clean = _clean_writ_name(raw)
+        b, t, q = _decompose(clean)
+        canon, verified = clean, False
+        if names:
+            bases = [b.lower()] if b.lower() in idx else \
+                    [m.lower() for m in difflib.get_close_matches(b, base_list, n=1, cutoff=base_cutoff)]
+            for cb in bases:
+                entries = idx.get(cb, [])
+                pick = next((en for et, eq, en in entries if et == t and (not q or not eq or eq == q)), None) \
+                    or next((en for et, eq, en in entries if et == t), None)
+                if pick:
+                    canon, verified = pick, True
+                    break
+        out.append((raw, canon, verified, count))
     return out
 
 # Anchor on a trailing "(done/total)" count; capture everything before it.
@@ -164,9 +235,10 @@ def clean_item_name(raw: str, trade_class: str) -> str:
 
 def parse_ocr_items(text: str, trade_class: str = "") -> dict[str, int]:
     """OCR journal text -> {recipe_name: count_still_needed}. Flexible: anchors on
-    the (N/M) count, else falls back to lines that look like quest objectives."""
+    the (N/M) count, else falls back to lines that look like quest objectives. Wrapped
+    objective lines are merged first (a long recipe whose tail spilled to the next line)."""
     items: dict[str, int] = {}
-    for line in re.split(r"[\n\r]+", text):
+    for line in re.split(r"[\n\r]+", _join_wrapped(text)):
         line = line.strip()
         if not line:
             continue

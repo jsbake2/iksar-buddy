@@ -198,20 +198,19 @@ class ForgeController:
         self.t.push_event(bot_id, "ocr", "reading journal…")
         raw = await asyncio.get_running_loop().run_in_executor(
             None, partial(sensors.ocr_journal, g, self.cfg_profile, b.get("trade_class", "")))
-        # Verify each OCR'd name against the scraped recipe DB: snap to the canonical recipe
-        # (fixes OCR noise / case) and DROP anything that doesn't resemble a real recipe.
-        detail = recipes.verify_writ_detail(raw)
-        queue, dropped = [], 0
-        for rawname, canon, count in detail:
-            if canon:
-                queue.append({"name": canon, "count": count, "done": 0})
-                if rawname != canon:
-                    self.t.push_log(bot_id, f"writ OCR '{rawname}' -> DB '{canon}'")
-            else:
-                dropped += 1
-                self.t.push_log(bot_id, f"writ OCR '{rawname}' -> no DB match, dropped")
+        # Resolve each OCR'd objective against the scraped DB: confident same-tier matches
+        # snap to the canonical recipe; everything else keeps its cleaned name (roman numerals
+        # fixed) and is flagged UNVERIFIED — we never substitute a wrong recipe.
+        queue, unverified = [], 0
+        for rawname, resolved, verified, count in recipes.resolve_writ(raw):
+            queue.append({"name": resolved, "count": count, "done": 0, "verified": verified})
+            if verified and rawname.strip() != resolved:
+                self.t.push_log(bot_id, f"writ '{rawname}' -> DB '{resolved}'")
+            elif not verified:
+                unverified += 1
+                self.t.push_log(bot_id, f"writ '{rawname}' -> '{resolved}' (NOT in DB — unverified)")
         self.t.update_bot(bot_id, mode="writ", queue=queue)
-        msg = f"journal: {len(queue)} recipes (DB-verified)" + (f", {dropped} dropped" if dropped else "")
+        msg = f"journal: {len(queue)} recipes" + (f", {unverified} unverified (check them)" if unverified else " (all DB-verified)")
         self.t.push_event(bot_id, "ocr", msg)
 
     def _log_path(self, bot_id: str):

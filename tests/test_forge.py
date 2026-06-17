@@ -215,17 +215,36 @@ def test_match_recipe_row_per_row_target_is_imbued(monkeypatch):
     assert sensors.match_recipe_row(None, cfg, "Imbued Iron Coat") == (245, 291)
 
 
-# ---- writ DB verification --------------------------------------------------
-def test_verify_writ_snaps_and_drops(monkeypatch):
+# ---- writ DB resolution (safe, tier-aware) ---------------------------------
+def _db(monkeypatch, names):
     from forge import recipes
-    monkeypatch.setattr(recipes, "_RECIPE_NAMES",
-                        {"Iron Katana", "Burlap Pantaloons", "Iron Vanguard Spaulders"})
-    out = recipes.verify_writ({"an iron katana": 1, "Burlap Pantaloons": 2, "Xyzzy Nonsense Item": 1})
-    assert out == {"Iron Katana": 1, "Burlap Pantaloons": 2}   # katana fixed, nonsense dropped
+    monkeypatch.setattr(recipes, "_RECIPE_NAMES", set(names))
+    monkeypatch.setattr(recipes, "_RECIPE_INDEX", None)   # force index rebuild from the fake DB
+    return recipes
 
-def test_verify_writ_detail_mapping(monkeypatch):
-    from forge import recipes
-    monkeypatch.setattr(recipes, "_RECIPE_NAMES", {"Iron Katana"})
-    d = recipes.verify_writ_detail({"an iron katana": 1, "Glorp Wobble": 1})
-    assert ("an iron katana", "Iron Katana", 1) in d
-    assert ("Glorp Wobble", None, 1) in d
+def test_resolve_writ_exact_and_case(monkeypatch):
+    r = _db(monkeypatch, ["Iron Katana", "Burlap Pantaloons"])
+    out = {raw: (res, ver) for raw, res, ver, _ in r.resolve_writ({"an iron katana": 1, "Burlap Pantaloons": 1})}
+    assert out["an iron katana"] == ("Iron Katana", True)
+    assert out["Burlap Pantaloons"] == ("Burlap Pantaloons", True)
+
+def test_resolve_writ_fixes_roman_and_tier(monkeypatch):
+    # garbled 'lll' -> III, and must pick tier III not X
+    r = _db(monkeypatch, ["Nature's Salve III (Journeyman)", "Nature's Salve X (Journeyman)"])
+    (raw, res, ver, _), = r.resolve_writ({"Nature's Salve lll (Joumeyman)": 1})
+    assert res == "Nature's Salve III (Journeyman)" and ver
+
+def test_resolve_writ_never_substitutes_wrong_base(monkeypatch):
+    # 'Rune of Puncture III' shares 'Puncture III (Journeyman)' with 'Lung Puncture III' but
+    # must NOT be matched to it — flagged unverified with the cleaned name instead.
+    r = _db(monkeypatch, ["Lung Puncture III (Journeyman)"])
+    (raw, res, ver, _), = r.resolve_writ({"Rune of Puncture |ll (Journeyman)": 1})
+    assert ver is False
+    assert res == "Rune of Puncture III (Journeyman)"   # roman fixed, base preserved
+
+def test_join_wrapped_reattaches_tail():
+    from forge.recipes import parse_ocr_items
+    text = ("- I need to create an Essence of Aggressive Defense II\n"
+            "  (Journeyman).\n")
+    items = parse_ocr_items(text)
+    assert any("Aggressive Defense" in k and "Journeyman" in k for k in items), items
