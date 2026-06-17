@@ -253,6 +253,35 @@ class Guest:
               f"Start-ScheduledTask -TaskName ibrun")
         return self.exec_ps(ps, wait=True) is not None
 
+    # -- push a host file into the guest (base64 -> WriteAllBytes) ----------
+    def push_file(self, local_path, guest_path: str) -> bool:
+        """Copy a host-side file into the guest, no shared folder. Used to keep the
+        in-guest reflex agent (craft_reflex.py) in lockstep with the repo so guests
+        never run stale counter logic. Returns True on a confirmed write."""
+        import base64 as _b64
+        from pathlib import Path as _Path
+        try:
+            data = _Path(local_path).read_bytes()
+        except Exception:
+            return False
+        b = _b64.b64encode(data).decode("ascii")
+        gp = guest_path.replace("\\", "\\\\")
+        ps = (f"$b=[Convert]::FromBase64String('{b}');"
+              f"[IO.File]::WriteAllBytes('{gp}',$b);(Get-Item '{gp}').Length")
+        out = self.exec_ps(ps)
+        return bool(out and out.strip().isdigit())
+
+    def sync_reflex(self) -> bool:
+        """Push the canonical guest_agent/craft_reflex.py into C:\\ib\\agent and
+        bounce the 'ibagent' task so the new code is loaded. Host-side canonical
+        copy lives next to the app (../guest_agent/craft_reflex.py)."""
+        from pathlib import Path as _Path
+        src = _Path(__file__).resolve().parent.parent / "guest_agent" / "craft_reflex.py"
+        if not src.exists() or not self.push_file(src, r"C:\ib\agent\craft_reflex.py"):
+            return False
+        self.exec_ps("schtasks /End /TN ibagent; Start-Sleep 1; schtasks /Run /TN ibagent")
+        return True
+
     # -- guest PowerShell (guest-exec; gexec.py pattern) -------------------
     def exec_ps(self, ps: str, wait: bool = True, poll: int = 60) -> str | None:
         """Run PowerShell in the guest. wait=True polls for completion and returns

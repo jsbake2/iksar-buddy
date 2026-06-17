@@ -394,6 +394,10 @@ class ForgeController:
             None, partial(drv.boot_and_login, user, pw, char, self.world))
         self.t.update_bot(bot_id, state="idle")
         if ok:
+            # keep the in-guest reflex agent in lockstep with the repo (guests run a
+            # persistent C:\ib\agent\craft_reflex.py — without this they silently drift)
+            if await loop.run_in_executor(None, g.sync_reflex):
+                self.t.push_log(bot_id, "reflex agent synced to current build")
             self.t.push_event(bot_id, "launch", f"in world as {char or '?'}")
         else:
             self.t.push_log(bot_id, f"login did not confirm in-world for {char or '?'}")
