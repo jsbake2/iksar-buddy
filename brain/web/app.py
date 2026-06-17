@@ -285,6 +285,16 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
                 telemetry.push_event("manual", "force combat -> assist tank")
                 await brain.send("command", role="attack", key=akey, target_slot=slot,
                                  manual=True, reason="force combat: assist tank")
+        # Force OOC = disengage NOW: tap Esc twice (clear target / stop attack /
+        # close any open window), then re-target the tank so we're ready to heal it.
+        elif name == "force_ooc":
+            gtk = brain.cfg.ability_map.get("group_target_keys") or []
+            slot = int(brain.cfg.ability_map.get("tank_slot", 0))
+            tkey = gtk[slot] if 0 <= slot < len(gtk) else None
+            seq = "Esc,pause_0.15,Esc" + (f",pause_0.15,{tkey}" if tkey else "")
+            telemetry.push_event("manual", "force ooc -> esc x2 + target tank")
+            await brain.send("command", role="force_ooc", key=seq, target_slot=None,
+                             manual=True, reason="force ooc: esc x2 + retarget tank")
         return {"ok": True, "override": ov.value}
 
     @app.post("/api/spice/restart")
