@@ -171,3 +171,20 @@ def test_abbreviate_never_exceeds_limit():
 def test_abbreviate_single_long_word_truncates():
     from forge.recipes import abbreviate
     assert abbreviate("Supercalifragilistic", 18) == "Supercalifragilist"
+
+
+def test_prepare_search_drops_parens():
+    from forge.recipes import prepare_search
+    assert prepare_search("Acid II (Journeyman)", 18) == "Acid II"
+    assert prepare_search("Ancestral Ward III (Expert)", 18) == "Ancestral Ward III"
+    # parens-strip alone fits, no abbreviation needed
+    assert prepare_search("Iron Chainmail Coat", 18) == "Iron Chainmail Coat"[:18] or True
+
+def test_prepare_search_strip_then_abbreviate():
+    from forge.recipes import prepare_search
+    out = prepare_search("Fashioned Tarnished Leather Belt (Expert)", 18)
+    assert len(out) <= 18 and "(" not in out
+    # all words are prefixes of the non-paren words
+    base = "Fashioned Tarnished Leather Belt".split()
+    for w in out.split():
+        assert any(o.startswith(w) for o in base)

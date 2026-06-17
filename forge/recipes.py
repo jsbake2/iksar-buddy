@@ -41,6 +41,21 @@ def search_name(name: str, trade_class: str) -> str:
     return name + trade_settings(trade_class).get("search_suffix", "")
 
 
+_PARENS_RE = re.compile(r"\s*\([^)]*\)")
+
+
+def prepare_search(text: str, limit: int = 18) -> str:
+    """Turn a recipe name (or tuned search) into the string to TYPE into EQ2's search box.
+
+    1) Drop parentheticals — the tier tag like "(Journeyman)"/"(Expert)" isn't needed to
+       search (owner crafts this way); the OCR row-match still disambiguates tier by full
+       name. This alone fits most names.
+    2) If still over the field limit, abbreviate each word evenly (see abbreviate()).
+    """
+    cleaned = _PARENS_RE.sub("", text or "").strip() or (text or "").strip()
+    return abbreviate(cleaned, limit)
+
+
 def abbreviate(text: str, limit: int = 18) -> str:
     """Shrink a search string to fit EQ2's ~18-char search field WITHOUT just chopping
     the tail (which drops whole trailing words and overruns the field, scrambling input).

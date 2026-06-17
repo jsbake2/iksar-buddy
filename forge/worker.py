@@ -20,7 +20,7 @@ from pathlib import Path
 
 from . import sensors
 from .guest import Guest
-from .recipes import abbreviate, search_name
+from .recipes import prepare_search, search_name
 from .telemetry import ForgeTelemetry
 
 log = logging.getLogger("forge.worker")
@@ -139,10 +139,10 @@ class CraftWorker:
         click_settle = float(timings.get("click_settle", 0.8))
         # owner-tuned search text (capped to EQ2's 18-char field), else the full name
         # (EQ2 truncates that itself; we still OCR-match the row on the full `name`).
-        # What to type: the owner's tuned search if set, else the recipe name. Either way
-        # fit it into EQ2's ~18-char field by abbreviating each WORD (not chopping the
-        # tail) — typing a >18 string overran the field and scrambled the input.
-        query = abbreviate((search or "").strip() or search_name(name, trade_class), 18)
+        # What to type: the owner's tuned search if set, else the recipe name. Drop
+        # parentheticals + abbreviate each WORD to fit EQ2's ~18-char field — typing a
+        # >18 string overran the field and scrambled the input.
+        query = prepare_search((search or "").strip() or search_name(name, trade_class), 18)
         sb = rs.get("search_click")
         attempts = int(rs.get("focus_attempts", 3))
 
