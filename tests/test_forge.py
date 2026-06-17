@@ -188,3 +188,28 @@ def test_prepare_search_strip_then_abbreviate():
     base = "Fashioned Tarnished Leather Belt".split()
     for w in out.split():
         assert any(o.startswith(w) for o in base)
+
+
+def test_match_recipe_row_per_row_slots(monkeypatch):
+    """Per-row OCR slots: pick the EXACT row, reject imbued, beat a superset; click its point."""
+    from forge import sensors
+    cfg = {"recipe_select": {"result_rows": [
+        {"ocr": {"x": 258, "y": 268, "w": 207, "h": 30}, "click": [245, 291]},  # imbued -> reject
+        {"ocr": {"x": 258, "y": 313, "w": 207, "h": 30}, "click": [244, 326]},  # exact
+        {"ocr": {"x": 258, "y": 356, "w": 207, "h": 30}, "click": [245, 368]},  # superset
+    ]}}
+    texts = {268: "imbuedironcoat", 313: "ironcoat", 356: "ironcoatofdoom"}
+    monkeypatch.setattr(sensors, "_ocr_line", lambda guest, r: texts.get(r["y"], ""))
+    assert sensors.match_recipe_row(None, cfg, "Iron Coat") == (244, 326)
+    # blobs diagnostic reflects the per-row boxes (one entry per slot)
+    assert sensors.recipe_row_blobs(None, cfg) == ["imbuedironcoat", "ironcoat", "ironcoatofdoom"]
+
+def test_match_recipe_row_per_row_target_is_imbued(monkeypatch):
+    from forge import sensors
+    cfg = {"recipe_select": {"result_rows": [
+        {"ocr": {"x": 258, "y": 268, "w": 207, "h": 30}, "click": [245, 291]},
+        {"ocr": {"x": 258, "y": 313, "w": 207, "h": 30}, "click": [244, 326]},
+    ]}}
+    texts = {268: "imbuedironcoat", 313: "ironcoat"}
+    monkeypatch.setattr(sensors, "_ocr_line", lambda guest, r: texts.get(r["y"], ""))
+    assert sensors.match_recipe_row(None, cfg, "Imbued Iron Coat") == (245, 291)

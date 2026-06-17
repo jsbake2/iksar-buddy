@@ -117,7 +117,16 @@ recipe_select:
   start_attempts: 4                # re-click Begin/Create until the red stop-sign shows (running)
   match_polls: 4                   # poll the list ~4x (post_search apart) before re-typing
   icon_x: 244                      # icon column (the selectable hotspot, left of the name)
-  list_region: {x: 225, y: 195, w: 320, h: 485}   # the recipe rows area (OCR'd whole)
+  list_region: {x: 225, y: 195, w: 320, h: 485}   # FALLBACK: whole-list region (used when result_rows unset)
+  # Explicit per-row OCR boxes + click points (owner-calibrated 2026-06-17, color-matched
+  # markup). Each slot: OCR the `ocr` box -> recipe name; on the best EXACT match (Imbued/
+  # Blessed rejected) click `click`. Deterministic; preferred over list_region when present.
+  result_rows:
+    - {ocr: {x: 258, y: 268, w: 207, h: 30}, click: [245, 291]}
+    - {ocr: {x: 258, y: 313, w: 207, h: 30}, click: [244, 326]}
+    - {ocr: {x: 258, y: 356, w: 207, h: 29}, click: [245, 368]}
+    - {ocr: {x: 258, y: 397, w: 207, h: 28}, click: [244, 410]}
+    - {ocr: {x: 258, y: 437, w: 205, h: 31}, click: [244, 452]}
 
 # Click here before pressing arts so keys land in the CRAFT WINDOW, not the hotbar/
 # chat (FORGE.md §5 focus discipline). The owner's "mouse safe" point.

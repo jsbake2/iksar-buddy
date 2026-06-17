@@ -380,6 +380,32 @@ def find_character(guest: Guest, cfg: dict, target: str) -> tuple[int, int] | No
     return (row_x, pick["y"] + pick["h"] // 2)
 
 
+def _ocr_line(guest: Guest, region: dict) -> str:
+    """OCR a single-line box, trying BOTH polarities and keeping the longer result.
+    Recipe rows zebra-stripe, so a fixed threshold leaves some rows white-on-black, which
+    tesseract can't read in isolation — negating to black-on-white recovers them. Returns
+    the alpha blob (e.g. 'tindirk'). Used for the per-row result boxes."""
+    r = region or {}
+    if not r or not guest.grab():
+        return ""
+    base = ["magick", guest.ppm, "-crop", f"{r['w']}x{r['h']}+{r['x']}+{r['y']}", "+repage",
+            "-colorspace", "Gray", "-resize", f"{_OCR_SCALE * 100}%", "-threshold", "43%"]
+    best = ""
+    for neg in ([], ["-negate"]):
+        try:
+            pre = subprocess.run(base + neg + ["png:-"], capture_output=True, timeout=6).stdout
+            if not pre:
+                continue
+            txt = subprocess.run(["tesseract", "stdin", "stdout", "--psm", "7"],
+                                 input=pre, capture_output=True, timeout=8).stdout.decode(errors="replace")
+            blob = _alpha(txt)
+            if len(blob) > len(best):
+                best = blob
+        except (OSError, subprocess.SubprocessError) as e:
+            log.warning("row OCR failed: %s", e)
+    return best
+
+
 def _recipe_rows(guest: Guest, cfg: dict) -> list[list]:
     """OCR the recipe-list region -> rows (each a list of word dicts), name column only.
     Rows render at a variable Y (result count / 2-line name wrap), so we group words by Y."""
@@ -398,59 +424,73 @@ def _recipe_rows(guest: Guest, cfg: dict) -> list[list]:
     return rows
 
 
+def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int]]]:
+    """[(name_blob, click_xy)] for each result row. Prefers EXPLICIT per-row OCR boxes +
+    click points (recipe_select.result_rows — owner-calibrated, one box/click per fixed row
+    slot); falls back to OCRing one tall region and grouping words by Y (click = icon_x at
+    the row's center). The per-row mode is deterministic: fixed box per slot, fixed click."""
+    rs = cfg.get("recipe_select", {})
+    slots = rs.get("result_rows") or []
+    if slots:
+        out = []
+        for s in slots:
+            ocr, click = s.get("ocr"), s.get("click")
+            if not ocr or not click:
+                continue
+            out.append((_ocr_line(guest, ocr), (int(click[0]), int(click[1]))))
+        return out
+    icon_x = int(rs.get("icon_x", 244))
+    out = []
+    for ws in _recipe_rows(guest, cfg):
+        blob = _alpha(" ".join(w["text"] for w in ws))
+        y = sum(w["y"] + w["h"] // 2 for w in ws) // len(ws)
+        out.append((blob, (icon_x, y)))
+    return out
+
+
 def recipe_row_blobs(guest: Guest, cfg: dict) -> list[str]:
-    """Diagnostic: the OCR'd name-column text of each result row, as seen by the matcher.
-    Logged on a failed match so 'not found' is never silent (wrong list name? unfiltered
-    list? focus race? — the blobs tell you which)."""
-    return [_alpha(" ".join(w["text"] for w in ws)) for ws in _recipe_rows(guest, cfg)]
+    """Diagnostic: the OCR'd text of each result row, as seen by the matcher. Logged on a
+    failed match so 'not found' is never silent (wrong name? unfiltered list? focus race?)."""
+    return [blob for blob, _ in _row_candidates(guest, cfg)]
 
 
 def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | None:
-    """Find the searched recipe ANYWHERE in the filtered list and return the click point
-    of its row's ICON (icon_x, actual row Y). Score each row by recipe-token overlap and
-    click the best above threshold. Returns None if nothing clears it (never load the
-    wrong recipe). A lone result with partial coverage is taken (sole-result fast path)."""
+    """Click point of the result row whose name matches `name`: highest token-coverage,
+    REJECTING Imbued/Blessed variants the target lacks, tiebreaking to the most-EXACT row
+    (fewest surplus letters). Uses per-row OCR boxes when calibrated, else one grouped
+    region. None if nothing clears threshold (a lone partial result is still taken)."""
     rs = cfg.get("recipe_select", {})
     want = [t for t in re.findall(r"[a-z]+", (name or "").lower()) if len(t) >= 3]
     if not want:
         return None
-    rows = _recipe_rows(guest, cfg)
-    if not rows:
-        return None
-    # Variant modifiers denote a DIFFERENT recipe: a row carrying "Imbued"/"Blessed"
-    # that the TARGET name does not have is never our recipe (owner rule). Without
-    # this, "Imbued Iron Chainmail Coat" token-matches "Iron Chainmail Coat" 1:1
-    # (the surplus word is invisible to coverage scoring) and we load the wrong row.
+    # A row carrying a variant modifier ("Imbued"/"Blessed") the TARGET lacks is never our
+    # recipe (owner rule) — the surplus word is invisible to coverage scoring otherwise.
     modifiers = [m.lower() for m in rs.get("variant_modifiers", ["imbued", "blessed"])]
     name_l = (name or "").lower()
     forbidden = [m for m in modifiers if m not in name_l]
     want_len = sum(len(t) for t in want)
-    scored = []   # (score, extra, row)
-    for ws in rows:
-        blob = _alpha(" ".join(w["text"] for w in ws))
+    scored = []   # (score, extra, click)
+    for blob, click in _row_candidates(guest, cfg):
+        if not blob:
+            continue
         if any(_contains(blob, f) for f in forbidden):
-            log.debug("recipe row y=%s REJECT (variant modifier) blob=%r", ws[0]["y"], blob)
+            log.debug("recipe row click=%s REJECT (variant) blob=%r", click, blob)
             continue
         score = sum(1 for t in want if _contains(blob, t)) / len(want)
-        # surplus letters beyond the wanted tokens — prefer the EXACT row on ties so
-        # a shorter exact name beats any longer "<prefix> <name> <suffix>" variant.
-        extra = max(0, len(blob) - want_len)
-        log.debug("recipe row y=%s score=%.2f extra=%d blob=%r", ws[0]["y"], score, extra, blob)
-        scored.append((score, extra, ws))
+        extra = max(0, len(blob) - want_len)   # surplus letters: prefer the exact row on ties
+        log.debug("recipe row click=%s score=%.2f extra=%d blob=%r", click, score, extra, blob)
+        scored.append((score, extra, click))
     if not scored:
         return None
     scored.sort(key=lambda s: (-s[0], s[1]))   # best coverage, then most-exact
-    best_score, _, best = scored[0]
+    best_score, _, click = scored[0]
     threshold = float(rs.get("match_threshold", 0.6))
-    # Sole-result fast path: exactly one (non-rejected) row and it shares SOMETHING with
-    # the target — take it even below threshold. EQ2 filtered to one row, so a partial
-    # OCR of a single obvious match shouldn't be dismissed as "not found".
+    # Sole-result fast path: one non-rejected row that shares SOMETHING -> take it even
+    # below threshold (a lone obvious match shouldn't be dismissed over OCR noise).
     sole = len(scored) == 1 and best_score >= float(rs.get("sole_result_floor", 0.34))
     if best_score < threshold and not sole:
         return None
-    icon_x = int(rs.get("icon_x", 244))
-    y = sum(w["y"] + w["h"] // 2 for w in best) // len(best)   # center of the matched row
-    return (icon_x, y)
+    return click
 
 
 def search_box_text(guest: Guest, cfg: dict) -> str:
