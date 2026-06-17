@@ -3,6 +3,7 @@
    (appears in every bot's Load dropdown) or SEND it straight to a crafter's queue. */
 "use strict";
 const DATA = "/recipedata";
+const DV = "?v=20260616d";   // cache-bust the data JSON (bump when the scrape regenerates)
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
@@ -15,6 +16,7 @@ themeSel.onchange = () => { document.documentElement.dataset.theme = themeSel.va
 const state = {
   manifest: null, cls: null, isSide: false, items: [], cache: {},
   view: "tree", search: "", cat: "all", station: "all", lmin: null, lmax: null,
+  open: null, seedOpen: true,   // preserved <details> open-state across re-renders
   sort: { key: "level", dir: 1 },
   sel: new Map(),       // key -> {recipe, book, category, level, cls}
   lists: {}, bots: [],
@@ -31,7 +33,7 @@ const selKey = (cls, it) => `${cls || "?"}::${it.recipe_id || it.recipe}`;
 
 // ---- boot -----------------------------------------------------------------
 async function boot() {
-  try { state.manifest = await (await fetch(DATA + "/manifest.json")).json(); }
+  try { state.manifest = await (await fetch(DATA + "/manifest.json" + DV)).json(); }
   catch (e) {
     $("view").innerHTML = `<div class="placeholder"><div>Couldn't load recipe data.</div>
       <div class="muted">Run <code>tools/recipe_scrape/scrape.py</code> and redeploy.</div></div>`;
@@ -65,7 +67,7 @@ async function selectClass(cls, isSide) {
   document.querySelectorAll(".rail li[data-cls]").forEach(li => li.classList.toggle("active", li.dataset.cls === cls));
   if (!state.cache[cls]) {
     const dir = isSide ? "side" : "by_class";
-    const raw = await (await fetch(`${DATA}/${dir}/${cls.toLowerCase()}.json`)).json();
+    const raw = await (await fetch(`${DATA}/${dir}/${cls.toLowerCase()}.json` + DV)).json();
     const items = [];
     for (const [key, list] of Object.entries(raw)) {
       const level = /^\d+$/.test(key) ? parseInt(key, 10) : null;
@@ -76,6 +78,7 @@ async function selectClass(cls, isSide) {
   state.items = state.cache[cls];
   state.cat = "all"; state.search = ""; $("search").value = "";
   state.station = "all"; state.lmin = state.lmax = null; $("lmin").value = ""; $("lmax").value = "";
+  state.open = new Set(); state.seedOpen = true;   // re-seed default open tiers for the new class
   buildChips(); buildStations(); render();
 }
 
@@ -131,37 +134,56 @@ function recipeRow(it) {
   row.onclick = () => { toggleSel(it); render(); };
   return row;
 }
+// Build a <details> tier whose open/closed state PERSISTS across re-renders (so checking
+// a recipe — which re-renders — doesn't collapse the menu you're in). Keyed by `key`.
+function tier(view, key, headHTML, defaultOpen, fill) {
+  if (state.seedOpen && defaultOpen) state.open.add(key);
+  const d = el("details", "tier");
+  d.open = state.search ? true : state.open.has(key);     // search force-opens, no state change
+  const s = el("summary"); s.innerHTML = headHTML; d.appendChild(s);
+  fill(d);
+  d.addEventListener("toggle", () => {
+    if (state.search) return;                              // don't record while searching
+    if (d.open) state.open.add(key); else state.open.delete(key);
+  });
+  view.appendChild(d);
+}
 function renderTree(items) {
   const view = $("view"); view.replaceChildren();
   if (!items.length) { view.appendChild(emptyMsg()); return; }
+  if (state.open === null) state.open = new Set();
   if (state.isSide) {
     const byBook = groupBy(items, i => i.groupKey);
+    const def = Object.keys(byBook).length <= 12;
     for (const book of Object.keys(byBook).sort(volSort)) {
-      const d = el("details", "tier"); d.open = Object.keys(byBook).length <= 12;
-      const s = el("summary"); s.innerHTML = `<span class="caret">▸</span><span>${book}</span><span class="tier-meta">${byBook[book].length} recipes</span>`;
-      d.appendChild(s); const block = el("div", "catblock"); byBook[book].forEach(it => block.appendChild(recipeRow(it))); d.appendChild(block); view.appendChild(d);
+      tier(view, "bk:" + book,
+        `<span class="caret">▸</span><span>${book}</span><span class="tier-meta">${byBook[book].length} recipes</span>`,
+        def, (d) => { const block = el("div", "catblock"); byBook[book].forEach(it => block.appendChild(recipeRow(it))); d.appendChild(block); });
     }
+    state.seedOpen = false;
     return;
   }
   const band = (lv) => lv == null ? 9999 : lv < 10 ? 1 : Math.floor(lv / 10) * 10;
   const bands = groupBy(items, i => band(i.level));
+  const def = Object.keys(bands).length <= 4;
   for (const bk of Object.keys(bands).map(Number).sort((a, b) => a - b)) {
     const lvls = [...new Set(bands[bk].map(i => i.level))].sort((a, b) => (a ?? 1e9) - (b ?? 1e9));
     const label = bk === 9999 ? "No level (quest/misc)" : bk === 1 ? "Tier 1–9" : `Tier ${bk}–${bk + 9}`;
-    const d = el("details", "tier"); d.open = Object.keys(bands).length <= 4 || !!state.search;
-    const s = el("summary"); s.innerHTML = `<span class="caret">▸</span><span>${label}</span><span class="tier-meta">${bands[bk].length} recipes · L${lvls[0] ?? "—"}–${lvls[lvls.length - 1] ?? "—"}</span>`;
-    d.appendChild(s);
-    for (const lv of lvls) {
-      const lvWrap = el("div", "lvl"); lvWrap.appendChild(el("div", "lvl-head", lv == null ? "— (no level)" : `Level ${lv}`));
-      const cats = groupBy(bands[bk].filter(i => i.level === lv), i => i.category);
-      for (const c of Object.keys(cats).sort((a, b) => rank(a) - rank(b))) {
-        const block = el("div", "catblock"); block.appendChild(el("div", "cat-label", catLabel(c)));
-        cats[c].forEach(it => block.appendChild(recipeRow(it))); lvWrap.appendChild(block);
-      }
-      d.appendChild(lvWrap);
-    }
-    view.appendChild(d);
+    tier(view, "t:" + bk,
+      `<span class="caret">▸</span><span>${label}</span><span class="tier-meta">${bands[bk].length} recipes · L${lvls[0] ?? "—"}–${lvls[lvls.length - 1] ?? "—"}</span>`,
+      def, (d) => {
+        for (const lv of lvls) {
+          const lvWrap = el("div", "lvl"); lvWrap.appendChild(el("div", "lvl-head", lv == null ? "— (no level)" : `Level ${lv}`));
+          const cats = groupBy(bands[bk].filter(i => i.level === lv), i => i.category);
+          for (const c of Object.keys(cats).sort((a, b) => rank(a) - rank(b))) {
+            const block = el("div", "catblock"); block.appendChild(el("div", "cat-label", catLabel(c)));
+            cats[c].forEach(it => block.appendChild(recipeRow(it))); lvWrap.appendChild(block);
+          }
+          d.appendChild(lvWrap);
+        }
+      });
   }
+  state.seedOpen = false;
 }
 function renderTable(items) {
   const view = $("view"); view.replaceChildren();
