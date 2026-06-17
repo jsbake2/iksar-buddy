@@ -243,7 +243,8 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
                   trade_class=payload.get("trade_class", ""),
                   recipe=payload.get("recipe", ""),
                   count=payload.get("count", 1),
-                  search=payload.get("search", ""))
+                  search=payload.get("search", ""),
+                  station=payload.get("station", ""))
         return {"ok": True}
 
     @app.post("/api/bot/{bot_id}/stop")

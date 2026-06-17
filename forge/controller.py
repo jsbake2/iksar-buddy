@@ -136,7 +136,7 @@ class ForgeController:
             self.t.update_bot(bot_id, **clean)
 
     def start(self, bot_id: str, mode: str, trade_class: str,
-              recipe: str = "", count: int = 1, search: str = "") -> None:
+              recipe: str = "", count: int = 1, search: str = "", station: str = "") -> None:
         b = self.t.bot(bot_id)
         w = self.workers.get(bot_id)
         if not b or not w or not b["enabled"]:
@@ -146,8 +146,11 @@ class ForgeController:
             return
         self._shutting_down.discard(bot_id)        # new job -> re-arm auto-shutdown
         if mode == "writ":
-            w.start("writ", trade_class, queue=b.get("queue", []))
-            self.t.push_event(bot_id, "craft", f"writ start ({len(b.get('queue', []))} recipes)")
+            q = b.get("queue", [])
+            w.start("writ", trade_class, queue=q, station=station)
+            n = sum(1 for it in q if not station or (it.get("station") or "") == station)
+            self.t.push_event(bot_id, "craft",
+                              f"writ start ({n} recipes" + (f" @ {station}" if station else "") + ")")
         else:
             recipe = recipe or b.get("recipe", "")   # dashboard shows the saved recipe
             search = search or b.get("search", "")   # owner-tuned search text (empty -> name)
@@ -182,7 +185,9 @@ class ForgeController:
             except (TypeError, ValueError):
                 cnt = 1
             clean.append({"name": name, "count": cnt, "done": 0,
-                          "search": str(it.get("search", "")).strip()})
+                          "search": str(it.get("search", "")).strip(),
+                          "station": str(it.get("station", "")).strip(),
+                          "verified": bool(it.get("verified", False))})
         self.t.update_bot(bot_id, mode="writ", queue=clean)
         self.t.push_event(bot_id, "queue", f"{len(clean)} recipes queued")
 
@@ -202,8 +207,11 @@ class ForgeController:
         # snap to the canonical recipe; everything else keeps its cleaned name (roman numerals
         # fixed) and is flagged UNVERIFIED — we never substitute a wrong recipe.
         queue, unverified = [], 0
-        for rawname, resolved, verified, count in recipes.resolve_writ(raw):
-            queue.append({"name": resolved, "count": count, "done": 0, "verified": verified})
+        for rawname, resolved, verified, count in recipes.resolve_writ(
+                raw, flavor_prefixes=self.cfg_profile.get("writ_flavor_prefixes")):
+            station = recipes.recipe_station(resolved) if verified else ""
+            queue.append({"name": resolved, "count": count, "done": 0,
+                          "verified": verified, "station": station})
             if verified and rawname.strip() != resolved:
                 self.t.push_log(bot_id, f"writ '{rawname}' -> DB '{resolved}'")
             elif not verified:

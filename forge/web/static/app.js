@@ -125,6 +125,8 @@ function buildBotPanel(bot, tradeClasses) {
     scribe: q(".bot-scribe"),
     addrow: q(".bot-addrow"),
     queue: q(".bot-queue"),
+    stations: q(".bot-stations"),
+    station: "",                 // selected table filter ("" = all)
     listsel: q(".bot-listsel"),
     listload: q(".bot-listload"),
     listsave: q(".bot-listsave"),
@@ -208,6 +210,7 @@ function buildBotPanel(bot, tradeClasses) {
       mode: refs.uiMode, trade_class: c ? c.class : "",
       recipe: refs.recipe.value, search: refs.search.value,
       count: parseInt(refs.count.value) || 1,
+      station: refs.uiMode === "writ" ? (refs.station || "") : "",   // craft only the shown table
     });
   };
   refs.stop.onclick = () => post(`/api/bot/${id}/stop`);
@@ -245,7 +248,12 @@ function queueRowFocused(refs) {
 function pushQueueRow(refs, item) {
   const li = document.createElement("li");
   li.className = "qrow" + (item.done >= item.count && item.count ? " done" : "");
-  li.innerHTML =
+  li.dataset.station = item.station || "";
+  li.dataset.verified = item.verified ? "1" : "0";
+  const badge = item.station
+    ? `<span class="q-station" title="${item.station}">${item.station}</span>`
+    : `<span class="q-station ${item.verified ? "" : "warn"}" title="${item.verified ? "" : "not in recipe DB — verify by hand"}">${item.verified ? "—" : "⚠"}</span>`;
+  li.innerHTML = badge +
     `<input class="qname" type="text" value="${(item.name || "").replace(/"/g, "&quot;")}" placeholder="recipe name" />` +
     `<input class="qsearch" type="text" maxlength="18" value="${(item.search || "").replace(/"/g, "&quot;")}" placeholder="search (blank=name)" />` +
     `<input class="qcount" type="number" min="1" max="999" value="${item.count || 1}" />` +
@@ -262,19 +270,49 @@ function readQueueDom(refs) {
     name: row.querySelector(".qname").value.trim(),
     search: row.querySelector(".qsearch").value.trim(),
     count: parseInt(row.querySelector(".qcount").value) || 1,
+    station: row.dataset.station || "",
+    verified: row.dataset.verified === "1",
   })).filter((it) => it.name);
 }
 function saveQueue(id, refs) {
   post(`/api/bot/${id}/queue`, { queue: readQueueDom(refs) });
 }
+// Radio bar of the crafting tables present in THIS writ. Selecting one filters the queue
+// view AND scopes Start to that table (owner reads one journal, crafts table-by-table).
+function renderStations(refs, queue) {
+  const stations = [...new Set((queue || []).map((q) => q.station).filter(Boolean))].sort();
+  const bar = refs.stations;
+  if (stations.length < 2) {                 // single (or no) table -> no filter needed
+    bar.hidden = true; bar.innerHTML = ""; refs.station = ""; applyStationFilter(refs); return;
+  }
+  if (refs.station && refs.station !== "all" && !stations.includes(refs.station)) refs.station = "";
+  bar.hidden = false;
+  const mk = (val, label, count) => {
+    const b = document.createElement("button");
+    b.className = "st-chip" + ((refs.station || "all") === val ? " active" : "");
+    b.textContent = count != null ? `${label} (${count})` : label;
+    b.onclick = () => { refs.station = val === "all" ? "" : val; renderStations(refs, queue); applyStationFilter(refs); };
+    return b;
+  };
+  bar.replaceChildren(mk("all", "All", (queue || []).length),
+    ...stations.map((s) => mk(s, s, (queue || []).filter((q) => q.station === s).length)));
+}
+function applyStationFilter(refs) {
+  const sel = refs.station || "";
+  refs.queue.querySelectorAll(".qrow").forEach((row) => {
+    row.style.display = (!sel || row.dataset.station === sel) ? "" : "none";
+  });
+}
 function renderQueue(refs, queue) {
   // only rebuild from telemetry when the queue actually changed AND the user
   // isn't mid-edit (so typing/counts aren't clobbered by the ~1Hz stream).
-  const sig = (queue || []).map((q) => `${q.name}:${q.search || ""}:${q.count}:${q.done}`).join("|");
+  const sig = (queue || []).map((q) => `${q.name}:${q.search || ""}:${q.count}:${q.done}:${q.station || ""}`).join("|");
   if (sig === refs.queueSig || queueRowFocused(refs)) return;
   refs.queueSig = sig;
   refs.queue.innerHTML = "";
   (queue || []).forEach((it) => pushQueueRow(refs, it));
+  renderStations(refs, queue);
+  applyStationFilter(refs);
 }
 
 // ---- per-bot render -------------------------------------------------------

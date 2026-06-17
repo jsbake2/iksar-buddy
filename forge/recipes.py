@@ -37,6 +37,31 @@ def recipe_names() -> set[str]:
     return _RECIPE_NAMES
 
 
+_RECIPE_STATIONS: dict[str, str] | None = None
+
+
+def recipe_station(name: str) -> str:
+    """Crafting station/table for a canonical recipe ('Forge', 'Sewing Table', …), '' if
+    unknown. Built from the scraped DB (by_class + side JSON), cached."""
+    global _RECIPE_STATIONS
+    if _RECIPE_STATIONS is None:
+        st: dict[str, str] = {}
+        for sub in ("by_class", "side"):
+            d = _DATA_DIR / sub
+            if d.exists():
+                for f in d.glob("*.json"):
+                    try:
+                        for items in json.loads(f.read_text(encoding="utf-8")).values():
+                            for r in items:
+                                rn, sta = r.get("recipe"), r.get("station")
+                                if rn and sta and sta != "Unknown":
+                                    st.setdefault(rn, sta)
+                    except (OSError, ValueError):
+                        pass
+        _RECIPE_STATIONS = st
+    return _RECIPE_STATIONS.get(name, "")
+
+
 # Roman-numeral runs OCR badly (the font's capital I reads as l / | / 1): "III" -> "|ll",
 # "II" -> "Il". Normalize a standalone run of those glyphs back to the roman of that length.
 _ROMAN_FIX = re.compile(r"(?<=\s)([IilL|1]{2,4})(?=\s|\(|\)|\.|$)")
@@ -108,7 +133,26 @@ def _recipe_index() -> tuple[dict, list]:
     return _RECIPE_INDEX
 
 
-def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86) -> list[tuple[str, str, bool, int]]:
+# Writ FLAVOR-TEXT prefixes: EQ2 writs prepend these (jeweler runes -> "Rune of …",
+# alchemy -> "Essence of …") but the recipe NAME has no such prefix. We strip them to find
+# the real recipe — UNLESS the full flavored name itself matches the DB (then keep it).
+# Extensible: the owner adds more via craft.yaml `writ_flavor_prefixes` as they surface.
+_FLAVOR_PREFIXES = ["Rune of", "Essence of"]
+
+
+def _base_variants(base: str, prefixes: list[str]) -> list[str]:
+    """The base name, plus flavor-prefix-stripped variants to try (full name first)."""
+    out = [base]
+    bl = base.lower()
+    for pre in prefixes:
+        p = pre.lower() + " "
+        if bl.startswith(p):
+            out.append(base[len(pre):].strip())
+    return out
+
+
+def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
+                 flavor_prefixes: list[str] | None = None) -> list[tuple[str, str, bool, int]]:
     """[(raw, resolved, verified, count)] for each OCR'd writ objective.
 
     Decompose into (base, tier, quality) and match the BASE name STRICTLY — then require the
@@ -116,6 +160,7 @@ def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86) -> list[tuple
     (verified=True), else the cleaned OCR name (verified=False). We never substitute a wrong
     recipe — a different base ('Rune of Puncture' vs 'Lung Puncture') or tier is left
     unverified for the owner to check, not crafted blind."""
+    prefixes = _FLAVOR_PREFIXES if flavor_prefixes is None else flavor_prefixes
     names = recipe_names()
     out = []
     idx, base_list = _recipe_index() if names else ({}, [])
@@ -124,12 +169,18 @@ def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86) -> list[tuple
         b, t, q = _decompose(clean)
         canon, verified = clean, False
         if names:
-            bases = [b.lower()] if b.lower() in idx else \
-                    [m.lower() for m in difflib.get_close_matches(b, base_list, n=1, cutoff=base_cutoff)]
-            for cb in bases:
-                entries = idx.get(cb, [])
-                pick = next((en for et, eq, en in entries if et == t and (not q or not eq or eq == q)), None) \
-                    or next((en for et, eq, en in entries if et == t), None)
+            # Try the full base first; if it doesn't match, try flavor-prefix-stripped variants
+            # ("Essence of Aggressive Defense" -> "Aggressive Defense"). Same tier+quality.
+            for bv in _base_variants(b, prefixes):
+                cands = [bv.lower()] if bv.lower() in idx else \
+                        [m.lower() for m in difflib.get_close_matches(bv, base_list, n=1, cutoff=base_cutoff)]
+                pick = None
+                for cb in cands:
+                    entries = idx.get(cb, [])
+                    pick = next((en for et, eq, en in entries if et == t and (not q or not eq or eq == q)), None) \
+                        or next((en for et, eq, en in entries if et == t), None)
+                    if pick:
+                        break
                 if pick:
                     canon, verified = pick, True
                     break

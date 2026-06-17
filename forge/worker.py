@@ -53,10 +53,13 @@ class CraftWorker:
 
     # -- control (called by the controller) --------------------------------
     def start(self, mode: str, trade_class: str, recipe: str = "",
-              count: int = 1, queue: list | None = None, search: str = "") -> None:
+              count: int = 1, queue: list | None = None, search: str = "", station: str = "") -> None:
         if mode == "writ":
             q = [dict(it, done=0) for it in (queue or [])]
-            self._pending = {"mode": "writ", "trade_class": trade_class, "queue": q}
+            # station != "" -> craft ONLY that table's recipes this pass (owner reads one writ,
+            # crafts table-by-table without deleting/re-reading). "" / "all" = whole queue.
+            self._pending = {"mode": "writ", "trade_class": trade_class, "queue": q,
+                             "station": "" if station in ("", "all") else station}
         else:
             self._pending = {"mode": "single", "trade_class": trade_class,
                              "recipe": recipe or "", "search": search or "",
@@ -494,16 +497,19 @@ class CraftWorker:
         self.t.update_bot(self.id, started_at=time.time(), reactions=0, crafts_done=0)
         if job["mode"] == "writ":
             q = job["queue"]
+            station = job.get("station", "")
             self.t.update_bot(self.id, queue=q)
             for i, it in enumerate(q, 1):
                 if self._stop.is_set():
                     break
+                if station and (it.get("station") or "") != station:
+                    continue                     # different table this pass — leave for later
                 made = await self._craft_recipe(it["name"], it["count"], tc, i, len(q),
                                                 gate_power=False,            # writs barrel forward
                                                 search=it.get("search", ""))
                 it["done"] = made                # ACTUAL crafts done, not assumed
                 self.t.update_bot(self.id, queue=q)
-            self.t.push_event(self.id, "craft", "batch complete")
+            self.t.push_event(self.id, "craft", "batch complete" + (f" ({station})" if station else ""))
         else:
             await self._craft_recipe(job["recipe"], job["count"], tc,
                                      search=job.get("search", ""))

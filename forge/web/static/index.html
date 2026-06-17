@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ib · forge</title>
   <link rel="stylesheet" href="themes.css?v=20260614" />
-  <link rel="stylesheet" href="forge.css?v=20260617a" />
+  <link rel="stylesheet" href="forge.css?v=20260617b" />
 </head>
 <body>
   <!-- top bar -->
@@ -116,7 +116,8 @@
           <button class="src-btn bot-scribe" title="Mark the log, scribe a book in-game, then click again to load ONLY that book's recipes">📖 Mark for scribe</button>
           <button class="src-btn bot-addrow" title="add a recipe row by hand">＋ Add recipe</button>
         </div>
-        <div class="queue-head"><span>recipe</span><span>search</span><span>×</span><span></span></div>
+        <div class="station-bar bot-stations" hidden title="filter the writ to one crafting table; Start crafts only the shown table"></div>
+        <div class="queue-head"><span>table</span><span>recipe</span><span>search</span><span>×</span><span></span></div>
         <ul class="queue-list bot-queue"></ul>
         <div class="queue-empty">No recipes — read the journal, read the log, or add by hand.</div>
       </div>
@@ -183,6 +184,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260615e"></script>
+  <script src="app.js?v=20260617b"></script>
 </body>
 </html>
