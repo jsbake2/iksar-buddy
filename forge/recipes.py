@@ -41,6 +41,47 @@ def search_name(name: str, trade_class: str) -> str:
     return name + trade_settings(trade_class).get("search_suffix", "")
 
 
+def abbreviate(text: str, limit: int = 18) -> str:
+    """Shrink a search string to fit EQ2's ~18-char search field WITHOUT just chopping
+    the tail (which drops whole trailing words and overruns the field, scrambling input).
+
+    Keep every word, abbreviating each to its longest prefix that fits, distributing the
+    budget as evenly as possible (a short word like "Fat" stays whole; the freed chars go
+    to longer words). Reserves one char per inter-word space.
+
+        "Floppy Fat Unicorn Lover" (24) -> "Flop Fat Unic Love" (18)
+
+    EQ2's recipe search matches per-word prefixes, so the abbreviation still resolves the
+    recipe. Returns text unchanged when it already fits.
+    """
+    text = (text or "").strip()
+    if len(text) <= limit:
+        return text
+    words = text.split()
+    n = len(words)
+    if n <= 1:
+        return text[:limit]
+    budget = limit - (n - 1)            # chars left for letters after reserving spaces
+    if budget < n:                      # not even 1 char/word -> keep as many whole words as fit
+        out, used = [], 0
+        for w in words:
+            if used + len(w) + (1 if out else 0) > limit:
+                break
+            used += len(w) + (1 if out else 0); out.append(w)
+        return " ".join(out) or text[:limit]
+    lengths = [len(w) for w in words]
+    alloc = [0] * n
+    b, progressing = budget, True
+    while b > 0 and progressing:        # round-robin: 1 char at a time to any not-yet-full word
+        progressing = False
+        for i in range(n):
+            if b == 0:
+                break
+            if alloc[i] < lengths[i]:
+                alloc[i] += 1; b -= 1; progressing = True
+    return " ".join(w[:alloc[i]] for i, w in enumerate(words) if alloc[i] > 0)
+
+
 def clean_item_name(raw: str, trade_class: str) -> str:
     name = _PREFIX_STRIP_RE.sub("", raw).strip()
     extra = trade_settings(trade_class).get("extra_clean")

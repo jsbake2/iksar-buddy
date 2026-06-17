@@ -145,3 +145,29 @@ def test_match_recipe_row_no_rows_returns_none(monkeypatch):
     from forge import sensors
     monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: [])
     assert sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Iron Coat") is None
+
+
+# ---- search-string abbreviation (fit EQ2's ~18-char field) -----------------
+def test_abbreviate_owner_example():
+    from forge.recipes import abbreviate
+    assert abbreviate("Floppy Fat Unicorn Lover", 18) == "Flop Fat Unic Love"
+
+def test_abbreviate_passthrough_when_short():
+    from forge.recipes import abbreviate
+    assert abbreviate("Iron Coat", 18) == "Iron Coat"
+    assert abbreviate("Exactly18CharsLong", 18) == "Exactly18CharsLong"
+
+def test_abbreviate_never_exceeds_limit():
+    from forge.recipes import abbreviate
+    for nm in ["Iron Vanguard Sabatons", "Imbued Iron Chainmail Leggings",
+               "Ancestral Ward III (Journeyman)", "Superb Purple Adornment Dislodger",
+               "Floppy Fat Unicorn Lover Of Many Many Words Here"]:
+        out = abbreviate(nm, 18)
+        assert len(out) <= 18, f"{nm!r} -> {out!r} ({len(out)})"
+        # every kept word is a prefix of an original word
+        for w in out.split():
+            assert any(orig.startswith(w) for orig in nm.split()), f"{w!r} not a prefix in {nm!r}"
+
+def test_abbreviate_single_long_word_truncates():
+    from forge.recipes import abbreviate
+    assert abbreviate("Supercalifragilistic", 18) == "Supercalifragilist"
