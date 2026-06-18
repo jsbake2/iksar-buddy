@@ -454,12 +454,13 @@ class CraftWorker:
                     # first craft, or repeat fallback: Begin if it's up, else Create
                     clk, label = create, "create"
                     t0 = time.time()
-                    while time.time() - t0 < 2.5 and not self._stop.is_set():
+                    poll = float(timings.get("poll", 0.15))
+                    while time.time() - t0 < float(timings.get("begin_detect", 1.5)) and not self._stop.is_set():
                         await self._ex(self.guest.grab)
                         if await self._ex(sensors.begin_or_retry, self.guest, self.cfg):
                             clk, label = begin, "begin"
                             break
-                        await asyncio.sleep(0.3)
+                        await asyncio.sleep(poll)
                 if not clk:
                     break
                 self.t.push_log(self.id, f"{label} -> start craft {done + 1}/{count}")
@@ -472,7 +473,7 @@ class CraftWorker:
                     if await self._ex(sensors.craft_running, self.guest, self.cfg):
                         started = True
                         break
-                    await asyncio.sleep(0.3)
+                    await asyncio.sleep(float(timings.get("poll", 0.15)))
                 if started:
                     break
                 self.t.push_log(self.id, "not running (no stop sign) — clicking start again")
