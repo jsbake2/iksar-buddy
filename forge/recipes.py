@@ -79,14 +79,25 @@ def _tier(name: str) -> str:
     return m.group(1) if m else ""
 
 
+# Journal lines that are NOT recipes — the timed/fast-writ quest TIMER especially. They
+# must be dropped before parsing AND before wrap-merge, or "Time remaining 0:19" becomes a
+# bogus objective or gets glued onto the real recipe above it. (Recipes never say "remaining".)
+_QUEST_NOISE_RE = re.compile(r"remaining|time\s*left", re.I)
+
+
+def _is_quest_noise(line: str) -> bool:
+    return bool(_QUEST_NOISE_RE.search(line or ""))
+
+
 def _join_wrapped(text: str) -> str:
     """Merge wrapped continuation lines back onto their objective. A line that doesn't start
     a new objective (no 'need to create' / leading '-') is glued to the previous one — fixes
-    a recipe whose '(Journeyman)' tail wrapped to the next line."""
+    a recipe whose '(Journeyman)' tail wrapped to the next line. Quest-timer noise lines are
+    dropped (not merged) so they can't corrupt the recipe above them."""
     out: list[str] = []
     for raw in re.split(r"[\n\r]+", text):
         ls = raw.strip()
-        if not ls:
+        if not ls or _is_quest_noise(ls):
             continue
         starts = bool(re.search(r"(?:eed|need)\s+to", ls, re.I)) or ls.startswith("-")
         if not starts and out:
@@ -309,7 +320,7 @@ def parse_ocr_items(text: str, trade_class: str = "") -> dict[str, int]:
     items: dict[str, int] = {}
     for line in re.split(r"[\n\r]+", _join_wrapped(text)):
         line = line.strip()
-        if not line:
+        if not line or _is_quest_noise(line):       # skip the timed-writ quest timer
             continue
         m = _COUNT_RE.match(line)
         if m:

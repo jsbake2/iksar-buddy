@@ -234,6 +234,14 @@ def test_resolve_writ_fixes_roman_and_tier(monkeypatch):
     (raw, res, ver, _, _), = r.resolve_writ({"Nature's Salve lll (Joumeyman)": 1})
     assert res == "Nature's Salve III (Journeyman)" and ver
 
+def test_parse_ocr_skips_quest_timer():
+    # timed/fast writ: the "Time remaining" quest timer must NOT become a recipe, and
+    # must not get glued onto the recipe above it.
+    items = parse_ocr_items("- Carbonite Tower Shield (0/6)\n- Time remaining: 0:19:45", "armorer")
+    assert items.get("Carbonite Tower Shield") == 6
+    assert not any("remain" in k.lower() for k in items)
+
+
 def test_resolve_writ_brackets_and_odd_chars(monkeypatch):
     # OCR {}/[] -> () (a verified clean match, no warn); a stray special char is flagged.
     r = _db(monkeypatch, ["Tailored Leather Gloves (Journeyman)"])
