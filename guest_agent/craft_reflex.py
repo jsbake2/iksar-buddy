@@ -231,49 +231,71 @@ class CraftReflex:
         n = self._region_count(sct, reg, rd.get("red", [147, 62, 37]), int(rd.get("tolerance", 45)))
         return n >= int(rd.get("min_pixels", 300))
 
+    def _begin_lit(self, sct) -> bool:
+        bp = (self.r.get("begin", {}) or {}).get("pixel", {}) or {}
+        return bool(bp.get("location")) and _match_color(
+            _pixel(sct, bp["location"][0], bp["location"][1]),
+            bp.get("color", [0, 0, 0]), int(bp.get("tolerance", 45)))
+
+    def _repeat_lit(self, sct) -> bool:
+        rep = self.r.get("repeat", {}) or {}
+        dd = self.r.get("done_detect", {}) or {}
+        reg = rep.get("region") or (dd.get("repeat") or {}).get("region")
+        if not reg:
+            return False
+        g = rep.get("green") or (dd.get("repeat") or {}).get("green", [114, 167, 60])
+        tol = int(rep.get("tolerance", (dd.get("repeat") or {}).get("tolerance", 55)))
+        mn = int(rep.get("min_pixels", (dd.get("repeat") or {}).get("min_pixels", 30)))
+        return self._region_count(sct, reg, g, tol) >= mn
+
     def _start_craft(self, first: bool) -> bool:
-        """Start one craft LOCALLY and confirm RUNNING. Ground truth (sampled live): BEGIN
-        is the reliable start button for BOTH first and continuation, but its pixel can't be
-        cleanly detected (dark center, thin gold border) and it RE-ENABLES a few seconds
-        after a craft completes. So don't try to detect it — CLICK Begin on a cadence until
-        running_detect (red stop-sign: ~990px running vs ~43 idle) confirms. The per-click
-        running check fires within ~0.5s of a real start, so a click that lands on a still-
-        disabled Begin is a harmless no-op and we just click again. Returns False only if
-        nothing starts within start_timeout (list done / missing materials)."""
+        """Start one craft LOCALLY and confirm it's RUNNING. Ground truth (sampled live):
+        the continuation button is the green REPEAT ↻ (Begin goes dark after a craft); the
+        FIRST craft uses Begin (lit after select). The ONE reliable 'it started' signal is
+        running_detect (red stop-sign: ~990px running vs ~43 idle) — the 'button-gone' and
+        Create-pixel checks were noisy and caused both wasted retries and false bails.
+        Returns False only when no start button ever appears (list done / Begin disabled)."""
         st = self.r.get("start", {}) or {}
-        start_timeout = float(st.get("start_timeout", 14.0))
-        per_confirm = float(st.get("per_click_confirm", 1.5))
+        attempts = int(st.get("attempts", 4))
+        confirm_t = float(st.get("confirm_timeout", 6.0))   # stop-sign renders a few s after click
         poll = float(st.get("poll", 0.12))
+        post_begin = float(st.get("post_begin", 0.25))
+        begin_detect = float(st.get("begin_detect", 2.0))
         bclick = (self.r.get("begin", {}) or {}).get("click")
         rclick = (self.r.get("repeat", {}) or {}).get("click")
-        if not bclick:
-            return False
         with mss.mss() as sct:
-            deadline = time.time() + start_timeout
-            clicks = 0
-            while time.time() < deadline and not self.should_stop():
-                if self._running(sct):               # already running (a prior click took)
+            for attempt in range(attempts):
+                if self.should_stop():
+                    return False
+                if self._running(sct):               # a prior click already started it
                     return True
-                if not self._chat_safe(sct):         # gate the click (fail-closed)
+                if not self._chat_safe(sct):         # gate the click too (fail-closed)
                     time.sleep(0.2); continue
-                self._click(bclick[0], bclick[1])
-                clicks += 1
-                t1 = time.time()
-                while time.time() - t1 < per_confirm and not self.should_stop():
-                    if self._running(sct):
-                        if clicks > 1:
-                            self.log(f"reflex: craft started after {clicks} begin clicks")
-                        return True
-                    time.sleep(poll)
-            # Begin never started it — last-resort single ↻ click (some UI states use it).
-            if rclick and not self.should_stop():
-                self._click(rclick[0], rclick[1])
-                t1 = time.time()
-                while time.time() - t1 < 2.0 and not self.should_stop():
+                # BEGIN is the reliable button for BOTH first and continuation: the prep
+                # window's Begin reappears after each craft (after a brief ↻ flash that is
+                # NOT actually clickable). Wait for Begin; fall to REPEAT only if it never
+                # shows. (Clicking the ↻ wastes the whole confirm window every transition.)
+                click, name = None, None
+                t0 = time.time()
+                while time.time() - t0 < begin_detect and not self.should_stop():
+                    if self._begin_lit(sct):
+                        click, name = bclick, "begin"; break
                     if self._running(sct):
                         return True
                     time.sleep(poll)
-            self.log(f"reflex: couldn't start after {clicks} begin clicks in {start_timeout:.0f}s")
+                if not click and self._repeat_lit(sct):
+                    click, name = rclick, "repeat"
+                if not click:
+                    return False                     # nothing to start
+                self.log(f"reflex: start '{name}' -> click {click}")
+                self._click(click[0], click[1])
+                time.sleep(post_begin)
+                t1 = time.time()
+                while time.time() - t1 < confirm_t and not self.should_stop():
+                    if self._running(sct):           # red stop-sign = RUNNING (the reliable signal)
+                        return True
+                    time.sleep(poll)
+                self.log(f"reflex: '{name}' didn't confirm running in {confirm_t:.0f}s — retrying")
             return False
 
     def run_list(self) -> bool:
