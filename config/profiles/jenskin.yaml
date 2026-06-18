@@ -1,8 +1,8 @@
-# Healer profile: JENSKIN (Defiler — wards). Self-contained bundle the brain
-# loads as the active keymap. Switch profiles from the dashboard top-bar dropdown.
-# maintenance_role/group_maintenance_role tell the decision loop which ability is
-# the proactive-mitigation heartbeat (ward for a Defiler). names = slot->character;
-# select_character = who to pick at char-select. Same EQ2 account as Croolst.
+# Ability -> keybind map (OWNER-OWNED). Edited from the dashboard keymap
+# page or by hand. Roles are referenced by the code; you map each to a key.
+# Key format: bare ('4','f2') or 'Mod+Key' ('Ctrl+1','Alt+='). mode: auto =
+# the loop may fire it; manual = dashboard button only. Keep keys off chat
+# triggers (Enter, /, ', ...).
 
 healer: defiler
 abilities:
@@ -74,7 +74,7 @@ abilities:
     mode: manual
     desc: hail NPC (quest turn-ins / interaction)
   jump:
-    key: ''
+    key: Space
     mode: manual
     desc: jump (un-stick / pathing)
   collect:
@@ -148,9 +148,6 @@ group_target_keys:
 - F4
 - F5
 - F6
-# Multi-step key sequences (target + ability + pause), fired as one manual macro
-# from the focus window / POST /api/macro/<name>. Editable on the keymap page.
-# Tokens: F1..F6 target keys, bare/Mod+Key ability keys, pause_<sec> waits.
 macros:
   food:
     key: F2,Ctrl+0,pause_1,F1,Ctrl+0
@@ -166,10 +163,10 @@ tank_slot: 1
 maintenance_role: ward
 group_maintenance_role: group_ward
 names:
-  0: Jenskin
-  1: Robskin
-  2: ''
-  3: ''
-  4: ''
-  5: ''
+  '0': Jenskin
+  '1': Robskin
+  '2': ''
+  '3': ''
+  '4': ''
+  '5': ''
 select_character: Jenskin
