@@ -298,6 +298,15 @@ class CraftReflex:
                 self.log(f"reflex: '{name}' didn't confirm running in {confirm_t:.0f}s — retrying")
             return False
 
+    def _focus_safe(self) -> None:
+        """Park the cursor on the mouse-safe spot AFTER the craft has started, so the art
+        keys (1-6) land in the focused craft window and the cursor isn't sitting on a
+        button. Owner's order: click Begin FIRST, then mouse to the safe spot."""
+        loc = self.r.get("safe_click")
+        if loc:
+            self._click(loc[0], loc[1])
+            time.sleep(float(self.r.get("post_focus", 0.15)))
+
     def run_list(self) -> bool:
         """Do the WHOLE list IN-GUEST: start -> react until done -> repeat, `count`
         times, all local (no host round-trip per craft). The host only selected the
@@ -310,6 +319,7 @@ class CraftReflex:
             if not self._start_craft(first=(self.crafts_done == 0)):
                 self.log(f"reflex: no craft to start (done {self.crafts_done}/{count}) — stopping")
                 break
+            self._focus_safe()                       # click start THEN mouse to safe spot
             if not self._react_until_done():
                 self.log(f"reflex: craft {self.crafts_done + 1}/{count} didn't complete — stopping")
                 break

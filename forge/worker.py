@@ -386,13 +386,18 @@ class CraftWorker:
                 # Begin reappears a beat after a craft completes (↻ flash first) -> wait longer
                 "begin_detect": float(timings.get("guest_begin_detect", 4.0)),
             },
+            # mouse-to-safe-spot: clicked IN-GUEST AFTER Begin so the art keys land in the
+            # focused craft window (owner's order: click start, THEN mouse to safe spot).
+            "safe_click": c.get("craft_focus_click"),
+            "post_focus": float(timings.get("post_focus", 0.15)),
         })
         return rs
 
     async def _craft_list_via_agent(self, name: str, count: int) -> int:
         """Hand the full recipe (count crafts) to the in-guest run_list loop and poll
-        its progress. The guest does start->react->repeat locally. Returns crafts done."""
-        await self._focus_craft()
+        its progress. The guest does start->react->repeat locally. Returns crafts done.
+        NB: the safe-spot focus click now happens IN-GUEST, AFTER each Begin (owner's
+        order: click start THEN mouse to safe spot) — so we do NOT _focus_craft here."""
         epoch = self._agent_set("craft_run", **self._ruleset_craft_run(count))
         self.t.update_bot(self.id, state="crafting")
         self.t.push_log(self.id, f"handed LIST to in-guest agent — {count} craft(s) (epoch {epoch})")
