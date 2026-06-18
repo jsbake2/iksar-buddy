@@ -408,7 +408,7 @@ class CraftWorker:
                 continue
             self.t.update_bot(self.id, reactions=int(st.get("reactions", 0) or 0))
             cd = int(st.get("crafts_done", 0) or 0)
-            if cd != last_done:                   # progress -> update + reset the watchdog
+            if cd > last_done:                    # only move FORWARD (ignore stale/idle 0s)
                 last_done = cd
                 self.t.push_log(self.id, f"craft {cd}/{count} complete (in-guest)")
                 self.t.update_bot(self.id, count={"done": cd, "total": count},

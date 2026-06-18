@@ -112,8 +112,8 @@ class Agent:
         if rx is not None and hasattr(rx, "heals"):        # healer telemetry
             body["heals"] = getattr(rx, "heals", 0)
             body["cures"] = getattr(rx, "cures", 0)
-        if rx is not None and self.state == "craft_run":   # in-guest list-loop progress
-            body["crafts_done"] = getattr(rx, "crafts_done", 0)
+        if rx is not None and hasattr(rx, "crafts_done"):   # in-guest list-loop progress
+            body["crafts_done"] = getattr(rx, "crafts_done", 0)  # report even after it goes idle
         try:
             self.s.post(self.tele_url, json=body, timeout=4)
         except requests.RequestException:
