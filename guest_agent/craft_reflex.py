@@ -248,6 +248,14 @@ class CraftReflex:
         mn = int(rep.get("min_pixels", (dd.get("repeat") or {}).get("min_pixels", 30)))
         return self._region_count(sct, reg, g, tol) >= mn
 
+    def _started(self, sct) -> bool:
+        """Craft is GENUINELY running: red stop-sign up AND no start button on screen.
+        The 'and not _done' guards running_detect false-positives — the jeweler 'Jugular
+        Slice' prep window false-confirmed running while Begin was still showing, so the
+        react loop then bailed as 'missing mats' (0/6). A really-running craft has no
+        Begin/Create/Repeat button left."""
+        return self._running(sct) and not self._done(sct)
+
     def _start_craft(self, first: bool) -> bool:
         """Start one craft LOCALLY and confirm it's RUNNING. Ground truth (sampled live):
         the continuation button is the green REPEAT ↻ (Begin goes dark after a craft); the
@@ -267,7 +275,7 @@ class CraftReflex:
             for attempt in range(attempts):
                 if self.should_stop():
                     return False
-                if self._running(sct):               # a prior click already started it
+                if self._started(sct):               # a prior click already started it
                     return True
                 if not self._chat_safe(sct):         # gate the click too (fail-closed)
                     time.sleep(0.2); continue
@@ -280,7 +288,7 @@ class CraftReflex:
                 while time.time() - t0 < begin_detect and not self.should_stop():
                     if self._begin_lit(sct):
                         click, name = bclick, "begin"; break
-                    if self._running(sct):
+                    if self._started(sct):
                         return True
                     time.sleep(poll)
                 if not click and self._repeat_lit(sct):
@@ -292,7 +300,7 @@ class CraftReflex:
                 time.sleep(post_begin)
                 t1 = time.time()
                 while time.time() - t1 < confirm_t and not self.should_stop():
-                    if self._running(sct):           # red stop-sign = RUNNING (the reliable signal)
+                    if self._started(sct):           # red stop-sign up AND start button gone
                         return True
                     time.sleep(poll)
                 self.log(f"reflex: '{name}' didn't confirm running in {confirm_t:.0f}s — retrying")
