@@ -190,16 +190,27 @@ class CraftReflex:
             pass
 
     # -- the loop ---------------------------------------------------------
-    # -- in-guest LOCAL click (legacy mouse_event: EQ2 ignores SendInput clicks) --
+    # -- in-guest LOCAL click — MIRROR the proven AHK ibgclick exactly --
     def _click(self, x, y) -> None:
+        """EQ2 only registers Event-mode (mouse_event) clicks AND needs a real cursor
+        MOVE event before the press — a SetCursorPos teleport emits no WM_MOUSEMOVE, so the
+        button never highlights and the down/up misfires (on an icon it GRABS it onto the
+        cursor — the 'recipe on the pointer'). So we do what gclick_ev.ahk does: absolute
+        MOVE event -> settle 200ms -> down -> 40ms -> up."""
         try:
             import ctypes
             u = ctypes.windll.user32
-            u.SetCursorPos(int(x), int(y))
-            time.sleep(0.03)
-            u.mouse_event(0x0002, 0, 0, 0, 0)        # LEFTDOWN
-            time.sleep(0.03)
-            u.mouse_event(0x0004, 0, 0, 0, 0)        # LEFTUP
+            sw = u.GetSystemMetrics(0) or 1920
+            sh = u.GetSystemMetrics(1) or 1080
+            ax = int(int(x) * 65535 / max(1, sw - 1))
+            ay = int(int(y) * 65535 / max(1, sh - 1))
+            MOVE, ABS, LDOWN, LUP = 0x0001, 0x8000, 0x0002, 0x0004
+            u.mouse_event(MOVE | ABS, ax, ay, 0, 0)  # real move so EQ2 registers the cursor
+            time.sleep(0.18)                          # AHK Sleep 200 after MouseMove
+            u.mouse_event(LDOWN, 0, 0, 0, 0)
+            time.sleep(0.05)                          # AHK SetMouseDelay 40
+            u.mouse_event(LUP, 0, 0, 0, 0)
+            time.sleep(0.05)
         except Exception as e:                       # noqa: BLE001
             self.log(f"reflex: click failed: {e}")
 
