@@ -170,3 +170,4 @@ names:
   '4': ''
   '5': ''
 select_character: Jenskin
+prepull_trigger: Incomming a

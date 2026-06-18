@@ -118,6 +118,11 @@ class HostAgent:
         self._prev_hp = {}          # slot -> last hp (0..1); "own" key for the healer
         self._combat_until = 0.0    # in-combat decays to OOC this many seconds after last hit
         self._last_combat_epoch = None  # highest combat-line epoch already acted on (no re-use)
+        # pre-pull trigger: when the TANK tells/group-messages the trigger string, fire pre_pull.
+        self._prepull_tank = ""     # tank's name (lower), from CONFIG names[tank_slot]
+        self._prepull_str = "incomming a"  # trigger substring (lower), from CONFIG prepull_trigger
+        self._prepull_epoch = None  # highest prepull-line epoch already acted on
+        self._prepull_pending = False  # set on a NEW trigger line, consumed into the next event
         self._armed = False         # injection master switch (off until owner arms)
         self._chat_safe = False     # latest chat-safety verdict (the inject gate)
         self._aborted = 0           # injections aborted because chat was unsafe
@@ -194,6 +199,28 @@ class HostAgent:
             now_guest = int(lines[0][4:])
         except ValueError:
             return
+        # PRE-PULL trigger: a tell-to-you / group line FROM the tank containing the trigger
+        # string -> fire pre_pull. Epoch-deduped (each line once) + baselined on first scan
+        # so pre-existing log content never fires. Recent only.
+        if self._prepull_tank and self._prepull_str:
+            newest_pp = None
+            for ln in lines[1:]:
+                m = re.match(r"\((\d+)\)", ln)
+                if not m:
+                    continue
+                low = ln.lower()
+                if (self._prepull_tank in low and self._prepull_str in low
+                        and ("tells you" in low or "the group" in low)):
+                    ep = int(m.group(1))
+                    if newest_pp is None or ep > newest_pp:
+                        newest_pp = ep
+            if newest_pp is not None:
+                first_pp = self._prepull_epoch is None
+                pp_new = (not first_pp) and newest_pp > self._prepull_epoch
+                self._prepull_epoch = max(self._prepull_epoch or 0, newest_pp)
+                if pp_new and now_guest - newest_pp <= 30:
+                    self._prepull_pending = True
+                    log.info("PRE-PULL trigger: %s said %r", self._prepull_tank, self._prepull_str)
         # newest GROUP combat line (names a member + a combat action); ignore the
         # rest of the zone's combat. Recency is measured in the guest's own clock.
         newest = None
@@ -255,8 +282,14 @@ class HostAgent:
                     others = [re.escape(v) for s, v in self._names.items() if s != 0 and v]
                     if others:
                         self._name_re = re.compile(r"\b(" + "|".join(others) + r")\b")
-                log.info("config: %d target keys, names=%s",
-                         len(self._group_target_keys), self._names)
+                # pre-pull trigger config: the TANK's name + the trigger string (the tank
+                # whispers / group-messages "Incomming a <mob>" before a pull).
+                tank_slot = int(am.get("tank_slot", 1))
+                self._prepull_tank = (self._names.get(tank_slot) or "").lower()
+                self._prepull_str = str(am.get("prepull_trigger") or "incomming a").lower()
+                log.info("config: %d target keys, names=%s, prepull tank=%r str=%r",
+                         len(self._group_target_keys), self._names,
+                         self._prepull_tank, self._prepull_str)
             elif msg.type == proto.COMMAND:
                 await self._on_command(msg.data, loop)
             elif msg.type in (proto.WELCOME, proto.PING):
@@ -338,6 +371,13 @@ class HostAgent:
                 suppressed.add(slot)
         return suppressed
 
+    def _consume_prepull(self) -> bool:
+        """One-shot: True once per detected trigger, then reset."""
+        if self._prepull_pending:
+            self._prepull_pending = False
+            return True
+        return False
+
     def _to_event(self, world: dict) -> dict:
         own = world.get("own") or {}
         raw = world.get("members", [])
@@ -395,6 +435,7 @@ class HostAgent:
             "own_hp": (own.get("hp") or 0) / 100.0,
             "casting": False,                  # cast-bar sensing not built yet
             "in_combat": in_combat,            # inferred from HP drops (no game flag)
+            "prepull_trigger": self._consume_prepull(),  # tank called incoming -> fire pre_pull
             "pending_cures": ["generic"] if cure_needed else [],
             "chat_safe": chat_safe,
             "chat_focus": {"game_present": game_present, "chat_active": chat_busy},

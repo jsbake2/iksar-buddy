@@ -55,6 +55,7 @@ class Brain:
         self._last_ward = 0.0        # last time we recast the tank ward (heartbeat)
         self._last_debuff = 0.0      # 2-man dps cycle: last debuff
         self._dps_spell_at = 0.0     # 2-man dps cycle: when to fire the scheduled spell_attack
+        self._last_prepull = 0.0     # debounce the tank's incoming-call -> pre_pull
 
     # -- outbound ----------------------------------------------------------
     async def send(self, type_: str, **data) -> None:
@@ -159,6 +160,21 @@ class Brain:
                                     reason="combat start -> assist tank")
                     self._last_assist = time.time()
                     log.info("combat start: assist tank (attack '%s')", akey)
+
+        # PRE-PULL on the tank's incoming-call: the agent detected the trigger string in a
+        # tell/group line from the tank -> cast the pre_pull macro (target the tank so its
+        # debuff implied-targets the incoming mob). manual=False -> only when armed; the
+        # agent also gates on chat-safe. Debounced so a repeated call can't spam it.
+        if d.get("prepull_trigger"):
+            now = time.time()
+            ppk = self.cfg.key_for("pre_pull")
+            if ppk and ppk != "none" and now - self._last_prepull >= 3.0:
+                tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
+                await self.send("command", role="pre_pull", key=ppk, target_slot=tank_slot,
+                                manual=False, reason="tank called incoming -> pre-pull")
+                self._last_prepull = now
+                self.telemetry.push_event("cast", "pre-pull (tank called incoming)")
+                log.info("pre-pull fired (tank incoming-call)")
 
         # Map each member's lit detriment cells to display type-labels. The 5
         # cells are ASSUMED to correspond positionally to the 5 cure categories;
