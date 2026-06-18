@@ -28,7 +28,9 @@ log = logging.getLogger("ib.brain.server")
 # healing is never starved. Values are land+sensor-lag estimates; tune per spell.
 GLOBAL_GCD_S = 0.9
 ACTION_COOLDOWN_S = {
-    "cure": 2.5, "group_cure": 2.5,
+    # cure tightened 2.5->1.6 to match the faster sense rate (~1.4Hz): a multi-detriment
+    # member gets cleaned in ~1.6s/cure instead of ~3s, killing the "long wait" between cures.
+    "cure": 1.6, "group_cure": 1.6,
     "ward": 5.0, "group_ward": 5.0,
     "group_heal": 2.0, "direct_heal": 1.6, "critical_heal": 1.4,
     "emergency_heal": 1.0, "emergency_ward": 1.2,
