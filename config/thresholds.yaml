@@ -37,3 +37,7 @@ cure_priority:
 decision_hz: 12             # sense->decide->act loop rate (pixels carry it; 10-15 plenty)
 ward_heartbeat_s: 8.4
 assist_heartbeat_s: 4   # re-send pet + assist (attack key) every N s while in combat
+
+# 2-man DPS contribution (tank+healer only): debuff, then spell_attack lead s later, every cycle s.
+dps_cycle_s: 8
+dps_spell_lead_s: 2

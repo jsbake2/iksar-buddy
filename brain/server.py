@@ -53,6 +53,8 @@ class Brain:
         self._cooldowns: dict = {}   # (role, target_slot) -> earliest repeat time
         self._last_assist = 0.0      # last time we pressed attack (combat re-assist)
         self._last_ward = 0.0        # last time we recast the tank ward (heartbeat)
+        self._last_debuff = 0.0      # 2-man dps cycle: last debuff
+        self._dps_spell_at = 0.0     # 2-man dps cycle: when to fire the scheduled spell_attack
 
     # -- outbound ----------------------------------------------------------
     async def send(self, type_: str, **data) -> None:
@@ -257,6 +259,28 @@ class Brain:
                                 manual=False, reason="pet/assist heartbeat")
                 self._last_assist = now
                 self._next_action_at = now + GLOBAL_GCD_S
+            # 2-MAN DPS: when the group is JUST tank + healer, the healer has spare GCDs ->
+            # contribute damage. Cycle: DEBUFF, then SPELL_ATTACK dps_spell_lead_s later, every
+            # dps_cycle_s. Both target the tank (-> EQ2 implied-target the mob). Lowest priority
+            # in the gap (heals/wards/heartbeats already had their shot) and only IN_COMBAT.
+            elif (len(world.members) == 2 and self.sm.state == State.IN_COMBAT
+                    and self.sm.override is None and now >= self._next_action_at):
+                cyc = float(self.cfg.threshold("dps_cycle_s", 8.0) or 0)
+                lead = float(self.cfg.threshold("dps_spell_lead_s", 2.0))
+                tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
+                dbk = self.cfg.key_for("debuff")
+                spk = self.cfg.key_for("spell_attack")
+                if cyc > 0 and dbk and dbk != "none" and now - self._last_debuff >= cyc:
+                    await self.send("command", role="debuff", key=dbk, target_slot=tank_slot,
+                                    manual=False, reason="2-man dps: debuff")
+                    self._last_debuff = now
+                    self._dps_spell_at = now + lead          # schedule the nuke
+                    self._next_action_at = now + GLOBAL_GCD_S
+                elif self._dps_spell_at and now >= self._dps_spell_at and spk and spk != "none":
+                    await self.send("command", role="spell_attack", key=spk, target_slot=tank_slot,
+                                    manual=False, reason="2-man dps: spell attack")
+                    self._dps_spell_at = 0.0
+                    self._next_action_at = now + GLOBAL_GCD_S
 
 
 async def serve(brain: Brain, host: str, port: int) -> asyncio.AbstractServer:
