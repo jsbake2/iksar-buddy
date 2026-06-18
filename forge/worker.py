@@ -383,7 +383,8 @@ class CraftWorker:
                 "confirm_timeout": float(timings.get("confirm_timeout", 6.0)),
                 "poll": float(timings.get("poll", 0.12)),
                 "post_begin": float(timings.get("post_begin", 0.25)),
-                "begin_detect": float(timings.get("begin_detect", 2.0)),
+                # Begin reappears a beat after a craft completes (↻ flash first) -> wait longer
+                "begin_detect": float(timings.get("guest_begin_detect", 4.0)),
             },
         })
         return rs

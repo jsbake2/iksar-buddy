@@ -271,19 +271,20 @@ class CraftReflex:
                     return True
                 if not self._chat_safe(sct):         # gate the click too (fail-closed)
                     time.sleep(0.2); continue
-                # wait for a start button: continuation -> REPEAT ↻; first -> BEGIN (lit).
+                # BEGIN is the reliable button for BOTH first and continuation: the prep
+                # window's Begin reappears after each craft (after a brief ↻ flash that is
+                # NOT actually clickable). Wait for Begin; fall to REPEAT only if it never
+                # shows. (Clicking the ↻ wastes the whole confirm window every transition.)
                 click, name = None, None
                 t0 = time.time()
                 while time.time() - t0 < begin_detect and not self.should_stop():
-                    if first and self._begin_lit(sct):
-                        click, name = bclick, "begin"; break
-                    if self._repeat_lit(sct):
-                        click, name = rclick, "repeat"; break
                     if self._begin_lit(sct):
                         click, name = bclick, "begin"; break
                     if self._running(sct):
                         return True
                     time.sleep(poll)
+                if not click and self._repeat_lit(sct):
+                    click, name = rclick, "repeat"
                 if not click:
                     return False                     # nothing to start
                 self.log(f"reflex: start '{name}' -> click {click}")
