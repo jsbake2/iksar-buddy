@@ -278,10 +278,14 @@ class CraftReflex:
                 time.sleep(post_begin)
                 t1 = time.time()
                 while time.time() - t1 < running_timeout and not self.should_stop():
-                    if self._running(sct):
+                    # STARTED = red stop-sign showing OR the start button is GONE. The
+                    # button vanishing is the robust signal (the red-stop-sign min_pixels
+                    # check is flaky and was burning attempts -> premature bail at 3/12);
+                    # if the craft began, no start button remains to detect.
+                    if self._running(sct) or self._start_button(sct, prefer_repeat=False)[1] is None:
                         return True
                     time.sleep(poll)
-                self.log("reflex: not running after click — retrying start")
+                self.log(f"reflex: '{name}' click didn't take — retrying start")
             return False
 
     def run_list(self) -> bool:
