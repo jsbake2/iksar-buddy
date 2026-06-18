@@ -96,9 +96,23 @@ def _join_wrapped(text: str) -> str:
     return "\n".join(out)
 
 
+def _fix_brackets(s: str) -> str:
+    """OCR misreads parentheses as { } or [ ] — a recipe ONLY ever uses ( ). Normalize."""
+    return s.replace("{", "(").replace("}", ")").replace("[", "(").replace("]", ")")
+
+
+_ALLOWED_CHARS = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 '()")
+
+
+def odd_chars(s: str) -> str:
+    """Special chars a recipe NEVER contains (allowed: letters, digits, space, apostrophe,
+    parens). Sorted + deduped, '' if clean. Used to flag OCR noise for the owner to fix."""
+    return "".join(sorted({c for c in (s or "") if c not in _ALLOWED_CHARS}))
+
+
 def _clean_writ_name(raw: str) -> str:
     s = re.sub(r"^\s*an?\s+", "", (raw or "").strip(), flags=re.I)   # drop a/an
-    return _fix_roman(s).strip(" .")
+    return _fix_roman(_fix_brackets(s)).strip(" .")
 
 
 _QUALITIES = ["Apprentice", "Journeyman", "Adept", "Expert", "Master", "Grandmaster"]
@@ -152,8 +166,9 @@ def _base_variants(base: str, prefixes: list[str]) -> list[str]:
 
 
 def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
-                 flavor_prefixes: list[str] | None = None) -> list[tuple[str, str, bool, int]]:
-    """[(raw, resolved, verified, count)] for each OCR'd writ objective.
+                 flavor_prefixes: list[str] | None = None) -> list[tuple[str, str, bool, int, str]]:
+    """[(raw, resolved, verified, count, warn)] for each OCR'd writ objective. `warn` is any
+    unexpected special char left in the OCR name (recipes only use ' and ()), '' if clean.
 
     Decompose into (base, tier, quality) and match the BASE name STRICTLY — then require the
     same tier (and quality when known). resolved = canonical DB recipe on a confident match
@@ -184,7 +199,10 @@ def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
                 if pick:
                     canon, verified = pick, True
                     break
-        out.append((raw, canon, verified, count))
+        # Flag leftover special chars (after {}->() normalization) so the owner can fix
+        # OCR noise. A verified DB match is clean by definition; only warn on the OCR name.
+        warn = "" if verified else odd_chars(clean)
+        out.append((raw, canon, verified, count, warn))
     return out
 
 # Anchor on a trailing "(done/total)" count; capture everything before it.

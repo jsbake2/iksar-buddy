@@ -220,56 +220,58 @@ class CraftReflex:
         n = self._region_count(sct, reg, rd.get("red", [147, 62, 37]), int(rd.get("tolerance", 45)))
         return n >= int(rd.get("min_pixels", 300))
 
-    def _start_button(self, sct, prefer_repeat: bool):
-        """Which start button is up -> (name, [x,y] click). repeat (green ↻) for
-        continuations, else Begin (its pixel), else Create. (None, None) if none."""
+    def _begin_lit(self, sct) -> bool:
+        bp = (self.r.get("begin", {}) or {}).get("pixel", {}) or {}
+        return bool(bp.get("location")) and _match_color(
+            _pixel(sct, bp["location"][0], bp["location"][1]),
+            bp.get("color", [0, 0, 0]), int(bp.get("tolerance", 45)))
+
+    def _repeat_lit(self, sct) -> bool:
         rep = self.r.get("repeat", {}) or {}
         dd = self.r.get("done_detect", {}) or {}
-        rep_reg = rep.get("region") or (dd.get("repeat") or {}).get("region")
-
-        def repeat_present():
-            if not rep_reg:
-                return False
-            g = rep.get("green") or (dd.get("repeat") or {}).get("green", [114, 167, 60])
-            tol = int(rep.get("tolerance", (dd.get("repeat") or {}).get("tolerance", 55)))
-            mn = int(rep.get("min_pixels", (dd.get("repeat") or {}).get("min_pixels", 30)))
-            return self._region_count(sct, rep_reg, g, tol) >= mn
-
-        if prefer_repeat and repeat_present():
-            return "repeat", rep.get("click")
-        bp = (self.r.get("begin", {}) or {}).get("pixel", {}) or {}
-        if bp.get("location") and _match_color(_pixel(sct, bp["location"][0], bp["location"][1]),
-                                               bp.get("color", [0, 0, 0]), int(bp.get("tolerance", 45))):
-            return "begin", (self.r.get("begin", {}) or {}).get("click")
-        cp = (dd.get("create") or {})
-        if cp.get("location") and _match_color(_pixel(sct, cp["location"][0], cp["location"][1]),
-                                               cp.get("color", [248, 213, 126]), int(cp.get("tolerance", 40))):
-            return "create", (self.r.get("create", {}) or {}).get("click")
-        if repeat_present():
-            return "repeat", rep.get("click")
-        return None, None
+        reg = rep.get("region") or (dd.get("repeat") or {}).get("region")
+        if not reg:
+            return False
+        g = rep.get("green") or (dd.get("repeat") or {}).get("green", [114, 167, 60])
+        tol = int(rep.get("tolerance", (dd.get("repeat") or {}).get("tolerance", 55)))
+        mn = int(rep.get("min_pixels", (dd.get("repeat") or {}).get("min_pixels", 30)))
+        return self._region_count(sct, reg, g, tol) >= mn
 
     def _start_craft(self, first: bool) -> bool:
-        """Detect + click the start button LOCALLY, confirm RUNNING. Retries. Returns
-        False if no start button ever appears (list finished / missing materials)."""
+        """Start one craft LOCALLY and confirm it's RUNNING. Ground truth (sampled live):
+        the continuation button is the green REPEAT ↻ (Begin goes dark after a craft); the
+        FIRST craft uses Begin (lit after select). The ONE reliable 'it started' signal is
+        running_detect (red stop-sign: ~990px running vs ~43 idle) — the 'button-gone' and
+        Create-pixel checks were noisy and caused both wasted retries and false bails.
+        Returns False only when no start button ever appears (list done / Begin disabled)."""
         st = self.r.get("start", {}) or {}
         attempts = int(st.get("attempts", 4))
-        running_timeout = float(st.get("running_timeout", 2.5))
+        confirm_t = float(st.get("confirm_timeout", 6.0))   # stop-sign renders a few s after click
         poll = float(st.get("poll", 0.12))
         post_begin = float(st.get("post_begin", 0.25))
-        begin_detect = float(st.get("begin_detect", 1.5))
+        begin_detect = float(st.get("begin_detect", 2.0))
+        bclick = (self.r.get("begin", {}) or {}).get("click")
+        rclick = (self.r.get("repeat", {}) or {}).get("click")
         with mss.mss() as sct:
             for attempt in range(attempts):
                 if self.should_stop():
                     return False
+                if self._running(sct):               # a prior click already started it
+                    return True
                 if not self._chat_safe(sct):         # gate the click too (fail-closed)
                     time.sleep(0.2); continue
-                name, click = None, None
+                # wait for a start button: continuation -> REPEAT ↻; first -> BEGIN (lit).
+                click, name = None, None
                 t0 = time.time()
                 while time.time() - t0 < begin_detect and not self.should_stop():
-                    name, click = self._start_button(sct, prefer_repeat=(not first and attempt == 0))
-                    if click:
-                        break
+                    if first and self._begin_lit(sct):
+                        click, name = bclick, "begin"; break
+                    if self._repeat_lit(sct):
+                        click, name = rclick, "repeat"; break
+                    if self._begin_lit(sct):
+                        click, name = bclick, "begin"; break
+                    if self._running(sct):
+                        return True
                     time.sleep(poll)
                 if not click:
                     return False                     # nothing to start
@@ -277,15 +279,11 @@ class CraftReflex:
                 self._click(click[0], click[1])
                 time.sleep(post_begin)
                 t1 = time.time()
-                while time.time() - t1 < running_timeout and not self.should_stop():
-                    # STARTED = red stop-sign showing OR the start button is GONE. The
-                    # button vanishing is the robust signal (the red-stop-sign min_pixels
-                    # check is flaky and was burning attempts -> premature bail at 3/12);
-                    # if the craft began, no start button remains to detect.
-                    if self._running(sct) or self._start_button(sct, prefer_repeat=False)[1] is None:
+                while time.time() - t1 < confirm_t and not self.should_stop():
+                    if self._running(sct):           # red stop-sign = RUNNING (the reliable signal)
                         return True
                     time.sleep(poll)
-                self.log(f"reflex: '{name}' click didn't take — retrying start")
+                self.log(f"reflex: '{name}' didn't confirm running in {confirm_t:.0f}s — retrying")
             return False
 
     def run_list(self) -> bool:

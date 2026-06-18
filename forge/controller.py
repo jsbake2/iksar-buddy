@@ -206,12 +206,18 @@ class ForgeController:
         # Resolve each OCR'd objective against the scraped DB: confident same-tier matches
         # snap to the canonical recipe; everything else keeps its cleaned name (roman numerals
         # fixed) and is flagged UNVERIFIED — we never substitute a wrong recipe.
-        queue, unverified = [], 0
-        for rawname, resolved, verified, count in recipes.resolve_writ(
+        queue, unverified, flagged = [], 0, 0
+        for rawname, resolved, verified, count, warn in recipes.resolve_writ(
                 raw, flavor_prefixes=self.cfg_profile.get("writ_flavor_prefixes")):
             station = recipes.recipe_station(resolved) if verified else ""
-            queue.append({"name": resolved, "count": count, "done": 0,
-                          "verified": verified, "station": station})
+            item = {"name": resolved, "count": count, "done": 0,
+                    "verified": verified, "station": station}
+            if warn:                       # OCR left an unexpected char -> surface it to fix
+                item["warn"] = warn
+                flagged += 1
+                self.t.push_log(bot_id, f"writ '{rawname}': OCR found unexpected char(s) "
+                                        f"'{warn}' — recipes only use ' and (); fix it by hand")
+            queue.append(item)
             if verified and rawname.strip() != resolved:
                 self.t.push_log(bot_id, f"writ '{rawname}' -> DB '{resolved}'")
             elif not verified:
@@ -219,6 +225,8 @@ class ForgeController:
                 self.t.push_log(bot_id, f"writ '{rawname}' -> '{resolved}' (NOT in DB — unverified)")
         self.t.update_bot(bot_id, mode="writ", queue=queue)
         msg = f"journal: {len(queue)} recipes" + (f", {unverified} unverified (check them)" if unverified else " (all DB-verified)")
+        if flagged:
+            msg += f" — ⚠ {flagged} with odd OCR char(s), fix by hand"
         self.t.push_event(bot_id, "ocr", msg)
 
     def _log_path(self, bot_id: str):

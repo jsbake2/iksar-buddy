@@ -143,6 +143,7 @@
 .qrow .qdel { background:none; border:none; color:var(--faint); cursor:pointer; font-size:16px; padding:0; }
 .qrow .qdel:hover { color:var(--bad); }
 .qrow.done input.qname { color:var(--good); }
+.qrow input.qname.charwarn { border-color:var(--warn); background:color-mix(in srgb,var(--warn) 14%,var(--panel2)); }
 
 /* progress */
 .bot-progress { display:flex; flex-direction:column; gap:10px; padding-top:3px; }

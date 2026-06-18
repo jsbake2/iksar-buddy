@@ -245,21 +245,36 @@ function applyMode(refs) {
 function queueRowFocused(refs) {
   return refs.queue.contains(document.activeElement);
 }
+// chars a recipe never has (only letters, digits, space, apostrophe, parens are ok)
+function oddChars(s) {
+  const m = (s || "").match(/[^A-Za-z0-9 '()]/g);
+  return m ? [...new Set(m)].sort().join("") : "";
+}
 function pushQueueRow(refs, item) {
   const li = document.createElement("li");
   li.className = "qrow" + (item.done >= item.count && item.count ? " done" : "");
   li.dataset.station = item.station || "";
   li.dataset.verified = item.verified ? "1" : "0";
-  const badge = item.station
+  li.dataset.warn = item.warn || "";
+  const badge = item.warn
+    ? `<span class="q-station warn" title="OCR found unexpected character(s): ${item.warn} — recipes only use ' and (). Edit the name to fix.">⚠</span>`
+    : item.station
     ? `<span class="q-station" title="${item.station}">${item.station}</span>`
     : `<span class="q-station ${item.verified ? "" : "warn"}" title="${item.verified ? "" : "not in recipe DB — verify by hand"}">${item.verified ? "—" : "⚠"}</span>`;
+  const nameTitle = item.warn ? ` title="OCR found unexpected char(s): ${item.warn} — fix the name (recipes only use ' and ())"` : "";
   li.innerHTML = badge +
-    `<input class="qname" type="text" value="${(item.name || "").replace(/"/g, "&quot;")}" placeholder="recipe name" />` +
+    `<input class="qname${item.warn ? " charwarn" : ""}"${nameTitle} type="text" value="${(item.name || "").replace(/"/g, "&quot;")}" placeholder="recipe name" />` +
     `<input class="qsearch" type="text" maxlength="18" value="${(item.search || "").replace(/"/g, "&quot;")}" placeholder="search (blank=name)" />` +
     `<input class="qcount" type="number" min="1" max="999" value="${item.count || 1}" />` +
     `<button class="qdel" title="remove">×</button>`;
   const id = refs.root.dataset.bot;
-  li.querySelector(".qname").onchange = () => saveQueue(id, refs);
+  const nameInp = li.querySelector(".qname");
+  nameInp.oninput = () => {                      // live: clear/keep the odd-char flag as they fix it
+    const w = oddChars(nameInp.value);
+    nameInp.classList.toggle("charwarn", !!w);
+    li.dataset.warn = w;
+  };
+  nameInp.onchange = () => saveQueue(id, refs);
   li.querySelector(".qsearch").onchange = () => saveQueue(id, refs);
   li.querySelector(".qcount").onchange = () => saveQueue(id, refs);
   li.querySelector(".qdel").onclick = () => { li.remove(); saveQueue(id, refs); };
@@ -272,6 +287,7 @@ function readQueueDom(refs) {
     count: parseInt(row.querySelector(".qcount").value) || 1,
     station: row.dataset.station || "",
     verified: row.dataset.verified === "1",
+    warn: oddChars(row.querySelector(".qname").value),   // recompute from current name
   })).filter((it) => it.name);
 }
 function saveQueue(id, refs) {

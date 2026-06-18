@@ -380,10 +380,10 @@ class CraftWorker:
             "running_detect": c.get("running_detect", {}) or {},
             "start": {
                 "attempts": int((c.get("recipe_select", {}) or {}).get("start_attempts", 4)),
-                "running_timeout": float(timings.get("running_timeout", 2.5)),
+                "confirm_timeout": float(timings.get("confirm_timeout", 6.0)),
                 "poll": float(timings.get("poll", 0.12)),
                 "post_begin": float(timings.get("post_begin", 0.25)),
-                "begin_detect": float(timings.get("begin_detect", 1.5)),
+                "begin_detect": float(timings.get("begin_detect", 2.0)),
             },
         })
         return rs

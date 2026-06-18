@@ -224,21 +224,29 @@ def _db(monkeypatch, names):
 
 def test_resolve_writ_exact_and_case(monkeypatch):
     r = _db(monkeypatch, ["Iron Katana", "Burlap Pantaloons"])
-    out = {raw: (res, ver) for raw, res, ver, _ in r.resolve_writ({"an iron katana": 1, "Burlap Pantaloons": 1})}
+    out = {raw: (res, ver) for raw, res, ver, _, _ in r.resolve_writ({"an iron katana": 1, "Burlap Pantaloons": 1})}
     assert out["an iron katana"] == ("Iron Katana", True)
     assert out["Burlap Pantaloons"] == ("Burlap Pantaloons", True)
 
 def test_resolve_writ_fixes_roman_and_tier(monkeypatch):
     # garbled 'lll' -> III, and must pick tier III not X
     r = _db(monkeypatch, ["Nature's Salve III (Journeyman)", "Nature's Salve X (Journeyman)"])
-    (raw, res, ver, _), = r.resolve_writ({"Nature's Salve lll (Joumeyman)": 1})
+    (raw, res, ver, _, _), = r.resolve_writ({"Nature's Salve lll (Joumeyman)": 1})
     assert res == "Nature's Salve III (Journeyman)" and ver
+
+def test_resolve_writ_brackets_and_odd_chars(monkeypatch):
+    # OCR {}/[] -> () (a verified clean match, no warn); a stray special char is flagged.
+    r = _db(monkeypatch, ["Tailored Leather Gloves (Journeyman)"])
+    (raw, res, ver, _, warn), = r.resolve_writ({"Tailored Leather Gloves {Journeyman}": 1})
+    assert res == "Tailored Leather Gloves (Journeyman)" and ver and warn == ""
+    (raw, res, ver, _, warn), = r.resolve_writ({"Carbonite Tower Shi@ld": 1})
+    assert "@" in warn          # unexpected char surfaced for the owner to fix
 
 def test_resolve_writ_never_substitutes_wrong_base(monkeypatch):
     # 'Rune of Puncture III' shares 'Puncture III (Journeyman)' with 'Lung Puncture III' but
     # must NOT be matched to it — flagged unverified with the cleaned name instead.
     r = _db(monkeypatch, ["Lung Puncture III (Journeyman)"])
-    (raw, res, ver, _), = r.resolve_writ({"Rune of Puncture |ll (Journeyman)": 1})
+    (raw, res, ver, _, _), = r.resolve_writ({"Rune of Puncture |ll (Journeyman)": 1})
     assert ver is False
     assert res == "Rune of Puncture III (Journeyman)"   # roman fixed, base preserved
 
@@ -253,7 +261,7 @@ def test_join_wrapped_reattaches_tail():
 def test_resolve_writ_strips_flavor_prefix(monkeypatch):
     # 'Essence of …' flavor text stripped to the real recipe; full name kept if it'd match.
     r = _db(monkeypatch, ["Aggressive Defense II (Journeyman)", "Puncture III (Journeyman)"])
-    out = {raw: (res, ver) for raw, res, ver, _ in r.resolve_writ(
+    out = {raw: (res, ver) for raw, res, ver, _, _ in r.resolve_writ(
         {"an Essence of Aggressive Defense Il (Journeyman)": 1, "Rune of Puncture |ll (Journeyman)": 1})}
     assert out["an Essence of Aggressive Defense Il (Journeyman)"] == ("Aggressive Defense II (Journeyman)", True)
     assert out["Rune of Puncture |ll (Journeyman)"] == ("Puncture III (Journeyman)", True)
