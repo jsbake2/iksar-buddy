@@ -62,7 +62,7 @@ abilities:
     mode: manual
     desc: auto-follow toggle
   stop_follow:
-    key: ''
+    key: Ctrl+=
     mode: manual
     desc: stop following (prior tool used bare '=')
   call_home:
@@ -70,7 +70,7 @@ abilities:
     mode: manual
     desc: Call of the Overlord / call to home
   hail:
-    key: ''
+    key: Ctrl+5
     mode: manual
     desc: hail NPC (quest turn-ins / interaction)
   jump:
@@ -78,32 +78,32 @@ abilities:
     mode: manual
     desc: jump (un-stick / pathing)
   collect:
-    key: ''
+    key: Ctrl+6
     mode: manual
     desc: collect a collection shiny
   gather:
-    key: ''
+    key: Ctrl+6
     mode: manual
     desc: gather / harvest a resource node (big button)
   sow:
-    key: ''
+    key: Ctrl+4
     mode: manual
     desc: speed buff (SoW / totem) on the group
   evac:
-    key: ''
+    key: '='
     mode: manual
     desc: emergency evac / GTFO
   pre_pull:
-    key: ''
+    key: Ctrl+7
     mode: manual
     desc: pre-pull routine (debuff incoming + ward up)
   camp:
-    key: ''
+    key: Ctrl+-
     mode: manual
     desc: camp/exit macro (a key bound to /camp desktop) -- pressed by Stop Bot before
       VM shutdown
   item_use:
-    key: ''
+    key: Ctrl+3
     mode: manual
     desc: use item (totem / temp buff)
   buff1:
