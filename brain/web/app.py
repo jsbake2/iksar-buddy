@@ -365,7 +365,12 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             return am.get("tank_slot", roles.index("tank") if "tank" in roles else 0)
         if want == "healer":
             return roles.index("healer") if "healer" in roles else 0
-        return roles.index(want) if want in roles else None  # first dps
+        if want == "dps":
+            # FIXED group slot (default 2 = group-window row 3 / F3), NOT resolved from
+            # slot_roles -- so the owner picks the DPS by arranging the group, and the buff
+            # always lands on that row. Tunable via dps_buff_slot in the profile.
+            return int(am.get("dps_buff_slot", 2))
+        return roles.index(want) if want in roles else None
 
     @app.post("/api/act/{action}")
     async def act_group(action: str):
