@@ -30,10 +30,11 @@ CHAT_INPUT_REGION = {"x": 50, "y": 1019, "w": 208, "h": 22}   # from agent.guest
 CHAT_BRIGHT_THRESHOLD = 25
 
 # Where along each bar to sample (fraction of the track, left=0 right=1). HP bars
-# deplete right->left, so a higher fraction trips at higher HP. std ~0.54 fires
-# below ~half; cri ~0.25 below ~quarter. mana ~0.24 = "don't std-heal under ~24%".
-STD_FRAC = 0.54
-CRI_FRAC = 0.255
+# deplete right->left, so a higher fraction trips at higher HP. ALIGNED to the brain's
+# thresholds.yaml: std 0.90 (heal below 90% HP), cri 0.75 (bigger heal below 75%).
+# mana ~0.24 = "don't std-heal under ~24% power".
+STD_FRAC = 0.90
+CRI_FRAC = 0.75
 MANA_FRAC = 0.24
 
 

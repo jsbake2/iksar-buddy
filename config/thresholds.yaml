@@ -1,9 +1,9 @@
 # Decision thresholds + priority lists (owner-tunable, hot-reloaded).
 
 # HP fractions (0.0-1.0) read from pixel scanlines. Tiered heals by deficit:
-hp_standard:  0.85          # below this = hurt -> standard heal (mana-gated)
-hp_critical:  0.50          # below this = critical -> bigger heal, ignores mana
-hp_emergency: 0.25          # below this = dire -> emergency heal, cancels cast
+hp_standard:  0.90          # below this = hurt -> standard heal (mana-gated)
+hp_critical:  0.75          # below this = critical -> bigger heal, ignores mana
+hp_emergency: 0.50          # below this = dire -> emergency heal, cancels cast
 mana_floor:   0.30          # own power below this = "low mana" -> skip standard heals
 group_heal_count:     2     # >= this many members hurt -> group heal
 group_critical_count: 3     # >= this many members critical -> group (critical) heal
@@ -11,8 +11,6 @@ tank_emergency_hp: 0.35     # legacy / dashboard banding
 routine_hp:        0.90     # cosmetic / dashboard banding
 
 # Ward maintenance (the heartbeat).
-ward_heartbeat_s:     7.0   # recast tank ward every N s IN COMBAT (set just above the
-                            # spell's recast; 0 = off). Tunable from the dashboard.
 ward_refresh_lead_ms: 1500  # refresh ward this long before expected expiry
 ward_absent_recast:   true  # recast immediately if ward icon absent
 
@@ -37,3 +35,4 @@ cure_priority:
 
 # Loop cadence.
 decision_hz: 12             # sense->decide->act loop rate (pixels carry it; 10-15 plenty)
+ward_heartbeat_s: 8.4
