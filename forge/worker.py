@@ -359,6 +359,75 @@ class CraftWorker:
         self._agent_set("idle")
         return False
 
+    # -- FAST PATH: whole list run IN-GUEST (no host round-trip per craft) --
+    def _guest_loop_ok(self) -> bool:
+        """Use the in-guest list loop only if enabled AND the agent is alive."""
+        if not bool(self.cfg.get("guest_loop", False)):
+            return False
+        st = self._agent_get() or {}
+        return bool(st.get("alive"))
+
+    def _ruleset_craft_run(self, count: int) -> dict:
+        """The 'react' ruleset PLUS what the guest needs to start each craft locally:
+        the start-button click points + presence pixels + running detection + count."""
+        c = self.cfg
+        timings = c.get("timings", {}) or {}
+        rs = self._ruleset()
+        rs.update({
+            "count": int(count),
+            "create": c.get("create", {}) or {},
+            "repeat": c.get("repeat", {}) or {},
+            "running_detect": c.get("running_detect", {}) or {},
+            "start": {
+                "attempts": int((c.get("recipe_select", {}) or {}).get("start_attempts", 4)),
+                "running_timeout": float(timings.get("running_timeout", 2.5)),
+                "poll": float(timings.get("poll", 0.12)),
+                "post_begin": float(timings.get("post_begin", 0.25)),
+                "begin_detect": float(timings.get("begin_detect", 1.5)),
+            },
+        })
+        return rs
+
+    async def _craft_list_via_agent(self, name: str, count: int) -> int:
+        """Hand the full recipe (count crafts) to the in-guest run_list loop and poll
+        its progress. The guest does start->react->repeat locally. Returns crafts done."""
+        await self._focus_craft()
+        epoch = self._agent_set("craft_run", **self._ruleset_craft_run(count))
+        self.t.update_bot(self.id, state="crafting")
+        self.t.push_log(self.id, f"handed LIST to in-guest agent — {count} craft(s) (epoch {epoch})")
+        watchdog = float(self.cfg.get("timings", {}).get("max_craft_time", 90.0)) + 20.0
+        base_crafts = self.t.bot(self.id)["crafts_done"]
+        last_done = 0
+        t0 = time.time()
+        deadline = t0 + watchdog
+        while not self._stop.is_set() and time.time() < deadline:
+            await self._wait_unpaused()
+            await asyncio.sleep(0.3)
+            st = self._agent_get() or {}
+            if int(st.get("epoch", -1)) != epoch:
+                continue
+            self.t.update_bot(self.id, reactions=int(st.get("reactions", 0) or 0))
+            cd = int(st.get("crafts_done", 0) or 0)
+            if cd != last_done:                   # progress -> update + reset the watchdog
+                last_done = cd
+                self.t.push_log(self.id, f"craft {cd}/{count} complete (in-guest)")
+                self.t.update_bot(self.id, count={"done": cd, "total": count},
+                                  crafts_done=base_crafts + cd)
+                self.t.push_event(self.id, "craft", f"{name} {cd}/{count}")
+                deadline = time.time() + watchdog
+            if st.get("done") or (st.get("state") == "idle" and time.time() - t0 > 3.0):
+                self._agent_set("idle")
+                if last_done < count:
+                    self.t.push_log(self.id, f"in-guest list ended at {last_done}/{count}")
+                return last_done
+            if not st.get("alive"):
+                self.t.push_log(self.id, "agent went silent mid-list — stopping")
+                self._agent_set("idle")
+                return last_done
+        self._agent_set("idle")
+        self.t.push_log(self.id, f"in-guest list watchdog timeout at {last_done}/{count}")
+        return last_done
+
     # -- one craft cycle (HOST-SIDE fallback) -------------------------------
     async def _craft_cycle(self, gate_power: bool = True) -> bool:
         """Counter-FIRST loop until the craft completes. When no counter is up, send
@@ -432,6 +501,10 @@ class CraftWorker:
         if not await self._select_recipe(name, trade_class, search):
             return 0                              # bailed (chat-unsafe / not in-world)
         self.t.push_log(self.id, f"recipe selected: {name} — running {count} craft(s)")
+        # FAST PATH: hand the whole begin->react->repeat loop to the in-guest agent
+        # (local clicks + ~5ms grabs, no virsh round-trip per craft). Host only selected.
+        if self._guest_loop_ok():
+            return await self._craft_list_via_agent(name, count)
         begin = (self.cfg.get("begin", {}) or {}).get("click")
         create = (self.cfg.get("create", {}) or {}).get("click")
         repeat = (self.cfg.get("repeat", {}) or {}).get("click")

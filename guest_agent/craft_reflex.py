@@ -67,6 +67,7 @@ class CraftReflex:
         self._cnt_last_press = 0.0
         self._cnt_key = None              # the art key pressed for the current counter (debug)
         self.fails = 0
+        self.crafts_done = 0              # craft_run (in-guest list loop) progress
 
     # -- sensors (mss, local) ---------------------------------------------
     def _capture_templates(self, sct) -> int:
@@ -189,10 +190,128 @@ class CraftReflex:
             pass
 
     # -- the loop ---------------------------------------------------------
+    # -- in-guest LOCAL click (legacy mouse_event: EQ2 ignores SendInput clicks) --
+    def _click(self, x, y) -> None:
+        try:
+            import ctypes
+            u = ctypes.windll.user32
+            u.SetCursorPos(int(x), int(y))
+            time.sleep(0.03)
+            u.mouse_event(0x0002, 0, 0, 0, 0)        # LEFTDOWN
+            time.sleep(0.03)
+            u.mouse_event(0x0004, 0, 0, 0, 0)        # LEFTUP
+        except Exception as e:                       # noqa: BLE001
+            self.log(f"reflex: click failed: {e}")
+
+    def _region_count(self, sct, reg, rgb, tol) -> int:
+        try:
+            arr = _grab(sct, reg["x"], reg["y"], reg["w"], reg["h"]).reshape(-1, 3)  # BGR
+        except Exception:                            # noqa: BLE001
+            return 0
+        want = np.array(rgb, dtype=int)[::-1]        # RGB -> BGR to match arr
+        return int(np.sum(np.all(np.abs(arr.astype(int) - want) <= tol, axis=1)))
+
+    def _running(self, sct) -> bool:
+        """Red STOP-SIGN in the art-bar's right slot = a craft is RUNNING."""
+        rd = self.r.get("running_detect", {}) or {}
+        reg = rd.get("region")
+        if not reg:
+            return False
+        n = self._region_count(sct, reg, rd.get("red", [147, 62, 37]), int(rd.get("tolerance", 45)))
+        return n >= int(rd.get("min_pixels", 300))
+
+    def _start_button(self, sct, prefer_repeat: bool):
+        """Which start button is up -> (name, [x,y] click). repeat (green ↻) for
+        continuations, else Begin (its pixel), else Create. (None, None) if none."""
+        rep = self.r.get("repeat", {}) or {}
+        dd = self.r.get("done_detect", {}) or {}
+        rep_reg = rep.get("region") or (dd.get("repeat") or {}).get("region")
+
+        def repeat_present():
+            if not rep_reg:
+                return False
+            g = rep.get("green") or (dd.get("repeat") or {}).get("green", [114, 167, 60])
+            tol = int(rep.get("tolerance", (dd.get("repeat") or {}).get("tolerance", 55)))
+            mn = int(rep.get("min_pixels", (dd.get("repeat") or {}).get("min_pixels", 30)))
+            return self._region_count(sct, rep_reg, g, tol) >= mn
+
+        if prefer_repeat and repeat_present():
+            return "repeat", rep.get("click")
+        bp = (self.r.get("begin", {}) or {}).get("pixel", {}) or {}
+        if bp.get("location") and _match_color(_pixel(sct, bp["location"][0], bp["location"][1]),
+                                               bp.get("color", [0, 0, 0]), int(bp.get("tolerance", 45))):
+            return "begin", (self.r.get("begin", {}) or {}).get("click")
+        cp = (dd.get("create") or {})
+        if cp.get("location") and _match_color(_pixel(sct, cp["location"][0], cp["location"][1]),
+                                               cp.get("color", [248, 213, 126]), int(cp.get("tolerance", 40))):
+            return "create", (self.r.get("create", {}) or {}).get("click")
+        if repeat_present():
+            return "repeat", rep.get("click")
+        return None, None
+
+    def _start_craft(self, first: bool) -> bool:
+        """Detect + click the start button LOCALLY, confirm RUNNING. Retries. Returns
+        False if no start button ever appears (list finished / missing materials)."""
+        st = self.r.get("start", {}) or {}
+        attempts = int(st.get("attempts", 4))
+        running_timeout = float(st.get("running_timeout", 2.5))
+        poll = float(st.get("poll", 0.12))
+        post_begin = float(st.get("post_begin", 0.25))
+        begin_detect = float(st.get("begin_detect", 1.5))
+        with mss.mss() as sct:
+            for attempt in range(attempts):
+                if self.should_stop():
+                    return False
+                if not self._chat_safe(sct):         # gate the click too (fail-closed)
+                    time.sleep(0.2); continue
+                name, click = None, None
+                t0 = time.time()
+                while time.time() - t0 < begin_detect and not self.should_stop():
+                    name, click = self._start_button(sct, prefer_repeat=(not first and attempt == 0))
+                    if click:
+                        break
+                    time.sleep(poll)
+                if not click:
+                    return False                     # nothing to start
+                self.log(f"reflex: start '{name}' -> click {click}")
+                self._click(click[0], click[1])
+                time.sleep(post_begin)
+                t1 = time.time()
+                while time.time() - t1 < running_timeout and not self.should_stop():
+                    if self._running(sct):
+                        return True
+                    time.sleep(poll)
+                self.log("reflex: not running after click — retrying start")
+            return False
+
+    def run_list(self) -> bool:
+        """Do the WHOLE list IN-GUEST: start -> react until done -> repeat, `count`
+        times, all local (no host round-trip per craft). The host only selected the
+        recipe and handed off the count; we report crafts_done via the agent telemetry."""
+        count = int(self.r.get("count", 1))
+        self.crafts_done = 0
+        self._activate_eq2()
+        self.log(f"reflex: craft_run START — {count} craft(s) in-guest")
+        while self.crafts_done < count and not self.should_stop():
+            if not self._start_craft(first=(self.crafts_done == 0)):
+                self.log(f"reflex: no craft to start (done {self.crafts_done}/{count}) — stopping")
+                break
+            if not self._react_until_done():
+                self.log(f"reflex: craft {self.crafts_done + 1}/{count} didn't complete — stopping")
+                break
+            self.crafts_done += 1
+            self.log(f"reflex: craft {self.crafts_done}/{count} complete")
+        self.log(f"reflex: craft_run END — {self.crafts_done}/{count} done")
+        return self.crafts_done >= count
+
     def run(self) -> bool:
+        """Single craft: react until done. The host started + confirmed running."""
+        return self._react_until_done()
+
+    def _react_until_done(self) -> bool:
         """React until the craft is DONE (repeat/Begin/Create reappears) or stop/timeout.
-        Returns True on a clean completion. The host already confirmed the craft is
-        RUNNING before handing off, so we start in the active state and watch for done."""
+        Returns True on a clean completion. The host (or _start_craft) already confirmed
+        the craft is RUNNING, so we start in the active state and watch for done."""
         loop_sleep = float(self.r.get("loop_sleep", 0.04))
         art_interval = float(self.r.get("art_interval", 1.0))
         press_interval = float(self.r.get("counter_press_interval", 0.12))   # mash cadence
