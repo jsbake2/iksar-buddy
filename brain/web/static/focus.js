@@ -60,9 +60,7 @@ const LS = "ib-focus-layout-v1";
 // layout ONCE (tracked in `ensured`) so the owner gets them without a reset, but
 // a later manual delete still sticks.
 const ENSURE = ["reset_combat", "force_in", "force_out", "auto_combat", "follow_tank", "follow_dps", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage", "food"];
-function loadLayout() {
-  let s = null;
-  try { s = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
+function mergeLayout(s) {
   if (!s || !Array.isArray(s.ids)) return { ids: DEFAULT.slice(), cols: 3, ensured: ENSURE.slice(), colors: {} };
   s.ids = s.ids.filter((id) => BY_ID[id]);          // drop retired actions (e.g. buff1/buff2)
   const ensured = new Set(s.ensured || []);
@@ -72,11 +70,35 @@ function loadLayout() {
   s.ensured = [...ensured];
   if (typeof s.cols !== "number") s.cols = 3;
   if (!s.colors || typeof s.colors !== "object") s.colors = {};   // per-button custom colors
-  localStorage.setItem(LS, JSON.stringify(s));        // persist the migration
   return s;
 }
-function saveLayout() { localStorage.setItem(LS, JSON.stringify(layout)); }
-let layout = loadLayout();
+function loadLocal() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
+  return mergeLayout(s);
+}
+// Persist to the SERVER (survives cache clears / different browsers / our updates) PLUS a
+// localStorage cache for instant first paint. The server copy is the source of truth.
+function saveLayout() {
+  localStorage.setItem(LS, JSON.stringify(layout));
+  fetch("/api/focus-layout", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(layout) }).catch(() => {});
+}
+let layout = loadLocal();           // instant from cache; the server copy overrides on load
+async function loadServerLayout() {
+  try {
+    const r = await fetch("/api/focus-layout");
+    if (!r.ok) return;
+    const s = await r.json();
+    if (s && Array.isArray(s.ids)) {  // server has a saved layout -> use it (the source of truth)
+      layout = mergeLayout(s);
+      localStorage.setItem(LS, JSON.stringify(layout));
+      render();
+    } else {                          // server empty (first run) -> seed it from our local layout
+      saveLayout();
+    }
+  } catch (_) {}
+}
 
 // theme (shared with dashboard)
 const savedTheme = localStorage.getItem("ib-theme");
@@ -264,3 +286,4 @@ function connect() {
 }
 render();
 connect();
+loadServerLayout();   // override the local cache with the server-saved layout (persists across updates)

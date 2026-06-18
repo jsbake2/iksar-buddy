@@ -215,8 +215,10 @@ class HostAgent:
                     if newest_pp is None or ep > newest_pp:
                         newest_pp = ep
             if newest_pp is not None:
-                first_pp = self._prepull_epoch is None
-                pp_new = (not first_pp) and newest_pp > self._prepull_epoch
+                # Fire on any NEW (higher-epoch) trigger line that's RECENT — no first-scan
+                # baseline (that ate the very first call). Recency (<=30s) keeps a stale line
+                # in the startup tail from firing; epoch-dedup stops re-firing on re-reads.
+                pp_new = newest_pp > (self._prepull_epoch or 0)
                 self._prepull_epoch = max(self._prepull_epoch or 0, newest_pp)
                 if pp_new and now_guest - newest_pp <= 30:
                     self._prepull_pending = True

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 import re
 import shutil
 import subprocess
@@ -201,6 +202,29 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         await brain.send("command", role=f"macro:{name}", key=seq,
                          target_slot=None, manual=True, reason=f"macro {name}")
         return {"ok": True, "macro": name}
+
+    # --- focus-window button layout: persisted SERVER-SIDE (survives cache clears,
+    # different browsers/devices, and our deploys) instead of per-browser localStorage.
+    _FOCUS_LAYOUT = brain.cfg.config_dir / "focus_layout.json"
+
+    @app.get("/api/focus-layout")
+    async def get_focus_layout():
+        if _FOCUS_LAYOUT.exists():
+            try:
+                return json.loads(_FOCUS_LAYOUT.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                pass
+        return {}
+
+    @app.post("/api/focus-layout")
+    async def post_focus_layout(payload: dict = Body(...)):
+        if not isinstance(payload.get("ids"), list):
+            return JSONResponse({"error": "missing ids"}, status_code=400)
+        try:
+            _FOCUS_LAYOUT.write_text(json.dumps(payload), encoding="utf-8")
+        except OSError as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        return {"ok": True}
 
     @app.post("/api/keymap")
     async def post_keymap(payload: dict = Body(...)):
