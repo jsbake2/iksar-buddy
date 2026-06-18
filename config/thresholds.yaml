@@ -36,3 +36,4 @@ cure_priority:
 # Loop cadence.
 decision_hz: 12             # sense->decide->act loop rate (pixels carry it; 10-15 plenty)
 ward_heartbeat_s: 8.4
+assist_heartbeat_s: 4   # re-send pet + assist (attack key) every N s while in combat

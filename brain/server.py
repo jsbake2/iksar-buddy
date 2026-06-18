@@ -237,6 +237,20 @@ class Brain:
                                 manual=False, reason=f"{mr} heartbeat")
                 self._last_ward = now
                 self._next_action_at = now + GLOBAL_GCD_S
+            # Pet/assist heartbeat: re-send the pet + assist (the attack key) on a timer
+            # while IN_COMBAT so the pet stays on the tank's target (owner: pet sent on
+            # combat START and PERIODICALLY). Targets the tank then presses attack, exactly
+            # like the combat-start assist. Tunable assist_heartbeat_s (0/absent disables).
+            ah = float(self.cfg.threshold("assist_heartbeat_s", ASSIST_INTERVAL_S) or 0)
+            akey = self.cfg.key_for("attack")
+            if (ah > 0 and akey and akey != "none"
+                    and self.sm.state == State.IN_COMBAT and self.sm.override is None
+                    and now >= self._next_action_at and now - self._last_assist >= ah):
+                tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
+                await self.send("command", role="attack", key=akey, target_slot=tank_slot,
+                                manual=False, reason="pet/assist heartbeat")
+                self._last_assist = now
+                self._next_action_at = now + GLOBAL_GCD_S
 
 
 async def serve(brain: Brain, host: str, port: int) -> asyncio.AbstractServer:
