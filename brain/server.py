@@ -26,14 +26,20 @@ log = logging.getLogger("ib.brain.server")
 # cooldown blocks repeating the SAME (action,target) until it has had time to land
 # and show. A DIFFERENT action (e.g. a heal after a cure) is NOT blocked, so
 # healing is never starved. Values are land+sensor-lag estimates; tune per spell.
-GLOBAL_GCD_S = 0.9
+# 0.6 (was 0.9): the brain acts on EVERY sensor tick (~0.7s @ 1.4Hz) instead of every other,
+# which had doubled the gap between casts to ~1.4s. This is the floor the host path can do;
+# the in-guest 10Hz healer would push it to ~0.1s.
+GLOBAL_GCD_S = 0.6
 ACTION_COOLDOWN_S = {
-    # cure tightened 2.5->1.6 to match the faster sense rate (~1.4Hz): a multi-detriment
-    # member gets cleaned in ~1.6s/cure instead of ~3s, killing the "long wait" between cures.
+    # cure tightened to match the faster sense rate: a multi-detriment member gets cleaned in
+    # ~1.6s/cure instead of ~3s.
     "cure": 1.6, "group_cure": 1.6,
     "ward": 5.0, "group_ward": 5.0,
-    "group_heal": 2.0, "direct_heal": 1.6, "critical_heal": 1.4,
-    "emergency_heal": 1.0, "emergency_ward": 1.2,
+    # heals tightened so emergency POURS (fires every sensor tick); critical/standard a touch
+    # slower to conserve power. With shared key '4' the de-dup gives one heal/burst, so these
+    # cooldowns set the actual heal cadence: emergency ~0.7s, critical ~0.8s, standard ~1.0s.
+    "group_heal": 1.2, "direct_heal": 1.0, "critical_heal": 0.8,
+    "emergency_heal": 0.6, "emergency_ward": 1.0,
 }
 DEFAULT_COOLDOWN_S = 1.5
 # Re-press the attack key every few seconds while in combat so the bot keeps
