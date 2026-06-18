@@ -74,14 +74,23 @@ def _first_mapped(cfg, *roles: str) -> str | None:
     return next((r for r in roles if _is_mapped(cfg, r)), None)
 
 
+def _key(cfg, role: str) -> str:
+    return (_abilities(cfg).get(role) or {}).get("key", "")
+
+
 def _lowest(members, tank_slot):
     """Lowest-hp member; ties broken toward the tank."""
     return min(members, key=lambda m: (m.hp, m.slot != tank_slot))
 
 
-def decide(world: WorldState, cfg, state: State) -> Action | None:
+def decide(world: WorldState, cfg, state: State) -> list[Action]:
+    """Priority-ordered BURST for this tick. The brain fires the FIRST entry that's off
+    cooldown/GCD, so across successive GCDs it pours the WHOLE stack — when someone is low
+    it casts emergency->critical->regular heals AND the ward(s) (de-duped by key, so a tier
+    that shares a key isn't queued twice) until they recover, instead of one heal per tick
+    with idle gaps. [] = nothing this tick (brain falls to its ward/assist heartbeats)."""
     if not world.chat_safe:
-        return None                      # fail-closed: never act unless focus is proven
+        return []                        # fail-closed: never act unless focus is proven
 
     th = cfg.thresholds
     tank_slot = int(cfg.ability_map.get("tank_slot", 0))
@@ -104,64 +113,75 @@ def decide(world: WorldState, cfg, state: State) -> Action | None:
     tank = world.member(tank_slot)
     combat = state in (State.IN_COMBAT, State.WIPE_RECOVERY)
 
-    # 1) EMERGENCY heal — ignores mana, and runs even mid-cast (it cancels it).
+    out: list[Action] = []
+    seen: set = set()
+
+    def add(role, slot, why):
+        """Append a mapped ability, de-duped by (resolved key, slot) so tiers that share a
+        key (e.g. emergency/critical/direct all -> '4' until the bigger spells are learned)
+        aren't queued multiple times and whiffed."""
+        if not _is_mapped(cfg, role):
+            return
+        k = (_key(cfg, role), slot)
+        if k in seen:
+            return
+        seen.add(k)
+        out.append(Action(role, slot, why))
+
+    # 1) EMERGENCY — lowest member below the emergency line. Pour the FULL burst: every heal
+    #    tier + the ward(s). Ignores mana, runs even mid-cast (it cancels a normal one).
     if emergency:
-        role = _first_mapped(cfg, "emergency_heal", "critical_heal", "direct_heal")
-        if role:
-            t = _lowest(emergency, tank_slot)
-            return Action(role, t.slot, f"EMERGENCY heal slot{t.slot} {t.hp:.0%}")
+        t = _lowest(emergency, tank_slot)
+        add("emergency_heal", t.slot, f"EMERGENCY heal s{t.slot} {t.hp:.0%}")
+        add("critical_heal",  t.slot, f"emergency: critical heal s{t.slot}")
+        add("direct_heal",    t.slot, f"emergency: heal s{t.slot}")
+        if len(alive) > 1:
+            add("group_heal", None, "emergency group heal")
+        add("emergency_ward", tank_slot, "EMERGENCY ward")
+        add(mr,               tank_slot, f"emergency {mr}")
 
-    # Everything below respects an in-progress cast (don't interrupt a normal one).
-    if world.casting:
-        return None
+    # Cures + lower tiers respect an in-progress (non-emergency) cast.
+    if not world.casting:
+        # 2) CURES — generic, tank first (group cure if many afflicted).
+        cure_targets = [m for m in alive if m.cure and not m.rez_sick]
+        if cure_targets:
+            if len(cure_targets) >= grp_heal_n:
+                add("group_cure", None, f"group cure ({len(cure_targets)})")
+            ct = world.member(tank_slot) if (tank and tank in cure_targets) else cure_targets[0]
+            add("cure", ct.slot, f"cure s{ct.slot}")
 
-    # 2) Cure pending — generic cure, TANK FIRST (group cure if many afflicted).
-    cure_targets = [m for m in alive if m.cure and not m.rez_sick]
-    if cure_targets:
-        if _is_mapped(cfg, "group_cure") and len(cure_targets) >= grp_heal_n:
-            return Action("group_cure", None, f"group cure ({len(cure_targets)})")
-        if _is_mapped(cfg, "cure"):
-            t = world.member(tank_slot) if (tank and tank in cure_targets) else cure_targets[0]
-            return Action("cure", t.slot, f"cure slot{t.slot}")
-
-    if combat:
-        # 3) Group critical heal — many in critical; ignore mana.
-        if len(critical) >= grp_cri_n and len(alive) > 1 and _is_mapped(cfg, "group_heal"):
-            return Action("group_heal", None, f"group heal ({len(critical)} critical)")
-
-        # 4) CRITICAL single heal — ignore mana.
-        if critical:
-            role = _first_mapped(cfg, "critical_heal", "direct_heal")
-            if role:
+        if combat:
+            # 3) CRITICAL members — critical+regular heals + the ward stack. Ignore mana.
+            if critical:
                 t = _lowest(critical, tank_slot)
-                return Action(role, t.slot, f"critical heal slot{t.slot} {t.hp:.0%}")
+                if len(critical) >= grp_cri_n and len(alive) > 1:
+                    add("group_heal", None, f"group heal ({len(critical)} critical)")
+                add("critical_heal", t.slot, f"critical heal s{t.slot} {t.hp:.0%}")
+                add("direct_heal",   t.slot, f"critical: heal s{t.slot}")
+                add("emergency_ward", tank_slot, "critical: emergency ward")
+                add(mr,               tank_slot, f"critical {mr}")
 
-        # 5) Tank maintenance heartbeat (Defiler ward / Fury HoT).
-        if tank is not None and not tank.ward and _is_mapped(cfg, mr):
-            return Action(mr, tank_slot, f"tank {mr} down")
+            # 4) Keep the tank ward up (proactive mitigation).
+            if tank is not None and not tank.ward:
+                add(mr, tank_slot, f"tank {mr} down")
 
-        # 6) Group maintenance on AE (group ward / group HoT).
-        if th.get("group_ward_on_ae", True) and world.ae_incoming \
-                and not world.group_ward_up and _is_mapped(cfg, gmr):
-            return Action(gmr, None, f"AE incoming, {gmr} down")
+            # 5) Group ward on AE.
+            if th.get("group_ward_on_ae", True) and world.ae_incoming and not world.group_ward_up:
+                add(gmr, None, f"AE incoming, {gmr} down")
 
-        # 7) Group standard heal — enough hurt AND mana ok.
-        if mana_ok and len(hurt) >= grp_heal_n and len(alive) > 1 and _is_mapped(cfg, "group_heal"):
-            return Action("group_heal", None, f"group heal ({len(hurt)} hurt)")
+            # 6) STANDARD heals — mana-gated (conserve power for the hits that matter).
+            if hurt and mana_ok:
+                if len(hurt) >= grp_heal_n and len(alive) > 1:
+                    add("group_heal", None, f"group heal ({len(hurt)} hurt)")
+                t = _lowest(hurt, tank_slot)
+                add("direct_heal", t.slot, f"heal s{t.slot} {t.hp:.0%}")
 
-        # 8) STANDARD single heal — conserve mana: skipped when low.
-        if hurt and mana_ok and _is_mapped(cfg, "direct_heal"):
-            t = _lowest(hurt, tank_slot)
-            return Action("direct_heal", t.slot, f"heal slot{t.slot} {t.hp:.0%}")
-        # (low mana -> standard heals deliberately skipped; emergency/critical above already ran)
-
-    # 9) OOC prepull maintenance.
+    # 7) OOC prepull maintenance.
     if state == State.OOC and world.prepull:
-        if tank is not None and not tank.ward and _is_mapped(cfg, mr):
-            return Action(mr, tank_slot, f"prepull: restore tank {mr}")
-        if not world.group_ward_up and _is_mapped(cfg, gmr):
-            return Action(gmr, None, f"prepull: restore {gmr}")
-        if _is_mapped(cfg, "debuff"):
-            return Action("debuff", None, "prepull: pre-debuff incoming")
+        if tank is not None and not tank.ward:
+            add(mr, tank_slot, f"prepull: restore tank {mr}")
+        if not world.group_ward_up:
+            add(gmr, None, f"prepull: restore {gmr}")
+        add("debuff", None, "prepull: pre-debuff incoming")
 
-    return None
+    return out

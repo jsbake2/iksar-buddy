@@ -23,12 +23,12 @@ def _cfg(tank_slot=0, **override_keys):
 
 def test_fail_closed_when_chat_unsafe():
     w = WorldState(members=[Member(0, hp=0.1, ward=False)], chat_safe=False)
-    assert decide(w, _cfg(), State.IN_COMBAT) is None
+    assert decide(w, _cfg(), State.IN_COMBAT) == []
 
 
 def test_casting_blocks_non_emergency():
     w = WorldState(members=[Member(0, hp=1.0, ward=False)], casting=True)
-    assert decide(w, _cfg(), State.IN_COMBAT) is None
+    assert decide(w, _cfg(), State.IN_COMBAT) == []
 
 
 def test_emergency_heal_runs_even_while_casting():
@@ -36,63 +36,80 @@ def test_emergency_heal_runs_even_while_casting():
     # spell mapped -> falls back to direct_heal.
     w = WorldState(members=[Member(0, hp=0.2, ward=True)], casting=True, group_ward_up=True)
     a = decide(w, _cfg(), State.IN_COMBAT)
-    assert a.role == "direct_heal" and a.target_slot == 0
+    assert a[0].role == "direct_heal" and a[0].target_slot == 0
 
 
 def test_emergency_prefers_mapped_higher_tier():
     w = WorldState(members=[Member(0, hp=0.2, ward=True)], group_ward_up=True)
     a = decide(w, _cfg(emergency_heal="Alt+0", critical_heal="3"), State.IN_COMBAT)
-    assert a.role == "emergency_heal"
+    assert a[0].role == "emergency_heal"
 
 
 def test_cure_is_tank_first():
     w = WorldState(members=[Member(0, cure=True), Member(1, cure=True)])
     a = decide(w, _cfg(tank_slot=0), State.IN_COMBAT)
-    assert a.role == "cure" and a.target_slot == 0
+    assert a[0].role == "cure" and a[0].target_slot == 0
     # tank elsewhere -> still cures the tank first
     a2 = decide(w, _cfg(tank_slot=1), State.IN_COMBAT)
-    assert a2.role == "cure" and a2.target_slot == 1
+    assert a2[0].role == "cure" and a2[0].target_slot == 1
 
 
 def test_rez_sick_member_not_cured():
     w = WorldState(members=[Member(0, cure=True, rez_sick=True)])
-    assert decide(w, _cfg(), State.IN_COMBAT) is None
+    assert decide(w, _cfg(), State.IN_COMBAT) == []
 
 
 def test_critical_heal_ignores_low_mana():
     # critical hp + LOW mana -> still heals (critical/emergency bypass mana).
     w = WorldState(members=[Member(0, hp=0.4, ward=True)], own_power=0.1, group_ward_up=True)
     a = decide(w, _cfg(), State.IN_COMBAT)
-    assert a.role == "direct_heal" and a.target_slot == 0   # fallback from critical_heal
+    assert a[0].role == "direct_heal" and a[0].target_slot == 0   # fallback from critical_heal
 
 
 def test_standard_heal_skipped_on_low_mana():
     # standard hurt + LOW mana -> SKIP (conserve mana). Healthy ward -> idle.
     w = WorldState(members=[Member(0, hp=0.7, ward=True)], own_power=0.1, group_ward_up=True)
-    assert decide(w, _cfg(), State.IN_COMBAT) is None
+    assert decide(w, _cfg(), State.IN_COMBAT) == []
     # same but mana ok -> standard heal
     w2 = WorldState(members=[Member(0, hp=0.7, ward=True)], own_power=1.0, group_ward_up=True)
-    assert decide(w2, _cfg(), State.IN_COMBAT).role == "direct_heal"
+    assert decide(w2, _cfg(), State.IN_COMBAT)[0].role == "direct_heal"
 
 
 def test_ward_heartbeat():
     w = WorldState(members=[Member(0, hp=1.0, ward=False)], group_ward_up=True)
     a = decide(w, _cfg(), State.IN_COMBAT)
-    assert a.role == "ward" and a.target_slot == 0
+    assert a[0].role == "ward" and a[0].target_slot == 0
 
 
 def test_group_ward_on_ae():
     w = WorldState(members=[Member(0, hp=1.0, ward=True)], ae_incoming=True, group_ward_up=False)
-    assert decide(w, _cfg(), State.IN_COMBAT).role == "group_ward"
+    assert decide(w, _cfg(), State.IN_COMBAT)[0].role == "group_ward"
 
 
 def test_group_heal_when_enough_hurt():
     # two members hurt (standard) + mana ok -> group heal
     w = WorldState(members=[Member(0, hp=0.7, ward=True), Member(1, hp=0.7, ward=True)],
                    own_power=1.0, group_ward_up=True)
-    assert decide(w, _cfg(), State.IN_COMBAT).role == "group_heal"
+    assert decide(w, _cfg(), State.IN_COMBAT)[0].role == "group_heal"
 
 
 def test_idle_when_healthy():
     w = WorldState(members=[Member(0, hp=1.0, ward=True)], group_ward_up=True)
-    assert decide(w, _cfg(), State.IN_COMBAT) is None
+    assert decide(w, _cfg(), State.IN_COMBAT) == []
+
+
+def test_burst_stacks_heals_and_wards_when_critical():
+    # tank critical, distinct heals + emergency ward mapped -> the BURST carries the heal
+    # tiers AND the ward(s), not a single heal.
+    w = WorldState(members=[Member(0, hp=0.4, ward=True)], own_power=1.0, group_ward_up=True)
+    roles = [a.role for a in decide(w, _cfg(critical_heal="3", emergency_ward="Alt+7"), State.IN_COMBAT)]
+    assert "critical_heal" in roles and "direct_heal" in roles
+    assert "emergency_ward" in roles or "ward" in roles
+
+
+def test_burst_dedups_shared_key():
+    # emergency/critical/direct all share key '4' -> ONE heal entry (no whiffed repeats).
+    w = WorldState(members=[Member(0, hp=0.2, ward=True)], own_power=1.0, group_ward_up=True)
+    burst = decide(w, _cfg(critical_heal="4", emergency_heal="4"), State.IN_COMBAT)
+    heals = [a for a in burst if a.role in ("emergency_heal", "critical_heal", "direct_heal")]
+    assert len(heals) == 1

@@ -28,12 +28,12 @@ abilities:
     cast_ms: 1500
     desc: standard single-target heal
   critical_heal:
-    key: ''
+    key: '4'
     mode: auto
     cast_ms: 1500
     desc: bigger heal for CRITICAL hp (skill not learned yet)
   emergency_heal:
-    key: ''
+    key: '4'
     mode: auto
     cast_ms: 800
     desc: emergency heal, cancels current cast (skill not learned yet)

@@ -209,23 +209,29 @@ class Brain:
         )
         self.telemetry.set_members(member_rows)
 
-        action = decide(world, self.cfg, self.sm.state)
+        # decide() returns a PRIORITY BURST. Fire the FIRST entry that's off cooldown +
+        # past the GCD; over successive GCDs this pours the whole stack (all heal tiers +
+        # wards) until the target recovers. If nothing fires (empty burst or all on
+        # cooldown), fall through to the ward/assist heartbeats.
+        actions = decide(world, self.cfg, self.sm.state)
         now = time.time()
-        if action is not None:
-            key = (action.role, action.target_slot)
-            if now >= self._next_action_at and now >= self._cooldowns.get(key, 0.0):
-                await self.push_command(action)
-                self._next_action_at = now + GLOBAL_GCD_S
-                self._cooldowns[key] = now + ACTION_COOLDOWN_S.get(
-                    action.role, DEFAULT_COOLDOWN_S)
-            else:
-                log.debug("throttled %s slot%s", action.role, action.target_slot)
+        fired = False
+        if now >= self._next_action_at:
+            for action in actions:
+                key = (action.role, action.target_slot)
+                if now >= self._cooldowns.get(key, 0.0):
+                    await self.push_command(action)
+                    self._next_action_at = now + GLOBAL_GCD_S
+                    self._cooldowns[key] = now + ACTION_COOLDOWN_S.get(
+                        action.role, DEFAULT_COOLDOWN_S)
+                    fired = True
+                    break
         # Ward heartbeat: with no ward-bar sensing, recast the tank ward on a timer
-        # while IN_COMBAT (a Defiler's core mitigation). Only in the gaps (no heal/
-        # cure due) and only in combat -- if end-of-combat detection were loose this
+        # while IN_COMBAT (a Defiler's core mitigation). Only in the gaps (nothing in the
+        # burst fired) and only in combat -- if end-of-combat detection were loose this
         # would burn mana, which is why combat-end is kept tight. Interval is owner-
         # tunable (ward_heartbeat_s); 0/absent disables it.
-        else:
+        if not fired:
             hb = float(self.cfg.threshold("ward_heartbeat_s", 0) or 0)
             mr = self.cfg.maint_role                 # 'ward' (Defiler) or 'hot' (Fury)
             wkey = self.cfg.key_for(mr)
