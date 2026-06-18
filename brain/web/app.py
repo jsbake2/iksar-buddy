@@ -212,6 +212,9 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
                                   allow_unicode=True)
             _save_config(path, _KEYMAP_HEADER + body)
             brain.cfg.reload_if_changed()
+            # push the fresh keymap + NAMES to the agent so combat detection (which filters
+            # the log to group-member names) and targeting update live, no reconnect needed.
+            await brain.push_config()
         except Exception as e:  # pragma: no cover
             return JSONResponse({"error": str(e)}, status_code=500)
         telemetry.push_event("config", "keymap saved")

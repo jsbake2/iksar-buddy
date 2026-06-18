@@ -38,14 +38,20 @@ function render() {
   for (const [role, entry] of Object.entries(km.macros || {})) row("macro:" + role, entry, ab, true);
 
   const tg = $("targets");
-  tg.innerHTML = "";
-  (km.group_target_keys || ["", "", "", "", "", ""]).forEach((k, i) => {
+  tg.innerHTML = `<div class="km-target km-thead"><span>slot</span><span>character name</span><span>target key</span></div>`;
+  const roles = km.slot_roles || [];
+  const names = km.names || {};
+  for (let i = 0; i < 6; i++) {
+    const k = (km.group_target_keys || [])[i] || "";
+    const role = roles[i] ? ` (${roles[i]})` : (i === 0 ? " (self)" : "");
+    const nm = (names[i] ?? names[String(i)] ?? "");
     const d = document.createElement("div");
     d.className = "km-target";
-    d.innerHTML = `<span>slot ${i}${i === 0 ? " (self)" : ""}</span>` +
-      `<input class="km-tk" data-slot="${i}" value="${k || ""}" spellcheck="false" />`;
+    d.innerHTML = `<span>slot ${i}${role}</span>` +
+      `<input class="km-name" data-slot="${i}" placeholder="character name" value="${nm.replace(/"/g, "&quot;")}" spellcheck="false" />` +
+      `<input class="km-tk" data-slot="${i}" value="${k.replace(/"/g, "&quot;")}" spellcheck="false" />`;
     tg.appendChild(d);
-  });
+  }
   $("tankSlot").value = km.tank_slot ?? 0;
   // live unmapped-highlight as you type
   document.querySelectorAll(".km-key").forEach((inp) => {
@@ -71,6 +77,8 @@ function collect() {
   });
   km.group_target_keys = Array.from(document.querySelectorAll(".km-tk"))
     .sort((a, b) => a.dataset.slot - b.dataset.slot).map((i) => i.value.trim());
+  km.names = {};                       // slot -> character name (combat detection + display)
+  document.querySelectorAll(".km-name").forEach((i) => { km.names[i.dataset.slot] = i.value.trim(); });
   km.tank_slot = parseInt($("tankSlot").value, 10) || 0;
 }
 

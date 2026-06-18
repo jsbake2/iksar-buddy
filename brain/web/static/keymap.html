@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ib · keymap</title>
-  <link rel="stylesheet" href="themes.css" />
+  <link rel="stylesheet" href="themes.css?v=20260618" />
 </head>
 <body>
   <header class="bar">
@@ -31,9 +31,11 @@
     </section>
 
     <section class="panel">
-      <h2>Group targeting <span class="sub">key that targets each group slot</span></h2>
-      <p class="km-hint">To act on a member (heal / ward / cure / revive) the agent taps
-        this key to TARGET them, then the ability key. EQ2 default: F1 self, F2–F6 members.</p>
+      <h2>Group &amp; targeting <span class="sub">per-slot character name + target key</span></h2>
+      <p class="km-hint">To act on a member (heal / ward / cure / revive) the agent taps the
+        target key, then the ability key. EQ2 default: F1 self, F2–F6 members. The
+        <b>character name</b> is used for combat detection (the tank's name is the key one —
+        change it when you swap who you're partnered with). Targeting is by SLOT, not name.</p>
       <div class="km-targets" id="targets"></div>
       <div class="km-tank">
         <label>tank slot <input type="number" id="tankSlot" min="0" max="5" /></label>
@@ -47,6 +49,6 @@
     </div>
   </main>
 
-  <script src="keymap.js"></script>
+  <script src="keymap.js?v=20260618"></script>
 </body>
 </html>
