@@ -41,6 +41,7 @@
 .state-pill.s-waiting_power { color:var(--warn); border-color:color-mix(in srgb,var(--warn) 50%,var(--line)); }
 .state-pill.s-paused { color:var(--warn); }
 .state-pill.s-done { color:var(--good); }
+.state-pill.s-incomplete { color:var(--warn); border-color:color-mix(in srgb,var(--warn) 60%,var(--line)); }
 .state-pill.s-error { color:var(--bad); border-color:var(--bad); }
 .state-pill.s-off,.state-pill.s-idle { color:var(--faint); }
 

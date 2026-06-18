@@ -396,8 +396,9 @@ class CraftWorker:
     async def _craft_list_via_agent(self, name: str, count: int) -> int:
         """Hand the full recipe (count crafts) to the in-guest run_list loop and poll
         its progress. The guest does start->react->repeat locally. Returns crafts done.
-        NB: the safe-spot focus click now happens IN-GUEST, AFTER each Begin (owner's
-        order: click start THEN mouse to safe spot) — so we do NOT _focus_craft here."""
+        The guest also does the safe-spot focus AFTER each Begin (owner's order). This
+        pre-handoff _focus_craft stays as harmless insurance until the guest update lands."""
+        await self._focus_craft()
         epoch = self._agent_set("craft_run", **self._ruleset_craft_run(count))
         self.t.update_bot(self.id, state="crafting")
         self.t.push_log(self.id, f"handed LIST to in-guest agent — {count} craft(s) (epoch {epoch})")
@@ -597,12 +598,24 @@ class CraftWorker:
                                                 search=it.get("search", ""))
                 it["done"] = made                # ACTUAL crafts done, not assumed
                 self.t.update_bot(self.id, queue=q)
-            self.t.push_event(self.id, "craft", "batch complete" + (f" ({station})" if station else ""))
+            # Status must reflect reality: 'done' ONLY if every in-scope recipe finished;
+            # else 'incomplete' so a 0/6 recipe (missing mats / failed start) can't
+            # masquerade as done. (Owner: "finished one, other still to go, says done — wtf".)
+            scope = [it for it in q if not (station and (it.get("station") or "") != station)]
+            short = [it for it in scope if int(it.get("done", 0)) < int(it.get("count", 0))]
+            if short and not self._stop.is_set():
+                names = ", ".join(f"{it['name']} {it.get('done', 0)}/{it['count']}" for it in short)
+                self.t.push_event(self.id, "craft", f"batch INCOMPLETE — {names}")
+                self.t.update_bot(self.id, state="incomplete", durability_mode=None)
+            else:
+                self.t.push_event(self.id, "craft", "batch complete" + (f" ({station})" if station else ""))
+                self.t.update_bot(self.id, state="done", durability_mode=None)
         else:
-            await self._craft_recipe(job["recipe"], job["count"], tc,
-                                     search=job.get("search", ""))
-            self.t.push_event(self.id, "craft", "done")
-        self.t.update_bot(self.id, state="done", durability_mode=None)
+            made = await self._craft_recipe(job["recipe"], job["count"], tc,
+                                            search=job.get("search", ""))
+            full = made >= int(job.get("count", 1))
+            self.t.push_event(self.id, "craft", "done" if full else f"incomplete — {made}/{job.get('count',1)}")
+            self.t.update_bot(self.id, state="done" if full else "incomplete", durability_mode=None)
 
     async def run(self) -> None:
         """Supervisor: idle until a job arrives, run it, idle again. A new start()
