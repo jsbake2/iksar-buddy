@@ -254,6 +254,10 @@ journal_ocr:
   tesseract_psm: 6
   negate: true
   threshold_pct: 60
+# Do the whole begin->react->repeat loop INSIDE the guest (fast path for timed
+# writs): local clicks + ~5ms grabs, no virsh round-trip per craft. Host only selects.
+guest_loop: true
+
 timings:
   loop_sleep: 0.03
   done_check_interval: 0.5

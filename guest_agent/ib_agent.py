@@ -112,6 +112,8 @@ class Agent:
         if rx is not None and hasattr(rx, "heals"):        # healer telemetry
             body["heals"] = getattr(rx, "heals", 0)
             body["cures"] = getattr(rx, "cures", 0)
+        if rx is not None and hasattr(rx, "crafts_done"):   # in-guest list-loop progress
+            body["crafts_done"] = getattr(rx, "crafts_done", 0)  # report even after it goes idle
         try:
             self.s.post(self.tele_url, json=body, timeout=4)
         except requests.RequestException:
@@ -148,6 +150,12 @@ class Agent:
                 return
             self.react_epoch = int(cmd.get("epoch", 0))
             self.done_epoch = None
+        elif action == "craft_run":
+            # in-guest FULL list loop: start -> react -> repeat, count times (fast path)
+            if not self._start_reflex(CraftReflex, cmd, "craft_run", "craft_reflex", method="run_list"):
+                return
+            self.react_epoch = int(cmd.get("epoch", 0))
+            self.done_epoch = None
         elif action == "heal":
             rs = cmd if cmd.get("pixels") else _load_local("heal.json")
             if not self._start_reflex(HealReflex, rs, "heal", "heal_reflex"):
@@ -156,13 +164,14 @@ class Agent:
             self._stop_reflex()
             self.state = "idle"
 
-    def _start_reflex(self, cls, ruleset, state, name) -> bool:
+    def _start_reflex(self, cls, ruleset, state, name, method: str = "run") -> bool:
         if cls is None or not ruleset:
             log(f"{state} requested but {name} unavailable / no ruleset")
             self.state = "error"
             return False
         self._stop_reflex()
         self._stop_flag = False
+        self._reflex_method = method
         self.reflex = cls(ruleset, log, should_stop=lambda: self._stop_flag)
         self.reflex_thread = threading.Thread(target=self._run_reflex, daemon=True)
         self.reflex_thread.start()
@@ -171,7 +180,7 @@ class Agent:
 
     def _run_reflex(self) -> None:
         try:
-            ok = self.reflex.run()
+            ok = getattr(self.reflex, getattr(self, "_reflex_method", "run"))()
         except Exception:                # noqa: BLE001
             log("reflex crashed:\n" + traceback.format_exc())
             ok = False
