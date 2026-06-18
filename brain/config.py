@@ -45,6 +45,15 @@ class Config:
     def _active_marker(self) -> Path:
         return self.config_dir / "active_profile"
 
+    @property
+    def ability_map_path(self) -> Path:
+        """The file ability_map was actually loaded from — the active profile if
+        one is set, else the bare ability_map.yaml. Saving the keymap must target
+        THIS (not always ability_map.yaml) or edits to a profile silently vanish."""
+        if self.active_profile:
+            return self._profiles_dir / f"{self.active_profile}.yaml"
+        return self.config_dir / "ability_map.yaml"
+
     def list_profiles(self) -> list[str]:
         if self._profiles_dir.is_dir():
             return sorted(p.stem for p in self._profiles_dir.glob("*.yaml"))

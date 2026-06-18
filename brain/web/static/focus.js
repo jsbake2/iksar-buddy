@@ -38,7 +38,7 @@ const CATALOG = [
   { id: "reengage", label: "⚔ RE-ENGAGE", kind: "group", action: "attack", big: 1, hot: 1 },
   { id: "debuff", label: "Debuff", kind: "group", action: "debuff" },
   { id: "spell_attack", label: "Spell Atk", kind: "group", action: "spell_attack", hot: 1 },
-  { id: "food", label: "🍖 Food", kind: "group", action: "food", hot: 1 },
+  { id: "food", label: "🍖 Food", kind: "post", path: "/api/macro/food", hot: 1 },
   { id: "deaggro", label: "De-aggro", kind: "group", action: "deaggro" },
   { id: "rez_group", label: "Rez Group", kind: "group", action: "rez" },
 ];

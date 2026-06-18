@@ -148,6 +148,13 @@ group_target_keys:
 - F4
 - F5
 - F6
+# Multi-step key sequences (target + ability + pause), fired as one manual macro
+# from the focus window / POST /api/macro/<name>. Editable on the keymap page.
+# Tokens: F1..F6 target keys, bare/Mod+Key ability keys, pause_<sec> waits.
+macros:
+  food:
+    key: F2,Ctrl+0,pause_1,F1,Ctrl+0
+    desc: 'feed: target tank + Ctrl+0, wait 1s, target self + Ctrl+0'
 slot_roles:
 - healer
 - tank

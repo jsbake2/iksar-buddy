@@ -188,11 +188,25 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     async def get_keymap():
         return brain.cfg.ability_map
 
+    @app.post("/api/macro/{name}")
+    async def fire_macro(name: str):
+        """Fire a named macro from the keymap (ability_map.macros[name].key) as one
+        manual key sequence. Macros are multi-token (target + ability + pause), e.g.
+        Food = 'F2,Ctrl+0,pause_1,F1,Ctrl+0'. Manual -> works while disarmed; still
+        chat-safety gated by the agent."""
+        seq = brain.cfg.macro_key(name)
+        if not seq:
+            return JSONResponse({"error": f"no macro '{name}'"}, status_code=404)
+        telemetry.push_event("manual", f"macro: {name}")
+        await brain.send("command", role=f"macro:{name}", key=seq,
+                         target_slot=None, manual=True, reason=f"macro {name}")
+        return {"ok": True, "macro": name}
+
     @app.post("/api/keymap")
     async def post_keymap(payload: dict = Body(...)):
         if not isinstance(payload.get("abilities"), dict):
             return JSONResponse({"error": "missing abilities"}, status_code=400)
-        path = brain.cfg.config_dir / "ability_map.yaml"
+        path = brain.cfg.ability_map_path          # the ACTIVE profile, not always ability_map.yaml
         try:
             body = yaml.safe_dump(payload, sort_keys=False, default_flow_style=False,
                                   allow_unicode=True)
@@ -370,18 +384,6 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             await brain.send("command", role=action, key=key,
                              target_slot=slot, manual=True, reason=f"manual {action}")
             return {"ok": True, "action": action, "slot": slot}
-        # food: target the tank (F2), consume (Ctrl+0), wait for the cast, then
-        # target self (F1) and consume again. One-shot manual macro.
-        if action == "food":
-            gtk = brain.cfg.ability_map.get("group_target_keys") or ["F1", "F2", "F3", "F4", "F5", "F6"]
-            tslot = int(brain.cfg.ability_map.get("tank_slot", 1))
-            tank_key = gtk[tslot] if 0 <= tslot < len(gtk) else "F2"
-            self_key = gtk[0] if gtk else "F1"
-            seq = f"{tank_key},Ctrl+0,pause_1,{self_key},Ctrl+0"
-            telemetry.push_event("manual", "food -> tank + self")
-            await brain.send("command", role="food", key=seq,
-                             target_slot=None, manual=True, reason="food: tank then self (Ctrl+0)")
-            return {"ok": True, "action": "food"}
         # spell_attack: target the TANK first so EQ2 implied-targeting lands the
         # offensive cast on the tank's target instead of whatever's selected.
         if action == "spell_attack":
