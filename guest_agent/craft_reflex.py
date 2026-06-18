@@ -308,13 +308,24 @@ class CraftReflex:
                 if now - last_done >= done_every:
                     last_done = now
                     if not saw_active:
-                        # Never saw a counter -> the craft never went active (recipe couldn't
-                        # start: missing materials / Begin disabled). Don't treat the loaded
-                        # 'Create' button as 'done' (the false-complete that railed chemistry).
+                        # No counter seen yet after the grace window. Two very different cases,
+                        # and skipping the WRONG one makes the host search the next recipe while
+                        # this craft is still on screen (the vm2 thrash):
+                        #   - a start button (Begin/Create/repeat) IS showing  -> the craft truly
+                        #     never started (missing materials / Begin disabled) -> bail+skip.
+                        #   - NO start button -> the craft IS running, we're just not detecting
+                        #     its counters (or the first one is late). Do NOT false-skip; flip to
+                        #     active and keep pumping filler so it completes and the host advances
+                        #     cleanly. (Counter-detection on this table is then the thing to fix.)
                         if now - t0 >= active_grace:
-                            self.log(f"reflex: no counter in {active_grace:.0f}s — craft not "
-                                     f"active (missing mats / didn't start), bailing")
-                            return False
+                            if self._done(sct):
+                                self.log(f"reflex: no counter in {active_grace:.0f}s AND start "
+                                         f"button present — craft didn't start (missing mats), bailing")
+                                return False
+                            self.log(f"reflex: no counter in {active_grace:.0f}s but craft IS "
+                                     f"running (no start button) — continuing as active "
+                                     f"(counter detection may be off on this table)")
+                            saw_active = True
                     elif self._done(sct):
                         self.done = True
                         self.log(f"reflex: done ({self.reactions} success, {self.fails} fail)")
