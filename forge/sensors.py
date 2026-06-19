@@ -470,29 +470,45 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
     modifiers = [m.lower() for m in rs.get("variant_modifiers", ["imbued", "blessed"])]
     name_l = (name or "").lower()
     forbidden = [m for m in modifiers if m not in name_l]
+    # SPELL QUALITY (jeweler/scholar writs): a writ wants ONE quality (e.g. Journeyman). If a
+    # higher quality was also scribed (Adept III), both rows carry the same base name. The
+    # target's quality is the tiebreaker: reject rows whose OCR shows a DIFFERENT quality, and
+    # on a pure tie prefer the row carrying the target's quality -> always the writ's version.
+    qualities = ("apprentice", "journeyman", "adept", "expert", "master", "grandmaster")
+    target_q = next((q for q in qualities if q in name_l), None)
+    # On a pure tie, prefer Journeyman: explicit when the target names it, else the default
+    # (jeweler/scholar writs are always Journeyman). Harmless for gear (no quality rows).
+    prefer_q = target_q or "journeyman"
     want_len = sum(len(t) for t in want)
     # Surplus-letter budget beyond the target tokens: OCR noise (a stray glyph or two) is fine,
     # but a whole extra WORD (~5+ chars) means a different recipe -> reject. Roman/quality tails
     # are already part of `want` for tier'd names, so this targets prefix/suffix variants.
     max_extra = int(rs.get("max_extra_chars", 4))
-    scored = []   # (score, extra, click)
+    scored = []   # (score, is_target_quality, extra, click)
     for blob, click in _row_candidates(guest, cfg):
         if not blob:
             continue
         if any(_contains(blob, f) for f in forbidden):
             log.debug("recipe row click=%s REJECT (variant) blob=%r", click, blob)
             continue
+        # Wrong-quality reject: target wants one quality, this row's OCR shows a different one.
+        if target_q and any(_contains(blob, q) for q in qualities if q != target_q):
+            log.debug("recipe row click=%s REJECT (wrong quality, want %s) blob=%r", click, target_q, blob)
+            continue
         score = sum(1 for t in want if _contains(blob, t)) / len(want)
         extra = max(0, len(blob) - want_len)
         if extra > max_extra:                  # extra word -> different recipe (Tranquil/of-X)
             log.debug("recipe row click=%s REJECT (extra word, %d) blob=%r", click, extra, blob)
             continue
-        log.debug("recipe row click=%s score=%.2f extra=%d blob=%r", click, score, extra, blob)
-        scored.append((score, extra, click))
+        # tiebreak flag: does this row carry the preferred quality (Journeyman)? Preferred on ties.
+        is_tq = _contains(blob, prefer_q)
+        log.debug("recipe row click=%s score=%.2f tq=%s extra=%d blob=%r", click, score, is_tq, extra, blob)
+        scored.append((score, is_tq, extra, click))
     if not scored:
         return None
-    scored.sort(key=lambda s: (-s[0], s[1]))   # best coverage, then most-exact
-    best_score, _, click = scored[0]
+    # best coverage, then prefer the TARGET QUALITY (Journeyman), then most-exact
+    scored.sort(key=lambda s: (-s[0], not s[1], s[2]))
+    best_score, _, _, click = scored[0]
     threshold = float(rs.get("match_threshold", 0.6))
     # Sole-result fast path: one non-rejected row that shares SOMETHING -> take it even
     # below threshold (a lone obvious match shouldn't be dismissed over OCR noise).
