@@ -122,6 +122,32 @@ class CraftWorker:
             self.t.update_bot(self.id, state="paused")
             await asyncio.sleep(0.4)
 
+    async def _wait_chat_safe(self) -> bool:
+        """Block until the chat-safety gate is clear (in-world + chat line uncovered).
+        A covered chat line — Windows taskbar drawn over the bottom of EQ2, EQ2 not in
+        the foreground, not in-world, or chat open — makes chat_safe() fail. The old
+        behavior aborted the type and returned, so the writ loop marched through every
+        recipe doing nothing (done=0) and called the writ 'incomplete'. That looks like
+        a bot bug when it's actually the fail-safe doing its job, and it silently burns a
+        whole writ. Instead: surface a BLOCKED state and WAIT for the human to restore
+        fullscreen/focus, then resume exactly where we left off (done counts preserved).
+        Returns True once safe, False if the job was stopped/superseded while blocked."""
+        await self._ex(self.guest.grab)
+        if await self._ex(sensors.chat_safe, self.guest, self.cfg):
+            return True
+        self.t.update_bot(self.id, state="blocked")
+        self.t.push_log(self.id, "BLOCKED: chat-safety failing — EQ2 not in front / taskbar "
+                                 "over the chat line / not in-world. Restore fullscreen+focus.")
+        self.t.push_event(self.id, "control", "BLOCKED — chat-safety failing (check fullscreen/taskbar)")
+        while not self._stop.is_set():
+            await asyncio.sleep(1.0)
+            await self._ex(self.guest.grab)
+            if await self._ex(sensors.chat_safe, self.guest, self.cfg):
+                self.t.push_log(self.id, "chat-safety restored — resuming")
+                self.t.push_event(self.id, "control", "chat-safety restored — resuming")
+                return True
+        return False
+
     # -- recipe selection --------------------------------------------------
     async def _select_recipe(self, name: str, trade_class: str, search: str = "") -> bool:
         """Focus the search field, type the SEARCH text, filter, click the matching
@@ -161,12 +187,15 @@ class CraftWorker:
             if rs.get("use_clear") and clr:
                 await self._ex(partial(self.guest.click, clr[0], clr[1], True))
                 await asyncio.sleep(click_settle)
-            # chat-safety gate: never type unless in-world + chat clear (the invariant)
+            # chat-safety gate: never type unless in-world + chat clear (the invariant).
+            # If it's not safe, DON'T silently skip the recipe (that burns the whole writ
+            # and reads as a bot bug) — surface BLOCKED and wait for the human to restore
+            # fullscreen/focus, then fall through and type this attempt.
             await self._ex(self.guest.grab)
             if not await self._ex(sensors.chat_safe, self.guest, self.cfg):
                 self._aborted += 1
-                self.t.push_log(self.id, "recipe type ABORTED (chat unsafe / not in-world)")
-                return False
+                if not await self._wait_chat_safe():
+                    return False                  # job stopped/superseded while blocked
             # ATOMIC: activate EQ2 + click the search field + type + Enter, all in ONE
             # AHK run. Fusing focus-click+type+Enter means nothing can steal focus
             # between them, so the recipe letters can't leak into the world as movement
