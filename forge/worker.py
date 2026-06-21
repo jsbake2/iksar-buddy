@@ -427,6 +427,8 @@ class CraftWorker:
         its progress. The guest does start->react->repeat locally. Returns crafts done.
         The guest also does the safe-spot focus AFTER each Begin (owner's order). This
         pre-handoff _focus_craft stays as harmless insurance until the guest update lands."""
+        if self._stop.is_set():
+            return 0                              # a stop landed during select — don't (re)start the guest
         await self._focus_craft()
         epoch = self._agent_set("craft_run", **self._ruleset_craft_run(count))
         self.t.update_bot(self.id, state="crafting")

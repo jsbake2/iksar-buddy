@@ -164,6 +164,13 @@ class ForgeController:
         w = self.workers.get(bot_id)
         if w:
             w.stop()
+        # Halt the IN-GUEST reflex IMMEDIATELY — don't wait for the host worker loop to
+        # unwind and send idle itself. The guest is the thing pressing keys; if the worker
+        # is mid virsh-roundtrip or between handoffs when STOP is pressed, the VM keeps
+        # crafting combines while the dashboard already reads idle. Bumping the command to
+        # 'idle' here makes the guest's next poll (~250ms) stop the reflex. (Owner: "STOP
+        # does not stop it".)
+        self.set_agent_command(bot_id, "idle")
         self._release(bot_id)
         self.t.update_bot(bot_id, state="idle", power_gated=False)
         self.t.push_event(bot_id, "control", "stopped")
