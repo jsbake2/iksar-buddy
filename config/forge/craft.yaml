@@ -261,7 +261,7 @@ guest_loop: true
 timings:
   loop_sleep: 0.03
   done_check_interval: 0.5
-  art_interval: 1.0
+  art_interval: 0.2          # VERY SHORT pause between single filler presses (timed writs); was 1.0
   pause: 0.8
   pause_low_mana: 2.5
   click_settle: 0.2

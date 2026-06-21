@@ -131,20 +131,30 @@ class CraftReflex:
             return []
         return [m.group(1).strip() for m in _CREATED_RE.finditer(chunk)]
 
-    def _craft_completed(self) -> bool:
-        """True once the log shows this craft finished. The bot crafts serially (one
-        recipe per hand-off, one 'You created …' line per finished craft), so ANY new
-        creation since the craft started means THIS craft completed. We log whether it
-        matched the expected item for visibility, but don't gate on it — created-line
-        wording can vary by trade and we never want to hang waiting for an exact string."""
-        for name in self._new_creations():
+    def _craft_outcome(self) -> str:
+        """Outcome of THIS craft from new 'You created …' lines since it started:
+          'success' — created the EXPECTED recipe item.
+          'fail'    — created a DIFFERENT item. A failed craft returns FUEL instead of the
+                      item (verified: Glowing/Sparkling Coal/Filament/Candle/Incense), so a
+                      non-matching creation means the craft finished but did NOT make the
+                      writ item — must not count.
+          ''        — nothing created yet (still crafting).
+        With no expected item (host-started single craft) we can't tell, so any creation
+        counts as 'success'."""
+        creations = self._new_creations()
+        if not creations:
+            return ""
+        if not self._expect:
+            self.log(f"reflex: log completion (no expected item) — created '{creations[-1]}'")
+            return "success"
+        for name in creations:
             cn = _norm_item(name)
-            match = bool(self._expect) and cn and \
-                (cn == self._expect or cn in self._expect or self._expect in cn)
-            tag = "" if (not self._expect or match) else f" (expected '{self._expect}')"
-            self.log(f"reflex: log completion — created '{name}'{tag}")
-            return True
-        return False
+            if cn and (cn == self._expect or cn in self._expect or self._expect in cn):
+                self.log(f"reflex: SUCCESS — created '{name}'")
+                return "success"
+        self.log(f"reflex: FAIL — created '{creations[-1]}' (expected '{self._expect}'); "
+                 f"fuel returned / craft failed")
+        return "fail"
 
     # -- craft-window presence (safety gate) ------------------------------
     def _window_present(self, sct) -> bool:
@@ -414,37 +424,58 @@ class CraftReflex:
             self._click(loc[0], loc[1])
             time.sleep(float(self.r.get("post_focus", 0.15)))
 
+    def _do_one_craft(self) -> str:
+        """Start one craft, then react to its completion. Returns the outcome:
+        'success' (made the item) | 'fail' (fuel returned) | '' (couldn't start)."""
+        if not self._start_craft(first=(self.crafts_done == 0)):
+            return ""
+        self._focus_safe()                           # click start THEN mouse to safe spot
+        return self._react_until_done()
+
     def run_list(self) -> bool:
-        """Do the WHOLE list IN-GUEST: start -> react until done -> repeat, `count`
-        times, all local (no host round-trip per craft). The host only selected the
-        recipe and handed off the count; we report crafts_done via the agent telemetry."""
+        """Do the WHOLE list IN-GUEST: start -> react until done -> repeat, until `count`
+        SUCCESSES (all local, no host round-trip per craft). The host only selected the
+        recipe and handed off the count; we report crafts_done via telemetry. A FAILED
+        craft (fuel returned, item not made) is retried ONCE (owner), then we stop short."""
         count = int(self.r.get("count", 1))
         self.crafts_done = 0
         self._activate_eq2()
         self.log(f"reflex: craft_run START — {count} craft(s) in-guest")
         while self.crafts_done < count and not self.should_stop():
-            if not self._start_craft(first=(self.crafts_done == 0)):
-                self.log(f"reflex: no craft to start (done {self.crafts_done}/{count}) — stopping")
+            outcome = self._do_one_craft()
+            if outcome == "success":
+                self.crafts_done += 1
+                self.log(f"reflex: craft {self.crafts_done}/{count} complete")
+                continue
+            if outcome == "fail":
+                # owner: retry ONCE on a failed craft, then move on (don't count it).
+                self.log("reflex: craft FAILED (fuel returned) — retrying once")
+                if self._do_one_craft() == "success":
+                    self.crafts_done += 1
+                    self.log(f"reflex: craft {self.crafts_done}/{count} complete (on retry)")
+                    continue
+                self.log("reflex: craft failed again — stopping list (host marks it short)")
                 break
-            self._focus_safe()                       # click start THEN mouse to safe spot
-            if not self._react_until_done():
-                self.log(f"reflex: craft {self.crafts_done + 1}/{count} didn't complete — stopping")
-                break
-            self.crafts_done += 1
-            self.log(f"reflex: craft {self.crafts_done}/{count} complete")
+            # '' -> couldn't start (missing mats / list done / window gone)
+            self.log(f"reflex: no craft to start (done {self.crafts_done}/{count}) — stopping")
+            break
         self.log(f"reflex: craft_run END — {self.crafts_done}/{count} done")
         return self.crafts_done >= count
 
     def run(self) -> bool:
         """Single craft: react until done. The host started + confirmed running."""
-        return self._react_until_done()
+        return self._react_until_done() == "success"
 
-    def _react_until_done(self) -> bool:
-        """React until the craft is DONE (repeat/Begin/Create reappears) or stop/timeout.
-        Returns True on a clean completion. The host (or _start_craft) already confirmed
-        the craft is RUNNING, so we start in the active state and watch for done."""
+    def _react_until_done(self) -> str:
+        """React until the craft finishes, then return its OUTCOME: 'success' (made the
+        item), 'fail' (a different/fuel item was created), or '' (window gone / missing
+        mats / stop / timeout). Completion is read from the EQ2 log ('You created …'),
+        the only authoritative whole-craft signal; pixels are a no-log fallback only."""
         loop_sleep = float(self.r.get("loop_sleep", 0.04))
-        art_interval = float(self.r.get("art_interval", 1.0))
+        # FILLER cadence: press ONE art, loop back to check for a counter, press the NEXT
+        # art, ... (cycles 1→2→3 in durability mode, 4→5→6 in progress). art_interval is
+        # the VERY SHORT pause between those single presses (owner: timed writs matter).
+        art_interval = float(self.r.get("art_interval", 0.2))
         press_interval = float(self.r.get("counter_press_interval", 0.12))   # mash cadence
         green_delta = float(self.r.get("green_delta", 16.0))                 # tint thresholds
         red_delta = float(self.r.get("red_delta", 16.0))
@@ -500,7 +531,7 @@ class CraftReflex:
                     elif nowm - win_gone_since >= win_bail_s:
                         self.log(f"reflex: craft window NOT present for {win_bail_s:.1f}s "
                                  f"— bailing (no keypresses to the world)")
-                        return False
+                        return ""
                     time.sleep(loop_sleep)
                     continue
                 win_gone_since = None
@@ -579,7 +610,9 @@ class CraftReflex:
                     self._last_counter = None
                     self._cnt_resolved = None
                     self._cnt_baseline = None
-                # FILLER: pump one art every ~art_interval (owner: ~1s between buttons).
+                # FILLER: press ONE art, then loop back (checking for a counter) before the
+                # next — art_interval is the VERY SHORT pause between single presses. Cycles
+                # 1→2→3 (durability mode) or 4→5→6 (progress mode).
                 now = time.time()
                 if safe and self.arts[mode] and now - last_filler >= art_interval:
                     a = self.arts[mode]
@@ -589,35 +622,39 @@ class CraftReflex:
                 if now - last_done >= done_every:
                     last_done = now
                     if use_log:
-                        # AUTHORITATIVE completion: the log shows a created item. Pixels
-                        # (a Create/Begin button on screen) are NOT — they also show before
-                        # a craft starts, which is what false-DONE'd a craft that never ran.
-                        if self._craft_completed():
-                            self.done = True
-                            self.log(f"reflex: DONE via log ({self.reactions} success, {self.fails} fail)")
-                            return True
+                        # AUTHORITATIVE completion: the log shows a created item. 'success'
+                        # = our recipe item; 'fail' = a different/fuel item (failed craft).
+                        # Pixels (a Create/Begin button) are NOT — they also show before a
+                        # craft starts, which is what false-DONE'd a craft that never ran.
+                        outcome = self._craft_outcome()
+                        if outcome:
+                            self.done = (outcome == "success")
+                            self.log(f"reflex: craft ended -> {outcome} via log "
+                                     f"({self.reactions} success, {self.fails} fail)")
+                            return outcome
                         # Missing-materials bail: no counter EVER fired, a start button is
                         # still up well past the grace window, and nothing was logged -> the
                         # craft never started. Bail now instead of waiting out max_t.
                         if not saw_active and now - t0 >= active_grace and self._done(sct):
                             self.log(f"reflex: no counter in {active_grace:.0f}s, start button up, "
                                      f"nothing created in log — craft didn't start (missing mats), bailing")
-                            return False
+                            return ""
                     else:
-                        # No EQ2 log available -> degraded pixel fallback (the old heuristic).
+                        # No EQ2 log available -> degraded pixel fallback (can't tell
+                        # success from fail; treat a clean done as success).
                         if not saw_active:
                             if now - t0 >= active_grace:
                                 if self._done(sct):
                                     self.log(f"reflex: no counter in {active_grace:.0f}s AND start "
                                              f"button present — craft didn't start (missing mats), bailing")
-                                    return False
+                                    return ""
                                 self.log(f"reflex: no counter in {active_grace:.0f}s but craft IS "
                                          f"running (no start button) — continuing as active")
                                 saw_active = True
                         elif self._done(sct):
                             self.done = True
                             self.log(f"reflex: done ({self.reactions} success, {self.fails} fail)")
-                            return True
+                            return "success"
                 time.sleep(loop_sleep)
         self.log(f"reflex: stopped/timeout ({self.reactions} success, {self.fails} fail)")
-        return False
+        return ""
