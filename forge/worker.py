@@ -48,6 +48,7 @@ class CraftWorker:
         self._new_job = asyncio.Event()
         self._aborted = 0                   # chat-unsafe injection aborts
         self._ref_buttons: list = []        # in-memory reaction-button references (per craft)
+        self._row_click: list | None = None # last matched recipe row (guest re-selects with it)
         self._filler_i = 0                  # rotating index into the mode's 3 filler arts
         self._last_counter = None           # debounce: counter # we last pressed (None = region clear)
 
@@ -235,6 +236,7 @@ class CraftWorker:
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             return False
+        self._row_click = list(row_click)            # remember the row so the guest can RE-SELECT
         # DOUBLE-click the row icon to LOAD, then VERIFY it loaded (Begin/Create appears).
         # If it didn't load, re-find the row and click again. (ibgclick single-click only
         # highlights; double loads. The owner's single mouse-click also loads.)
@@ -414,6 +416,9 @@ class CraftWorker:
         rs.update({
             "count": int(count),
             "expected_item": name,        # log-match the created item to this recipe (precise)
+            # the matched recipe row, so the guest can RE-SELECT before each continuation
+            # combine (owner: a multi-count recipe must be re-clicked or Begin won't start it)
+            "select_click": self._row_click,
             "create": c.get("create", {}) or {},
             "repeat": c.get("repeat", {}) or {},
             "running_detect": c.get("running_detect", {}) or {},
@@ -422,6 +427,7 @@ class CraftWorker:
                 "confirm_timeout": float(timings.get("confirm_timeout", 6.0)),
                 "poll": float(timings.get("poll", 0.12)),
                 "post_begin": float(timings.get("post_begin", 0.25)),
+                "post_select": float(timings.get("post_select", 0.4)),   # wait after re-select for Begin to relight
                 # Begin reappears a beat after a craft completes (↻ flash first) -> wait longer
                 "begin_detect": float(timings.get("guest_begin_detect", 4.0)),
             },

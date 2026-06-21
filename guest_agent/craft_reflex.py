@@ -78,6 +78,9 @@ class CraftReflex:
         arts = self.r.get("arts", {}) or {}
         self.arts = {"durability": list(arts.get("durability") or ["1", "2", "3"]),
                      "progress": list(arts.get("progress") or ["4", "5", "6"])}
+        # recipe-row click (host's matched row): a multi-count recipe must be RE-SELECTED
+        # between combines before Begin works again (owner) — the guest double-clicks this.
+        self._select_click = self.r.get("select_click")
         self._templates: list = []
         self._filler_i = 0
         self._last_counter = None
@@ -320,6 +323,13 @@ class CraftReflex:
         except Exception as e:                       # noqa: BLE001
             self.log(f"reflex: click failed: {e}")
 
+    def _double_click(self, x, y) -> None:
+        """Double-click to LOAD a recipe row (single-click only highlights; the host loads
+        with a double-click too). Two _click()s in quick succession."""
+        self._click(x, y)
+        time.sleep(0.08)
+        self._click(x, y)
+
     def _region_count(self, sct, reg, rgb, tol) -> int:
         try:
             arr = _grab(sct, reg["x"], reg["y"], reg["w"], reg["h"]).reshape(-1, 3)  # BGR
@@ -363,17 +373,17 @@ class CraftReflex:
         return self._running(sct) and not self._done(sct)
 
     def _start_craft(self, first: bool) -> bool:
-        """Start one craft LOCALLY and confirm it's RUNNING. Ground truth (sampled live):
-        the continuation button is the green REPEAT ↻ (Begin goes dark after a craft); the
-        FIRST craft uses Begin (lit after select). The ONE reliable 'it started' signal is
-        running_detect (red stop-sign: ~990px running vs ~43 idle) — the 'button-gone' and
-        Create-pixel checks were noisy and caused both wasted retries and false bails.
-        Returns False only when no start button ever appears (list done / Begin disabled)."""
+        """Start one craft LOCALLY and confirm it's RUNNING (red stop-sign). The FIRST craft
+        was just selected by the host, so Begin is lit. A CONTINUATION combine of the same
+        recipe will NOT start from Begin/Repeat alone — the recipe must be RE-SELECTED first
+        (owner): we double-click the recipe row, wait for Begin to relight, then click it.
+        Returns False only when no start ever confirms (list done / out of materials)."""
         st = self.r.get("start", {}) or {}
         attempts = int(st.get("attempts", 4))
         confirm_t = float(st.get("confirm_timeout", 6.0))   # stop-sign renders a few s after click
         poll = float(st.get("poll", 0.12))
         post_begin = float(st.get("post_begin", 0.25))
+        post_select = float(st.get("post_select", 0.4))
         begin_detect = float(st.get("begin_detect", 2.0))
         bclick = (self.r.get("begin", {}) or {}).get("click")
         rclick = (self.r.get("repeat", {}) or {}).get("click")
@@ -388,10 +398,15 @@ class CraftReflex:
                     return True
                 if not self._chat_safe(sct):         # gate the click too (fail-closed)
                     time.sleep(0.2); continue
-                # BEGIN is the reliable button for BOTH first and continuation: the prep
-                # window's Begin reappears after each craft (after a brief ↻ flash that is
-                # NOT actually clickable). Wait for Begin; fall to REPEAT only if it never
-                # shows. (Clicking the ↻ wastes the whole confirm window every transition.)
+                # RE-SELECT for a continuation (or a first-craft retry): double-click the
+                # recipe row so Begin relights. The freshly-host-selected first craft skips
+                # this on its initial attempt (Begin already lit).
+                if self._select_click and (not first or attempt > 0):
+                    self.log(f"reflex: re-select recipe -> double-click {self._select_click}")
+                    self._double_click(self._select_click[0], self._select_click[1])
+                    time.sleep(post_select)
+                # Wait for Begin to light, then click it; fall to REPEAT ↻ only if Begin
+                # never shows.
                 click, name = None, None
                 t0 = time.time()
                 while time.time() - t0 < begin_detect and not self.should_stop():
@@ -403,7 +418,7 @@ class CraftReflex:
                 if not click and self._repeat_lit(sct):
                     click, name = rclick, "repeat"
                 if not click:
-                    return False                     # nothing to start
+                    continue                         # no start button yet -> retry (re-select again)
                 self.log(f"reflex: start '{name}' -> click {click}")
                 self._click(click[0], click[1])
                 time.sleep(post_begin)
