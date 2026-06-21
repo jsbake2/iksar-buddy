@@ -84,6 +84,7 @@ class CraftReflex:
         self._cnt_baseline = None        # (mean_r, mean_g) when the counter icon appeared
         self._cnt_resolved = None         # None | "green" (success) | "red" (fail)
         self._cnt_last_press = 0.0
+        self._cnt_presses = 0             # presses fired for the CURRENT counter event
         self._cnt_key = None              # the art key pressed for the current counter (debug)
         self.fails = 0
         self.crafts_done = 0              # craft_run (in-guest list loop) progress
@@ -144,6 +145,25 @@ class CraftReflex:
             self.log(f"reflex: log completion — created '{name}'{tag}")
             return True
         return False
+
+    # -- craft-window presence (safety gate) ------------------------------
+    def _window_present(self, sct) -> bool:
+        """True iff the craft window is OPEN — keyed on the always-there window-control
+        glyph strip in its top-right (blue ○, ?, □, white ○, ✕). Those bright glyphs +
+        gold frame light up this region; the dark 3D world behind a closed window does
+        not (measured: ~390 bright px open vs 0 closed). Without this, a craft that
+        'starts' with no window on screen sends arts 1-6 to the world and the character
+        runs around mashing keys. Fail-closed: a read error reads as 'not present'."""
+        cw = self.r.get("craft_window") or {}
+        reg = cw.get("region") or {"x": 825, "y": 104, "w": 100, "h": 23}
+        thr = int(cw.get("bright_threshold", 140))      # 0-255 grayscale
+        need = int(cw.get("min_bright", 100))
+        try:
+            arr = _grab(sct, reg["x"], reg["y"], reg["w"], reg["h"])
+            gray = cv2.cvtColor(arr, cv2.COLOR_BGR2GRAY)
+            return int((gray >= thr).sum()) >= need
+        except Exception:                               # noqa: BLE001
+            return False
 
     # -- sensors (mss, local) ---------------------------------------------
     def _capture_templates(self, sct) -> int:
@@ -351,6 +371,9 @@ class CraftReflex:
             for attempt in range(attempts):
                 if self.should_stop():
                     return False
+                if not self._window_present(sct):    # no craft window -> nothing to start; never
+                    self.log("reflex: craft window not present at start — not clicking")
+                    return False                     # bail (don't click Begin/Repeat into the world)
                 if self._started(sct):               # a prior click already started it
                     return True
                 if not self._chat_safe(sct):         # gate the click too (fail-closed)
@@ -426,6 +449,7 @@ class CraftReflex:
         green_delta = float(self.r.get("green_delta", 16.0))                 # tint thresholds
         red_delta = float(self.r.get("red_delta", 16.0))
         done_every = float(self.r.get("done_check_interval", 0.5))
+        counter_max = int(self.r.get("counter_max_presses", 3))   # press a counter N times, then back to filler
         max_t = float(self.r.get("max_craft_time", 90.0))
         debug = bool(self.r.get("debug"))
         self._debug = debug
@@ -454,6 +478,8 @@ class CraftReflex:
             last_filler = 0.0
             saw_active = False                                   # have we seen a real counter yet?
             active_grace = float(self.r.get("active_grace", 12.0))
+            win_bail_s = float((self.r.get("craft_window") or {}).get("absent_bail_s", 1.5))
+            win_gone_since = None                                # when the craft window first went missing
             # Authoritative completion = a new "You created …" line in the EQ2 log. Snapshot
             # the log offset NOW (the craft is already running, so the previous craft's line
             # is already behind us). Falls back to pixel _done only if no log is found.
@@ -463,13 +489,31 @@ class CraftReflex:
                 self.log(f"reflex: completion via log {os.path.basename(self._log_path)} "
                          f"@{self._log_base}")
             while not self.should_stop() and time.time() - t0 < max_t:
+                # CRAFT-WINDOW GATE (safety): if the window isn't on screen, NEVER press an
+                # art (it would land in the world and run the character around), and bail if
+                # it stays gone — the craft can't be happening without its window.
+                win = self._window_present(sct)
+                if not win:
+                    nowm = time.time()
+                    if win_gone_since is None:
+                        win_gone_since = nowm
+                    elif nowm - win_gone_since >= win_bail_s:
+                        self.log(f"reflex: craft window NOT present for {win_bail_s:.1f}s "
+                                 f"— bailing (no keypresses to the world)")
+                        return False
+                    time.sleep(loop_sleep)
+                    continue
+                win_gone_since = None
                 safe = self._chat_safe(sct)
                 mode = self._mode(sct)
                 n, scores, watch = self._counter(sct)
                 mr, mg, mb = self._mean_rgb(watch)
-                # COUNTER: MASH the matching art (owner: push more than once). The icon
-                # tints GREEN when the counter SUCCEEDS, RED when it FAILS, no change while
-                # still uncountered. So we keep pressing until we see green/red, then stop.
+                # COUNTER: press the matching art a FIXED number of times (counter_max,
+                # owner: "press it ~3 times then back to the regular spam"), then resume
+                # filler even while the icon lingers. (Old behavior mashed it the entire
+                # time the icon was up — too spammy.) The press count resets when a NEW
+                # counter appears; we keep _last_counter set after the cap so a lingering
+                # icon doesn't re-arm — it only re-arms once it clears (n -> None).
                 if n:
                     saw_active = True                            # a counter = the craft is really running
                     if n != self._last_counter:                  # new counter -> baseline
@@ -477,6 +521,7 @@ class CraftReflex:
                         self._cnt_baseline = (mr, mg)
                         self._cnt_resolved = None
                         self._cnt_last_press = 0.0
+                        self._cnt_presses = 0
                         self._cnt_key = None
                         # DEBUG: dump the durability/progress bars + mode pixel at onset so we
                         # can VERIFY the mode the agent picked (the failing counters are
@@ -505,34 +550,35 @@ class CraftReflex:
                             self._cnt_resolved = "red"; self.fails += 1
                             self.log(f"counter#{n} ({mode}) key={self._cnt_key} FAILED (red, dr={dr:.0f} dg={dg:.0f})")
                     now = time.time()
-                    # MASH the art the ENTIRE time the icon is visible. Do NOT stop on a
-                    # color-resolved green/red: the pink #3 icon has red accents and
-                    # false-resolves 'red' on its own onset frame, which (when it gated
-                    # pressing) made us press once and quit before the event cleared —
-                    # bleeding durability to a ~33% craft death. The icon vanishing
-                    # (n -> None) is the real "event over" signal and ends the mash.
-                    if safe and now - self._cnt_last_press >= press_interval:
+                    if self._cnt_presses < counter_max:
+                        # Press the counter art up to counter_max times at press_interval.
                         # COUNTERS always use the icon's art (1/2/3), NOT mode-dependent.
-                        # The 4/5/6 are the progress PUMP (filler), they don't counter
-                        # anything — verified: pressing 5 whiffs, pressing 2 clears it.
-                        ck = self.arts["durability"]
-                        key = ck[n - 1] if 1 <= n <= len(ck) else None
-                        if key:
-                            self._press(key)
-                            self._cnt_key = key
-                            self._cnt_last_press = now
-                    if debug and dbg_n < 80:
-                        base = self._cnt_baseline or (0, 0)
-                        self.log(f"  n={n} score={scores[n-1] if scores else 0} rgb=({mr:.0f},{mg:.0f},{mb:.0f}) "
-                                 f"dg={mg-base[1]:.0f} dr={mr-base[0]:.0f} res={self._cnt_resolved} safe={safe}")
-                        if watch is not None:
-                            cv2.imwrite(str(dbg_dir / f"w_{dbg_n:02d}_n{n}_{self._cnt_resolved or 'neu'}.png"), watch)
-                            dbg_n += 1
-                    time.sleep(loop_sleep)
-                    continue
-                self._last_counter = None
-                self._cnt_resolved = None
-                self._cnt_baseline = None
+                        # The 4/5/6 are the progress PUMP (filler) — verified: pressing 5
+                        # whiffs, pressing 2 clears it.
+                        if safe and now - self._cnt_last_press >= press_interval:
+                            ck = self.arts["durability"]
+                            key = ck[n - 1] if 1 <= n <= len(ck) else None
+                            if key:
+                                self._press(key)
+                                self._cnt_key = key
+                                self._cnt_last_press = now
+                                self._cnt_presses += 1
+                        if debug and dbg_n < 80:
+                            base = self._cnt_baseline or (0, 0)
+                            self.log(f"  n={n} #{self._cnt_presses} score={scores[n-1] if scores else 0} "
+                                     f"rgb=({mr:.0f},{mg:.0f},{mb:.0f}) dg={mg-base[1]:.0f} dr={mr-base[0]:.0f} "
+                                     f"res={self._cnt_resolved} safe={safe}")
+                            if watch is not None:
+                                cv2.imwrite(str(dbg_dir / f"w_{dbg_n:02d}_n{n}_{self._cnt_resolved or 'neu'}.png"), watch)
+                                dbg_n += 1
+                        time.sleep(loop_sleep)
+                        continue                                 # still servicing this counter (under the cap)
+                    # capped: pressed it counter_max times -> fall through to FILLER ("regular
+                    # spam"). Keep _last_counter set so the lingering icon doesn't re-arm.
+                else:
+                    self._last_counter = None
+                    self._cnt_resolved = None
+                    self._cnt_baseline = None
                 # FILLER: pump one art every ~art_interval (owner: ~1s between buttons).
                 now = time.time()
                 if safe and self.arts[mode] and now - last_filler >= art_interval:

@@ -339,8 +339,9 @@ class CraftWorker:
             "arts": {"durability": self._arts("durability"), "progress": self._arts("progress")},
             "debug": bool((c.get("reaction", {}) or {}).get("debug", False)),
             "art_interval": float(timings.get("art_interval", 1.0)),   # ~1s between FILLER arts (owner spec)
-            # counter mashing: push the art until the icon tints green(success)/red(fail)
+            # counter handling: press the art counter_max_presses times, then back to filler
             "counter_press_interval": float((c.get("reaction", {}) or {}).get("press_interval", 0.12)),
+            "counter_max_presses": int((c.get("reaction", {}) or {}).get("counter_presses", 3)),
             "green_delta": float((c.get("reaction", {}) or {}).get("green_delta", 16.0)),
             "red_delta": float((c.get("reaction", {}) or {}).get("red_delta", 16.0)),
             "loop_sleep": float(timings.get("agent_loop_sleep", timings.get("loop_sleep", 0.04))),
@@ -351,6 +352,9 @@ class CraftWorker:
             # guest finds the active char's eq2log itself; override the root if non-standard.
             "done_via_log": bool((c.get("done_detect", {}) or {}).get("via_log", True)),
             "eq2_log_root": (c.get("eq2_log", {}) or {}).get("dir", ""),
+            # craft-window presence gate (the always-there top-right glyph strip). Defaults
+            # are baked into the reflex; override region/threshold via craft.yaml craft_window.
+            "craft_window": c.get("craft_window", {}) or {},
         }
 
     async def _react(self, gate_power: bool = True) -> bool:
