@@ -212,7 +212,10 @@ def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
     out = []
     idx, base_list = _recipe_index() if names else ({}, [])
     for raw, count in items.items():
-        clean = _clean_writ_name(raw)
+        # Add the Pristine prefix BEFORE decompose+DB-match so verification/station resolve
+        # on the real recipe name ("Pristine Boiled Leather Backpack" IS the DB/book entry).
+        # Doing it after the match left it unverified with an unknown station.
+        clean = _pristine_fix(_clean_writ_name(raw), prist)
         b, t, q = _decompose(clean)
         canon, verified = clean, False
         if names:
@@ -234,10 +237,6 @@ def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
         # Flag leftover special chars (after {}->() normalization) so the owner can fix
         # OCR noise. A verified DB match is clean by definition; only warn on the OCR name.
         warn = "" if verified else odd_chars(clean)
-        # Pristine-prefixed items (backpacks &c): the recipe row reads "Pristine <item>"
-        # though the writ drops it — add it so the craft-window OCR row-match lands. Done
-        # AFTER DB match so verification/station resolve on the base name.
-        canon = _pristine_fix(canon, prist)
         out.append((raw, canon, verified, count, warn))
     return out
 
