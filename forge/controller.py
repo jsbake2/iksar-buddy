@@ -215,7 +215,8 @@ class ForgeController:
         # fixed) and is flagged UNVERIFIED — we never substitute a wrong recipe.
         queue, unverified, flagged = [], 0, 0
         for rawname, resolved, verified, count, warn in recipes.resolve_writ(
-                raw, flavor_prefixes=self.cfg_profile.get("writ_flavor_prefixes")):
+                raw, flavor_prefixes=self.cfg_profile.get("writ_flavor_prefixes"),
+                pristine_items=self.cfg_profile.get("pristine_prefix_items")):
             station = recipes.recipe_station(resolved) if verified else ""
             item = {"name": resolved, "count": count, "done": 0,
                     "verified": verified, "station": station}

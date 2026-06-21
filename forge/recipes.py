@@ -176,8 +176,28 @@ def _base_variants(base: str, prefixes: list[str]) -> list[str]:
     return out
 
 
+# Items whose RECIPE (and the row in the craft-window result list) is named "Pristine
+# <item>", while the writ objective drops the word ("I need to create a Boiled Leather
+# Backpack"). Without the prefix the OCR row-match fails. We prepend "Pristine " to the
+# resolved name for any objective containing one of these keywords. NOTE (owner): bags
+# carry the Pristine prefix only up to ~level 80; above that the recipe drops it. The
+# leveling crafters are nowhere near 80, so default-on for backpacks; extend/adjust via
+# craft.yaml `pristine_prefix_items`.
+_PRISTINE_ITEMS = ["backpack"]
+
+
+def _pristine_fix(name: str, keywords: list[str]) -> str:
+    nl = name.lower()
+    if nl.startswith("pristine"):
+        return name
+    if any(k in nl for k in keywords):
+        return "Pristine " + name
+    return name
+
+
 def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
-                 flavor_prefixes: list[str] | None = None) -> list[tuple[str, str, bool, int, str]]:
+                 flavor_prefixes: list[str] | None = None,
+                 pristine_items: list[str] | None = None) -> list[tuple[str, str, bool, int, str]]:
     """[(raw, resolved, verified, count, warn)] for each OCR'd writ objective. `warn` is any
     unexpected special char left in the OCR name (recipes only use ' and ()), '' if clean.
 
@@ -187,6 +207,7 @@ def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
     recipe — a different base ('Rune of Puncture' vs 'Lung Puncture') or tier is left
     unverified for the owner to check, not crafted blind."""
     prefixes = _FLAVOR_PREFIXES if flavor_prefixes is None else flavor_prefixes
+    prist = _PRISTINE_ITEMS if pristine_items is None else pristine_items
     names = recipe_names()
     out = []
     idx, base_list = _recipe_index() if names else ({}, [])
@@ -213,6 +234,10 @@ def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
         # Flag leftover special chars (after {}->() normalization) so the owner can fix
         # OCR noise. A verified DB match is clean by definition; only warn on the OCR name.
         warn = "" if verified else odd_chars(clean)
+        # Pristine-prefixed items (backpacks &c): the recipe row reads "Pristine <item>"
+        # though the writ drops it — add it so the craft-window OCR row-match lands. Done
+        # AFTER DB match so verification/station resolve on the base name.
+        canon = _pristine_fix(canon, prist)
         out.append((raw, canon, verified, count, warn))
     return out
 
