@@ -346,6 +346,11 @@ class CraftWorker:
             "loop_sleep": float(timings.get("agent_loop_sleep", timings.get("loop_sleep", 0.04))),
             "done_check_interval": float(timings.get("done_check_interval", 0.5)),
             "max_craft_time": float(timings.get("max_craft_time", 90.0)),
+            # Completion is gated on the EQ2 log's "You created …" line (authoritative),
+            # not the Create/Begin pixel (which also shows pre-start -> false DONEs). The
+            # guest finds the active char's eq2log itself; override the root if non-standard.
+            "done_via_log": bool((c.get("done_detect", {}) or {}).get("via_log", True)),
+            "eq2_log_root": (c.get("eq2_log", {}) or {}).get("dir", ""),
         }
 
     async def _react(self, gate_power: bool = True) -> bool:
@@ -396,7 +401,7 @@ class CraftWorker:
         st = self._agent_get() or {}
         return bool(st.get("alive"))
 
-    def _ruleset_craft_run(self, count: int) -> dict:
+    def _ruleset_craft_run(self, count: int, name: str = "") -> dict:
         """The 'react' ruleset PLUS what the guest needs to start each craft locally:
         the start-button click points + presence pixels + running detection + count."""
         c = self.cfg
@@ -404,6 +409,7 @@ class CraftWorker:
         rs = self._ruleset()
         rs.update({
             "count": int(count),
+            "expected_item": name,        # log-match the created item to this recipe (precise)
             "create": c.get("create", {}) or {},
             "repeat": c.get("repeat", {}) or {},
             "running_detect": c.get("running_detect", {}) or {},
@@ -430,7 +436,7 @@ class CraftWorker:
         if self._stop.is_set():
             return 0                              # a stop landed during select — don't (re)start the guest
         await self._focus_craft()
-        epoch = self._agent_set("craft_run", **self._ruleset_craft_run(count))
+        epoch = self._agent_set("craft_run", **self._ruleset_craft_run(count, name))
         self.t.update_bot(self.id, state="crafting")
         self.t.push_log(self.id, f"handed LIST to in-guest agent — {count} craft(s) (epoch {epoch})")
         watchdog = float(self.cfg.get("timings", {}).get("max_craft_time", 90.0)) + 20.0

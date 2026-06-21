@@ -15,6 +15,9 @@ chat input line is clear and we're in-world.
 """
 from __future__ import annotations
 
+import glob
+import os
+import re
 import time
 from pathlib import Path
 
@@ -36,6 +39,22 @@ def _grab(sct, x, y, w, h):
     """BGR numpy array of an absolute-coord region (one fast mss BitBlt)."""
     raw = sct.grab({"left": int(x), "top": int(y), "width": int(w), "height": int(h)})
     return cv2.cvtColor(np.asarray(raw), cv2.COLOR_BGRA2BGR)
+
+
+# The EQ2 log writes exactly one of these per FINISHED craft (success OR crit-fail both
+# still create an item), e.g.  You created \aITEM -966331653 281835275:Boiled Leather
+# Bandolier\/a.   — the authoritative "this craft actually completed" signal. Pixels
+# (a Create/Begin button on screen) are NOT: they show before a craft starts too, which
+# is what produced false DONEs. The item name is the text after the last ':' before '\/a'.
+_CREATED_RE = re.compile(r"You (?:created|made)\b(?: \d+)?\s+\\aITEM[^:]*:([^\\]+?)\\/a", re.I)
+_LOG_ROOT_DEFAULT = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
+                     r"\EverQuest II\logs")
+
+
+def _norm_item(s: str) -> str:
+    """Lowercase, drop the (Quality) tag + punctuation for loose recipe<->created match."""
+    s = re.sub(r"\([^)]*\)", "", s or "").lower()
+    return re.sub(r"[^a-z0-9 ]", "", s).strip()
 
 
 def _pixel(sct, x, y):
@@ -68,6 +87,63 @@ class CraftReflex:
         self._cnt_key = None              # the art key pressed for the current counter (debug)
         self.fails = 0
         self.crafts_done = 0              # craft_run (in-guest list loop) progress
+        # -- log-based completion (authoritative) --
+        self._log_root = self.r.get("eq2_log_root") or _LOG_ROOT_DEFAULT
+        self._log_via = bool(self.r.get("done_via_log", True))
+        self._log_path: str | None = None
+        self._log_base = 0               # byte offset captured at each craft start
+        self._expect = _norm_item(self.r.get("expected_item", ""))
+
+    # -- log completion ---------------------------------------------------
+    def _find_log(self) -> str | None:
+        """Newest eq2log_*.txt under the logs root = the active character's log (EQ2
+        writes it continuously while playing). Cached; re-discovered if it vanishes."""
+        if self._log_path and os.path.exists(self._log_path):
+            return self._log_path
+        try:
+            files = glob.glob(os.path.join(self._log_root, "**", "eq2log_*.txt"),
+                              recursive=True)
+            self._log_path = max(files, key=os.path.getmtime) if files else None
+        except OSError:
+            self._log_path = None
+        return self._log_path
+
+    def _log_size(self) -> int:
+        p = self._find_log()
+        try:
+            return os.path.getsize(p) if p else 0
+        except OSError:
+            return 0
+
+    def _new_creations(self) -> list[str]:
+        """Item names from 'You created …' lines written since self._log_base; advances
+        the offset to end-of-file. [] if no log / nothing new."""
+        p = self._find_log()
+        if not p:
+            return []
+        try:
+            with open(p, "r", encoding="utf-8", errors="replace") as f:
+                f.seek(self._log_base)
+                chunk = f.read()
+                self._log_base = f.tell()
+        except OSError:
+            return []
+        return [m.group(1).strip() for m in _CREATED_RE.finditer(chunk)]
+
+    def _craft_completed(self) -> bool:
+        """True once the log shows this craft finished. The bot crafts serially (one
+        recipe per hand-off, one 'You created …' line per finished craft), so ANY new
+        creation since the craft started means THIS craft completed. We log whether it
+        matched the expected item for visibility, but don't gate on it — created-line
+        wording can vary by trade and we never want to hang waiting for an exact string."""
+        for name in self._new_creations():
+            cn = _norm_item(name)
+            match = bool(self._expect) and cn and \
+                (cn == self._expect or cn in self._expect or self._expect in cn)
+            tag = "" if (not self._expect or match) else f" (expected '{self._expect}')"
+            self.log(f"reflex: log completion — created '{name}'{tag}")
+            return True
+        return False
 
     # -- sensors (mss, local) ---------------------------------------------
     def _capture_templates(self, sct) -> int:
@@ -378,6 +454,14 @@ class CraftReflex:
             last_filler = 0.0
             saw_active = False                                   # have we seen a real counter yet?
             active_grace = float(self.r.get("active_grace", 12.0))
+            # Authoritative completion = a new "You created …" line in the EQ2 log. Snapshot
+            # the log offset NOW (the craft is already running, so the previous craft's line
+            # is already behind us). Falls back to pixel _done only if no log is found.
+            use_log = self._log_via and self._find_log() is not None
+            self._log_base = self._log_size() if use_log else 0
+            if use_log:
+                self.log(f"reflex: completion via log {os.path.basename(self._log_path)} "
+                         f"@{self._log_base}")
             while not self.should_stop() and time.time() - t0 < max_t:
                 safe = self._chat_safe(sct)
                 mode = self._mode(sct)
@@ -458,29 +542,36 @@ class CraftReflex:
                     last_filler = now
                 if now - last_done >= done_every:
                     last_done = now
-                    if not saw_active:
-                        # No counter seen yet after the grace window. Two very different cases,
-                        # and skipping the WRONG one makes the host search the next recipe while
-                        # this craft is still on screen (the vm2 thrash):
-                        #   - a start button (Begin/Create/repeat) IS showing  -> the craft truly
-                        #     never started (missing materials / Begin disabled) -> bail+skip.
-                        #   - NO start button -> the craft IS running, we're just not detecting
-                        #     its counters (or the first one is late). Do NOT false-skip; flip to
-                        #     active and keep pumping filler so it completes and the host advances
-                        #     cleanly. (Counter-detection on this table is then the thing to fix.)
-                        if now - t0 >= active_grace:
-                            if self._done(sct):
-                                self.log(f"reflex: no counter in {active_grace:.0f}s AND start "
-                                         f"button present — craft didn't start (missing mats), bailing")
-                                return False
-                            self.log(f"reflex: no counter in {active_grace:.0f}s but craft IS "
-                                     f"running (no start button) — continuing as active "
-                                     f"(counter detection may be off on this table)")
-                            saw_active = True
-                    elif self._done(sct):
-                        self.done = True
-                        self.log(f"reflex: done ({self.reactions} success, {self.fails} fail)")
-                        return True
+                    if use_log:
+                        # AUTHORITATIVE completion: the log shows a created item. Pixels
+                        # (a Create/Begin button on screen) are NOT — they also show before
+                        # a craft starts, which is what false-DONE'd a craft that never ran.
+                        if self._craft_completed():
+                            self.done = True
+                            self.log(f"reflex: DONE via log ({self.reactions} success, {self.fails} fail)")
+                            return True
+                        # Missing-materials bail: no counter EVER fired, a start button is
+                        # still up well past the grace window, and nothing was logged -> the
+                        # craft never started. Bail now instead of waiting out max_t.
+                        if not saw_active and now - t0 >= active_grace and self._done(sct):
+                            self.log(f"reflex: no counter in {active_grace:.0f}s, start button up, "
+                                     f"nothing created in log — craft didn't start (missing mats), bailing")
+                            return False
+                    else:
+                        # No EQ2 log available -> degraded pixel fallback (the old heuristic).
+                        if not saw_active:
+                            if now - t0 >= active_grace:
+                                if self._done(sct):
+                                    self.log(f"reflex: no counter in {active_grace:.0f}s AND start "
+                                             f"button present — craft didn't start (missing mats), bailing")
+                                    return False
+                                self.log(f"reflex: no counter in {active_grace:.0f}s but craft IS "
+                                         f"running (no start button) — continuing as active")
+                                saw_active = True
+                        elif self._done(sct):
+                            self.done = True
+                            self.log(f"reflex: done ({self.reactions} success, {self.fails} fail)")
+                            return True
                 time.sleep(loop_sleep)
         self.log(f"reflex: stopped/timeout ({self.reactions} success, {self.fails} fail)")
         return False
