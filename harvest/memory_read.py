@@ -16,6 +16,11 @@ POS_OFF = 0x1822b68            # [EverQuest2.exe + POS_OFF] = float32 X,Y,Z (val
 HDG_OFF = 0x1822b74            # +0xC after XYZ = heading in degrees (-180..180); validated
                               # by turn-and-diff. 0-360 mirror lives at 0x1822ae8.
 PROC = "EverQuest2.exe"
+# The game's LIVE nearby-harvestable array (module-static). Pointers to harvest-node objects
+# (vtable in the 0x149x-0x14ex family); world position at obj+0x60. Found via current-target
+# diff — it's the list the gather skill walks, so REAL nodes only (no decorative bushes).
+NODE_LO = 0x177bf00
+NODE_HI = 0x177c100
 
 
 def _pm():
@@ -28,6 +33,39 @@ def _pm():
 def _compass(h: float) -> str:
     dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
     return dirs[int((h + 22.5) % 360 // 45)]
+
+
+def read_nodes(pm, base, px, py, pz) -> list:
+    """Read the live harvestable array -> nearby REAL nodes (sanity-filtered). Fast: one
+    static-data read + a deref per slot. Returns [{xyz, dist}] sorted by distance."""
+    import struct, math
+    mod_end = base + 0x1c00000
+    out = []
+    try:
+        data = pm.read_bytes(base + NODE_LO, NODE_HI - NODE_LO)
+    except Exception:
+        return out
+    for o in range(0, len(data) - 8, 8):
+        ptr = struct.unpack_from("<Q", data, o)[0]
+        if not (0x10000000000 < ptr < 0x7ff000000000):
+            continue
+        try:
+            vt = struct.unpack("<Q", pm.read_bytes(ptr, 8))[0]
+            if not (base <= vt < mod_end and 0x1490000 <= vt - base <= 0x14f0000):
+                continue
+            x, y, z = struct.unpack("<fff", pm.read_bytes(ptr + 0x60, 12))
+        except Exception:
+            continue
+        if not (math.isfinite(x) and math.isfinite(y) and math.isfinite(z)):
+            continue
+        if abs(y - py) > 40:                 # sanity: player elevation (drops garbage)
+            continue
+        d = math.hypot(x - px, z - pz)
+        if d > 220:
+            continue
+        out.append({"xyz": [round(x, 1), round(y, 1), round(z, 1)], "dist": round(d, 1)})
+    out.sort(key=lambda n: n["dist"])
+    return out
 
 
 def read_state() -> dict:
@@ -49,8 +87,14 @@ def read_state() -> dict:
         out["compass"] = _compass(h)
     except Exception:
         out["heading"] = None
-    # spawn-list-derived fields — pending RE (see HARVEST.md)
-    out["spawns"] = None        # {harvestables:[], monsters:[], players:[]}
+    # nearby harvestable nodes — CRACKED (live array @ module+0x177bf00, gather-skill list)
+    try:
+        p = out.get("pos") or [0, 0, 0]
+        out["nodes"] = read_nodes(pm, base, p[0], p[1], p[2])
+    except Exception as e:
+        out["nodes"] = []; out["nodes_err"] = str(e)
+    # monsters/players still pending RE (heap spawn-manager, not a static array)
+    out["monsters"] = None
     out["zone"] = None
     return out
 

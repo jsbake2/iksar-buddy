@@ -8,7 +8,7 @@ process title 'ibh'.
 """
 from __future__ import annotations
 
-import argparse, asyncio, base64, contextlib, json, math, os, subprocess, time
+import argparse, asyncio, base64, contextlib, json, math, os, re, subprocess, time
 from pathlib import Path
 
 import uvicorn
@@ -34,6 +34,21 @@ GUEST_READER = r"C:\ib\agent\harvest_read.py"
 GUEST_SPAWNS = r"C:\ib\agent\spawns_live.py"       # nearby-entity scanner (vtable RE)
 DATA = Path(os.environ.get("IB_DATA_DIR", str(Path.home() / "ib-data"))) / "harvest"
 DATA.mkdir(parents=True, exist_ok=True)
+HARVEST_DB = DATA / "harvested.json"               # all-time harvested-item tallies
+# EQ2 chat/combat log (the authoritative event stream). server=Wuoshi; char filled per-login.
+EQ2_LOG = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
+           r"\EverQuest II\logs\Wuoshi\eq2log_{char}.txt")
+
+# --- log line patterns ------------------------------------------------------
+RE_HARVEST = re.compile(r"You (mine|forage|gather|fell|trap|acquire|catch|chop|cut) (\d+) "
+                        r"\\aITEM [^:]*:([^\\]+)\\/a from the (.+?)\.")
+RE_RARE    = re.compile(r"You have found a rare item")
+RE_TELL    = re.compile(r"\\aPC[^:]*:([^\\]+)\\/a tells you,\s*\"(.*?)\"")
+RE_COMBAT  = re.compile(r"(hits? YOU|YOU take|tries to (?:hit|slash|crush|pierce) YOU|"
+                        r"You are no longer)", re.I)
+VERB_TYPE  = {"mine": "ore", "forage": "groundcover", "gather": "bush/roots",
+              "fell": "wood", "chop": "wood", "trap": "den", "acquire": "den",
+              "catch": "fish", "cut": "wood"}
 ROUTES_FILE = DATA / "routes.json"
 WEB = Path(__file__).resolve().parent / "web"
 
@@ -47,7 +62,15 @@ class Harvest:
         self.g = Guest(DOM)
         self.state: dict = {"ok": False, "err": "starting"}
         self.spawns: dict = {"mobs": [], "nodes": [], "ts": 0}   # vtable-scan cache (slow scan)
+        self.active_char: str = "Furyflatulence"
         self.recording: dict | None = None        # {name, zone, points:[[x,y,z,t]]}
+        # log-derived state: harvested tally (session + all-time), rares, tells, combat
+        try:
+            alltime = json.loads(HARVEST_DB.read_text()) if HARVEST_DB.exists() else {}
+        except Exception:
+            alltime = {}
+        self.harvest_log = {"session": {}, "all_time": alltime, "rares": [],
+                            "tells": [], "combat_ts": 0, "_off": None}
         self.routes: dict = json.loads(ROUTES_FILE.read_text()) if ROUTES_FILE.exists() else {}
         self.log: list[str] = []
         # character roster — select-from-table, no typing. character -> account user;
@@ -159,6 +182,69 @@ class Harvest:
                 self.log.append(f"spawns scan: {e}")
             await asyncio.sleep(6.0)
 
+    # --- EQ2 log scrape: harvested items, rares, tells, combat -------------
+    def _log_path(self) -> str:
+        return EQ2_LOG.format(char=self.active_char)
+
+    def _read_log_from(self, off: int | None) -> tuple[str, int]:
+        """Return (new_text, new_length). off=None -> just get the current length (skip
+        history so we only tally THIS session)."""
+        p = self._log_path()
+        ln = self._gx("powershell", ["-NoProfile", "-Command",
+                                     f"(Get-Item '{p}' -EA SilentlyContinue).Length"]).strip()
+        try:
+            length = int(ln)
+        except Exception:
+            return "", off or 0
+        if off is None or off > length:
+            return "", length
+        if off == length:
+            return "", length
+        txt = self._gx("powershell", ["-NoProfile", "-Command",
+            f"$fs=[IO.File]::Open('{p}','Open','Read','ReadWrite');$fs.Seek({off},'Begin')|Out-Null;"
+            f"$sr=New-Object IO.StreamReader($fs);$t=$sr.ReadToEnd();$sr.Close();$fs.Close();$t"])
+        return txt, length
+
+    def _tally(self, item: str, n: int, node: str, verb: str) -> None:
+        hl = self.harvest_log
+        for bucket in (hl["session"], hl["all_time"]):
+            e = bucket.setdefault(item, {"qty": 0, "node": node, "type": VERB_TYPE.get(verb, verb)})
+            e["qty"] += n
+        try:
+            HARVEST_DB.write_text(json.dumps(hl["all_time"]))
+        except Exception:
+            pass
+
+    async def log_loop(self) -> None:
+        while True:
+            try:
+                txt, newlen = await asyncio.get_running_loop().run_in_executor(
+                    None, self._read_log_from, self.harvest_log["_off"])
+                self.harvest_log["_off"] = newlen
+                rare_armed = False
+                for line in txt.splitlines():
+                    m = RE_HARVEST.search(line)
+                    if m:
+                        verb, n, item, node = m.group(1), int(m.group(2)), m.group(3).strip(), m.group(4).strip()
+                        self._tally(item, n, node, verb)
+                        if rare_armed:
+                            self.harvest_log["rares"].append({"item": item, "node": node, "t": time.time()})
+                            self.harvest_log["rares"] = self.harvest_log["rares"][-20:]
+                            rare_armed = False
+                        continue
+                    if RE_RARE.search(line):
+                        rare_armed = True; continue
+                    mt = RE_TELL.search(line)
+                    if mt:
+                        self.harvest_log["tells"].append({"from": mt.group(1), "msg": mt.group(2), "t": time.time()})
+                        self.harvest_log["tells"] = self.harvest_log["tells"][-20:]
+                        continue
+                    if RE_COMBAT.search(line):
+                        self.harvest_log["combat_ts"] = time.time()
+            except Exception as e:
+                self.log.append(f"log scrape: {e}")
+            await asyncio.sleep(3.0)
+
     def read_guest(self) -> dict:
         out = self._gx(GUEST_PY, [GUEST_READER])
         for line in out.splitlines()[::-1]:
@@ -235,6 +321,9 @@ class Harvest:
         user, pw = self._creds_for(character)
         if not (user and pw):
             self.log.append(f"no creds for {character}"); return False
+        self.active_char = character           # log scrape follows the active char
+        self.harvest_log["_off"] = None        # re-baseline log offset for the new char/session
+        self.harvest_log["session"] = {}
         drv = LoginDriver(Guest(DOM), lambda m: self.log.append(m))
         return drv.boot_and_login(user, pw, character, "Wuoshi")
 
@@ -259,11 +348,25 @@ def create_app(h: Harvest) -> FastAPI:
 
     @app.get("/api/state")
     async def state():
+        hl = h.harvest_log
+        now = time.time()
+        alerts = []
+        if now - hl.get("combat_ts", 0) < 8:
+            alerts.append({"kind": "combat", "msg": "in combat"})
+        for t in hl["tells"][-3:]:
+            if now - t["t"] < 60:
+                alerts.append({"kind": "pm", "msg": f'{t["from"]}: {t["msg"]}'})
+        for r in hl["rares"][-3:]:
+            if now - r["t"] < 120:
+                alerts.append({"kind": "rare", "msg": f'RARE: {r["item"]}'})
         return {"state": h.state,
                 "recording": ({"name": h.recording["name"], "points": len(h.recording["points"])}
                               if h.recording else None),
                 "routes": h.routes.get(h.state.get("zone") or "", {}),
                 "spawns": h.spawns,
+                "harvest": {"session": hl["session"], "all_time": hl["all_time"],
+                            "rares": hl["rares"][-8:], "tells": hl["tells"][-8:]},
+                "alerts": alerts,
                 "zone": h.state.get("zone"), "log": h.log[-30:]}
 
     @app.post("/api/move")
@@ -345,7 +448,10 @@ def create_app(h: Harvest) -> FastAPI:
     @app.on_event("startup")
     async def _start():
         asyncio.create_task(h.poll_loop())
-        asyncio.create_task(h.spawns_loop())
+        asyncio.create_task(h.log_loop())          # harvested items / rares / tells / combat
+        # spawns_loop (slow ~6s whole-heap vtable scan) retired: nearby NODES now come
+        # instantly from the per-poll reader via the game's harvestable array. Monsters
+        # (heap spawn-manager) will get their own fast path once that RE lands.
 
     if (WEB / "static").exists():
         app.mount("/static", StaticFiles(directory=str(WEB / "static")), name="static")

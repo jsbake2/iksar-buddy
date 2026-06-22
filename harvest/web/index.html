@@ -79,8 +79,8 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
       <div class="muted" style="font-size:11px">vtable 0x1782848 · live client-memory spawn list</div></div>
     <div class="panel"><h3>⑤ harvested items</h3>
       <div class="btnrow"><button onclick="setTab('session')" id="tabS">session</button><button onclick="setTab('all')" id="tabA">all-time</button></div>
-      <table><thead><tr><th>item</th><th>qty</th><th>rare</th></tr></thead>
-        <tbody><tr><td class="pending" colspan=3>RE pending — log scrape ("You acquire …" / rare line)</td></tr></tbody></table></div>
+      <table><thead><tr><th>item</th><th>type</th><th>qty</th></tr></thead>
+        <tbody id="harvrows"><tr><td class="muted" colspan=3>nothing harvested yet</td></tr></tbody></table></div>
   </div>
   <!-- RIGHT -->
   <div>
@@ -90,10 +90,10 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
         <button onclick="webConsole()">▣ web console</button>
         <a href="ibconsole://open?port=5900"><button>⧉ native viewer</button></a></div>
       <div class="muted">live preview above · same SPICE method as forge/iksar (5900)</div></div>
-    <div class="panel"><h3>⑥ chat monitor</h3>
-      <div class="muted pending">RE pending — log scrape (tells/PMs flagged)</div></div>
+    <div class="panel"><h3>⑥ chat monitor (tells)</h3>
+      <div id="chatmon" class="muted">no tells yet</div></div>
     <div class="panel"><h3>⚑ alerts</h3>
-      <div class="muted">combat · PM · stuck · rare · can't-harvest<br><span class="pending">wired to log/position — pending build</span></div></div>
+      <div id="alerts" class="muted">clear</div></div>
     <div class="panel"><h3>⌁ controller log</h3>
       <div id="clog" class="muted" style="max-height:180px;overflow:auto"></div></div>
     <div class="panel"><h3>⚙ memory</h3>
@@ -136,16 +136,30 @@ async function tick(){
   if(d.zone!==lastZone){lastZone=d.zone;sel.innerHTML='';const ks=Object.keys(rs);(ks.length?ks:[]).forEach(n=>{const o=document.createElement('option');o.textContent=n+' ('+rs[n].points.length+' pts'+(rs[n].loop?', loop':'')+')';sel.appendChild(o)});if(!ks.length){const o=document.createElement('option');o.textContent='(no routes for this zone yet)';sel.appendChild(o)}}
   document.getElementById('recinfo').textContent=d.recording?('● recording '+d.recording.points+' pts'):'';
   document.getElementById('clog').innerHTML=(d.log||[]).slice(-30).reverse().map(l=>'<div>'+l.replace(/</g,'&lt;')+'</div>').join('');
-  // nearby entities (slow vtable scan, cached host-side ~6s)
-  const sp=d.spawns||{}, age=sp.ts?Math.round(Date.now()/1000-sp.ts):null;
-  const ageStr=age==null?'':('· '+age+'s ago');
-  document.getElementById('mobage').textContent=ageStr;
-  document.getElementById('nodeage').textContent=ageStr;
-  const mobs=sp.mobs||[], nodes=sp.nodes||[];
-  document.getElementById('mobs').innerHTML=mobs.length?mobs.slice(0,8).map(m=>
-    `<div class="mon-row"><span>${(m.name||'spawn').replace(/</g,'&lt;')}</span><span>${m.dist} m · ${m.xyz.join(', ')}</span></div>`).join(''):'<span class="muted">none within 120 m</span>';
-  document.getElementById('nodes').innerHTML=nodes.length?nodes.slice(0,10).map(n=>
-    `<div class="mon-row"><span class="zone">node</span><span>${n.dist} m · ${n.xyz.join(', ')}</span></div>`).join(''):'<span class="muted">none within 120 m</span>';
+  // nearby NODES — live from the game's harvestable array (fast, every poll, REAL nodes only)
+  const nodes=st.nodes||[];
+  document.getElementById('nodeage').textContent=live?('· '+nodes.length+' tracked'):'';
+  document.getElementById('nodes').innerHTML=(live&&nodes.length)?nodes.slice(0,12).map(n=>
+    `<div class="mon-row"><span class="zone">⛏ node</span><span>${n.dist} m · ${n.xyz[0]}, ${n.xyz[2]}</span></div>`).join('')
+    :(live?'<span class="muted">no harvestables within 220 m</span>':'<span class="pending">…</span>');
+  // monsters — heap spawn-manager RE still pending
+  document.getElementById('mobs').innerHTML='<span class="pending">RE pending — heap spawn manager (nodes done; monsters next)</span>';
+  // harvested-items table (session / all-time)
+  const hv=d.harvest||{session:{},all_time:{}}; const tbl=hv[tab==='all'?'all_time':'session']||{};
+  document.getElementById('tabS').style.borderColor=tab==='session'?'var(--accent)':'';
+  document.getElementById('tabA').style.borderColor=tab==='all'?'var(--accent)':'';
+  const rows=Object.entries(tbl).sort((a,b)=>b[1].qty-a[1].qty);
+  document.getElementById('harvrows').innerHTML=rows.length?rows.map(([item,e])=>
+    `<tr><td>${item.replace(/</g,'&lt;')}</td><td class="muted">${e.type||''}</td><td>${e.qty}</td></tr>`).join('')
+    :'<tr><td class="muted" colspan=3>nothing harvested yet</td></tr>';
+  // chat monitor (tells)
+  const tells=hv.tells||[];
+  document.getElementById('chatmon').innerHTML=tells.length?tells.slice(-8).reverse().map(t=>
+    `<div><b class="zone">${(t.from||'?').replace(/</g,'&lt;')}</b>: ${(t.msg||'').replace(/</g,'&lt;')}</div>`).join(''):'no tells yet';
+  // alerts
+  const al=d.alerts||[]; const col={combat:'var(--bad)',pm:'var(--accent)',rare:'var(--good)',stuck:'var(--warn)'};
+  document.getElementById('alerts').innerHTML=al.length?al.map(a=>
+    `<div style="color:${col[a.kind]||'var(--fg)'}">● ${a.kind.toUpperCase()} — ${(a.msg||'').replace(/</g,'&lt;')}</div>`).join(''):'<span class="muted">clear</span>';
 }
 loadChars();setInterval(tick,1500);tick();setInterval(refreshFrame,1500);refreshFrame();
 </script>
