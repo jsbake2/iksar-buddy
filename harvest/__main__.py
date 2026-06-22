@@ -32,6 +32,7 @@ SPICE_PORT = 5900                                  # iksar_buddy SPICE (same as 
 GUEST_PY = r"C:\ib\py\python.exe"
 GUEST_READER = r"C:\ib\agent\harvest_read.py"
 GUEST_SPAWNS = r"C:\ib\agent\spawns_live.py"       # nearby-entity scanner (vtable RE)
+GUEST_PUSH = r"C:\ib\agent\sense_push.py"          # persistent sensor (HTTP push, real-time)
 DATA = Path(os.environ.get("IB_DATA_DIR", str(Path.home() / "ib-data"))) / "harvest"
 DATA.mkdir(parents=True, exist_ok=True)
 HARVEST_DB = DATA / "harvested.json"               # all-time harvested-item tallies
@@ -60,7 +61,8 @@ MOVE_KEYS = {"forward": "w", "back": "s", "left": "a", "right": "d",
 class Harvest:
     def __init__(self) -> None:
         self.g = Guest(DOM)
-        self.state: dict = {"ok": False, "err": "starting"}
+        self.state: dict = {"ok": False, "err": "starting"}   # guest-exec fallback reader
+        self.pushed: dict = {"st": {"ok": False}, "ts": 0.0}  # fast push from in-guest sensor
         self.spawns: dict = {"mobs": [], "nodes": [], "ts": 0}   # vtable-scan cache (slow scan)
         self.active_char: str = "Furyflatulence"
         self.recording: dict | None = None        # {name, zone, points:[[x,y,z,t]]}
@@ -268,6 +270,25 @@ class Harvest:
                 self.log.append(f"log scrape: {e}")
             await asyncio.sleep(3.0)
 
+    def start_sensor(self) -> None:
+        """Deploy + (re)start the persistent in-guest sensor (reads at ~8Hz, pushes via HTTP).
+        Read-only; safe. Kills only the prior sense_push instance, not the nav agent."""
+        src = (Path(__file__).resolve().parent / "sense_push.py").read_bytes()
+        b64 = base64.b64encode(src).decode()
+        self._gx("powershell", ["-NoProfile", "-Command",
+                                f"Remove-Item '{GUEST_PUSH}','{GUEST_PUSH}.b64' -EA SilentlyContinue"])
+        for i in range(0, len(b64), 6000):
+            self._gx("powershell", ["-NoProfile", "-Command",
+                                    f"Add-Content -Path '{GUEST_PUSH}.b64' -Value '{b64[i:i+6000]}' -NoNewline"])
+        self._gx("powershell", ["-NoProfile", "-Command",
+                 f"[IO.File]::WriteAllBytes('{GUEST_PUSH}',[Convert]::FromBase64String((Get-Content -Raw '{GUEST_PUSH}.b64')))"])
+        # restart: kill any prior sense_push, launch detached
+        self._gx("powershell", ["-NoProfile", "-Command",
+            "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | "
+            "Where-Object {$_.CommandLine -like '*sense_push*'} | "
+            "ForEach-Object {Stop-Process -Id $_.ProcessId -Force -EA SilentlyContinue}; "
+            f"Start-Process -FilePath '{GUEST_PY}' -ArgumentList '{GUEST_PUSH}' -WindowStyle Hidden"])
+
     def read_guest(self) -> dict:
         out = self._gx(GUEST_PY, [GUEST_READER])
         for line in out.splitlines()[::-1]:
@@ -279,14 +300,24 @@ class Harvest:
                     pass
         return {"ok": False, "err": "read failed"}
 
-    # --- background poll ---------------------------------------------------
+    def cur_state(self) -> dict:
+        """Freshest state: the in-guest sensor's HTTP push if recent (~8 Hz, real-time),
+        else the guest-exec reader fallback."""
+        if time.time() - self.pushed["ts"] < 3.0:
+            return self.pushed["st"]
+        return self.state
+
+    # --- background poll (FALLBACK) ----------------------------------------
     async def poll_loop(self) -> None:
         self.deploy_reader()
         while True:
-            st = await asyncio.get_running_loop().run_in_executor(None, self.read_guest)
-            self.state = st
-            if self.recording is not None and st.get("ok") and st.get("pos"):
-                self._maybe_record(st["pos"])
+            # only do the heavy guest-exec read when the fast push is stale (sensor down)
+            if time.time() - self.pushed["ts"] >= 3.0:
+                st = await asyncio.get_running_loop().run_in_executor(None, self.read_guest)
+                self.state = st
+            cur = self.cur_state()
+            if self.recording is not None and cur.get("ok") and cur.get("pos"):
+                self._maybe_record(cur["pos"])
             await asyncio.sleep(1.5)
 
     def _maybe_record(self, pos: list) -> None:
@@ -383,15 +414,24 @@ def create_app(h: Harvest) -> FastAPI:
         for r in hl["rares"][-3:]:
             if now - r["t"] < 120:
                 alerts.append({"kind": "rare", "msg": f'RARE: {r["item"]}'})
-        return {"state": h.state,
+        st = h.cur_state()
+        return {"state": st,
                 "recording": ({"name": h.recording["name"], "points": len(h.recording["points"])}
                               if h.recording else None),
-                "routes": h.routes.get(h.state.get("zone") or "", {}),
+                "routes": h.routes.get(st.get("zone") or "", {}),
                 "spawns": h.spawns,
                 "harvest": {"session": hl["session"], "all_time": hl["all_time"],
                             "rares": hl["rares"][-8:], "tells": hl["tells"][-8:]},
                 "alerts": alerts,
-                "zone": h.state.get("zone"), "log": h.log[-30:]}
+                "zone": st.get("zone"), "log": h.log[-30:],
+                "src": "push" if (time.time() - h.pushed["ts"] < 3.0) else "poll"}
+
+    @app.post("/api/ingest")
+    async def ingest(body: dict = Body(default={})):
+        h.pushed = {"st": body, "ts": time.time()}
+        if h.recording is not None and body.get("ok") and body.get("pos"):
+            h._maybe_record(body["pos"])
+        return {"ok": True}
 
     @app.post("/api/move")
     async def move(body: dict = Body(default={})):
@@ -471,7 +511,9 @@ def create_app(h: Harvest) -> FastAPI:
 
     @app.on_event("startup")
     async def _start():
-        asyncio.create_task(h.poll_loop())
+        # start the persistent in-guest sensor (real-time HTTP push) in the background
+        asyncio.get_running_loop().run_in_executor(None, h.start_sensor)
+        asyncio.create_task(h.poll_loop())         # fallback reader when the push is stale
         asyncio.create_task(h.log_loop())          # harvested items / rares / tells / combat
         # spawns_loop (slow ~6s whole-heap vtable scan) retired: nearby NODES now come
         # instantly from the per-poll reader via the game's harvestable array. Monsters
