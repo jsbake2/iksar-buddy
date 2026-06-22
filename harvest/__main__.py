@@ -64,13 +64,21 @@ class Harvest:
         self.spawns: dict = {"mobs": [], "nodes": [], "ts": 0}   # vtable-scan cache (slow scan)
         self.active_char: str = "Furyflatulence"
         self.recording: dict | None = None        # {name, zone, points:[[x,y,z,t]]}
-        # log-derived state: harvested tally (session + all-time), rares, tells, combat
+        # log-derived state, DURABLY PERSISTED server-side (survives restarts; client only
+        # displays it). Stored whole in HARVEST_DB.
+        saved = {}
         try:
-            alltime = json.loads(HARVEST_DB.read_text()) if HARVEST_DB.exists() else {}
+            saved = json.loads(HARVEST_DB.read_text()) if HARVEST_DB.exists() else {}
         except Exception:
-            alltime = {}
-        self.harvest_log = {"session": {}, "all_time": alltime, "rares": [],
-                            "tells": [], "combat_ts": 0, "_off": None}
+            saved = {}
+        # back-compat: old DB was just the all_time dict
+        if saved and "all_time" not in saved and isinstance(next(iter(saved.values()), {}), dict):
+            saved = {"all_time": saved}
+        self.harvest_log = {"session": saved.get("session", {}),
+                            "all_time": saved.get("all_time", {}),
+                            "rares": saved.get("rares", []),
+                            "tells": saved.get("tells", []),
+                            "combat_ts": 0, "_off": None}
         self.routes: dict = json.loads(ROUTES_FILE.read_text()) if ROUTES_FILE.exists() else {}
         self.log: list[str] = []
         # character roster — select-from-table, no typing. character -> account user;
@@ -80,6 +88,16 @@ class Harvest:
             self.chars_file.write_text(yaml.safe_dump(
                 {"characters": [{"character": "Furyflatulence", "user": "meatwad33w",
                                  "class": "fury", "zone": "Thundering Steppes"}]}))
+
+    def _persist_harvest(self) -> None:
+        hl = self.harvest_log
+        try:
+            tmp = HARVEST_DB.with_suffix(".tmp")
+            tmp.write_text(json.dumps({"session": hl["session"], "all_time": hl["all_time"],
+                                       "rares": hl["rares"], "tells": hl["tells"]}))
+            os.replace(tmp, HARVEST_DB)
+        except Exception:
+            pass
 
     def _user_pw(self) -> dict:
         """user -> password from accounts.yaml (keyed by VM dom there)."""
@@ -205,15 +223,15 @@ class Harvest:
             f"$sr=New-Object IO.StreamReader($fs);$t=$sr.ReadToEnd();$sr.Close();$fs.Close();$t"])
         return txt, length
 
-    def _tally(self, item: str, n: int, node: str, verb: str) -> None:
+    def _tally(self, item: str, n: int, node: str, verb: str, rare: bool = False) -> None:
         hl = self.harvest_log
         for bucket in (hl["session"], hl["all_time"]):
-            e = bucket.setdefault(item, {"qty": 0, "node": node, "type": VERB_TYPE.get(verb, verb)})
+            e = bucket.setdefault(item, {"qty": 0, "node": node,
+                                         "type": VERB_TYPE.get(verb, verb), "rare": False})
             e["qty"] += n
-        try:
-            HARVEST_DB.write_text(json.dumps(hl["all_time"]))
-        except Exception:
-            pass
+            e["node"] = node
+            if rare:
+                e["rare"] = True
 
     async def log_loop(self) -> None:
         while True:
@@ -222,15 +240,17 @@ class Harvest:
                     None, self._read_log_from, self.harvest_log["_off"])
                 self.harvest_log["_off"] = newlen
                 rare_armed = False
+                changed = False
                 for line in txt.splitlines():
                     m = RE_HARVEST.search(line)
                     if m:
                         verb, n, item, node = m.group(1), int(m.group(2)), m.group(3).strip(), m.group(4).strip()
-                        self._tally(item, n, node, verb)
+                        self._tally(item, n, node, verb, rare=rare_armed)
                         if rare_armed:
                             self.harvest_log["rares"].append({"item": item, "node": node, "t": time.time()})
                             self.harvest_log["rares"] = self.harvest_log["rares"][-20:]
                             rare_armed = False
+                        changed = True
                         continue
                     if RE_RARE.search(line):
                         rare_armed = True; continue
@@ -238,9 +258,12 @@ class Harvest:
                     if mt:
                         self.harvest_log["tells"].append({"from": mt.group(1), "msg": mt.group(2), "t": time.time()})
                         self.harvest_log["tells"] = self.harvest_log["tells"][-20:]
+                        changed = True
                         continue
                     if RE_COMBAT.search(line):
                         self.harvest_log["combat_ts"] = time.time()
+                if changed:
+                    self._persist_harvest()           # durable server-side write
             except Exception as e:
                 self.log.append(f"log scrape: {e}")
             await asyncio.sleep(3.0)
@@ -324,6 +347,7 @@ class Harvest:
         self.active_char = character           # log scrape follows the active char
         self.harvest_log["_off"] = None        # re-baseline log offset for the new char/session
         self.harvest_log["session"] = {}
+        self._persist_harvest()
         drv = LoginDriver(Guest(DOM), lambda m: self.log.append(m))
         return drv.boot_and_login(user, pw, character, "Wuoshi")
 

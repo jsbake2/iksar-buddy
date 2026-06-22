@@ -74,12 +74,9 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
     <div class="panel"><h3>① harvestables nearby <span id="nodeage" class="muted"></span></h3>
       <div id="nodes" class="muted">scanning…</div>
       <div class="muted" style="font-size:11px">vtable 0x14eb850 · type/name via ID — decode pending</div></div>
-    <div class="panel"><h3>③ nearest entities (mobs/NPCs) <span id="mobage" class="muted"></span></h3>
-      <div id="mobs" class="muted">scanning…</div>
-      <div class="muted" style="font-size:11px">vtable 0x1782848 · live client-memory spawn list</div></div>
     <div class="panel"><h3>⑤ harvested items</h3>
       <div class="btnrow"><button onclick="setTab('session')" id="tabS">session</button><button onclick="setTab('all')" id="tabA">all-time</button></div>
-      <table><thead><tr><th>item</th><th>type</th><th>qty</th></tr></thead>
+      <table><thead><tr><th>resource</th><th>from</th><th>qty</th></tr></thead>
         <tbody id="harvrows"><tr><td class="muted" colspan=3>nothing harvested yet</td></tr></tbody></table></div>
   </div>
   <!-- RIGHT -->
@@ -142,15 +139,13 @@ async function tick(){
   document.getElementById('nodes').innerHTML=(live&&nodes.length)?nodes.slice(0,12).map(n=>
     `<div class="mon-row"><span class="zone">⛏ node</span><span>${n.dist} m · ${n.xyz[0]}, ${n.xyz[2]}</span></div>`).join('')
     :(live?'<span class="muted">no harvestables within 220 m</span>':'<span class="pending">…</span>');
-  // monsters — heap spawn-manager RE still pending
-  document.getElementById('mobs').innerHTML='<span class="pending">RE pending — heap spawn manager (nodes done; monsters next)</span>';
-  // harvested-items table (session / all-time)
+  // harvested-items table (session / all-time) — resource name · source node · qty
   const hv=d.harvest||{session:{},all_time:{}}; const tbl=hv[tab==='all'?'all_time':'session']||{};
   document.getElementById('tabS').style.borderColor=tab==='session'?'var(--accent)':'';
   document.getElementById('tabA').style.borderColor=tab==='all'?'var(--accent)':'';
   const rows=Object.entries(tbl).sort((a,b)=>b[1].qty-a[1].qty);
   document.getElementById('harvrows').innerHTML=rows.length?rows.map(([item,e])=>
-    `<tr><td>${item.replace(/</g,'&lt;')}</td><td class="muted">${e.type||''}</td><td>${e.qty}</td></tr>`).join('')
+    `<tr><td>${e.rare?'<span class="rec" title="rare">★ </span>':''}${item.replace(/</g,'&lt;')}</td><td class="muted">${(e.node||'').replace(/</g,'&lt;')}</td><td>${e.qty}</td></tr>`).join('')
     :'<tr><td class="muted" colspan=3>nothing harvested yet</td></tr>';
   // chat monitor (tells)
   const tells=hv.tells||[];
