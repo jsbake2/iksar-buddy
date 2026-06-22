@@ -1,7 +1,12 @@
 <!doctype html><html><head><meta charset="utf-8"><title>ib console</title>
 <link rel="stylesheet" href="spice.css">
 <style>html,body{margin:0;background:#000;height:100%;overflow:hidden}
-#spice-area{width:100vw;height:100vh}#spice-screen{width:100%;height:100%}
+/* CLIENT-SIDE scaling only — the guest stays 1920x1080 (DO NOT resize the guest, the
+   healer bot is calibrated to it). The canvas is drawn at native res; we cap it to the
+   viewport and preserve aspect ratio, so the whole screen always fits the browser. */
+#spice-area{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#spice-screen{display:flex;align-items:center;justify-content:center;max-width:100vw;max-height:100vh}
+#spice-screen canvas{max-width:100vw!important;max-height:100vh!important;width:auto!important;height:auto!important}
 #msg{position:fixed;top:8px;left:8px;color:#9af;font:12px monospace;z-index:9}</style></head>
 <body>
 <div id="msg">connecting…</div>
@@ -23,5 +28,6 @@ function err(e){msg.textContent="error: "+(e&&e.toString?e.toString():e);console
 function agent(){msg.style.display="none";}
 try{ sc=new SpiceHtml5.SpiceMainConn({uri:uri,screen_id:"spice-screen",message_id:"message-div",password:"",onerror:err,onagent:agent}); msg.textContent="linking "+uri; }
 catch(e){err(e);}
-window.addEventListener("resize",()=>{try{SpiceHtml5.handle_resize();}catch(_){}});
+// NOTE: do NOT call SpiceHtml5.handle_resize() — it resizes the GUEST to the window.
+// CSS above scales the canvas client-side instead, keeping the guest at 1920x1080.
 </script></body></html>
