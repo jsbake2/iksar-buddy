@@ -13,6 +13,8 @@ from __future__ import annotations
 import json, sys
 
 POS_OFF = 0x1822b68            # [EverQuest2.exe + POS_OFF] = float32 X,Y,Z (validated)
+HDG_OFF = 0x1822b74            # +0xC after XYZ = heading in degrees (-180..180); validated
+                              # by turn-and-diff. 0-360 mirror lives at 0x1822ae8.
 PROC = "EverQuest2.exe"
 
 
@@ -21,6 +23,11 @@ def _pm():
     pm = pymem.Pymem(PROC)
     mod = pymem.process.module_from_name(pm.process_handle, PROC)
     return pm, mod.lpBaseOfDll, mod.SizeOfImage
+
+
+def _compass(h: float) -> str:
+    dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+    return dirs[int((h + 22.5) % 360 // 45)]
 
 
 def read_state() -> dict:
@@ -36,8 +43,13 @@ def read_state() -> dict:
                       round(pm.read_float(a + 8), 3)]
     except Exception as e:
         out["ok"] = False; out["err"] = f"pos: {e}"
+    try:
+        h = round(pm.read_float(base + HDG_OFF) % 360.0, 1)   # normalize to 0..360
+        out["heading"] = h
+        out["compass"] = _compass(h)
+    except Exception:
+        out["heading"] = None
     # spawn-list-derived fields — pending RE (see HARVEST.md)
-    out["heading"] = None
     out["spawns"] = None        # {harvestables:[], monsters:[], players:[]}
     out["zone"] = None
     return out

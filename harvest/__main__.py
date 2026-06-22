@@ -107,8 +107,10 @@ class Harvest:
         src = (Path(__file__).resolve().parent / "memory_read.py").read_bytes()
         b64 = base64.b64encode(src).decode()
         # chunk to be safe on arg length
+        # remove BOTH the .py and the staging .b64 — Add-Content appends, so a stale
+        # .b64 would concatenate a second copy and corrupt the file (double __future__).
         self._gx("powershell", ["-NoProfile", "-Command",
-                                f"Remove-Item '{GUEST_READER}' -EA SilentlyContinue"])
+                                f"Remove-Item '{GUEST_READER}','{GUEST_READER}.b64' -EA SilentlyContinue"])
         for i in range(0, len(b64), 6000):
             self._gx("powershell", ["-NoProfile", "-Command",
                                     f"Add-Content -Path '{GUEST_READER}.b64' -Value '{b64[i:i+6000]}' -NoNewline"])

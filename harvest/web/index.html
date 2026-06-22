@@ -70,7 +70,7 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
   <div>
     <div class="panel"><h3>⊙ real-time monitor</h3>
       <div class="mon-row"><span>player position</span><b id="m_pos" style="color:var(--accent)">—</b></div>
-      <div class="mon-row"><span>heading</span><span id="m_hdg" class="pending">RE pending</span></div></div>
+      <div class="mon-row"><span>heading</span><span id="m_hdg">—</span></div></div>
     <div class="panel"><h3>① harvestables nearby</h3>
       <div class="pending">RE pending — spawn list (type · distance · open / being-harvested)</div></div>
     <div class="panel"><h3>③ nearest monster</h3>
@@ -131,6 +131,7 @@ async function tick(){
   document.getElementById('zone2').textContent=d.zone||'(RE pending — zone name)';
   document.getElementById('pos').textContent=live?('pos: '+st.pos.join(', ')):'pos: '+(st.err||'—');
   document.getElementById('m_pos').textContent=live?st.pos.join(', '):'—';
+  document.getElementById('m_hdg').textContent=(live&&st.heading!=null)?(st.heading+'° '+(st.compass||'')):'—';
   const rs=d.routes||{}, sel=document.getElementById('routesel');
   if(d.zone!==lastZone){lastZone=d.zone;sel.innerHTML='';const ks=Object.keys(rs);(ks.length?ks:[]).forEach(n=>{const o=document.createElement('option');o.textContent=n+' ('+rs[n].points.length+' pts'+(rs[n].loop?', loop':'')+')';sel.appendChild(o)});if(!ks.length){const o=document.createElement('option');o.textContent='(no routes for this zone yet)';sel.appendChild(o)}}
   document.getElementById('recinfo').textContent=d.recording?('● recording '+d.recording.points+' pts'):'';
