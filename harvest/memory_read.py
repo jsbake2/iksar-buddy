@@ -21,6 +21,7 @@ PROC = "EverQuest2.exe"
 # diff — it's the list the gather skill walks, so REAL nodes only (no decorative bushes).
 NODE_LO = 0x177bf00
 NODE_HI = 0x177c100
+ZONE_PTR = 0x1826998          # [EverQuest2.exe + ZONE_PTR] -> zone-name string ("The Thundering Steppes")
 
 
 def _pm():
@@ -95,7 +96,13 @@ def read_state() -> dict:
         out["nodes"] = []; out["nodes_err"] = str(e)
     # monsters/players still pending RE (heap spawn-manager, not a static array)
     out["monsters"] = None
-    out["zone"] = None
+    try:
+        import struct
+        zp = struct.unpack("<Q", pm.read_bytes(base + ZONE_PTR, 8))[0]
+        zb = pm.read_bytes(zp, 64); ze = zb.find(b"\x00")
+        out["zone"] = zb[:ze].decode("latin-1") if 0 < ze < 60 else None
+    except Exception:
+        out["zone"] = None
     return out
 
 
