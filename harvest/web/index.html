@@ -1,28 +1,30 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="iksar">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ib · harvest</title>
+<link rel="stylesheet" href="/static/themes.css">
 <style>
-:root{--bg:#0c0f12;--panel:#151a20;--edge:#232b34;--ink:#cfe3d6;--dim:#7f8c99;--accent:#5fd08a;--warn:#e0a85a;--bad:#e06a6a;--info:#5aa9e0}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
-header{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--edge);background:#0e1318}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+header{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
 header b{color:var(--accent);font-size:15px;letter-spacing:.5px}
-.zone{color:var(--info)} .pos{color:var(--dim)} .pill{padding:2px 8px;border:1px solid var(--edge);border-radius:10px;color:var(--dim)}
+.zone{color:var(--good)} .pos{color:var(--muted)}
+.pill{padding:2px 8px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}
 .pill.live{color:var(--accent);border-color:var(--accent)}
-main{display:grid;grid-template-columns:280px 1fr 320px;gap:12px;padding:12px}
-.panel{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:10px 12px;margin-bottom:12px}
-.panel h3{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--dim)}
+main{display:grid;grid-template-columns:300px 1fr 340px;gap:12px;padding:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.panel h3{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
 .pending{color:var(--warn);font-style:italic;font-size:12px}
-button{background:#1c242c;color:var(--ink);border:1px solid var(--edge);border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit}
-button:hover{border-color:var(--accent)} button:active{background:#243039}
-.btnrow{display:flex;flex-wrap:wrap;gap:6px} input,select{background:#0e1318;color:var(--ink);border:1px solid var(--edge);border-radius:6px;padding:5px 7px;font:inherit}
-table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:3px 6px;border-bottom:1px solid var(--edge)}th{color:var(--dim);font-weight:400}
-.rec{color:var(--bad)} .ok{color:var(--accent)}
-.dpad{display:grid;grid-template-columns:repeat(3,44px);gap:5px;justify-content:center}
-.dpad button{height:34px} .muted{color:var(--dim);font-size:12px}
-.mon-row{display:flex;justify-content:space-between;border-bottom:1px solid var(--edge);padding:3px 0}
-small{color:var(--dim)}
+button,select,input{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;cursor:pointer;font:inherit}
+button:hover{border-color:var(--accent)} .btnrow{display:flex;flex-wrap:wrap;gap:6px}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:400}
+tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
+.rec{color:var(--bad)} .muted{color:var(--muted);font-size:12px}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);gap:5px;justify-content:center}
+.dpad button{height:34px}
+.mon-row{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:3px 0}
+#frame{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--bg);aspect-ratio:16/9;object-fit:cover}
 </style>
 </head>
 <body>
@@ -32,14 +34,18 @@ small{color:var(--dim)}
   <span class="pos" id="pos">pos: —</span>
   <span class="pill" id="link">●</span>
   <span style="flex:1"></span>
-  <a href="https://harvest.jsb-emr.us" class="muted">harvest.jsb-emr.us</a>
+  <select id="theme" title="theme">
+    <option value="iksar">iksar</option><option value="midnight">midnight</option>
+    <option value="grafana">grafana</option><option value="amber">amber</option>
+    <option value="paper">paper</option><option value="defiler">defiler</option>
+  </select>
 </header>
 <main>
-  <!-- LEFT: character / zone / route / manual -->
+  <!-- LEFT -->
   <div>
-    <div class="panel"><h3>① character</h3>
-      <div class="btnrow"><input id="cu" placeholder="account" size="10"><input id="cp" type="password" placeholder="password" size="10"></div>
-      <div class="btnrow" style="margin-top:6px"><input id="cc" placeholder="character (Furyflatulence)" size="18"><button onclick="swapChar()">⑥ swap char</button></div>
+    <div class="panel"><h3>① / ⑥ character</h3>
+      <table><thead><tr><th>character</th><th>class</th><th>zone</th><th></th></tr></thead>
+        <tbody id="charrows"></tbody></table>
       <div class="muted" id="charmsg"></div>
     </div>
     <div class="panel"><h3>③ zone</h3><div id="zone2" class="muted">—</div>
@@ -48,86 +54,89 @@ small{color:var(--dim)}
       <select id="routesel" style="width:100%"></select>
       <div class="btnrow" style="margin-top:6px">
         <button id="recbtn" onclick="toggleRec()">⏺ start recording</button>
-        <span id="recinfo" class="muted"></span>
-      </div>
-      <div class="muted">routes change with the current zone</div>
-    </div>
+        <span id="recinfo" class="muted"></span></div>
+      <div class="muted">routes change with the current zone</div></div>
     <div class="panel"><h3>④ manual control</h3>
       <div class="dpad">
         <span></span><button onclick="mv('forward')">▲</button><span></span>
         <button onclick="mv('strafeL')">◄</button><button onclick="post('/api/stop')">■</button><button onclick="mv('strafeR')">►</button>
-        <button onclick="mv('left')">↺</button><button onclick="mv('back')">▼</button><button onclick="mv('right')">↻</button>
-      </div>
+        <button onclick="mv('left')">↺</button><button onclick="mv('back')">▼</button><button onclick="mv('right')">↻</button></div>
       <div class="btnrow" style="margin-top:8px;justify-content:center">
         <button onclick="mv('jump',300)">jump</button>
         <button onclick="post('/api/harvest')">harvest</button>
-        <button onclick="unstuck()">② unstuck</button>
-      </div>
-    </div>
+        <button onclick="unstuck()">② unstuck</button></div></div>
   </div>
-
-  <!-- CENTER: real-time monitor -->
+  <!-- CENTER -->
   <div>
     <div class="panel"><h3>⊙ real-time monitor</h3>
-      <div class="mon-row"><span>player position</span><b id="m_pos" class="ok">—</b></div>
-      <div class="mon-row"><span>heading</span><span id="m_hdg" class="pending">RE pending</span></div>
-    </div>
+      <div class="mon-row"><span>player position</span><b id="m_pos" style="color:var(--accent)">—</b></div>
+      <div class="mon-row"><span>heading</span><span id="m_hdg" class="pending">RE pending</span></div></div>
     <div class="panel"><h3>① harvestables nearby</h3>
-      <div id="harv"><span class="pending">RE pending — spawn list (type · distance · open/being-harvested)</span></div></div>
+      <div class="pending">RE pending — spawn list (type · distance · open / being-harvested)</div></div>
     <div class="panel"><h3>③ nearest monster</h3>
-      <div id="mob"><span class="pending">RE pending — nearest only (aggressive? · level · distance)</span></div></div>
+      <div class="pending">RE pending — nearest only (aggressive? · level · distance)</div></div>
     <div class="panel"><h3>① players nearby (proximity)</h3>
-      <div id="players"><span class="pending">RE pending — distance · level · class · race (opsec: hold within ~30 m)</span></div></div>
+      <div class="pending">RE pending — distance · level · class · race (opsec: hold within ~30 m)</div></div>
     <div class="panel"><h3>⑤ harvested items</h3>
-      <div class="btnrow"><button onclick="tab='session'" id="tabS">session</button><button onclick="tab='all'" id="tabA">all-time</button></div>
+      <div class="btnrow"><button onclick="setTab('session')" id="tabS">session</button><button onclick="setTab('all')" id="tabA">all-time</button></div>
       <table><thead><tr><th>item</th><th>qty</th><th>rare</th></tr></thead>
-        <tbody id="items"><tr><td class="pending" colspan=3>RE pending — log scrape ("You acquire …" / rare line)</td></tr></tbody></table>
-    </div>
+        <tbody><tr><td class="pending" colspan=3>RE pending — log scrape ("You acquire …" / rare line)</td></tr></tbody></table></div>
   </div>
-
-  <!-- RIGHT: console + chat + log -->
+  <!-- RIGHT -->
   <div>
     <div class="panel"><h3>④ console</h3>
-      <a href="ibconsole://open?port=5900"><button>⧉ open native viewer</button></a>
-      <div class="muted">same SPICE method as forge/iksar (port 5900)</div>
-    </div>
+      <img id="frame" alt="live console preview">
+      <div class="btnrow" style="margin-top:8px">
+        <button onclick="webConsole()">▣ web console</button>
+        <a href="ibconsole://open?port=5900"><button>⧉ native viewer</button></a></div>
+      <div class="muted">live preview above · same SPICE method as forge/iksar (5900)</div></div>
     <div class="panel"><h3>⑥ chat monitor</h3>
-      <div id="chat" class="muted pending">RE pending — log scrape (tells/PMs flagged)</div></div>
+      <div class="muted pending">RE pending — log scrape (tells/PMs flagged)</div></div>
     <div class="panel"><h3>⚑ alerts</h3>
       <div class="muted">combat · PM · stuck · rare · can't-harvest<br><span class="pending">wired to log/position — pending build</span></div></div>
     <div class="panel"><h3>⌁ controller log</h3>
-      <div id="clog" class="muted" style="max-height:200px;overflow:auto"></div></div>
+      <div id="clog" class="muted" style="max-height:180px;overflow:auto"></div></div>
     <div class="panel"><h3>⚙ memory</h3>
       <button onclick="recal()">re-calibrate offset</button>
       <div class="muted">after a client update (uses /loc seed)</div></div>
   </div>
 </main>
 <script>
-let tab='session', recording=false, lastZone=null;
+// theme
+const th=document.getElementById('theme'); const sv=localStorage.getItem('ibh-theme');
+if(sv){document.documentElement.dataset.theme=sv;th.value=sv}
+th.onchange=()=>{document.documentElement.dataset.theme=th.value;localStorage.setItem('ibh-theme',th.value)};
+let recording=false, lastZone=null, tab='session';
 async function post(u,b){return (await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})})).json()}
 function mv(dir,ms){post('/api/move',{dir,ms:ms||450})}
 function unstuck(){post('/api/move',{dir:'jump',ms:300});setTimeout(()=>post('/api/move',{dir:'back',ms:600}),350)}
+function setTab(t){tab=t}
+function webConsole(){window.open(location.origin+'/static/spice/console.html?port=5900','ibhcon','width=1040,height=620')}
 async function toggleRec(){
-  if(!recording){await post('/api/route/record',{action:'start',name:prompt('route name?')||''});recording=true;document.getElementById('recbtn').textContent='⏹ stop recording';document.getElementById('recbtn').classList.add('rec')}
-  else{const r=await post('/api/route/record',{action:'stop'});recording=false;document.getElementById('recbtn').textContent='⏺ start recording';document.getElementById('recbtn').classList.remove('rec');alert('saved '+(r.name||'')+' — '+(r.points||0)+' pts '+(r.loop?'(loop)':'(open)'))}
+  if(!recording){await post('/api/route/record',{action:'start',name:prompt('route name?')||''});recording=true;recbtn.textContent='⏹ stop recording';recbtn.classList.add('rec')}
+  else{const r=await post('/api/route/record',{action:'stop'});recording=false;recbtn.textContent='⏺ start recording';recbtn.classList.remove('rec');alert('saved '+(r.name||'')+' — '+(r.points||0)+' pts '+(r.loop?'(loop)':'(open)'))}
 }
-async function swapChar(){const r=await post('/api/char',{user:cu.value,password:cp.value,character:cc.value});charmsg.textContent=r.ok?'logged in':'login failed'}
-async function recal(){const p=document.getElementById('m_pos').textContent.split(',').map(Number);if(p.length<3)return alert('no position');const r=await post('/api/recalibrate',{x:p[0],y:p[1],z:p[2]});alert('offset '+(r.primary||'not found'))}
+async function loadChars(){
+  const cs=await (await fetch('/api/characters')).json();
+  document.getElementById('charrows').innerHTML=cs.map(c=>`<tr class="sel"><td>${c.character}</td><td>${c.class||''}</td><td>${c.zone||''}</td><td><button onclick="login('${c.character}')">login</button></td></tr>`).join('')||'<tr><td class="muted" colspan=4>no characters</td></tr>';
+}
+async function login(ch){charmsg.textContent='logging in '+ch+'…';const r=await post('/api/char',{character:ch});charmsg.textContent=r.ok?('logged in '+ch):'login failed'}
+async function recal(){const p=document.getElementById('m_pos').textContent.split(',').map(Number);if(p.length<3||isNaN(p[0]))return alert('no live position');const r=await post('/api/recalibrate',{x:p[0],y:p[1],z:p[2]});alert('offset '+(r.primary||'not found'))}
+function refreshFrame(){const f=document.getElementById('frame');const img=new Image();img.onload=()=>{f.src=img.src};img.src='/api/frame.jpg?t='+Date.now()}
 async function tick(){
   let d; try{d=await (await fetch('/api/state')).json()}catch(e){document.getElementById('link').className='pill';return}
-  const st=d.state||{}; const live=st.ok&&st.pos;
+  const st=d.state||{}, live=st.ok&&st.pos;
   document.getElementById('link').className='pill '+(live?'live':'');
   document.getElementById('zone').textContent='zone: '+(d.zone||'—');
   document.getElementById('zone2').textContent=d.zone||'(RE pending — zone name)';
   document.getElementById('pos').textContent=live?('pos: '+st.pos.join(', ')):'pos: '+(st.err||'—');
   document.getElementById('m_pos').textContent=live?st.pos.join(', '):'—';
-  // routes for current zone
-  const rs=d.routes||{}; const sel=document.getElementById('routesel');
-  if(d.zone!==lastZone){lastZone=d.zone;sel.innerHTML='';Object.keys(rs).forEach(n=>{const o=document.createElement('option');o.textContent=n+' ('+(rs[n].points.length)+' pts'+(rs[n].loop?', loop':'')+')';sel.appendChild(o)});if(!Object.keys(rs).length){const o=document.createElement('option');o.textContent='(no routes for this zone yet)';sel.appendChild(o)}}
+  const rs=d.routes||{}, sel=document.getElementById('routesel');
+  if(d.zone!==lastZone){lastZone=d.zone;sel.innerHTML='';const ks=Object.keys(rs);(ks.length?ks:[]).forEach(n=>{const o=document.createElement('option');o.textContent=n+' ('+rs[n].points.length+' pts'+(rs[n].loop?', loop':'')+')';sel.appendChild(o)});if(!ks.length){const o=document.createElement('option');o.textContent='(no routes for this zone yet)';sel.appendChild(o)}}
   document.getElementById('recinfo').textContent=d.recording?('● recording '+d.recording.points+' pts'):'';
   document.getElementById('clog').innerHTML=(d.log||[]).slice(-30).reverse().map(l=>'<div>'+l.replace(/</g,'&lt;')+'</div>').join('');
 }
-setInterval(tick,1500);tick();
+loadChars();setInterval(tick,1500);tick();setInterval(refreshFrame,1500);refreshFrame();
 </script>
 </body>
 </html>

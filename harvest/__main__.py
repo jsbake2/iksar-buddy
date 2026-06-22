@@ -8,12 +8,13 @@ process title 'ibh'.
 """
 from __future__ import annotations
 
-import argparse, asyncio, base64, json, math, os, subprocess, time
+import argparse, asyncio, base64, contextlib, json, math, os, subprocess, time
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, Body
-from fastapi.responses import HTMLResponse, JSONResponse
+import yaml
+from fastapi import FastAPI, Body, WebSocket
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 try:
@@ -24,9 +25,10 @@ except ImportError:
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from forge.guest import Guest                      # reuse the proven host I/O core
-from forge.login import LoginDriver
+from forge.login import LoginDriver, load_accounts
 
 DOM = "iksar_buddy"                                 # the GPU VM
+SPICE_PORT = 5900                                  # iksar_buddy SPICE (same as the healer)
 GUEST_PY = r"C:\ib\py\python.exe"
 GUEST_READER = r"C:\ib\agent\harvest_read.py"
 DATA = Path(os.environ.get("IB_DATA_DIR", str(Path.home() / "ib-data"))) / "harvest"
@@ -46,6 +48,31 @@ class Harvest:
         self.recording: dict | None = None        # {name, zone, points:[[x,y,z,t]]}
         self.routes: dict = json.loads(ROUTES_FILE.read_text()) if ROUTES_FILE.exists() else {}
         self.log: list[str] = []
+        # character roster — select-from-table, no typing. character -> account user;
+        # password resolved from the gitignored accounts.yaml. Seed with Furyflatulence.
+        self.chars_file = DATA / "characters.yaml"
+        if not self.chars_file.exists():
+            self.chars_file.write_text(yaml.safe_dump(
+                {"characters": [{"character": "Furyflatulence", "user": "meatwad33w",
+                                 "class": "fury", "zone": "Thundering Steppes"}]}))
+
+    def _user_pw(self) -> dict:
+        """user -> password from accounts.yaml (keyed by VM dom there)."""
+        accts, _ = load_accounts()
+        return {a.get("user"): a.get("password") for a in accts.values() if a.get("user")}
+
+    def characters(self) -> list[dict]:
+        try:
+            cfg = yaml.safe_load(self.chars_file.read_text()) or {}
+        except Exception:
+            cfg = {}
+        return cfg.get("characters", [])
+
+    def _creds_for(self, character: str) -> tuple[str, str]:
+        for c in self.characters():
+            if c.get("character") == character:
+                return c.get("user", ""), self._user_pw().get(c.get("user", ""), "")
+        return "", ""
 
     # --- guest exec helper -------------------------------------------------
     def _gx(self, path: str, args: list[str], wait: float = 8.0) -> str:
@@ -160,9 +187,23 @@ class Harvest:
                 return json.loads(line.strip())
         return {"ok": False, "err": "recalibrate failed", "raw": out[-200:]}
 
-    def login_char(self, user: str, password: str, character: str) -> bool:
+    def login_char(self, character: str) -> bool:
+        user, pw = self._creds_for(character)
+        if not (user and pw):
+            self.log.append(f"no creds for {character}"); return False
         drv = LoginDriver(Guest(DOM), lambda m: self.log.append(m))
-        return drv.boot_and_login(user, password, character, "Wuoshi")
+        return drv.boot_and_login(user, pw, character, "Wuoshi")
+
+    def frame_jpeg(self) -> bytes:
+        """Live VM screen for the console preview panel. b'' if not grabbable."""
+        ppm = f"/tmp/ibh_{DOM}.ppm"
+        r = subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system", "screenshot",
+                            DOM, ppm], capture_output=True)
+        if r.returncode != 0:
+            return b""
+        m = subprocess.run(["magick", ppm, "-resize", "960", "-quality", "55", "jpg:-"],
+                           capture_output=True)
+        return m.stdout or b""
 
 
 def create_app(h: Harvest) -> FastAPI:
@@ -206,11 +247,55 @@ def create_app(h: Harvest) -> FastAPI:
     async def recal(body: dict = Body(default={})):
         return h.recalibrate(float(body["x"]), float(body["y"]), float(body["z"]))
 
+    @app.get("/api/characters")
+    async def characters():
+        return [{"character": c.get("character"), "class": c.get("class", ""),
+                 "zone": c.get("zone", ""), "user": c.get("user", "")} for c in h.characters()]
+
     @app.post("/api/char")
     async def char(body: dict = Body(default={})):
-        ok = await asyncio.get_running_loop().run_in_executor(
-            None, h.login_char, body["user"], body["password"], body["character"])
+        ok = await asyncio.get_running_loop().run_in_executor(None, h.login_char, body["character"])
         return {"ok": ok}
+
+    @app.get("/api/frame.jpg")
+    async def frame():
+        data = await asyncio.get_running_loop().run_in_executor(None, h.frame_jpeg)
+        if not data:
+            return Response(status_code=503)
+        return Response(content=data, media_type="image/jpeg", headers={"Cache-Control": "no-store"})
+
+    @app.websocket("/spice/ws/{port}")
+    async def spice_ws(ws: WebSocket, port: int):
+        if port != SPICE_PORT:
+            await ws.close(code=1008); return
+        await ws.accept(subprotocol="binary")
+        try:
+            reader, writer = await asyncio.open_connection("127.0.0.1", port)
+        except OSError:
+            await ws.close(code=1011); return
+
+        async def w2t():
+            with contextlib.suppress(Exception):
+                while True:
+                    writer.write(await ws.receive_bytes()); await writer.drain()
+
+        async def t2w():
+            with contextlib.suppress(Exception):
+                while True:
+                    d = await reader.read(65536)
+                    if not d:
+                        break
+                    await ws.send_bytes(d)
+
+        t1 = asyncio.create_task(w2t()); t2 = asyncio.create_task(t2w())
+        try:
+            await asyncio.wait({t1, t2}, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            for t in (t1, t2):
+                t.cancel()
+            writer.close()
+            with contextlib.suppress(Exception):
+                await ws.close()
 
     @app.on_event("startup")
     async def _start():
