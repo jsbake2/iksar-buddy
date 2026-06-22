@@ -31,6 +31,7 @@ DOM = "iksar_buddy"                                 # the GPU VM
 SPICE_PORT = 5900                                  # iksar_buddy SPICE (same as the healer)
 GUEST_PY = r"C:\ib\py\python.exe"
 GUEST_READER = r"C:\ib\agent\harvest_read.py"
+GUEST_SPAWNS = r"C:\ib\agent\spawns_live.py"       # nearby-entity scanner (vtable RE)
 DATA = Path(os.environ.get("IB_DATA_DIR", str(Path.home() / "ib-data"))) / "harvest"
 DATA.mkdir(parents=True, exist_ok=True)
 ROUTES_FILE = DATA / "routes.json"
@@ -45,6 +46,7 @@ class Harvest:
     def __init__(self) -> None:
         self.g = Guest(DOM)
         self.state: dict = {"ok": False, "err": "starting"}
+        self.spawns: dict = {"mobs": [], "nodes": [], "ts": 0}   # vtable-scan cache (slow scan)
         self.recording: dict | None = None        # {name, zone, points:[[x,y,z,t]]}
         self.routes: dict = json.loads(ROUTES_FILE.read_text()) if ROUTES_FILE.exists() else {}
         self.log: list[str] = []
@@ -116,6 +118,46 @@ class Harvest:
                                     f"Add-Content -Path '{GUEST_READER}.b64' -Value '{b64[i:i+6000]}' -NoNewline"])
         self._gx("powershell", ["-NoProfile", "-Command",
                  f"[IO.File]::WriteAllBytes('{GUEST_READER}',[Convert]::FromBase64String((Get-Content -Raw '{GUEST_READER}.b64')))"])
+
+    def deploy_spawns(self) -> None:
+        """Push spawns_live.py (vtable nearby-entity scanner) into the guest."""
+        src = (Path(__file__).resolve().parent / "spawns_live.py").read_bytes()
+        b64 = base64.b64encode(src).decode()
+        self._gx("powershell", ["-NoProfile", "-Command",
+                                f"Remove-Item '{GUEST_SPAWNS}','{GUEST_SPAWNS}.b64' -EA SilentlyContinue"])
+        for i in range(0, len(b64), 6000):
+            self._gx("powershell", ["-NoProfile", "-Command",
+                                    f"Add-Content -Path '{GUEST_SPAWNS}.b64' -Value '{b64[i:i+6000]}' -NoNewline"])
+        self._gx("powershell", ["-NoProfile", "-Command",
+                 f"[IO.File]::WriteAllBytes('{GUEST_SPAWNS}',[Convert]::FromBase64String((Get-Content -Raw '{GUEST_SPAWNS}.b64')))"])
+
+    def read_spawns(self) -> dict:
+        """Run the in-guest vtable scan (~5-6s). Player self is the dist~0 actor; mark it."""
+        out = self._gx(GUEST_PY, [GUEST_SPAWNS], wait=20)
+        for line in out.splitlines()[::-1]:
+            line = line.strip()
+            if line.startswith("{"):
+                try:
+                    d = json.loads(line)
+                except Exception:
+                    continue
+                mobs = d.get("mobs", [])
+                # drop the player's own actor (nearest, ~0 dist) from the monster list
+                others = [m for m in mobs if m.get("dist", 99) > 1.0]
+                return {"mobs": others, "nodes": d.get("nodes", []),
+                        "player": d.get("player"), "ts": time.time()}
+        return {"mobs": [], "nodes": [], "ts": time.time()}
+
+    async def spawns_loop(self) -> None:
+        """Background vtable scan (slow ~6s) on its own cadence, separate from the 1.5s
+        position poll. Feeds the nearby-mob / harvestable dashboard panels."""
+        self.deploy_spawns()
+        while True:
+            try:
+                self.spawns = await asyncio.get_running_loop().run_in_executor(None, self.read_spawns)
+            except Exception as e:
+                self.log.append(f"spawns scan: {e}")
+            await asyncio.sleep(6.0)
 
     def read_guest(self) -> dict:
         out = self._gx(GUEST_PY, [GUEST_READER])
@@ -221,6 +263,7 @@ def create_app(h: Harvest) -> FastAPI:
                 "recording": ({"name": h.recording["name"], "points": len(h.recording["points"])}
                               if h.recording else None),
                 "routes": h.routes.get(h.state.get("zone") or "", {}),
+                "spawns": h.spawns,
                 "zone": h.state.get("zone"), "log": h.log[-30:]}
 
     @app.post("/api/move")
@@ -302,6 +345,7 @@ def create_app(h: Harvest) -> FastAPI:
     @app.on_event("startup")
     async def _start():
         asyncio.create_task(h.poll_loop())
+        asyncio.create_task(h.spawns_loop())
 
     if (WEB / "static").exists():
         app.mount("/static", StaticFiles(directory=str(WEB / "static")), name="static")

@@ -71,12 +71,12 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
     <div class="panel"><h3>⊙ real-time monitor</h3>
       <div class="mon-row"><span>player position</span><b id="m_pos" style="color:var(--accent)">—</b></div>
       <div class="mon-row"><span>heading</span><span id="m_hdg">—</span></div></div>
-    <div class="panel"><h3>① harvestables nearby</h3>
-      <div class="pending">RE pending — spawn list (type · distance · open / being-harvested)</div></div>
-    <div class="panel"><h3>③ nearest monster</h3>
-      <div class="pending">RE pending — nearest only (aggressive? · level · distance)</div></div>
-    <div class="panel"><h3>① players nearby (proximity)</h3>
-      <div class="pending">RE pending — distance · level · class · race (opsec: hold within ~30 m)</div></div>
+    <div class="panel"><h3>① harvestables nearby <span id="nodeage" class="muted"></span></h3>
+      <div id="nodes" class="muted">scanning…</div>
+      <div class="muted" style="font-size:11px">vtable 0x14eb850 · type/name via ID — decode pending</div></div>
+    <div class="panel"><h3>③ nearest entities (mobs/NPCs) <span id="mobage" class="muted"></span></h3>
+      <div id="mobs" class="muted">scanning…</div>
+      <div class="muted" style="font-size:11px">vtable 0x1782848 · live client-memory spawn list</div></div>
     <div class="panel"><h3>⑤ harvested items</h3>
       <div class="btnrow"><button onclick="setTab('session')" id="tabS">session</button><button onclick="setTab('all')" id="tabA">all-time</button></div>
       <table><thead><tr><th>item</th><th>qty</th><th>rare</th></tr></thead>
@@ -136,6 +136,16 @@ async function tick(){
   if(d.zone!==lastZone){lastZone=d.zone;sel.innerHTML='';const ks=Object.keys(rs);(ks.length?ks:[]).forEach(n=>{const o=document.createElement('option');o.textContent=n+' ('+rs[n].points.length+' pts'+(rs[n].loop?', loop':'')+')';sel.appendChild(o)});if(!ks.length){const o=document.createElement('option');o.textContent='(no routes for this zone yet)';sel.appendChild(o)}}
   document.getElementById('recinfo').textContent=d.recording?('● recording '+d.recording.points+' pts'):'';
   document.getElementById('clog').innerHTML=(d.log||[]).slice(-30).reverse().map(l=>'<div>'+l.replace(/</g,'&lt;')+'</div>').join('');
+  // nearby entities (slow vtable scan, cached host-side ~6s)
+  const sp=d.spawns||{}, age=sp.ts?Math.round(Date.now()/1000-sp.ts):null;
+  const ageStr=age==null?'':('· '+age+'s ago');
+  document.getElementById('mobage').textContent=ageStr;
+  document.getElementById('nodeage').textContent=ageStr;
+  const mobs=sp.mobs||[], nodes=sp.nodes||[];
+  document.getElementById('mobs').innerHTML=mobs.length?mobs.slice(0,8).map(m=>
+    `<div class="mon-row"><span>${(m.name||'spawn').replace(/</g,'&lt;')}</span><span>${m.dist} m · ${m.xyz.join(', ')}</span></div>`).join(''):'<span class="muted">none within 120 m</span>';
+  document.getElementById('nodes').innerHTML=nodes.length?nodes.slice(0,10).map(n=>
+    `<div class="mon-row"><span class="zone">node</span><span>${n.dist} m · ${n.xyz.join(', ')}</span></div>`).join(''):'<span class="muted">none within 120 m</span>';
 }
 loadChars();setInterval(tick,1500);tick();setInterval(refreshFrame,1500);refreshFrame();
 </script>
