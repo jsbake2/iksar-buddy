@@ -191,9 +191,12 @@ class ForgeController:
                 cnt = max(1, int(it.get("count", 1)))
             except (TypeError, ValueError):
                 cnt = 1
+            # Station ("table") may be omitted by the caller (recipe-page lists, older saved
+            # lists). Fall back to the scraped-DB lookup so the queue always carries a table.
+            station = str(it.get("station", "")).strip() or recipes.recipe_station(name)
             clean.append({"name": name, "count": cnt, "done": 0,
                           "search": str(it.get("search", "")).strip(),
-                          "station": str(it.get("station", "")).strip(),
+                          "station": station,
                           "verified": bool(it.get("verified", False))})
         self.t.update_bot(bot_id, mode="writ", queue=clean)
         self.t.push_event(bot_id, "queue", f"{len(clean)} recipes queued")

@@ -222,11 +222,11 @@ function renderTable(items) {
 function toggleSel(it) {
   const k = selKey(state.cls, it);
   if (state.sel.has(k)) state.sel.delete(k);
-  else state.sel.set(k, { recipe: it.recipe, book: it.book, category: it.category, level: it.level, cls: state.cls });
+  else state.sel.set(k, { recipe: it.recipe, book: it.book, category: it.category, level: it.level, cls: state.cls, station: it.station || "" });
 }
 function addRow(rec) {                      // add a {name,count,search} or recipe-ish object
   const recipe = rec.recipe || rec.name; if (!recipe) return;
-  state.sel.set(`list::${recipe}`, { recipe, book: rec.book || "", category: rec.category || "", level: rec.level ?? null, cls: rec.cls || null, count: rec.count, search: rec.search });
+  state.sel.set(`list::${recipe}`, { recipe, book: rec.book || "", category: rec.category || "", level: rec.level ?? null, cls: rec.cls || null, count: rec.count, search: rec.search, station: rec.station || "" });
 }
 function renderTray() {
   const list = $("traylist"); list.replaceChildren();
@@ -285,7 +285,7 @@ async function deleteAll() {
   try { await putLists(); loadLists(); toast(`Deleted ${names.length} list(s) — favorites kept`, "good"); }
   catch { toast("Delete failed", "bad"); }
 }
-function selRows() { return [...state.sel.values()].map(v => ({ name: v.recipe, count: v.count || 1, search: v.search || "" })); }
+function selRows() { return [...state.sel.values()].map(v => ({ name: v.recipe, count: v.count || 1, search: v.search || "", station: v.station || "" })); }
 async function putLists() {
   const r = await fetch("/api/forgelists", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lists: state.lists }) });
   if (!r.ok) throw new Error("save failed");

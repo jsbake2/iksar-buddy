@@ -55,11 +55,14 @@ def recipe_station(name: str) -> str:
                             for r in items:
                                 rn, sta = r.get("recipe"), r.get("station")
                                 if rn and sta and sta != "Unknown":
-                                    st.setdefault(rn, sta)
+                                    # Key case-insensitively: bag/container recipes are stored
+                                    # lowercase ("pristine rawhide leather backpack") while most
+                                    # rows are Title-Case — exact-match would miss them.
+                                    st.setdefault(rn.lower(), sta)
                     except (OSError, ValueError):
                         pass
         _RECIPE_STATIONS = st
-    return _RECIPE_STATIONS.get(name, "")
+    return _RECIPE_STATIONS.get(name.lower(), "")
 
 
 # Roman-numeral runs OCR badly (the font's capital I reads as l / | / 1): "III" -> "|ll",

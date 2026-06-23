@@ -109,6 +109,9 @@ reaction:
   poll_hz: 6
   debug: true
   press_interval: 0.12
+  # Times to press a counter art per event before resuming filler. Doubled 3->6
+  # (owner: counters weren't being mashed enough times to register).
+  counter_presses: 6
   green_delta: 16
   red_delta: 16
 recipe_select:
