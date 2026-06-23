@@ -136,8 +136,8 @@ async function tick(){
   // nearby NODES — live from the game's harvestable array (fast, every poll, REAL nodes only)
   const nodes=st.nodes||[];
   document.getElementById('nodeage').textContent=live?('· '+nodes.length+' tracked'):'';
-  document.getElementById('nodes').innerHTML=(live&&nodes.length)?nodes.slice(0,12).map(n=>
-    `<div class="mon-row"><span class="zone">⛏ node</span><span>${n.dist} m · ${n.xyz[0]}, ${n.xyz[2]}</span></div>`).join('')
+  document.getElementById('nodes').innerHTML=(live&&nodes.length)?nodes.slice(0,14).map(n=>
+    `<div class="mon-row"><span class="zone">⛏ ${(n.name||'unknown/too far').replace(/</g,'&lt;')}</span><span>${n.dist} m · ${n.xyz[0]}, ${n.xyz[2]}</span></div>`).join('')
     :(live?'<span class="muted">no harvestables within 220 m</span>':'<span class="pending">…</span>');
   // harvested-items table (session / all-time) — resource name · source node · qty
   const hv=d.harvest||{session:{},all_time:{}}; const tbl=hv[tab==='all'?'all_time':'session']||{};

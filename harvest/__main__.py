@@ -26,6 +26,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from forge.guest import Guest                      # reuse the proven host I/O core
 from forge.login import LoginDriver, load_accounts
+from harvest.nav_graph import Graph as NavGraph    # dense waypoint graph (OgreNav-style)
 
 DOM = "iksar_buddy"                                 # the GPU VM
 SPICE_PORT = 5900                                  # iksar_buddy SPICE (same as the healer)
@@ -82,6 +83,8 @@ class Harvest:
                             "tells": saved.get("tells", []),
                             "combat_ts": 0, "_off": None}
         self.routes: dict = json.loads(ROUTES_FILE.read_text()) if ROUTES_FILE.exists() else {}
+        self.graph = None                          # active dense-graph recorder (NavGraph) or None
+        self._graph_n = 0                          # point count at last save
         self.log: list[str] = []
         # character roster — select-from-table, no typing. character -> account user;
         # password resolved from the gitignored accounts.yaml. Seed with Furyflatulence.
@@ -329,6 +332,49 @@ class Harvest:
         if dist >= 4.0 or (time.time() - last[3]) >= 4.0:   # sample on distance OR time
             pts.append([*pos, time.time()])
 
+    # --- dense GRAPH recorder (OgreNav-style, runs inside the persistent dashboard) --------
+    # Passive: feeds every position push into a waypoint graph while active. Standing still
+    # adds nothing (point only every ~3 m of movement); long AFK pauses are harmless. Lives in
+    # the dashboard (not a standalone proc) because SSH-launched procs get reaped on the host.
+    def _graph_path(self, zone) -> Path:
+        z = (zone or "zone").replace(" ", "_").replace("/", "_")
+        return DATA / f"graph_{z}.json"
+
+    def _graph_save(self) -> None:
+        if self.graph is None:
+            return
+        DATA.mkdir(parents=True, exist_ok=True)
+        self.graph.save(str(self._graph_path(self.graph.zone)))
+
+    def graph_start(self) -> dict:
+        zone = (self.cur_state() or {}).get("zone") or "zone"
+        p = self._graph_path(zone)
+        self.graph = NavGraph.load(str(p)) if p.exists() else NavGraph(zone)
+        if self.graph.zone is None:
+            self.graph.zone = zone
+        self._graph_n = len(self.graph)            # APPEND across sessions -> accumulate
+        return self.graph_status()
+
+    def graph_stop(self) -> dict:
+        self._graph_save()
+        st = self.graph_status(); self.graph = None
+        return st
+
+    def _graph_feed(self, pos: list) -> None:
+        if self.graph is None:
+            return
+        before = len(self.graph)
+        self.graph.add_point(pos[0], pos[2])        # x,z from [x,y,z]
+        if len(self.graph) != before and len(self.graph) % 5 == 0:
+            self._graph_save()                      # checkpoint every 5 new points
+
+    def graph_status(self) -> dict:
+        if self.graph is None:
+            return {"recording": False}
+        edges = sum(len(a) for a in self.graph.adj) // 2
+        return {"recording": True, "zone": self.graph.zone, "points": len(self.graph),
+                "edges": edges, "file": str(self._graph_path(self.graph.zone))}
+
     # --- actions -----------------------------------------------------------
     def move(self, direction: str, ms: int) -> None:
         key = MOVE_KEYS.get(direction)
@@ -429,8 +475,11 @@ def create_app(h: Harvest) -> FastAPI:
     @app.post("/api/ingest")
     async def ingest(body: dict = Body(default={})):
         h.pushed = {"st": body, "ts": time.time()}
-        if h.recording is not None and body.get("ok") and body.get("pos"):
-            h._maybe_record(body["pos"])
+        if body.get("ok") and body.get("pos"):
+            if h.recording is not None:
+                h._maybe_record(body["pos"])
+            if h.graph is not None:
+                h._graph_feed(body["pos"])
         return {"ok": True}
 
     @app.post("/api/move")
@@ -454,6 +503,15 @@ def create_app(h: Harvest) -> FastAPI:
     @app.get("/api/routes")
     async def routes(zone: str = ""):
         return h.routes.get(zone or (h.state.get("zone") or ""), {})
+
+    @app.post("/api/graph")
+    async def graph(body: dict = Body(default={})):
+        a = body.get("action")
+        if a == "start":
+            return h.graph_start()
+        if a == "stop":
+            return h.graph_stop()
+        return h.graph_status()
 
     @app.post("/api/recalibrate")
     async def recal(body: dict = Body(default={})):

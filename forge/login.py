@@ -93,28 +93,35 @@ def _lp_login_ahk(user: str, password: str) -> str:
 def _login_ahk(user: str, password: str, character: str, world: str) -> str:
     # Game login form. Default focus = Password. Walk to Username (Shift+Tab),
     # reset every field, retype with the Shift-safe key delay, submit.
+    # EQ2's login fields are a custom widget that IGNORES Ctrl+A select-all, so the old
+    # "^a + Delete" clear silently did nothing — a pre-filled account (meatwad33w) stuck and
+    # any new user was just appended/rejected. Clear by jumping to End and hard-backspacing.
     def raw(s: str) -> str:
         return s.replace('"', '""')
+    CLR = 'Send("{End}")\nSleep 100\nSend("{BackSpace 40}")\nSleep 200\n'
     return (
         '#Requires AutoHotkey v2.0\n'
         'SendMode "Event"\n'
         'SetKeyDelay 55, 45\n'
         'SetTitleMatchMode 2\n'
-        'WinActivate "EverQuest II"\n'
-        'WinWaitActive "EverQuest II", , 5\n'
+        # Target the client by EXECUTABLE, not window title — the EQ2Emu client window title
+        # doesn't match "EverQuest II", so title-based WinActivate failed and keystrokes went
+        # nowhere (logins only ever "worked" off the pre-saved account). ahk_exe is reliable.
+        'WinActivate "ahk_exe EverQuest2.exe"\n'
+        'WinWaitActive "ahk_exe EverQuest2.exe", , 5\n'
         'Sleep 700\n'
         'Send("+{Tab}")\n'                       # password -> username
         'Sleep 300\n'
-        'Send("^a")\nSleep 120\nSend("{Delete}")\nSleep 200\n'
+        + CLR +
         f'Send("{{Raw}}{raw(user)}")\n'
         'Sleep 300\nSend("{Tab}")\nSleep 300\n'  # -> password
-        'Send("^a")\nSleep 120\nSend("{Delete}")\nSleep 200\n'
+        + CLR +
         f'Send("{{Raw}}{raw(password)}")\n'
         'Sleep 300\nSend("{Tab}")\nSleep 300\n'  # -> character
-        'Send("^a")\nSleep 120\nSend("{Delete}")\nSleep 200\n'
+        + CLR +
         f'Send("{{Raw}}{raw(character)}")\n'
         'Sleep 300\nSend("{Tab}")\nSleep 300\n'  # -> world (blank on some clients
-        'Send("^a")\nSleep 120\nSend("{Delete}")\nSleep 200\n'  # -> char-select w/o it)
+        + CLR +                                  # -> char-select w/o it)
         f'Send("{{Raw}}{raw(world)}")\n'
         'Sleep 400\nSend("{Enter}")\n'
     )

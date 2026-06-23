@@ -12,9 +12,10 @@ client update via `--recalibrate X Y Z` (scan the module range for the /loc trip
 from __future__ import annotations
 import json, sys
 
-POS_OFF = 0x1822b68            # [EverQuest2.exe + POS_OFF] = float32 X,Y,Z (validated)
-HDG_OFF = 0x1822b74            # +0xC after XYZ = heading in degrees (-180..180); validated
-                              # by turn-and-diff. 0-360 mirror lives at 0x1822ae8.
+POS_OFF = 0x1822b78            # [EverQuest2.exe + POS_OFF] = float32 X,Y,Z. Recalibrated
+                              # 2026-06-23 (was 0x1822b68; player struct shifted +0x10 after a
+                              # client update — re-derive via --recalibrate after each update).
+HDG_OFF = 0x1822b84            # +0xC after XYZ = heading in degrees; 0-360 mirror at 0x1822af8.
 PROC = "EverQuest2.exe"
 # The game's LIVE nearby-harvestable array (module-static). Pointers to harvest-node objects
 # (vtable in the 0x149x-0x14ex family); world position at obj+0x60. Found via current-target
@@ -36,9 +37,27 @@ def _compass(h: float) -> str:
     return dirs[int((h + 22.5) % 360 // 45)]
 
 
+def _node_name(pm, p):
+    """Node name via the path node -> [+0x138] -> [+0x78] -> +0x118 (cracked read-only).
+    Reads 'bad locale name' when the node is too far for the name to be loaded."""
+    import struct
+    try:
+        a = struct.unpack("<Q", pm.read_bytes(p + 0x138, 8))[0]
+        b = struct.unpack("<Q", pm.read_bytes(a + 0x78, 8))[0]
+        s = pm.read_bytes(b + 0x118, 64); e = s.find(b"\x00")
+        nm = s[:e].decode("latin-1") if 0 < e < 60 else None
+        # reject the model-asset path / unloaded placeholder — only real display names
+        if (nm and nm.lower() != "bad locale name" and "/" not in nm and "." not in nm
+                and "locale" not in nm.lower() and all(97 <= ord(c) <= 122 or c in " '-" for c in nm.lower())):
+            return nm
+    except Exception:
+        pass
+    return None
+
+
 def read_nodes(pm, base, px, py, pz) -> list:
     """Read the live harvestable array -> nearby REAL nodes (sanity-filtered). Fast: one
-    static-data read + a deref per slot. Returns [{xyz, dist}] sorted by distance."""
+    static-data read + a deref per slot. Returns [{xyz, dist, name}] sorted by distance."""
     import struct, math
     mod_end = base + 0x1c00000
     out = []
@@ -64,7 +83,8 @@ def read_nodes(pm, base, px, py, pz) -> list:
         d = math.hypot(x - px, z - pz)
         if d > 220:
             continue
-        out.append({"xyz": [round(x, 1), round(y, 1), round(z, 1)], "dist": round(d, 1)})
+        out.append({"xyz": [round(x, 1), round(y, 1), round(z, 1)], "dist": round(d, 1),
+                    "name": _node_name(pm, ptr)})
     out.sort(key=lambda n: n["dist"])
     return out
 
