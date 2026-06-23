@@ -181,9 +181,10 @@ def _base_variants(base: str, prefixes: list[str]) -> list[str]:
 # Backpack"). Without the prefix the OCR row-match fails. We prepend "Pristine " to the
 # resolved name for any objective containing one of these keywords. NOTE (owner): bags
 # carry the Pristine prefix only up to ~level 80; above that the recipe drops it. The
-# leveling crafters are nowhere near 80, so default-on for backpacks; extend/adjust via
-# craft.yaml `pristine_prefix_items`.
-_PRISTINE_ITEMS = ["backpack"]
+# leveling crafters are nowhere near 80, so default-on for backpacks/sacks/quivers; the
+# same Pristine-recipe-vs-bare-objective mismatch hits all carry containers. Extend/adjust
+# via craft.yaml `pristine_prefix_items`.
+_PRISTINE_ITEMS = ["backpack", "sack", "quiver"]
 
 
 def _pristine_fix(name: str, keywords: list[str]) -> str:
