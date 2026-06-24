@@ -1067,8 +1067,11 @@ def gather_loop_main(keys, laps):
             if not _combat["hit"]:
                 safe = (tx, tz)
             prog["status"] = "settling to harvest"; _status(json.dumps(prog))
+            _dbg("  settle..")                   # markers: pinpoint a freeze in settle vs harvest
             _settle(pm, base, keys)              # STOP COMPLETELY before harvesting (owner rule)
+            _dbg("  harvest()..")
             hv = harvest(hwnd)
+            _dbg(f"  harvest() ret {hv.get('done')}")
             tries = 0                            # held node drifted out of ~2m range -> hug & retry
             while hv.get("done") == "toofar" and tries < 2:
                 tries += 1
