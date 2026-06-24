@@ -574,9 +574,9 @@ def harvest(hwnd):
     # A mob/empty target gives "too far"/"no eligible" -> Tab PAST it; only a real node harvests.
     # (Don't bail on the first "too far" — that was a mob sitting on the node blocking everything.)
     if not have_node:
-        for _ in range(4):                        # quick: a couple tabs to find the node, else bail
-            _check_stop()
-            off = _log_len(); harvest_key(); res = _wait_harvest(off)
+        for _ in range(7):                        # Tab CAN reach the node (owner SME) — ring through
+            _check_stop()                          # more targets; a mob/empty press does nothing, the
+            off = _log_len(); harvest_key(); res = _wait_harvest(off)   # node press harvests.
             rare = rare or res[2]
             if res[0] == "ok":
                 succ += 1; node = res[1]; have_node = True; break
@@ -833,7 +833,7 @@ def read_node_array(pm, base):
                             and abs(y - py) < 25):
                         d = math.hypot(x - px, z - pz)
                         if d < NODE_RADIUS:
-                            cand[(round(x), round(z))] = (round(x, 1), round(z, 1))
+                            cand[(round(x), round(z))] = (b0 + o, round(x, 1), round(z, 1))
                 for i in np.where(arr == actvt)[0]:          # non-player actors (mobs/NPCs)
                     o = int(i) * 8
                     if o + ACTOR_POS + 12 > len(buf):
@@ -845,11 +845,27 @@ def read_node_array(pm, base):
                             acts[(round(x), round(z))] = (round(x, 1), round(z, 1))
         addr = b0 + sz if sz else addr + 0x10000
     actors = list(acts.values())
-    # Some mobs (skeletons) carry the node vtable, so they appear as candidates. A candidate that
-    # sits ON an actor (<MOB_SAME) IS that mob — drop it. Real nodes have their nearest actor many
-    # metres away, so this never deletes a real node (even one with a mob standing a few m off).
-    nodes = [n for n in cand.values()
-             if not any(math.hypot(n[0] - a[0], n[1] - a[1]) < MOB_SAME for a in actors)]
+    # (1) Drop candidates that sit ON an actor (<MOB_SAME) — that mob IS the candidate (some
+    #     skeletons carry the node vtable). Real nodes have their nearest actor many metres away.
+    survivors = [(a, x, z) for (a, x, z) in cand.values()
+                 if not any(math.hypot(x - ax, z - az) < MOB_SAME for ax, az in actors)]
+    # (2) MOTION filter — the robust one: re-read each survivor's pos after a short delay; anything
+    #     that MOVED is a wandering mob (skeletal trooper) carrying the node vtable. Static harvest
+    #     nodes never move. Catches mobs the actor-coincidence test misses (offset/idle actor pos).
+    try:
+        time.sleep(0.6)
+        kept = []
+        for a, x, z in survivors:
+            try:
+                nx = pm.read_float(a + NODE_POS); nz = pm.read_float(a + NODE_POS + 8)
+                if math.isfinite(nx) and math.isfinite(nz) and math.hypot(nx - x, nz - z) > 0.5:
+                    continue                         # moved -> mob, drop
+            except Exception:
+                pass
+            kept.append((x, z))
+        nodes = kept
+    except Exception:
+        nodes = [(x, z) for _a, x, z in survivors]
     nodes.sort(key=lambda n: math.hypot(n[0] - px, n[1] - pz))
     _node_cache.update(nodes=nodes, actors=actors, ts=time.time(), px=px, pz=pz)
     return nodes
@@ -1056,6 +1072,17 @@ def gather_loop_main(keys, laps):
                 nav(pm, base, hwnd, tx, tz, keys, grace=0.5); keys.release_all()
                 _settle(pm, base, keys)
                 hv = harvest(hwnd)
+            # Skeleton wandered onto a REAL node (owner: wait/retry — it'll move off). Linger a few
+            # seconds and retry; the node is static, the mob isn't. Don't abandon a real node to a
+            # passing wanderer.
+            if hv.get("done") in ("mob_blocked", "mob"):
+                prog["status"] = "mob on node — waiting for it to wander"
+                _status(json.dumps(prog))
+                _dbg("  mob on node -> wait 3.5s for it to wander, retry once")
+                time.sleep(3.5)
+                _check_stop()
+                _settle(pm, base, keys)
+                hv = harvest(hwnd)
             _dbg(f"  HARVEST done={hv.get('done')} n={hv.get('harvests')} node={hv.get('node')} "
                  f"dbg={hv.get('debug')}")
             if hv.get("harvests"):
@@ -1068,10 +1095,12 @@ def gather_loop_main(keys, laps):
                 _status(json.dumps(prog))
             elif hv.get("done") in ("mob_blocked", "mob"):
                 blocked += 1
+                # full DONE_TTL lockout — don't grind a camped (stationary) mob's node; the one
+                # wait-retry above already gave a wanderer its chance. Move on.
                 prog.setdefault("mobs_skipped", []).append({"mob": hv.get("node"), "at": [tx, tz]})
                 _status(json.dumps(prog))
-                if blocked >= 3:                 # dense mob camp — stop grinding, let the tour leave
-                    _dbg("  3x mob_blocked -> bail this area, advance tour")
+                if blocked >= 2:                 # 2 mob nodes here -> camp, bail so the tour leaves
+                    _dbg("  mob camp -> bail this area, advance tour")
                     return
             else:
                 blocked = 0                       # gone/depleted/toofar — not a mob, keep going

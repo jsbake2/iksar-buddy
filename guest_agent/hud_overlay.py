@@ -15,7 +15,8 @@ import tkinter as tk
 HUD = r"C:\ib\hud.json"
 STOP = r"C:\ib\STOP"
 POLL_MS = 400
-STALE_S = 6.0            # no fresh status in this long => bot idle/stopped
+STALE_S = 30.0           # harvest+wait cycles can go ~15s between status writes; only call it idle
+                         # after this long so the HUD doesn't flicker to "idle" while it's working
 
 # state -> accent colour
 COLORS = {
