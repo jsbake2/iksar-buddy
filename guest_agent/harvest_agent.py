@@ -260,10 +260,12 @@ HDG_OFF = 0x1822b84          # after a client update). HDG = POS+0xC as before. 
 PROC = "EverQuest2.exe"
 TARGET = r"C:\ib\nav_target.json"
 STATUS = r"C:\ib\nav_status.json"
+HUD = r"C:\ib\hud.json"            # clean, uncontended status mirror for the on-screen overlay
 STOP_FLAG = r"C:\ib\STOP"          # touch this file to halt the bot near-instantly
 GRAPH_FILE = r"C:\ib\graph.json"   # dense recorded waypoint graph (OgreNav-style wall avoidance)
-ROAM = 45.0                        # max off-path deviation: leave the graph to grab a node up to
-                                   # this far from the nearest graph point, then return (OgreNav roam)
+ROAM = 28.0                        # max off-path deviation: leave the graph to grab a node up to
+                                   # this far from the nearest graph point (tighter -> stays on
+                                   # the MAPPED mesh, never beelines into unmapped areas/walls)
 
 
 class StopRequested(Exception):
@@ -282,6 +284,26 @@ def _dbg(m):
     try:
         with open(_DBG, "a") as f:
             f.write(f"{time.time():.1f} {m}\n")
+    except Exception:
+        pass
+
+
+def _status(s):
+    """Write nav_status atomically and NEVER raise. The status file is for the dashboard UI only —
+    if a reader (dashboard/sensor) momentarily holds it open (sharing violation -> PermissionError),
+    that must NOT crash the gather. Best-effort: write a temp then atomic-replace, swallow errors."""
+    try:
+        tmp = STATUS + ".tmp"
+        with open(tmp, "w") as f:
+            f.write(s)
+        os.replace(tmp, STATUS)
+    except Exception:
+        pass
+    try:                                  # HUD mirror: only the overlay reads this, so no lock
+        tmp = HUD + ".tmp"
+        with open(tmp, "w") as f:
+            f.write(s)
+        os.replace(tmp, HUD)
     except Exception:
         pass
 
@@ -387,21 +409,15 @@ def nav(pm, base, hwnd, tx, tz, keys, grace=GRACE):
         ad = abs(diff)
         dr = math.radians(diff)
         want = set()
-        # TURN with keys + TRANSLATE every tick (forward = cos diff, lateral = sin diff). The
-        # "dog-tail wag" was the turn key chattering as heading crossed a tight deadband — and
-        # worst right ON the node. Fix: WIDE turn deadband, and when CLOSE essentially stop
-        # turning (heading barely matters in the last few metres) — glide in on W + light strafe.
-        close = d < 6.0
-        turn_db = 32.0 if close else 14.0
-        if ad > turn_db:                              # only steer when meaningfully off-heading
+        # SIMPLE: point heading at the node, then walk straight in (owner's model). No strafe.
+        if ad > 20:
+            # not pointed at it -> TURN IN PLACE until facing (clean pivot, no forward = no arc)
             want.add(TURN_FOR_POS_DIFF if diff > 0 else TURN_FOR_NEG_DIFF)
-        if math.cos(dr) > 0.10:                        # target ahead-ish -> drive forward
+        else:
+            # facing it -> drive straight forward; small turn nudge only if heading drifts
             want.add("w")
-        lat = 0.45 if close else 0.30                  # wider strafe band when close -> no a/d chatter
-        if math.sin(dr) > lat:
-            want.add("d")
-        elif math.sin(dr) < -lat:
-            want.add("a")
+            if ad > 7:
+                want.add(TURN_FOR_POS_DIFF if diff > 0 else TURN_FOR_NEG_DIFF)
         keys.set(want)
         time.sleep(0.03)
     keys.release_all()
@@ -555,16 +571,16 @@ def harvest(hwnd):
         node = cm.group(1).strip(); have_node = True   # /consider says node ('not attackable')
 
     # ---- probe the non-player ring with harvest presses until one is a node ----
+    # A mob/empty target gives "too far"/"no eligible" -> Tab PAST it; only a real node harvests.
+    # (Don't bail on the first "too far" — that was a mob sitting on the node blocking everything.)
     if not have_node:
-        for _ in range(8):
+        for _ in range(4):                        # quick: a couple tabs to find the node, else bail
             _check_stop()
             off = _log_len(); harvest_key(); res = _wait_harvest(off)
             rare = rare or res[2]
             if res[0] == "ok":
                 succ += 1; node = res[1]; have_node = True; break
-            if res[0] == "toofar":
-                return {"node": node, "harvests": 0, "rare": rare, "done": "toofar", "debug": debug}
-            tab_key(); time.sleep(0.4)             # not a node -> cycle to the next non-player
+            tab_key(); time.sleep(0.3)             # not harvestable here -> next non-player
         if not have_node:
             return {"node": node, "harvests": succ, "rare": rare,
                     "done": ("mob_blocked" if succ == 0 else "depleted"), "debug": debug}
@@ -643,7 +659,7 @@ def scan_nodes(pm, base, px, pz, radius=160.0):
 def loop_main(keys, max_nodes):
     hwnd, pid, pm, base = _live_eq2()
     if not hwnd:
-        Path(STATUS).write_text(json.dumps({"ok": False, "err": "live EQ2 not found"}))
+        _status(json.dumps({"ok": False, "err": "live EQ2 not found"}))
         return
     _u.ShowWindow(hwnd, 3); _u.SetForegroundWindow(hwnd); time.sleep(0.3)
     visited = set()
@@ -661,7 +677,7 @@ def loop_main(keys, max_nodes):
         if not tgt:
             progress["stop"] = "no fresh node candidates"; break
         progress["going_to"] = [tgt[0], tgt[1], it + 1]
-        Path(STATUS).write_text(json.dumps(progress))
+        _status(json.dumps(progress))
         ok, d, _ = nav(pm, base, hwnd, tgt[0], tgt[1], keys)
         keys.release_all()
         hv = harvest(hwnd) if ok else {"harvests": 0, "done": "nav_fail"}
@@ -671,9 +687,9 @@ def loop_main(keys, max_nodes):
                                        "node": hv.get("node"), "rare": hv.get("rare"),
                                        "result": hv.get("done")})
         progress["harvests_total"] += hv.get("harvests", 0)
-        Path(STATUS).write_text(json.dumps(progress))
+        _status(json.dumps(progress))
     progress["finished"] = True
-    Path(STATUS).write_text(json.dumps(progress))
+    _status(json.dumps(progress))
 
 
 ROUTE = r"C:\ib\route.json"
@@ -709,7 +725,7 @@ def route_loop_main(keys, laps):
     global _scan_stop
     hwnd, pid, pm, base = _live_eq2()
     if not hwnd:
-        Path(STATUS).write_text(json.dumps({"ok": False, "err": "live EQ2 not found"})); return
+        _status(json.dumps({"ok": False, "err": "live EQ2 not found"})); return
     _u.ShowWindow(hwnd, 3); _u.SetForegroundWindow(hwnd); time.sleep(0.3)
     route = json.loads(Path(ROUTE).read_text())
     wps = route["waypoints"]
@@ -720,7 +736,7 @@ def route_loop_main(keys, laps):
             prog["lap"] = lap + 1
             for wi, wp in enumerate(wps):
                 prog["wp"] = wi + 1
-                Path(STATUS).write_text(json.dumps(prog))
+                _status(json.dumps(prog))
                 nav(pm, base, hwnd, wp[0], wp[1], keys); keys.release_all()
                 # QUICK node sweep around this waypoint from the background cache (instant)
                 with _scan_lock:
@@ -741,9 +757,9 @@ def route_loop_main(keys, laps):
                         prog["events"].append({"lap": lap + 1, "wp": wi + 1,
                                                "node": hv.get("node"), "n": hv["harvests"],
                                                "rare": hv.get("rare")})
-                        Path(STATUS).write_text(json.dumps(prog))
+                        _status(json.dumps(prog))
         prog["finished"] = True
-        Path(STATUS).write_text(json.dumps(prog))
+        _status(json.dumps(prog))
     finally:
         _scan_stop = True
         keys.release_all()
@@ -757,42 +773,165 @@ NODE_LO = 0x177bf00
 NODE_HI = 0x177c100
 
 
+# Harvest nodes are render objects with these EXACT vtables — confirmed by standing on each type
+# (2026-06-24): wood (felled high plains arbor), ore (wind swept stones) AND bush (high plains
+# shrubbery) ALL share 0x14eb830, with a co-located sibling 0x14eba10. World position is at
+# obj+0x60 (NOT +0x1a0 — that offset hid the bush nodes). Mobs/NPCs are DIFFERENT vtables, so an
+# exact-vtable match needs no actor/monster filter at all — that filter was deleting real nodes.
+NODE_VTS = {0x14eb830, 0x14eba10}
+NODE_POS = 0x60
+ACTOR_VT = 0x1782848             # monsters/NPCs/players actor vtable (pos @ +0x1f0)
+ACTOR_POS = 0x1f0
+NODE_RADIUS = 110.0
+ACTOR_BLOCK = 4.5                # a non-player actor this close to a node = mob squatting on it
+_node_cache = {"nodes": [], "actors": [], "ts": 0.0, "px": 0.0, "pz": 0.0}
+
+
 def read_node_array(pm, base):
-    """Read the game's live nearby-harvestable array. SANITY-FILTERED: the array carries
-    stale/garbage entries (e.g. y=-89 underground, or 300m+ away) that would fling the bot
-    off-path. Keep only nodes at the player's rough elevation and within a sane radius."""
-    nodes = []
+    """Nearby REAL harvest nodes. Heap-scan for objects whose vtable is EXACTLY a node vtable
+    (NODE_VTS — wood/ore/bush all share 0x14eb830 + sibling 0x14eba10), reading world pos at
+    obj+0x60. Mobs/NPCs are different vtables, so there is NO monster filter to mis-fire and no
+    real nodes get dropped. Cached ~6s / until the player moves 30m (a full scan is a few sec)."""
     px = pm.read_float(base + POS_OFF); py = pm.read_float(base + POS_OFF + 4)
     pz = pm.read_float(base + POS_OFF + 8)
+    now = time.time()
+    if (now - _node_cache["ts"] < 6.0
+            and math.hypot(px - _node_cache["px"], pz - _node_cache["pz"]) < 30):
+        return _node_cache["nodes"]   # scan covers ~110m; don't re-scan every 10m hop (pause-y)
     try:
-        data = pm.read_bytes(base + NODE_LO, NODE_HI - NODE_LO)
+        import numpy as np
     except Exception:
-        return nodes
-    for o in range(0, len(data) - 8, 8):
-        ptr = struct.unpack_from("<Q", data, o)[0]
-        if not (0x10000000000 < ptr < 0x7ff000000000):
-            continue
-        try:
-            vt = struct.unpack("<Q", pm.read_bytes(ptr, 8))[0]
-        except Exception:
-            continue
-        voff = vt - base
-        if not (0x1490000 <= voff <= 0x14f0000):
-            continue
-        try:
-            x, y, z = struct.unpack("<fff", pm.read_bytes(ptr + 0x60, 12))
-        except Exception:
-            continue
-        if not (math.isfinite(x) and math.isfinite(y) and math.isfinite(z)):
-            continue
-        # SANITY: near the player's elevation (drops underground/garbage) + within a sane range
-        if abs(y - py) > 40:
-            continue
-        d = math.hypot(x - px, z - pz)
-        if d > 220:                          # array holds zone-wide/stale entries; ignore far ones
-            continue
-        nodes.append((round(x, 1), round(z, 1)))
+        return _node_cache["nodes"]
+    vts = np.array(sorted(base + v for v in NODE_VTS), dtype="<u8")
+    actvt = base + ACTOR_VT
+    VQ = ctypes.windll.kernel32.VirtualQueryEx; VQ.restype = ctypes.c_size_t
+    h = pm.process_handle
+    cand = {}                                    # rounded (x,z) -> (x,z)  (dedup co-located objs)
+    acts = {}                                    # rounded (x,z) -> (x,z)  non-player actor positions
+    addr = 0; mbi = _MBI()
+    while addr < 0x7fff00000000:
+        if not VQ(h, ctypes.c_void_p(addr), ctypes.byref(mbi), ctypes.sizeof(mbi)):
+            addr += 0x10000; continue
+        b0 = mbi.BaseAddress; sz = mbi.RegionSize
+        if (mbi.State == 0x1000 and not (mbi.Protect & 0x100)
+                and (mbi.Protect & 0xff) in (0x04, 0x02, 0x20)
+                and 0x10000000000 < b0 < 0x7ff000000000 and 0 < sz < 0x8000000):
+            try:
+                buf = pm.read_bytes(b0, sz)
+            except Exception:
+                buf = b""
+            if len(buf) >= 0x80:
+                arr = np.frombuffer(buf[:(len(buf) // 8) * 8], dtype="<u8")
+                for i in np.where(np.isin(arr, vts))[0]:
+                    o = int(i) * 8
+                    if o + NODE_POS + 12 > len(buf):
+                        continue
+                    x, y, z = struct.unpack_from("<fff", buf, o + NODE_POS)
+                    if (math.isfinite(x) and math.isfinite(z) and math.isfinite(y)
+                            and abs(y - py) < 25):
+                        d = math.hypot(x - px, z - pz)
+                        if d < NODE_RADIUS:
+                            cand[(round(x), round(z))] = (round(x, 1), round(z, 1))
+                for i in np.where(arr == actvt)[0]:          # non-player actors (mobs/NPCs)
+                    o = int(i) * 8
+                    if o + ACTOR_POS + 12 > len(buf):
+                        continue
+                    x, y, z = struct.unpack_from("<fff", buf, o + ACTOR_POS)
+                    if (math.isfinite(x) and math.isfinite(z) and abs(y - py) < 35):
+                        d = math.hypot(x - px, z - pz)
+                        if 3.0 < d < NODE_RADIUS:             # >3m skips the player's own actor(s)
+                            acts[(round(x), round(z))] = (round(x, 1), round(z, 1))
+        addr = b0 + sz if sz else addr + 0x10000
+    nodes = sorted(cand.values(), key=lambda n: math.hypot(n[0] - px, n[1] - pz))
+    _node_cache.update(nodes=nodes, actors=list(acts.values()), ts=time.time(), px=px, pz=pz)
     return nodes
+
+
+def read_actors(pm, base):
+    """Non-player actor (mob/NPC) positions from the most recent node scan. Excludes the player's
+    own actor(s) (anything within 3 m of the player at scan time). Call read_node_array first."""
+    return _node_cache.get("actors", [])
+
+
+def diag_scan_main():
+    """Dump exactly what the PRODUCTION read_node_array sees: exact-vtable node objects (NODE_VTS,
+    pos @ +0x60), nearest-first. Owner stands on a node -> nearest entry should be ~0-2m. Verifies
+    the detector with no guessing. Writes to gdbg.log."""
+    hwnd, pid, pm, base = _live_eq2()
+    if not hwnd:
+        _dbg("DIAG: no live EQ2"); return
+    px = pm.read_float(base + POS_OFF); py = pm.read_float(base + POS_OFF + 4)
+    pz = pm.read_float(base + POS_OFF + 8)
+    _dbg(f"DIAG === player @ {px:.1f},{py:.1f},{pz:.1f}  vts={[hex(v) for v in NODE_VTS]} pos+{NODE_POS:#x} ===")
+    _node_cache["ts"] = 0.0                       # force a fresh scan
+    nodes = read_node_array(pm, base)
+    _dbg(f"DIAG nodes ({len(nodes)} within {NODE_RADIUS:.0f}m):")
+    for x, z in nodes[:40]:
+        d = math.hypot(x - px, z - pz)
+        _dbg(f"  node d={d:6.1f} @ {x:8.1f},{z:8.1f}")
+    _dbg("DIAG === done ===")
+
+
+def diag_wide_main(rad=10.0):
+    """Find ANY object whose world pos (@+0x1a0) is within `rad` m of the player, regardless of
+    vtable range. Reports each object's vtable (relative to base). Used to capture the vtable of a
+    node type the narrow scan misses (e.g. bush/shrubbery) — owner stands ON it, we read what's
+    under him. Tries a few likely pos offsets too in case bush nodes store pos elsewhere."""
+    import numpy as np
+    hwnd, pid, pm, base = _live_eq2()
+    if not hwnd:
+        _dbg("DIAG2: no live EQ2"); return
+    px = pm.read_float(base + POS_OFF); py = pm.read_float(base + POS_OFF + 4)
+    pz = pm.read_float(base + POS_OFF + 8)
+    _dbg(f"DIAG2 === player @ {px:.1f},{py:.1f},{pz:.1f} rad={rad} ===")
+    # accept any qword that points into the module's vtable band (covers node 0x149xxxx..
+    # actor 0x178xxxx and a margin) — that's an object header (vtable at offset 0).
+    vlo = base + 0x1000000; vhi = base + 0x1900000
+    POS_OFFS = (0x1a0, 0x60, 0x1f0, 0x90)         # try several struct layouts
+    VQ = ctypes.windll.kernel32.VirtualQueryEx; VQ.restype = ctypes.c_size_t
+    h = pm.process_handle
+    hits = []   # (dist, pos_off, vt_rel, x, z)
+    addr = 0; mbi = _MBI()
+    while addr < 0x7fff00000000:
+        if not VQ(h, ctypes.c_void_p(addr), ctypes.byref(mbi), ctypes.sizeof(mbi)):
+            addr += 0x10000; continue
+        b0 = mbi.BaseAddress; sz = mbi.RegionSize
+        if (mbi.State == 0x1000 and not (mbi.Protect & 0x100)
+                and (mbi.Protect & 0xff) in (0x04, 0x02, 0x20)
+                and 0x10000000000 < b0 < 0x7ff000000000 and 0 < sz < 0x8000000):
+            try:
+                buf = pm.read_bytes(b0, sz)
+            except Exception:
+                buf = b""
+            if len(buf) >= 0x200:
+                arr = np.frombuffer(buf[:(len(buf) // 8) * 8], dtype="<u8")
+                for i in np.where((arr >= vlo) & (arr < vhi))[0]:
+                    o = int(i) * 8
+                    for po in POS_OFFS:
+                        if o + po + 12 > len(buf):
+                            continue
+                        x, y, z = struct.unpack_from("<fff", buf, o + po)
+                        if (math.isfinite(x) and math.isfinite(z) and math.isfinite(y)
+                                and abs(y - py) < 30):
+                            d = math.hypot(x - px, z - pz)
+                            if d < rad:
+                                hits.append((d, po, int(arr[i]) - base, round(x, 1), round(z, 1)))
+        addr = b0 + sz if sz else addr + 0x10000
+    hits.sort()
+    # drop the player's own object stack (everything basically at his feet), dedup by (posOff,vt)
+    # keeping the NEAREST instance, so distinct nearby objects (the node) stand out.
+    best = {}
+    for d, po, vt, x, z in hits:
+        if d < 1.5:                          # player self-cluster
+            continue
+        key = (po, vt)
+        if key not in best or d < best[key][0]:
+            best[key] = (d, x, z)
+    rows = sorted((d, po, vt, x, z) for (po, vt), (d, x, z) in best.items())
+    _dbg(f"DIAG2 distinct objects 1.5..{rad}m ({len(rows)}):")
+    for d, po, vt, x, z in rows[:40]:
+        _dbg(f"  obj d={d:5.1f} posOff=+{po:#05x} vt=+{vt:#08x} @ {x:8.1f},{z:8.1f}")
+    _dbg("DIAG2 === done ===")
 
 
 def _tour_anchors(graph):
@@ -814,7 +953,7 @@ def gather_loop_main(keys, laps):
     global _combat_stop
     hwnd, pid, pm, base = _live_eq2()
     if not hwnd:
-        Path(STATUS).write_text(json.dumps({"ok": False, "err": "live EQ2 not found"})); return
+        _status(json.dumps({"ok": False, "err": "live EQ2 not found"})); return
     _u.ShowWindow(hwnd, 3); _u.SetForegroundWindow(hwnd); time.sleep(0.3)
     graph = load_graph()                               # dense recorded waypoint graph (or None)
     anchors = _tour_anchors(graph)
@@ -822,7 +961,9 @@ def gather_loop_main(keys, laps):
     _combat["hit"] = False; _combat_stop = False
     threading.Thread(target=_combat_watch, daemon=True).start()
     x0, z0, _ = state(pm, base)
-    safe = (x0, z0); flees = [0]; done = set()
+    safe = (x0, z0); flees = [0]
+    done = {}                                          # node-cell -> last-visited ts; expires so a
+    DONE_TTL = 240.0                                   # respawned node gets re-harvested on a long run
     prog = {"mode": "gather_loop", "graph": bool(graph), "anchors": len(anchors),
             "lap": 0, "wp": 0, "harvests_total": 0, "events": [], "named_nodes": []}
 
@@ -831,7 +972,7 @@ def gather_loop_main(keys, laps):
         if not _combat["hit"]:
             return False
         _combat["hit"] = False; flees[0] += 1; prog["fled"] = flees[0]
-        prog["status"] = "FLEEING combat"; Path(STATUS).write_text(json.dumps(prog))
+        prog["status"] = "FLEEING combat"; _status(json.dumps(prog))
         keys.release_all()
         nav(pm, base, hwnd, safe[0], safe[1], keys, grace=3.0); keys.release_all()
         time.sleep(2.5); _combat["hit"] = False
@@ -844,63 +985,85 @@ def gather_loop_main(keys, laps):
         path automatically. Skip nodes farther than ROAM off the walked loop (walled off)."""
         nonlocal safe
         misses = 0
-        for _ in range(40):
+        blocked = 0          # consecutive mob_blocked — skeletons squatting on nodes (NOT in the
+        for _ in range(40):  # actor list, so the proximity filter misses them); bail the area at 3
             _check_stop()
             if flee_if_combat():
                 return                          # fled — bail this batch, caller moves on
             x, z, _h = state(pm, base)
+            # Only nodes near the MAPPED mesh (reachable) — never beeline into unmapped areas/walls.
+            _now = time.time()
             cand = sorted((n for n in read_node_array(pm, base)
-                           if (round(n[0] / 3), round(n[1] / 3)) not in done),
+                           if _now - done.get((round(n[0] / 3), round(n[1] / 3)), 0) > DONE_TTL
+                           and reachable(graph, n[0], n[1])),
                           key=lambda n: math.hypot(n[0] - x, n[1] - z))
             if not cand:
-                _dbg(f"hn: NO nodes (read {len(read_node_array(pm, base))} raw)"); return
-            tx, tz = cand[0]                     # the NEAREST node to us, period
+                _dbg("hn: no reachable nodes -> travel"); return
+            # Prefer CLEAR nodes — skip ones with a mob squatting on them (a non-player actor within
+            # ACTOR_BLOCK m). Only fall back to guarded nodes when nothing clear is reachable, so we
+            # don't waste trips on skeleton-camp nodes we can't acquire (Ctrl+0 grabs the mob).
+            actors = read_actors(pm, base)
+            clear = [n for n in cand
+                     if not any(math.hypot(n[0] - a[0], n[1] - a[1]) < ACTOR_BLOCK for a in actors)]
+            if not clear:
+                # every reachable node here has a mob on it (skeleton camp) — don't grind mob_blocked.
+                # Mark them done so we don't re-evaluate, and return so the TOUR walks us onward.
+                for n in cand[:6]:
+                    done[(round(n[0] / 3), round(n[1] / 3))] = time.time()
+                _dbg(f"hn: all {len(cand)} reachable nodes mob-guarded -> skip camp, move on")
+                return
+            cand = clear
+            tx, tz = cand[0]                     # the NEAREST reachable node to us
             d0 = math.hypot(tx - x, tz - z)
             prog["status"] = "to nearest node"; prog["target"] = [tx, tz]
-            Path(STATUS).write_text(json.dumps(prog))
-            _dbg(f"hn: {len(cand)} cand; go {tx:.0f},{tz:.0f} d0={d0:.0f} "
-                 f"mode={'straight' if d0 <= 55 else 'graph'}")
-            # Movement controller is good, so go STRAIGHT to a nearby node (graph routing was
-            # filtering/detouring past them). Use the graph only for long hops to far nodes.
-            if d0 <= 55.0:
-                ok, dist_left, stuck = _nav_unstuck(pm, base, hwnd, keys, tx, tz, grace=1.0)
-            else:
-                ok, dist_left, stuck = goto(pm, base, hwnd, keys, tx, tz, graph, grace=1.0)
+            _status(json.dumps(prog))
+            _dbg(f"hn: {len(cand)} cand; go {tx:.0f},{tz:.0f} d0={d0:.0f}")
+            # Go STRAIGHT to it (smooth: face once, walk in). The reachability gate already keeps
+            # targets near the mapped mesh, so straight-line stays on walkable ground; unstuck
+            # handles the odd bump. (Graph routing zigzagged through dense mesh points = jerky.)
+            ok, dist_left, stuck = _nav_unstuck(pm, base, hwnd, keys, tx, tz, grace=1.0)
             keys.release_all()
-            done.add((round(tx / 3), round(tz / 3)))   # visited (depleted/blocked/unreachable)
+            done[(round(tx / 3), round(tz / 3))] = time.time()   # visited (expires after DONE_TTL)
             _dbg(f"  -> dist_left={dist_left:.1f} stuck={stuck}")
             if dist_left > 3.5:
                 misses += 1
                 if misses >= 3:                  # 3 unreachable in a row -> stop grinding, relocate
                     prog["status"] = "nodes unreachable here — relocating"
-                    Path(STATUS).write_text(json.dumps(prog))
+                    _status(json.dumps(prog))
                     return
                 continue                         # couldn't get within ~3m -> skip, next nearest
             misses = 0
             if not _combat["hit"]:
                 safe = (tx, tz)
-            prog["status"] = "settling to harvest"; Path(STATUS).write_text(json.dumps(prog))
+            prog["status"] = "settling to harvest"; _status(json.dumps(prog))
             _settle(pm, base, keys)              # STOP COMPLETELY before harvesting (owner rule)
             hv = harvest(hwnd)
-            tries = 0                            # 'too far' = ~2m harvest range; hug closer & retry
-            while hv.get("done") == "toofar" and tries < 5:
+            tries = 0                            # held node drifted out of ~2m range -> hug & retry
+            while hv.get("done") == "toofar" and tries < 2:
                 tries += 1
                 _dbg(f"  toofar -> hug closer + settle, retry {tries}")
-                nav(pm, base, hwnd, tx, tz, keys, grace=0.6); keys.release_all()
+                nav(pm, base, hwnd, tx, tz, keys, grace=0.5); keys.release_all()
                 _settle(pm, base, keys)
                 hv = harvest(hwnd)
             _dbg(f"  HARVEST done={hv.get('done')} n={hv.get('harvests')} node={hv.get('node')} "
                  f"dbg={hv.get('debug')}")
             if hv.get("harvests"):
+                blocked = 0
                 prog["harvests_total"] += hv["harvests"]
                 prog["events"].append({"node": hv.get("node"), "n": hv["harvests"],
                                        "rare": hv.get("rare"), "at": [tx, tz]})
                 if hv.get("node"):
                     prog["named_nodes"].append({"xz": [round(tx, 1), round(tz, 1)], "name": hv["node"]})
-                Path(STATUS).write_text(json.dumps(prog))
+                _status(json.dumps(prog))
             elif hv.get("done") in ("mob_blocked", "mob"):
+                blocked += 1
                 prog.setdefault("mobs_skipped", []).append({"mob": hv.get("node"), "at": [tx, tz]})
-                Path(STATUS).write_text(json.dumps(prog))
+                _status(json.dumps(prog))
+                if blocked >= 3:                 # dense mob camp — stop grinding, let the tour leave
+                    _dbg("  3x mob_blocked -> bail this area, advance tour")
+                    return
+            else:
+                blocked = 0                       # gone/depleted/toofar — not a mob, keep going
 
     try:
         try:
@@ -924,7 +1087,7 @@ def gather_loop_main(keys, laps):
                 if flees[0] >= 8:
                     prog["stop"] = "too much combat — bailed"; break
                 prog["wp"] = wi + 1; prog["status"] = "travel (path)"
-                Path(STATUS).write_text(json.dumps(prog))
+                _status(json.dumps(prog))
                 flee_if_combat()
                 goto(pm, base, hwnd, keys, anc[0], anc[1], graph); keys.release_all()
                 if not _combat["hit"]:
@@ -932,7 +1095,7 @@ def gather_loop_main(keys, laps):
                 harvest_nearest()
             if prog.get("stop"):
                 break
-        prog["finished"] = True; Path(STATUS).write_text(json.dumps(prog))
+        prog["finished"] = True; _status(json.dumps(prog))
     finally:
         _combat_stop = True
         keys.release_all()
@@ -947,34 +1110,34 @@ def main():
     try:
         tgt = json.loads(Path(TARGET).read_text())
     except Exception as e:
-        Path(STATUS).write_text(json.dumps({"ok": False, "err": f"target: {e}"})); return
+        _status(json.dumps({"ok": False, "err": f"target: {e}"})); return
     try:
         if tgt.get("chat"):
             hwnd = _eq2_window_any()
             if not hwnd:
-                Path(STATUS).write_text(json.dumps({"ok": False, "err": "no EQ2 window"})); return
+                _status(json.dumps({"ok": False, "err": "no EQ2 window"})); return
             type_chat(hwnd, str(tgt["chat"]))
-            Path(STATUS).write_text(json.dumps({"ok": True, "chat": tgt["chat"], "ts": time.time()}))
+            _status(json.dumps({"ok": True, "chat": tgt["chat"], "ts": time.time()}))
         elif tgt.get("login_form"):
             p = tgt["login_form"]                    # {user, password, character, world, fields, submit}
             hwnd = _eq2_window_any()
             if not hwnd:
-                Path(STATUS).write_text(json.dumps({"ok": False, "err": "no EQ2 window"})); return
+                _status(json.dumps({"ok": False, "err": "no EQ2 window"})); return
             type_login_form(hwnd, p["user"], p["password"], p["character"], p.get("world", "Wuoshi"),
                             user_click=(p.get("fields") or {}).get("user"),
                             submit=bool(p.get("submit", True)))
-            Path(STATUS).write_text(json.dumps({"ok": True, "typed": p["character"], "ts": time.time()}))
+            _status(json.dumps({"ok": True, "typed": p["character"], "ts": time.time()}))
         elif tgt.get("submit_enter"):
             hwnd = _eq2_window_any()
             if hwnd:
                 focus_eq2(hwnd); time.sleep(0.3); _tap(0x0D)
-            Path(STATUS).write_text(json.dumps({"ok": True, "submit": True, "ts": time.time()}))
+            _status(json.dumps({"ok": True, "submit": True, "ts": time.time()}))
         elif tgt.get("form_type") is not None:
             # TEST: focus the EQ2 login form and type into the USERNAME field via keybd_event
             # (the proven in-world input path). Default focus = password; Shift+Tab -> username.
             hwnd = _eq2_window_any()
             if not hwnd:
-                Path(STATUS).write_text(json.dumps({"ok": False, "err": "no EQ2 window"})); return
+                _status(json.dumps({"ok": False, "err": "no EQ2 window"})); return
             focus_eq2(hwnd); time.sleep(0.4)
             _tap(0x09, shift=True); time.sleep(0.3)     # Shift+Tab: password -> username
             _tap(0x23); time.sleep(0.1)                  # End
@@ -985,7 +1148,13 @@ def main():
                 res = _u.VkKeyScanW(ord(ch))
                 if res != -1:
                     _tap(res & 0xFF, bool((res >> 8) & 1)); time.sleep(0.03)
-            Path(STATUS).write_text(json.dumps({"ok": True, "form_type": tgt["form_type"], "ts": time.time()}))
+            _status(json.dumps({"ok": True, "form_type": tgt["form_type"], "ts": time.time()}))
+        elif tgt.get("diag"):
+            diag_scan_main()
+            _status(json.dumps({"ok": True, "diag": True, "ts": time.time()}))
+        elif tgt.get("diag2"):
+            diag_wide_main(float(tgt.get("rad", 10.0)))
+            _status(json.dumps({"ok": True, "diag2": True, "ts": time.time()}))
         elif tgt.get("gather_loop"):
             gather_loop_main(keys, int(tgt.get("laps", 1)))
         elif tgt.get("route_loop"):
@@ -997,24 +1166,39 @@ def main():
             do_harvest = bool(tgt.get("harvest", True))
             hwnd, pid, pm, base = _live_eq2()
             if not hwnd:
-                Path(STATUS).write_text(json.dumps({"ok": False, "err": "live EQ2 not found"})); return
+                _status(json.dumps({"ok": False, "err": "live EQ2 not found"})); return
             _u.ShowWindow(hwnd, 3); _u.SetForegroundWindow(hwnd); time.sleep(0.3)
             ok, d, _ = nav(pm, base, hwnd, tx, tz, keys); keys.release_all()
             out = {"ok": ok, "dist": round(d, 2), "pid": pid, "ts": time.time()}
             if ok and do_harvest:
                 out["harvest"] = harvest(hwnd)
-            Path(STATUS).write_text(json.dumps(out))
+            _status(json.dumps(out))
     except StopRequested:
         keys.release_all()
-        Path(STATUS).write_text(json.dumps({"stopped": True, "ts": time.time()}))
+        _status(json.dumps({"stopped": True, "ts": time.time()}))
     except Exception as e:
         import traceback
         keys.release_all()
-        Path(STATUS).write_text(json.dumps({"ok": False, "err": str(e),
+        _status(json.dumps({"ok": False, "err": str(e),
                                             "tb": traceback.format_exc()[-400:], "ts": time.time()}))
     finally:
         keys.release_all()
 
 
 if __name__ == "__main__":
-    main()
+    import faulthandler
+    try:
+        _cf = open(r"C:\ib\crash.log", "w")
+        faulthandler.enable(file=_cf)            # native crash (segfault) -> crash.log
+    except Exception:
+        _cf = None
+    try:
+        main()
+    except BaseException:
+        import traceback
+        try:
+            with open(r"C:\ib\crash.log", "a") as f:
+                f.write("PYEXC:\n" + traceback.format_exc())
+        except Exception:
+            pass
+        raise
