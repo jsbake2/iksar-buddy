@@ -301,6 +301,23 @@ def pm_open():
     return pm, base
 
 
+def _settle(pm, base, keys, timeout=3.0):
+    """Release ALL keys and wait until the character is FULLY stopped before harvesting — EQ2
+    will not harvest while you're moving, and nav leaves momentum/drift. (owner: stop completely
+    then harvest.) Returns once two reads in a row show < 0.05 m of movement."""
+    keys.release_all()
+    last = None
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        time.sleep(0.3)
+        x, z, _h = state(pm, base)
+        if last is not None and math.hypot(x - last[0], z - last[1]) < 0.05:
+            break
+        last = (x, z)
+    keys.release_all()
+    time.sleep(0.2)                              # tiny extra beat for the client to register idle
+
+
 def state(pm, base):
     a = base + POS_OFF
     x = pm.read_float(a); z = pm.read_float(a + 8)
@@ -370,16 +387,20 @@ def nav(pm, base, hwnd, tx, tz, keys, grace=GRACE):
         ad = abs(diff)
         dr = math.radians(diff)
         want = set()
-        # We can't snap heading (the memory copy is display-only, the game stomps writes), so
-        # TURN with keys — but TRANSLATE toward the target every tick instead of turn-then-go.
-        # Decompose the target direction in body frame: forward = cos(diff), lateral = sin(diff).
-        if ad > TURN_BRAKE:                            # outside the deadband -> steer to face
+        # TURN with keys + TRANSLATE every tick (forward = cos diff, lateral = sin diff). The
+        # "dog-tail wag" was the turn key chattering as heading crossed a tight deadband — and
+        # worst right ON the node. Fix: WIDE turn deadband, and when CLOSE essentially stop
+        # turning (heading barely matters in the last few metres) — glide in on W + light strafe.
+        close = d < 6.0
+        turn_db = 32.0 if close else 14.0
+        if ad > turn_db:                              # only steer when meaningfully off-heading
             want.add(TURN_FOR_POS_DIFF if diff > 0 else TURN_FOR_NEG_DIFF)
-        if math.cos(dr) > 0.20:                        # target is ahead-ish -> drive forward
+        if math.cos(dr) > 0.10:                        # target ahead-ish -> drive forward
             want.add("w")
-        if math.sin(dr) > 0.30:                        # target is to our right -> strafe right
+        lat = 0.45 if close else 0.30                  # wider strafe band when close -> no a/d chatter
+        if math.sin(dr) > lat:
             want.add("d")
-        elif math.sin(dr) < -0.30:                     # to our left -> strafe left
+        elif math.sin(dr) < -lat:
             want.add("a")
         keys.set(want)
         time.sleep(0.03)
@@ -842,23 +863,32 @@ def gather_loop_main(keys, laps):
             # Movement controller is good, so go STRAIGHT to a nearby node (graph routing was
             # filtering/detouring past them). Use the graph only for long hops to far nodes.
             if d0 <= 55.0:
-                ok, dist_left, stuck = _nav_unstuck(pm, base, hwnd, keys, tx, tz, grace=1.5)
+                ok, dist_left, stuck = _nav_unstuck(pm, base, hwnd, keys, tx, tz, grace=1.0)
             else:
-                ok, dist_left, stuck = goto(pm, base, hwnd, keys, tx, tz, graph, grace=1.5)
+                ok, dist_left, stuck = goto(pm, base, hwnd, keys, tx, tz, graph, grace=1.0)
             keys.release_all()
             done.add((round(tx / 3), round(tz / 3)))   # visited (depleted/blocked/unreachable)
             _dbg(f"  -> dist_left={dist_left:.1f} stuck={stuck}")
-            if dist_left > 3.0:
+            if dist_left > 3.5:
                 misses += 1
                 if misses >= 3:                  # 3 unreachable in a row -> stop grinding, relocate
                     prog["status"] = "nodes unreachable here — relocating"
                     Path(STATUS).write_text(json.dumps(prog))
                     return
-                continue                         # couldn't get within 3m -> skip, next nearest
+                continue                         # couldn't get within ~3m -> skip, next nearest
             misses = 0
             if not _combat["hit"]:
                 safe = (tx, tz)
+            prog["status"] = "settling to harvest"; Path(STATUS).write_text(json.dumps(prog))
+            _settle(pm, base, keys)              # STOP COMPLETELY before harvesting (owner rule)
             hv = harvest(hwnd)
+            tries = 0                            # 'too far' = ~2m harvest range; hug closer & retry
+            while hv.get("done") == "toofar" and tries < 5:
+                tries += 1
+                _dbg(f"  toofar -> hug closer + settle, retry {tries}")
+                nav(pm, base, hwnd, tx, tz, keys, grace=0.6); keys.release_all()
+                _settle(pm, base, keys)
+                hv = harvest(hwnd)
             _dbg(f"  HARVEST done={hv.get('done')} n={hv.get('harvests')} node={hv.get('node')} "
                  f"dbg={hv.get('debug')}")
             if hv.get("harvests"):
