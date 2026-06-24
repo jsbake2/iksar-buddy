@@ -783,7 +783,9 @@ NODE_POS = 0x60
 ACTOR_VT = 0x1782848             # monsters/NPCs/players actor vtable (pos @ +0x1f0)
 ACTOR_POS = 0x1f0
 NODE_RADIUS = 110.0
-ACTOR_BLOCK = 4.5                # a non-player actor this close to a node = mob squatting on it
+MOB_SAME = 3.0                   # a node candidate within this of an actor IS that actor — some mobs
+                                 # (skeletons) carry the node vtable; drop them (confirmed 2026-06-24)
+ACTOR_BLOCK = 4.5                # softer: a mob this close to a (real) node likely blocks Ctrl+0
 _node_cache = {"nodes": [], "actors": [], "ts": 0.0, "px": 0.0, "pz": 0.0}
 
 
@@ -842,8 +844,14 @@ def read_node_array(pm, base):
                         if 3.0 < d < NODE_RADIUS:             # >3m skips the player's own actor(s)
                             acts[(round(x), round(z))] = (round(x, 1), round(z, 1))
         addr = b0 + sz if sz else addr + 0x10000
-    nodes = sorted(cand.values(), key=lambda n: math.hypot(n[0] - px, n[1] - pz))
-    _node_cache.update(nodes=nodes, actors=list(acts.values()), ts=time.time(), px=px, pz=pz)
+    actors = list(acts.values())
+    # Some mobs (skeletons) carry the node vtable, so they appear as candidates. A candidate that
+    # sits ON an actor (<MOB_SAME) IS that mob — drop it. Real nodes have their nearest actor many
+    # metres away, so this never deletes a real node (even one with a mob standing a few m off).
+    nodes = [n for n in cand.values()
+             if not any(math.hypot(n[0] - a[0], n[1] - a[1]) < MOB_SAME for a in actors)]
+    nodes.sort(key=lambda n: math.hypot(n[0] - px, n[1] - pz))
+    _node_cache.update(nodes=nodes, actors=actors, ts=time.time(), px=px, pz=pz)
     return nodes
 
 
@@ -865,10 +873,16 @@ def diag_scan_main():
     _dbg(f"DIAG === player @ {px:.1f},{py:.1f},{pz:.1f}  vts={[hex(v) for v in NODE_VTS]} pos+{NODE_POS:#x} ===")
     _node_cache["ts"] = 0.0                       # force a fresh scan
     nodes = read_node_array(pm, base)
-    _dbg(f"DIAG nodes ({len(nodes)} within {NODE_RADIUS:.0f}m):")
+    actors = read_actors(pm, base)
+    _dbg(f"DIAG nodes ({len(nodes)} within {NODE_RADIUS:.0f}m)  [nearAct = dist to nearest actor]:")
     for x, z in nodes[:40]:
         d = math.hypot(x - px, z - pz)
-        _dbg(f"  node d={d:6.1f} @ {x:8.1f},{z:8.1f}")
+        na = min((math.hypot(x - a[0], z - a[1]) for a in actors), default=9e9)
+        flag = "  <-- ON AN ACTOR (mob?)" if na < 2.0 else ""
+        _dbg(f"  node d={d:6.1f} @ {x:8.1f},{z:8.1f}   nearAct={na:5.1f}{flag}")
+    _dbg(f"DIAG actors ({len(actors)} non-self within {NODE_RADIUS:.0f}m):")
+    for a in sorted(actors, key=lambda a: math.hypot(a[0] - px, a[1] - pz))[:20]:
+        _dbg(f"  actor d={math.hypot(a[0]-px, a[1]-pz):6.1f} @ {a[0]:8.1f},{a[1]:8.1f}")
     _dbg("DIAG === done ===")
 
 
@@ -1002,17 +1016,14 @@ def gather_loop_main(keys, laps):
             # Prefer CLEAR nodes — skip ones with a mob squatting on them (a non-player actor within
             # ACTOR_BLOCK m). Only fall back to guarded nodes when nothing clear is reachable, so we
             # don't waste trips on skeleton-camp nodes we can't acquire (Ctrl+0 grabs the mob).
+            # Detection already dropped candidates that ARE mobs (skeletons on the node vtable).
+            # Here just PREFER nodes with no mob within ACTOR_BLOCK (so Ctrl+0 grabs the node, not a
+            # mob beside it); fall back to the rest if none are clear. Camp-bail (3x mob_blocked)
+            # backstops dense camps where every node has a wanderer next to it.
             actors = read_actors(pm, base)
             clear = [n for n in cand
                      if not any(math.hypot(n[0] - a[0], n[1] - a[1]) < ACTOR_BLOCK for a in actors)]
-            if not clear:
-                # every reachable node here has a mob on it (skeleton camp) — don't grind mob_blocked.
-                # Mark them done so we don't re-evaluate, and return so the TOUR walks us onward.
-                for n in cand[:6]:
-                    done[(round(n[0] / 3), round(n[1] / 3))] = time.time()
-                _dbg(f"hn: all {len(cand)} reachable nodes mob-guarded -> skip camp, move on")
-                return
-            cand = clear
+            cand = clear or cand
             tx, tz = cand[0]                     # the NEAREST reachable node to us
             d0 = math.hypot(tx - x, tz - z)
             prog["status"] = "to nearest node"; prog["target"] = [tx, tz]
