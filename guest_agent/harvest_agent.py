@@ -383,6 +383,7 @@ def nav(pm, base, hwnd, tx, tz, keys, grace=GRACE):
     focus_eq2(hwnd)
     t0 = time.time()
     last_focus = 0.0
+    last_hb = time.time()
     hist = []                                    # (t, dist-to-target)
     while time.time() - t0 < TIMEOUT:
         _check_stop()                            # halt mid-nav if the STOP flag appears
@@ -393,6 +394,9 @@ def nav(pm, base, hwnd, tx, tz, keys, grace=GRACE):
             last_focus = now
         x, z, h = state(pm, base)
         d = math.hypot(tx - x, tz - z)
+        if now - last_hb > 6.0:                   # travel heartbeat: keeps the log alive on long
+            _dbg(f"  ..travel {x:.0f},{z:.0f} -> {tx:.0f},{tz:.0f} d={d:.0f}")   # trips so the
+            last_hb = now                         # watchdog doesn't read a long goto as a stall
         if d < grace:
             keys.release_all()
             return True, d, False
