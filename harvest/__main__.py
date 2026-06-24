@@ -36,6 +36,17 @@ GUEST_SPAWNS = r"C:\ib\agent\spawns_live.py"       # nearby-entity scanner (vtab
 GUEST_PUSH = r"C:\ib\agent\sense_push.py"          # persistent sensor (HTTP push, real-time)
 DATA = Path(os.environ.get("IB_DATA_DIR", str(Path.home() / "ib-data"))) / "harvest"
 DATA.mkdir(parents=True, exist_ok=True)
+# EQ2Emu launches straight to the game LOGIN FORM from EverQuest2.exe (no LaunchPad needed).
+LAUNCH_AHK = (
+    '#Requires AutoHotkey v2.0\n'
+    'EQDIR := "C:\\Users\\Public\\Daybreak Game Company\\Installed Games\\EverQuest II"\n'
+    "Run('\"' EQDIR '\\EverQuest2.exe\"', EQDIR)\n"
+)
+VIRSH = ["sudo", "-n", "virsh", "-c", "qemu:///system"]
+# Game login form (EQ2 fullscreen 1920x1080): click the username field to set focus, OCR it to
+# verify the username actually changed (the silent-stale-username bug). Measured 2026-06-24.
+USER_CLICK = (743, 442)
+USERNAME_OCR = (700, 432, 112, 22)
 HARVEST_DB = DATA / "harvested.json"               # all-time harvested-item tallies
 # EQ2 chat/combat log (the authoritative event stream). server=Wuoshi; char filled per-login.
 EQ2_LOG = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
@@ -428,6 +439,121 @@ class Harvest:
         drv = LoginDriver(Guest(DOM), lambda m: self.log.append(m))
         return drv.boot_and_login(user, pw, character, "Wuoshi")
 
+    # --- guest helpers for the agent-driven login ----------------------------
+    def _push_text(self, path: str, text: str) -> None:
+        """Write a UTF-8 text file in the guest via base64 (handles quotes/JSON safely)."""
+        b = base64.b64encode(text.encode()).decode()
+        self._gx("powershell", ["-NoProfile", "-Command",
+                                f"Remove-Item '{path}','{path}.b64' -EA SilentlyContinue"])
+        for i in range(0, len(b), 6000):
+            self._gx("powershell", ["-NoProfile", "-Command",
+                                    f"Add-Content -Path '{path}.b64' -Value '{b[i:i+6000]}' -NoNewline"])
+        self._gx("powershell", ["-NoProfile", "-Command",
+                 f"[IO.File]::WriteAllBytes('{path}',[Convert]::FromBase64String((Get-Content -Raw '{path}.b64')));"
+                 f"Remove-Item '{path}.b64' -EA SilentlyContinue"])
+
+    def _fire_agent(self, target: dict) -> None:
+        """Hand the in-guest agent (ibharv) a one-shot job via nav_target.json."""
+        self._push_text(r"C:\ib\nav_target.json", json.dumps(target))
+        self._gx("powershell", ["-NoProfile", "-Command",
+                 "Enable-ScheduledTask -TaskName ibharv | Out-Null;"
+                 "Remove-Item C:\\ib\\STOP,C:\\ib\\nav_status.json -EA SilentlyContinue;"
+                 "Start-ScheduledTask -TaskName ibharv"])
+
+    def launch_and_login(self, character: str) -> dict:
+        """Full hands-off login: launch EQ2 straight to the form (no LaunchPad), wait for the
+        form, let the AGENT type the creds (keybd_event — AHK Send doesn't land on this VM's
+        fullscreen form), then wait for the world. Returns {ok, character}."""
+        user, pw = self._creds_for(character)
+        if not (user and pw):
+            return {"ok": False, "err": f"no creds for {character}"}
+        self.active_char = character
+        self.harvest_log["_off"] = None; self.harvest_log["session"] = {}; self._persist_harvest()
+        # SAME sequence as the crafters: boot VM -> desktop -> LaunchPad (update/PLAY) -> close ->
+        # game -> form. ONLY the form-typing differs: the agent types it (keybd_event), because
+        # AHK Send doesn't land on this VM's fullscreen form. Verified + retried in _agent_type_login.
+        drv = LoginDriver(self.g, lambda m: self.log.append(m), form_typer=self._agent_type_login)
+        ok = drv.boot_and_login(user, pw, character, "Wuoshi")
+        if ok:
+            self.start_sensor()
+        self.log.append(("launch: IN WORLD as " if ok else "launch: did NOT reach world as ") + character)
+        return {"ok": ok, "character": character}
+
+    def deploy_agent(self) -> None:
+        """Push the current agent code into the guest. C:\\ib reverts to a baseline on VM reboot,
+        so a cold-start launch must redeploy or the login_form/agent code won't exist."""
+        src = Path(__file__).parent
+        files = {"_agent.py": r"C:\ib\agent\harvest_agent.py",
+                 "nav_graph.py": r"C:\ib\agent\nav_graph.py",
+                 "sense_push.py": r"C:\ib\agent\sense_push.py",
+                 "memory_read.py": r"C:\ib\agent\memory_read.py"}
+        for local, remote in files.items():
+            p = src / local
+            if p.exists():
+                self._push_text(remote, p.read_text())
+        self.log.append("launch: agent code redeployed")
+
+    def _agent_type_login(self, user, password, character, world):
+        """Fill the login form with the agent (keybd_event: Shift+Tab to username, Ctrl+A clear,
+        type each field, Enter inline) and submit. Retry on a fresh form if it stays on the form
+        (rejected / username didn't take). Called by boot_and_login as the form_typer; boot's
+        _await_world does the final in-world check after this returns."""
+        self.deploy_agent()                       # C:\ib reverted on boot -> ensure agent code
+        drv = LoginDriver(self.g)
+        for attempt in range(3):
+            self.log.append(f"launch: typing + submitting login (try {attempt + 1})")
+            self._fire_agent({"login_form": {"user": user, "password": password,
+                                             "character": character, "world": world, "submit": True}})
+            time.sleep(20)
+            if not drv._login_form_present():     # left the form -> submitted / zoning
+                self.log.append("launch: login submitted (left the form)")
+                return
+            self.log.append("launch: still on form — relaunching EQ2 for a clean retry")
+            self._gx("powershell", ["-NoProfile", "-Command",
+                                    "Get-Process EverQuest2 -EA SilentlyContinue | Stop-Process -Force"])
+            time.sleep(2)
+            self.g.run_ahk(LAUNCH_AHK)
+            for _ in range(30):
+                if drv._login_form_present():
+                    break
+                time.sleep(3)
+        self.log.append("launch: could not get past the login form")
+
+    def camp_desktop(self) -> dict:
+        """Log out cleanly to desktop (closes the client)."""
+        self._fire_agent({"chat": "/camp desktop"})
+        self.log.append("camp: typed /camp desktop")
+        return {"ok": True}
+
+    def shutdown_vm(self) -> dict:
+        self.log.append("shutdown: powering off VM")
+        r = subprocess.run(VIRSH + ["shutdown", DOM], capture_output=True, text=True)
+        return {"ok": r.returncode == 0, "msg": (r.stdout + r.stderr).strip()}
+
+    def keymap(self) -> dict:
+        """In-game keybind reference (editable at ib-data/harvest/keymap.yaml)."""
+        f = DATA / "keymap.yaml"
+        if f.exists():
+            try:
+                return yaml.safe_load(f.read_text()) or {}
+            except Exception:
+                pass
+        km = {"binds": [
+            {"key": "Ctrl+0", "action": "target_nearest_npc + /consider",
+             "note": "acquire & classify: node = 'not attackable', mob = attackable"},
+            {"key": "Ctrl+9", "action": "harvest current target", "note": "the harvest button"},
+            {"key": "Tab", "action": "target next-nearest", "note": "built-in; used to skip mobs"},
+            {"key": "W / A / S / D", "action": "forward / strafe-left / back / strafe-right", "note": "movement"},
+            {"key": "Left / Right", "action": "turn", "note": "heading control"},
+            {"key": "Space", "action": "jump", "note": "unstuck ladder"},
+        ]}
+        try:
+            DATA.mkdir(parents=True, exist_ok=True)
+            f.write_text(yaml.safe_dump(km, sort_keys=False))   # seed an editable file
+        except Exception:
+            pass
+        return km
+
     def frame_jpeg(self) -> bytes:
         """Live VM screen for the console preview panel. b'' if not grabbable."""
         ppm = f"/tmp/ibh_{DOM}.ppm"
@@ -512,6 +638,26 @@ def create_app(h: Harvest) -> FastAPI:
         if a == "stop":
             return h.graph_stop()
         return h.graph_status()
+
+    @app.post("/api/launch")
+    async def launch(body: dict = Body(default={})):
+        # Fire-and-forget: launch takes minutes; run it in the dashboard and return now so the
+        # request can't be killed by the client disconnecting. Watch the controller log.
+        ch = body.get("character") or h.active_char or "Trailmix"
+        asyncio.get_running_loop().run_in_executor(None, h.launch_and_login, ch)
+        return {"started": True, "character": ch}
+
+    @app.post("/api/camp")
+    async def camp():
+        return await asyncio.get_running_loop().run_in_executor(None, h.camp_desktop)
+
+    @app.post("/api/shutdown")
+    async def shutdown():
+        return await asyncio.get_running_loop().run_in_executor(None, h.shutdown_vm)
+
+    @app.get("/api/keymap")
+    async def keymap():
+        return h.keymap()
 
     @app.post("/api/recalibrate")
     async def recal(body: dict = Body(default={})):

@@ -43,10 +43,21 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
 <main>
   <!-- LEFT -->
   <div>
+    <div class="panel"><h3>⚡ session</h3>
+      <div class="btnrow">
+        <button onclick="launch()">🚀 launch + login</button>
+        <button onclick="camp()">⏏ camp to desktop</button>
+        <button onclick="shutdownVM()">⏻ shut down VM</button></div>
+      <div class="muted" id="sessmsg"></div>
+    </div>
     <div class="panel"><h3>① / ⑥ character</h3>
       <table><thead><tr><th>character</th><th>class</th><th>zone</th><th></th></tr></thead>
         <tbody id="charrows"></tbody></table>
       <div class="muted" id="charmsg"></div>
+    </div>
+    <div class="panel"><h3>⌨ keymap</h3>
+      <table><thead><tr><th>key</th><th>action</th></tr></thead><tbody id="keymaprows"></tbody></table>
+      <div class="muted">edit at ib-data/harvest/keymap.yaml</div>
     </div>
     <div class="panel"><h3>③ zone</h3><div id="zone2" class="muted">—</div>
       <div class="muted">players in zone: <span id="pcount" class="pending">RE pending</span></div></div>
@@ -118,6 +129,12 @@ async function loadChars(){
   document.getElementById('charrows').innerHTML=cs.map(c=>`<tr class="sel"><td>${c.character}</td><td>${c.class||''}</td><td>${c.zone||''}</td><td><button onclick="login('${c.character}')">login</button></td></tr>`).join('')||'<tr><td class="muted" colspan=4>no characters</td></tr>';
 }
 async function login(ch){charmsg.textContent='logging in '+ch+'…';const r=await post('/api/char',{character:ch});charmsg.textContent=r.ok?('logged in '+ch):'login failed'}
+const sessmsg=()=>document.getElementById('sessmsg');
+async function launch(){sessmsg().textContent='launching + logging in (boots VM, ~3-5 min)… watch the controller log';await post('/api/launch',{})}
+async function camp(){sessmsg().textContent='camping to desktop…';const r=await post('/api/camp',{});sessmsg().textContent=r.ok?'camped (client closing)':'camp failed'}
+async function shutdownVM(){if(!confirm('Shut down the VM?'))return;sessmsg().textContent='shutting down VM…';const r=await post('/api/shutdown',{});sessmsg().textContent=r.ok?'VM shutting down':'shutdown failed'}
+async function loadKeymap(){try{const k=await (await fetch('/api/keymap')).json();document.getElementById('keymaprows').innerHTML=(k.binds||[]).map(b=>`<tr><td><b>${b.key}</b></td><td>${b.action}${b.note?` <span class="muted">(${b.note})</span>`:''}</td></tr>`).join('')}catch(e){}}
+loadKeymap();
 async function recal(){const p=document.getElementById('m_pos').textContent.split(',').map(Number);if(p.length<3||isNaN(p[0]))return alert('no live position');const r=await post('/api/recalibrate',{x:p[0],y:p[1],z:p[2]});alert('offset '+(r.primary||'not found'))}
 function refreshFrame(){const f=document.getElementById('frame');const img=new Image();img.onload=()=>{f.src=img.src};img.src='/api/frame.jpg?t='+Date.now()}
 async function tick(){

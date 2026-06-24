@@ -155,9 +155,14 @@ _KEY_AHK = (
 
 
 class LoginDriver:
-    def __init__(self, g: Guest, log: Log = lambda m: None) -> None:
+    def __init__(self, g: Guest, log: Log = lambda m: None, form_typer=None) -> None:
         self.g = g
         self.log = log
+        # How the game LOGIN FORM gets filled. Default = AutoHotkey Send (works on the crafter
+        # VMs). The harvest VM passes an agent keybd_event typer (AHK Send doesn't land on its
+        # fullscreen form). Signature: (user, password, character, world) -> None.
+        self.form_typer = form_typer or (
+            lambda u, p, c, w: self.g.run_ahk(_login_ahk(u, p, c, w)))
 
     # --- screenshot helpers --------------------------------------------------
     def _pixel(self, x: int, y: int) -> tuple[int, int, int]:
@@ -289,7 +294,7 @@ class LoginDriver:
 
         # 3) credentials -> in world ----------------------------------------
         self.log(f"submitting login for {character}")
-        g.run_ahk(_login_ahk(user, password, character, world))
+        self.form_typer(user, password, character, world)
         ok = self._await_world(character, timeout_world)
         return ok
 

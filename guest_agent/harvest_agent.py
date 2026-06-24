@@ -19,8 +19,19 @@ try:
 except Exception:
     nav_graph = None
 
-LOG = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
-       r"\EverQuest II\logs\Wuoshi\eq2log_Furyflatulence.txt")
+import glob as _glob
+_LOGDIR = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
+           r"\EverQuest II\logs\Wuoshi")
+
+
+def _freshest_log():
+    """The active character's log = the most-recently-written eq2log_*.txt. Auto-adapts to
+    whoever's logged in (Trailmix, Furyflatulence, ...) instead of a hardcoded name."""
+    fs = _glob.glob(os.path.join(_LOGDIR, "eq2log_*.txt"))
+    return max(fs, key=os.path.getmtime) if fs else os.path.join(_LOGDIR, "eq2log_Furyflatulence.txt")
+
+
+LOG = _freshest_log()
 HARV = re.compile(r"You (?:mine|forage|gather|fell|trap|acquire|catch|chop|cut) \d+ .*? from the (.+?)\.")
 FAIL = re.compile(r"(?:fail(?:ed)? to (?:gather|harvest|mine|forage|trap|acquire|catch|fell|chop)"
                   r"|did not (?:find|gather|harvest))", re.I)   # node STILL there -> retry
@@ -173,6 +184,62 @@ def _tap(vk, shift=False):
         _u.keybd_event(0x10, 0, KEYUP, 0)
 
 
+def _click(x, y):
+    """Left-click at a screen pixel (Event-mode mouse, like keybd_event — lands on the form)."""
+    _u.SetCursorPos(int(x), int(y)); time.sleep(0.12)
+    _u.mouse_event(0x0002, 0, 0, 0, 0); time.sleep(0.06)     # LEFTDOWN
+    _u.mouse_event(0x0004, 0, 0, 0, 0)                        # LEFTUP
+
+
+def _type_text(s):
+    for ch in str(s):
+        res = _u.VkKeyScanW(ord(ch))
+        if res != -1:
+            _tap(res & 0xFF, bool((res >> 8) & 1)); time.sleep(0.04)
+
+
+def _combo(mods, vk):
+    """Tap vk while holding modifier VKs (e.g. Ctrl+A = _combo([0x11], 0x41))."""
+    KEYUP = 0x02
+    for m in mods:
+        _u.keybd_event(m, 0, 0, 0)
+    time.sleep(0.03)
+    _u.keybd_event(vk, 0, 0, 0); time.sleep(0.03); _u.keybd_event(vk, 0, KEYUP, 0); time.sleep(0.03)
+    for m in reversed(mods):
+        _u.keybd_event(m, 0, KEYUP, 0)
+
+
+def _clear_field():
+    # Owner's method: Ctrl+A select-all, then Delete. Light BackSpace fallback in case the field
+    # didn't take the select-all (different fields behaved differently in testing).
+    _combo([0x11], 0x41); time.sleep(0.08)       # Ctrl+A
+    _tap(0x2E); time.sleep(0.05)                  # Delete
+    _tap(0x23); time.sleep(0.03)                  # End
+    for _ in range(16):
+        _tap(0x08)                               # BackSpace (clears any residue)
+
+
+def type_login_form(hwnd, user, password, character, world, user_click=None, submit=True):
+    """Fill the EQ2 game login form via keybd_event (AHK Send doesn't land on the fullscreen
+    form). CLICK the username field first (resets focus to a known field every attempt — Tab
+    navigation from an unknown state was leaving the username unchanged), then Tab forward,
+    clearing each field with Ctrl+A+Delete before typing. Long settle avoids dropped keystrokes."""
+    focus_eq2(hwnd); time.sleep(0.9)
+    if user_click:
+        _click(user_click[0], user_click[1]); time.sleep(0.5)    # focus USERNAME directly
+    else:
+        _tap(0x09, shift=True); time.sleep(0.5)                  # fallback: Shift+Tab to username
+    _clear_field(); time.sleep(0.2); _type_text(user); time.sleep(0.3)
+    _tap(0x09); time.sleep(0.4)                  # Tab -> password
+    _clear_field(); time.sleep(0.2); _type_text(password); time.sleep(0.3)
+    _tap(0x09); time.sleep(0.4)                  # Tab -> character
+    _clear_field(); time.sleep(0.2); _type_text(character); time.sleep(0.3)
+    _tap(0x09); time.sleep(0.4)                  # Tab -> world
+    _clear_field(); time.sleep(0.2); _type_text(world); time.sleep(0.3)
+    if submit:
+        _tap(0x0D)                               # Enter -> submit
+
+
 def type_chat(hwnd, text):
     """Deliberately type a slash command into EQ2 chat: focus the game, Enter to open the chat
     input, type the text (VkKeyScan maps each char to VK + shift state), Enter to send. Uses
@@ -206,6 +273,17 @@ class StopRequested(Exception):
 def _check_stop():
     if os.path.exists(STOP_FLAG):
         raise StopRequested()
+
+
+_DBG = r"C:\ib\gdbg.log"
+
+
+def _dbg(m):
+    try:
+        with open(_DBG, "a") as f:
+            f.write(f"{time.time():.1f} {m}\n")
+    except Exception:
+        pass
 
 GRACE = 2.5          # metres — close enough to harvest
 FACE_TOL = 22.0      # degrees — "generally facing"
@@ -751,18 +829,25 @@ def gather_loop_main(keys, laps):
                 return                          # fled — bail this batch, caller moves on
             x, z, _h = state(pm, base)
             cand = sorted((n for n in read_node_array(pm, base)
-                           if (round(n[0] / 3), round(n[1] / 3)) not in done
-                           and reachable(graph, n[0], n[1])),
+                           if (round(n[0] / 3), round(n[1] / 3)) not in done),
                           key=lambda n: math.hypot(n[0] - x, n[1] - z))
             if not cand:
-                return                          # nothing reachable in range -> travel on
-            tx, tz = cand[0]                     # the NEAREST reachable node to us
+                _dbg(f"hn: NO nodes (read {len(read_node_array(pm, base))} raw)"); return
+            tx, tz = cand[0]                     # the NEAREST node to us, period
+            d0 = math.hypot(tx - x, tz - z)
             prog["status"] = "to nearest node"; prog["target"] = [tx, tz]
             Path(STATUS).write_text(json.dumps(prog))
-            # graph-route there, leave the path for the final hop, then harvest within 3m.
-            ok, dist_left, stuck = goto(pm, base, hwnd, keys, tx, tz, graph, grace=1.5)
+            _dbg(f"hn: {len(cand)} cand; go {tx:.0f},{tz:.0f} d0={d0:.0f} "
+                 f"mode={'straight' if d0 <= 55 else 'graph'}")
+            # Movement controller is good, so go STRAIGHT to a nearby node (graph routing was
+            # filtering/detouring past them). Use the graph only for long hops to far nodes.
+            if d0 <= 55.0:
+                ok, dist_left, stuck = _nav_unstuck(pm, base, hwnd, keys, tx, tz, grace=1.5)
+            else:
+                ok, dist_left, stuck = goto(pm, base, hwnd, keys, tx, tz, graph, grace=1.5)
             keys.release_all()
             done.add((round(tx / 3), round(tz / 3)))   # visited (depleted/blocked/unreachable)
+            _dbg(f"  -> dist_left={dist_left:.1f} stuck={stuck}")
             if dist_left > 3.0:
                 misses += 1
                 if misses >= 3:                  # 3 unreachable in a row -> stop grinding, relocate
@@ -774,6 +859,8 @@ def gather_loop_main(keys, laps):
             if not _combat["hit"]:
                 safe = (tx, tz)
             hv = harvest(hwnd)
+            _dbg(f"  HARVEST done={hv.get('done')} n={hv.get('harvests')} node={hv.get('node')} "
+                 f"dbg={hv.get('debug')}")
             if hv.get("harvests"):
                 prog["harvests_total"] += hv["harvests"]
                 prog["events"].append({"node": hv.get("node"), "n": hv["harvests"],
@@ -786,6 +873,11 @@ def gather_loop_main(keys, laps):
                 Path(STATUS).write_text(json.dumps(prog))
 
     try:
+        try:
+            os.remove(_DBG)
+        except OSError:
+            pass
+        _dbg(f"=== gather start: {len(anchors)} anchors, graph={bool(graph)} ===")
         # RIGHT WHEN WE START: grab the nearest reachable node(s) to where we stand.
         harvest_nearest()
         # then tour the loop (graph-routed travel), harvesting nearest-first at each anchor.
@@ -833,6 +925,37 @@ def main():
                 Path(STATUS).write_text(json.dumps({"ok": False, "err": "no EQ2 window"})); return
             type_chat(hwnd, str(tgt["chat"]))
             Path(STATUS).write_text(json.dumps({"ok": True, "chat": tgt["chat"], "ts": time.time()}))
+        elif tgt.get("login_form"):
+            p = tgt["login_form"]                    # {user, password, character, world, fields, submit}
+            hwnd = _eq2_window_any()
+            if not hwnd:
+                Path(STATUS).write_text(json.dumps({"ok": False, "err": "no EQ2 window"})); return
+            type_login_form(hwnd, p["user"], p["password"], p["character"], p.get("world", "Wuoshi"),
+                            user_click=(p.get("fields") or {}).get("user"),
+                            submit=bool(p.get("submit", True)))
+            Path(STATUS).write_text(json.dumps({"ok": True, "typed": p["character"], "ts": time.time()}))
+        elif tgt.get("submit_enter"):
+            hwnd = _eq2_window_any()
+            if hwnd:
+                focus_eq2(hwnd); time.sleep(0.3); _tap(0x0D)
+            Path(STATUS).write_text(json.dumps({"ok": True, "submit": True, "ts": time.time()}))
+        elif tgt.get("form_type") is not None:
+            # TEST: focus the EQ2 login form and type into the USERNAME field via keybd_event
+            # (the proven in-world input path). Default focus = password; Shift+Tab -> username.
+            hwnd = _eq2_window_any()
+            if not hwnd:
+                Path(STATUS).write_text(json.dumps({"ok": False, "err": "no EQ2 window"})); return
+            focus_eq2(hwnd); time.sleep(0.4)
+            _tap(0x09, shift=True); time.sleep(0.3)     # Shift+Tab: password -> username
+            _tap(0x23); time.sleep(0.1)                  # End
+            for _ in range(40):
+                _tap(0x08)                               # BackSpace x40 (clear)
+            time.sleep(0.2)
+            for ch in str(tgt["form_type"]):
+                res = _u.VkKeyScanW(ord(ch))
+                if res != -1:
+                    _tap(res & 0xFF, bool((res >> 8) & 1)); time.sleep(0.03)
+            Path(STATUS).write_text(json.dumps({"ok": True, "form_type": tgt["form_type"], "ts": time.time()}))
         elif tgt.get("gather_loop"):
             gather_loop_main(keys, int(tgt.get("laps", 1)))
         elif tgt.get("route_loop"):
