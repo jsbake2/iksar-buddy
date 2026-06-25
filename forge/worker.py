@@ -14,11 +14,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
+import re
 import time
 from functools import partial
 from pathlib import Path
 
-from . import sensors
+import yaml
+
+from . import recipes, sensors
 from .guest import Guest
 from .recipes import prepare_search, search_name
 from .telemetry import ForgeTelemetry
@@ -55,7 +59,7 @@ class CraftWorker:
     # -- control (called by the controller) --------------------------------
     def start(self, mode: str, trade_class: str, recipe: str = "",
               count: int = 1, queue: list | None = None, search: str = "", station: str = "",
-              timed_writ: bool = False) -> None:
+              writ_mode: str = "standard") -> None:
         if mode == "writ":
             q = []
             for it in (queue or []):
@@ -73,7 +77,7 @@ class CraftWorker:
             # crafts table-by-table without deleting/re-reading). "" / "all" = whole queue.
             self._pending = {"mode": "writ", "trade_class": trade_class, "queue": q,
                              "station": "" if station in ("", "all") else station,
-                             "timed_writ": bool(timed_writ)}
+                             "writ_mode": writ_mode or "standard"}
         else:
             self._pending = {"mode": "single", "trade_class": trade_class,
                              "recipe": recipe or "", "search": search or "",
@@ -144,6 +148,69 @@ class CraftWorker:
                                             search=it.get("search", ""))
             it["done"] = made                    # ACTUAL crafts done, not assumed
             self.t.update_bot(self.id, queue=q)
+
+    def _writ_status(self, q: list, station: str) -> None:
+        """Final status for a single-pass writ/list: 'done' ONLY if every in-scope recipe
+        finished, else 'incomplete' so a 0/6 recipe can't masquerade as done."""
+        scope = [it for it in q if not (station and (it.get("station") or "") != station)]
+        short = [it for it in scope if int(it.get("done", 0)) < int(it.get("count", 0))]
+        if short and not self._stop.is_set():
+            names = ", ".join(f"{it['name']} {it.get('done', 0)}/{it['count']}" for it in short)
+            self.t.push_event(self.id, "craft", f"batch INCOMPLETE — {names}")
+            self.t.update_bot(self.id, state="incomplete", durability_mode=None)
+        else:
+            self.t.push_event(self.id, "craft", "batch complete" + (f" ({station})" if station else ""))
+            self.t.update_bot(self.id, state="done", durability_mode=None)
+
+    def _report_failures(self, q: list, station: str) -> None:
+        """TRACK-FAILURES: collect every in-scope recipe that didn't fully succeed (made < count)
+        into a saved list 'craft-failures-<char>-<ts>' and stash a failure_report on the bot so
+        the dashboard can pop a notification when the WHOLE list is done."""
+        scope = [it for it in q if not (station and (it.get("station") or "") != station)]
+        fails = []
+        for it in scope:
+            short = int(it.get("count", 0)) - int(it.get("done", 0))
+            if short > 0:
+                fails.append({"name": it["name"], "count": short,
+                              "search": it.get("search", "")})
+        if not fails:
+            self.t.push_event(self.id, "craft", "track failures: all crafted — nothing failed ✅")
+            self.t.update_bot(self.id, failure_report={"list": "", "items": [], "ts": time.time()})
+            return
+        char = (self.t.bot(self.id) or {}).get("character") or "crafter"
+        list_name = self._save_failures_list(char, fails)
+        n = sum(f["count"] for f in fails)
+        self.t.push_event(self.id, "craft",
+                          f"track failures: {n} craft(s) failed across {len(fails)} recipe(s) "
+                          f"-> saved list '{list_name}'")
+        self.t.update_bot(self.id, failure_report={"list": list_name, "items": fails,
+                                                   "ts": time.time()})
+
+    def _save_failures_list(self, char: str, items: list) -> str:
+        """Append a 'craft-failures-<char>-<ts>' list to the owner's lists.yaml (read-modify-write,
+        matching the dashboard's /api/forgelists format) so it shows up in the saved-lists dropdown
+        ready to re-craft. Returns the list name (even if the write fails, so the UI can show it)."""
+        safe_char = re.sub(r"[^A-Za-z0-9]", "", str(char)) or "crafter"
+        name = f"craft-failures-{safe_char}-{time.strftime('%Y%m%d-%H%M%S')}"
+        rows = [{"name": it["name"], "count": int(it["count"]),
+                 "search": it.get("search", "")} for it in items]
+        try:
+            cfg_dir = Path(os.environ.get("IB_FORGE_DIR",
+                           Path(__file__).resolve().parent.parent / "config" / "forge"))
+            p = cfg_dir / "lists.yaml"
+            data = {}
+            if p.exists():
+                data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+            lists = data.get("lists") or {}
+            lists[name] = rows
+            data["lists"] = lists
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text("# Named profit-craft lists (dashboard-edited).\n"
+                         + yaml.safe_dump(data, sort_keys=True, allow_unicode=True),
+                         encoding="utf-8")
+        except Exception as e:                       # noqa: BLE001
+            self.t.push_log(self.id, f"track failures: could NOT save list ({e})")
+        return name
 
     async def _ex(self, fn, *a):
         """Run a (blocking) guest op in the default executor."""
@@ -698,15 +765,25 @@ class CraftWorker:
         if job["mode"] == "writ":
             q = job["queue"]
             station = job.get("station", "")
+            writ_mode = job.get("writ_mode", "standard")
             self.t.update_bot(self.id, queue=q)
             await self._craft_writ_pass(q, station, tc)
+
+            # TRACK FAILURES (owner): for any list (writ / saved / hand-built), collect everything
+            # that didn't fully succeed (made < count -> the reflex confirms each craft via the log)
+            # into a saved list 'craft-failures-<char>-<ts>' and pop a notification when the WHOLE
+            # list is done, so a stray failure doesn't silently sink the run.
+            if writ_mode == "track_failures":
+                self._report_failures(q, station)
+                self._writ_status(q, station)
+                return
 
             # TIMED WRIT (owner): occasional craft failures leave items on the writ, and the whole
             # timed quest fails if not finished. Re-read the journal after a short delay and craft
             # whatever still remains, looping until the journal is clear (or the round cap). EQ2
             # updates the objective counts live, so the re-read shows only the remainder.
             cleared = None
-            if job.get("timed_writ"):
+            if writ_mode == "timed":
                 cleared = False
                 delay = float(self.cfg.get("timed_writ_delay", 3.0))
                 rounds = int(self.cfg.get("timed_writ_max_rounds", 12))
@@ -742,15 +819,7 @@ class CraftWorker:
                 self.t.push_event(self.id, "craft", "timed writ: still incomplete after retries — check it")
                 self.t.update_bot(self.id, state="incomplete", durability_mode=None)
                 return
-            scope = [it for it in q if not (station and (it.get("station") or "") != station)]
-            short = [it for it in scope if int(it.get("done", 0)) < int(it.get("count", 0))]
-            if short and not self._stop.is_set():
-                names = ", ".join(f"{it['name']} {it.get('done', 0)}/{it['count']}" for it in short)
-                self.t.push_event(self.id, "craft", f"batch INCOMPLETE — {names}")
-                self.t.update_bot(self.id, state="incomplete", durability_mode=None)
-            else:
-                self.t.push_event(self.id, "craft", "batch complete" + (f" ({station})" if station else ""))
-                self.t.update_bot(self.id, state="done", durability_mode=None)
+            self._writ_status(q, station)
         else:
             made = await self._craft_recipe(job["recipe"], job["count"], tc,
                                             search=job.get("search", ""))

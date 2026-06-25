@@ -245,7 +245,7 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
                   count=payload.get("count", 1),
                   search=payload.get("search", ""),
                   station=payload.get("station", ""),
-                  timed_writ=bool(payload.get("timed_writ", False)))
+                  writ_mode=str(payload.get("writ_mode", "standard")))
         return {"ok": True}
 
     @app.post("/api/bot/{bot_id}/stop")

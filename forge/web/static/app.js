@@ -143,7 +143,6 @@ function buildBotPanel(bot, tradeClasses) {
     power: q(".bot-power"),
     stPower: q(".st-power"),
     shutdone: q(".bot-shutdone"),
-    timedwrit: q(".bot-timedwrit"),
     start: q(".bot-start"),
     stop: q(".bot-stop"),
     pause: q(".bot-pause"),
@@ -157,6 +156,9 @@ function buildBotPanel(bot, tradeClasses) {
     queueSig: "",
   };
   botEls[bot.id] = refs;
+  // unique radio-group name per card so the writ-mode toggle is mutually exclusive WITHIN a
+  // card but independent across cards
+  root.querySelectorAll(".bot-writmode").forEach((r) => { r.name = "writmode-" + bot.id; });
 
   // ---- wire controls ----
   const id = bot.id;
@@ -207,12 +209,13 @@ function buildBotPanel(bot, tradeClasses) {
   };
   refs.start.onclick = () => {
     const c = selectedCrafter(refs);
+    const wm = (refs.root.querySelector(".bot-writmode:checked") || {}).value || "standard";
     post(`/api/bot/${id}/start`, {
       mode: refs.uiMode, trade_class: c ? c.class : "",
       recipe: refs.recipe.value, search: refs.search.value,
       count: parseInt(refs.count.value) || 1,
       station: refs.uiMode === "writ" ? (refs.station || "") : "",   // craft only the shown table
-      timed_writ: refs.uiMode === "writ" && !!(refs.timedwrit && refs.timedwrit.checked),
+      writ_mode: refs.uiMode === "writ" ? wm : "standard",
     });
   };
   refs.stop.onclick = () => post(`/api/bot/${id}/stop`);
@@ -394,6 +397,52 @@ function updateBotPanel(refs, bot) {
 
   // per-bot console log
   renderLog(refs.log, bot.log || []);
+
+  // TRACK-FAILURES notification: the worker stashes a failure_report when a tracked list
+  // finishes. Pop it ONCE (newer ts than last shown) and only when something actually failed.
+  const fr = bot.failure_report;
+  if (fr && fr.ts && fr.ts !== refs.lastFailTs) {
+    refs.lastFailTs = fr.ts;
+    if ((fr.items || []).length) showFailureModal(bot.id, bot.character || "crafter", fr);
+  }
+}
+
+function showFailureModal(botId, char, report) {
+  document.getElementById("failModal")?.remove();
+  const rows = (report.items || [])
+    .map((it) => `<li><b>${it.count}×</b> ${escapeHtml(it.name)}</li>`).join("");
+  const n = (report.items || []).reduce((a, it) => a + (it.count || 0), 0);
+  const ov = document.createElement("div");
+  ov.id = "failModal";
+  ov.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;"
+    + "align-items:center;justify-content:center;z-index:9999";
+  ov.innerHTML =
+    `<div style="background:#1b1d24;color:#e6e6e6;border:1px solid #3a3f4b;border-radius:10px;`
+    + `max-width:480px;width:90%;max-height:80vh;overflow:auto;padding:18px 20px;`
+    + `box-shadow:0 12px 40px rgba(0,0,0,.5);font:14px system-ui,sans-serif">`
+    + `<div style="font-size:16px;font-weight:700;margin-bottom:6px">⚑ Craft failures — ${escapeHtml(char)}</div>`
+    + `<div style="color:#c9c9d2;margin-bottom:10px">${n} craft(s) across ${(report.items || []).length} `
+    + `recipe(s) didn't succeed and were saved as list <b style="color:#9fd6ff">${escapeHtml(report.list)}</b>.</div>`
+    + `<ul style="margin:0 0 14px 18px;padding:0;line-height:1.7">${rows}</ul>`
+    + `<div style="display:flex;gap:8px;justify-content:flex-end">`
+    + `<button id="failLoad" style="padding:7px 12px;border-radius:6px;border:0;background:#2f6f4f;color:#fff;cursor:pointer">Load into queue</button>`
+    + `<button id="failClose" style="padding:7px 12px;border-radius:6px;border:1px solid #3a3f4b;background:#2a2d36;color:#e6e6e6;cursor:pointer">Close</button>`
+    + `</div></div>`;
+  document.body.appendChild(ov);
+  const close = () => ov.remove();
+  ov.addEventListener("click", (e) => { if (e.target === ov) close(); });
+  ov.querySelector("#failClose").onclick = close;
+  ov.querySelector("#failLoad").onclick = () => {
+    post(`/api/bot/${botId}/queue`, { queue: report.items });
+    const refs = botEls[botId];
+    if (refs && refs.listsel) setTimeout(() => { fetchLists(); refs.listsel.value = report.list; }, 150);
+    close();
+  };
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
 const logSigs = new Map();

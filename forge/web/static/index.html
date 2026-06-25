@@ -120,9 +120,14 @@
         <div class="queue-head"><span>table</span><span>recipe</span><span>search</span><span>×</span><span></span></div>
         <ul class="queue-list bot-queue"></ul>
         <div class="queue-empty">No recipes — read the journal, read the log, or add by hand.</div>
-        <label class="timed-writ-toggle" title="Timed writs fail entirely if any item is short. When checked, after the list finishes the bot waits ~3s, re-reads the journal (OCR), and crafts whatever is still listed — looping until the writ is clear. (Keep the quest journal/tracker on screen.)">
-          <input type="checkbox" class="bot-timedwrit" /> <span>⏱ Timed writ — auto-finish the remainder (re-reads the journal)</span>
-        </label>
+        <div class="writ-mode" role="radiogroup">
+          <label title="Craft the list once. Short/failed recipes are reported but not retried.">
+            <input type="radio" class="bot-writmode" value="standard" checked /> <span>Standard</span></label>
+          <label title="Timed writs fail entirely if any item is short. After the list, wait ~3s, re-read the journal (OCR), and craft whatever's still listed — looping until clear. Keep the quest journal/tracker on screen.">
+            <input type="radio" class="bot-writmode" value="timed" /> <span>⏱ Timed writ</span></label>
+          <label title="Craft the list once, then save everything that FAILED to a 'craft-failures-<char>-<time>' list and pop a notification — so a stray failure doesn't silently sink the run.">
+            <input type="radio" class="bot-writmode" value="track_failures" /> <span>⚑ Track failures</span></label>
+        </div>
       </div>
 
       <!-- progress -->
