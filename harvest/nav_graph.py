@@ -18,6 +18,7 @@ class Graph:
         self.zone = zone
         self.pts: list[tuple] = []     # [(x, z), ...] world coords (EQ2 ground plane = X/Z)
         self.adj: list[list] = []      # adjacency: adj[i] = [neighbour indices]
+        self._np = None                # cached numpy array of pts (fast nearest on dense grids)
 
     # ---- persistence ----
     @classmethod
@@ -57,6 +58,7 @@ class Graph:
         idx = len(self.pts)
         self.pts.append(p)
         self.adj.append([])
+        self._np = None                          # invalidate the nearest() cache
         if idx > 0:
             self._link(idx, idx - 1)
         for j in range(idx - 1):
@@ -66,13 +68,26 @@ class Graph:
 
     # ---- query ----
     def nearest(self, x, z):
-        """(index, distance) of the graph point closest to (x,z); (-1, inf) if empty."""
-        best, bd = -1, float("inf")
-        for i, (px, pz) in enumerate(self.pts):
-            d = math.hypot(x - px, z - pz)
-            if d < bd:
-                bd, best = d, i
-        return best, bd
+        """(index, distance) of the graph point closest to (x,z); (-1, inf) if empty. Vectorised
+        with numpy (cached) so it scales to the dense imported Ogre grids (40k+ points); falls
+        back to a linear scan if numpy is unavailable."""
+        if not self.pts:
+            return -1, float("inf")
+        try:
+            import numpy as np
+            a = self._np
+            if a is None or len(a) != len(self.pts):
+                a = self._np = np.asarray(self.pts, dtype="f8")
+            d2 = (a[:, 0] - x) ** 2 + (a[:, 1] - z) ** 2
+            i = int(d2.argmin())
+            return i, float(d2[i]) ** 0.5
+        except Exception:
+            best, bd = -1, float("inf")
+            for i, (px, pz) in enumerate(self.pts):
+                d = math.hypot(x - px, z - pz)
+                if d < bd:
+                    bd, best = d, i
+            return best, bd
 
     def astar(self, si, gi):
         """List of point indices from si to gi inclusive, or [] if unreachable."""
