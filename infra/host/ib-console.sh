@@ -22,4 +22,9 @@ if ! ss -ltn 2>/dev/null | grep -q "127.0.0.1:$local_port "; then
   fi
   sleep 1
 fi
-exec env GDK_BACKEND=x11 remote-viewer "spice://127.0.0.1:$local_port" --title "ib console :$remote" >>"$log" 2>&1
+# --auto-resize=never: do NOT let the SPICE agent resize the guest to the window. Without it
+# remote-viewer + spice-vdagent chase each other smaller (open small -> guest shrinks -> window
+# follows -> ...) until the window is a sliver. The guest stays pinned at its native 1920x1080
+# (which is also what the bot's pixel/OCR coords are calibrated for); the window just shows it.
+exec env GDK_BACKEND=x11 remote-viewer "spice://127.0.0.1:$local_port" \
+  --auto-resize=never --title "ib console :$remote" >>"$log" 2>&1
