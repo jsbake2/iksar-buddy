@@ -56,7 +56,18 @@ class CraftWorker:
     def start(self, mode: str, trade_class: str, recipe: str = "",
               count: int = 1, queue: list | None = None, search: str = "", station: str = "") -> None:
         if mode == "writ":
-            q = [dict(it, done=0) for it in (queue or [])]
+            q = []
+            for it in (queue or []):
+                d = dict(it, done=0)
+                try:
+                    cnt = max(1, int(d.get("count", 1)))
+                except (TypeError, ValueError):
+                    cnt = 1
+                comb = self._batch_combines(cnt, trade_class)
+                d["count"] = comb                 # what the bot actually combines
+                if comb != cnt:
+                    d["writ_count"] = cnt          # remember the EQ2 objective (yield-N per combine)
+                q.append(d)
             # station != "" -> craft ONLY that table's recipes this pass (owner reads one writ,
             # crafts table-by-table without deleting/re-reading). "" / "all" = whole queue.
             self._pending = {"mode": "writ", "trade_class": trade_class, "queue": q,
@@ -81,6 +92,17 @@ class CraftWorker:
         self._paused = (not self._paused) if on is None else on
 
     # -- helpers -----------------------------------------------------------
+    def _batch_combines(self, count: int, trade_class: str) -> int:
+        """Some recipes batch-craft: ONE combine yields N items, so a writ objective of N is a
+        SINGLE combine, not N. Per owner (2026-06-25): alchemist consumable writs (Greater
+        Elemental Remedy, poisons, …) always yield 10 — 'make 10' = 1 craft. Configurable via
+        craft.yaml `batch_yield: {alchemist: 10}`. Only collapses EXACT multiples of the yield
+        (10->1, 20->2, 30->3) so a non-batch writ (e.g. make-5) is never under-crafted."""
+        y = int((self.cfg.get("batch_yield") or {"alchemist": 10}).get((trade_class or "").lower(), 1))
+        if y > 1 and count >= y and count % y == 0:
+            return count // y
+        return count
+
     async def _ex(self, fn, *a):
         """Run a (blocking) guest op in the default executor."""
         return await asyncio.get_running_loop().run_in_executor(None, partial(fn, *a))
@@ -640,6 +662,9 @@ class CraftWorker:
                     break
                 if station and (it.get("station") or "") != station:
                     continue                     # different table this pass — leave for later
+                if it.get("writ_count"):         # batch recipe: writ wants N, one combine yields N
+                    self.t.push_log(self.id, f"{it['name']}: batch recipe — writ wants "
+                                    f"{it['writ_count']}, crafting {it['count']} combine(s)")
                 made = await self._craft_recipe(it["name"], it["count"], tc, i, len(q),
                                                 gate_power=False,            # writs barrel forward
                                                 search=it.get("search", ""))
