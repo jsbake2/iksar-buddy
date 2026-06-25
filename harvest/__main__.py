@@ -476,8 +476,64 @@ class Harvest:
         ok = drv.boot_and_login(user, pw, character, "Wuoshi")
         if ok:
             self.start_sensor()
+            self.start_hud()                      # on-screen status overlay over EQ2
         self.log.append(("launch: IN WORLD as " if ok else "launch: did NOT reach world as ") + character)
         return {"ok": ok, "character": character}
+
+    def start_hud(self) -> None:
+        """(Re)register + start the on-screen status HUD (ibhud) in the interactive session so it
+        floats over EQ2. C:\\ib reverts on reboot, so do it every launch. Mirrors ibharv's user +
+        python so it runs in session 1 (guest-exec is session 0 and can't draw on the desktop)."""
+        reg = (
+            "$t=Get-ScheduledTask ibharv -EA SilentlyContinue;"
+            "$uid= if($t){$t.Principal.UserId}else{'iksar'};"
+            "$exe= if($t){$t.Actions[0].Execute}else{'C:\\ib\\py\\python.exe'};"
+            "$a=New-ScheduledTaskAction -Execute $exe -Argument 'C:\\ib\\agent\\hud_overlay.py';"
+            "$pr=New-ScheduledTaskPrincipal -UserId $uid -LogonType Interactive -RunLevel Highest;"
+            "$s=New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries "
+            "-ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1);"
+            "Register-ScheduledTask -TaskName ibhud -Action $a -Principal $pr -Settings $s -Force | Out-Null;"
+            "Stop-ScheduledTask ibhud -EA SilentlyContinue; Start-ScheduledTask ibhud"
+        )
+        try:
+            self._gx("powershell", ["-NoProfile", "-Command", reg])
+            self.log.append("launch: HUD overlay started")
+        except Exception as e:
+            self.log.append(f"launch: HUD start failed ({e})")
+
+    # --- self-serve harvest (route grid + start/stop), driven from the dashboard ----------
+    def list_grids(self) -> list:
+        """Zones with a recorded dense grid (graph_<zone>.json) — the harvest route picker."""
+        out = []
+        for p in sorted(DATA.glob("graph_*.json")):
+            try:
+                g = NavGraph.load(str(p))
+                out.append({"zone": g.zone or p.stem[len("graph_"):].replace("_", " "),
+                            "points": len(g), "file": p.name})
+            except Exception:
+                pass
+        return out
+
+    def start_gather(self, zone: str, laps: int) -> dict:
+        """Deploy the chosen zone's grid into the guest, then fire the gather loop (self-serve)."""
+        p = self._graph_path(zone) if zone else None
+        if not (p and p.exists()):
+            grids = sorted(DATA.glob("graph_*.json"))
+            if not grids:
+                return {"ok": False, "err": "no recorded grid yet — record one first"}
+            p = grids[0]
+        self._push_text(r"C:\ib\graph.json", p.read_text())
+        self._fire_agent({"gather_loop": True, "laps": int(laps)})
+        self.log.append(f"harvest: START gather on {p.name} ({laps} laps)")
+        return {"ok": True, "grid": p.name, "laps": int(laps)}
+
+    def stop_gather(self) -> dict:
+        """Halt the gather: STOP flag (agent bails ~instantly) + stop the scheduled task."""
+        self._gx("powershell", ["-NoProfile", "-Command",
+                 "New-Item C:\\ib\\STOP -ItemType File -Force | Out-Null;"
+                 "Stop-ScheduledTask -TaskName ibharv -EA SilentlyContinue"])
+        self.log.append("harvest: STOP gather")
+        return {"ok": True}
 
     def deploy_agent(self) -> None:
         """Push the current agent code into the guest. C:\\ib reverts to a baseline on VM reboot,
@@ -486,7 +542,8 @@ class Harvest:
         files = {"_agent.py": r"C:\ib\agent\harvest_agent.py",
                  "nav_graph.py": r"C:\ib\agent\nav_graph.py",
                  "sense_push.py": r"C:\ib\agent\sense_push.py",
-                 "memory_read.py": r"C:\ib\agent\memory_read.py"}
+                 "memory_read.py": r"C:\ib\agent\memory_read.py",
+                 "hud_overlay.py": r"C:\ib\agent\hud_overlay.py"}
         for local, remote in files.items():
             p = src / local
             if p.exists():
@@ -638,6 +695,18 @@ def create_app(h: Harvest) -> FastAPI:
         if a == "stop":
             return h.graph_stop()
         return h.graph_status()
+
+    @app.get("/api/grids")
+    async def grids():
+        return {"grids": h.list_grids()}
+
+    @app.post("/api/gather")
+    async def gather(body: dict = Body(default={})):
+        # Self-serve harvest: pick a recorded grid + start/stop the gather loop from the UI.
+        if body.get("action") == "stop":
+            return await asyncio.get_running_loop().run_in_executor(None, h.stop_gather)
+        return await asyncio.get_running_loop().run_in_executor(
+            None, h.start_gather, body.get("zone", ""), int(body.get("laps", 40)))
 
     @app.post("/api/launch")
     async def launch(body: dict = Body(default={})):

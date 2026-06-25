@@ -89,6 +89,11 @@ class HUD_App:
         self.root.geometry(f"+{self.root.winfo_pointerx() - self._ox}+{self.root.winfo_pointery() - self._oy}")
 
     def tick(self):
+        try:                                  # RE-ASSERT topmost every tick — EQ2 going fullscreen
+            self.root.attributes("-topmost", True)   # / grabbing foreground can bury a one-shot
+            self.root.lift()                          # topmost; keep clawing back above it
+        except tk.TclError:
+            pass
         d, age = self._read()
         self._blink = not self._blink
         if d is None or age > STALE_S:
