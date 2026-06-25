@@ -89,6 +89,9 @@ class CraftReflex:
         self._cnt_last_press = 0.0
         self._cnt_presses = 0             # presses fired for the CURRENT counter event
         self._cnt_key = None              # the art key pressed for the current counter (debug)
+        self._cnt_start = 0.0             # when the CURRENT counter icon appeared
+        self._cnt_log_base = 0            # log byte offset at counter onset (resolution scan)
+        self._cnt_done = False            # this counter resolved (log) or timed out -> stop mashing
         self.fails = 0
         self.crafts_done = 0              # craft_run (in-guest list loop) progress
         # -- log-based completion (authoritative) --
@@ -96,6 +99,7 @@ class CraftReflex:
         self._log_via = bool(self.r.get("done_via_log", True))
         self._log_path: str | None = None
         self._log_base = 0               # byte offset captured at each craft start
+        self._char = None                # our character (from the log filename) — scopes counter
         self._expect = _norm_item(self.r.get("expected_item", ""))
 
     # -- log completion ---------------------------------------------------
@@ -133,6 +137,32 @@ class CraftReflex:
         except OSError:
             return []
         return [m.group(1).strip() for m in _CREATED_RE.finditer(chunk)]
+
+    def _counter_outcome(self, base: int) -> str:
+        """Did the CURRENT reaction resolve in the EQ2 log since byte `base`? EQ2 logs exactly
+        one resolution per reaction event, scoped to OUR character so a neighbour's craft spam
+        (crafting halls are busy and their lines bleed into our log) can't false-resolve it:
+          'success' — "<station>'s Countered <event> refreshes <us> for N mana points."
+          'fail'    — "<us> is drained by/hit by <event> …"  (the event landed = we missed it)
+          ''        — neither yet (keep mashing).
+        Either outcome means the event is OVER -> stop mashing, back to filler (owner)."""
+        if not self._char:
+            return ""
+        p = self._find_log()
+        if not p:
+            return ""
+        try:
+            with open(p, "r", encoding="utf-8", errors="replace") as f:
+                f.seek(base)
+                chunk = f.read()
+        except OSError:
+            return ""
+        c = re.escape(self._char)
+        if re.search(r"Countered\b.*\brefreshes " + c + r"\b", chunk):
+            return "success"
+        if re.search(r"\b" + c + r" is (?:drained by|hit by) ", chunk):
+            return "fail"
+        return ""
 
     def _craft_outcome(self) -> str:
         """Outcome of THIS craft from new 'You created …' lines since it started:
@@ -531,9 +561,13 @@ class CraftReflex:
             # is already behind us). Falls back to pixel _done only if no log is found.
             use_log = self._log_via and self._find_log() is not None
             self._log_base = self._log_size() if use_log else 0
+            self._char = None                                    # our char, for counter scoping
             if use_log:
+                m = re.search(r"eq2log_(.+?)\.txt$", os.path.basename(self._log_path), re.I)
+                self._char = m.group(1) if m else None
                 self.log(f"reflex: completion via log {os.path.basename(self._log_path)} "
-                         f"@{self._log_base}")
+                         f"@{self._log_base} (char={self._char})")
+            counter_log_timeout = float(self.r.get("counter_log_timeout", 3.0))
             while not self.should_stop() and time.time() - t0 < max_t:
                 # CRAFT-WINDOW GATE (safety): if the window isn't on screen, NEVER press an
                 # art (it would land in the world and run the character around), and bail if
@@ -569,6 +603,9 @@ class CraftReflex:
                         self._cnt_last_press = 0.0
                         self._cnt_presses = 0
                         self._cnt_key = None
+                        self._cnt_start = time.time()            # spam-until-log clock starts
+                        self._cnt_log_base = self._log_size() if use_log else 0
+                        self._cnt_done = False
                         # DEBUG: dump the durability/progress bars + mode pixel at onset so we
                         # can VERIFY the mode the agent picked (the failing counters are
                         # progress-mode; is the bar actually progress, or misread?).
@@ -586,21 +623,46 @@ class CraftReflex:
                                 pass
                     # STATS ONLY (not load-bearing): note the first green/red tint for the
                     # dashboard. This does NOT gate pressing — see below.
+                    # Tint detection = dashboard colour only. When the LOG gates the counter
+                    # (use_log) it also does the success/fail tally, so DON'T double-count here.
                     if self._cnt_resolved is None and self._cnt_baseline:
                         dg = mg - self._cnt_baseline[1]
                         dr = mr - self._cnt_baseline[0]
                         if dg >= green_delta and dg > dr:
-                            self._cnt_resolved = "green"; self.reactions += 1
+                            self._cnt_resolved = "green"
+                            if not use_log: self.reactions += 1
                             self.log(f"counter#{n} ({mode}) key={self._cnt_key} SUCCESS (green, dg={dg:.0f} dr={dr:.0f})")
                         elif dr >= red_delta and dr > dg:
-                            self._cnt_resolved = "red"; self.fails += 1
+                            self._cnt_resolved = "red"
+                            if not use_log: self.fails += 1
                             self.log(f"counter#{n} ({mode}) key={self._cnt_key} FAILED (red, dr={dr:.0f} dg={dg:.0f})")
                     now = time.time()
-                    if self._cnt_presses < counter_max:
-                        # Press the counter art up to counter_max times at press_interval.
-                        # COUNTERS always use the icon's art (1/2/3), NOT mode-dependent.
-                        # The 4/5/6 are the progress PUMP (filler) — verified: pressing 5
-                        # whiffs, pressing 2 clears it.
+                    # LOG-GATED COUNTER SPAM (owner 2026-06-25): MASH the matching art until the
+                    # EQ2 log says the reaction resolved — we Countered it (success) OR it
+                    # drained/hit us (fail); EITHER means it's over, go back to filler — or until
+                    # counter_log_timeout (3s) passes with NO log line (we missed the entry). The
+                    # old fixed counter_max cap was fragile: it stopped before the counter
+                    # actually landed. With no log (use_log False) fall back to that cap.
+                    if not self._cnt_done:
+                        if use_log:
+                            oc = self._counter_outcome(self._cnt_log_base)
+                            if oc:
+                                self._cnt_done = True
+                                if oc == "success":
+                                    self.reactions += 1
+                                else:
+                                    self.fails += 1
+                                self.log(f"counter#{n} resolved via log -> {oc} "
+                                         f"({self._cnt_presses} presses, {now - self._cnt_start:.1f}s)")
+                            elif now - self._cnt_start >= counter_log_timeout:
+                                self._cnt_done = True
+                                self.log(f"counter#{n}: no log line in {counter_log_timeout:.1f}s "
+                                         f"(missed it) — back to filler after {self._cnt_presses} presses")
+                        elif self._cnt_presses >= counter_max:
+                            self._cnt_done = True                # no log -> old cap
+                    if not self._cnt_done:
+                        # still unresolved -> keep mashing the icon's art (1/2/3, NOT mode-
+                        # dependent; the 4/5/6 are the progress pump used as filler).
                         if safe and now - self._cnt_last_press >= press_interval:
                             ck = self.arts["durability"]
                             key = ck[n - 1] if 1 <= n <= len(ck) else None
@@ -618,9 +680,9 @@ class CraftReflex:
                                 cv2.imwrite(str(dbg_dir / f"w_{dbg_n:02d}_n{n}_{self._cnt_resolved or 'neu'}.png"), watch)
                                 dbg_n += 1
                         time.sleep(loop_sleep)
-                        continue                                 # still servicing this counter (under the cap)
-                    # capped: pressed it counter_max times -> fall through to FILLER ("regular
-                    # spam"). Keep _last_counter set so the lingering icon doesn't re-arm.
+                        continue                                 # still servicing this counter
+                    # resolved / timed out -> fall through to FILLER. Keep _last_counter set so a
+                    # lingering icon doesn't re-arm; it re-arms only once it clears (n -> None).
                 else:
                     self._last_counter = None
                     self._cnt_resolved = None
