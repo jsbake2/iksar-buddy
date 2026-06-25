@@ -80,12 +80,13 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
     </div>
     <div class="panel"><h3>③ zone</h3><div id="zone2" class="muted">—</div>
       <div class="muted">players in zone: <span id="pcount" class="pending">RE pending</span></div></div>
-    <div class="panel"><h3>⑦ route</h3>
-      <select id="routesel" style="width:100%"></select>
+    <div class="panel"><h3>🗺 record map (grid)</h3>
+      <select id="recgrid" onchange="recGridChange()"></select>
+      <input id="recname" placeholder="new grid name — e.g. Thundering Steppes SE Station" style="display:none;margin-top:6px">
       <div class="btnrow" style="margin-top:6px">
-        <button id="recbtn" onclick="toggleRec()">⏺ start recording</button>
+        <button id="recbtn" onclick="toggleGridRec()">⏺ record map</button>
         <span id="recinfo" class="muted"></span></div>
-      <div class="muted">routes change with the current zone</div></div>
+      <div class="muted">walk the area while recording — builds the grid the harvester tours</div></div>
     <div class="panel"><h3>④ manual control</h3>
       <div class="dpad">
         <span></span><button onclick="mv('forward')">▲</button><span></span>
@@ -133,16 +134,32 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
 const th=document.getElementById('theme'); const sv=localStorage.getItem('ibh-theme');
 if(sv){document.documentElement.dataset.theme=sv;th.value=sv}
 th.onchange=()=>{document.documentElement.dataset.theme=th.value;localStorage.setItem('ibh-theme',th.value)};
-let recording=false, lastZone=null, tab='session';
+let grecording=false, lastZone=null, tab='session';
 async function post(u,b){return (await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})})).json()}
 function mv(dir,ms){post('/api/move',{dir,ms:ms||450})}
 function unstuck(){post('/api/move',{dir:'jump',ms:300});setTimeout(()=>post('/api/move',{dir:'back',ms:600}),350)}
 function setTab(t){tab=t}
 function webConsole(){window.open(location.origin+'/static/spice/console.html?port=5900','ibhcon','width=1040,height=620')}
-async function toggleRec(){
-  if(!recording){await post('/api/route/record',{action:'start',name:prompt('route name?')||''});recording=true;recbtn.textContent='⏹ stop recording';recbtn.classList.add('rec')}
-  else{const r=await post('/api/route/record',{action:'stop'});recording=false;recbtn.textContent='⏺ start recording';recbtn.classList.remove('rec');alert('saved '+(r.name||'')+' — '+(r.points||0)+' pts '+(r.loop?'(loop)':'(open)'))}
+async function loadRecGrids(){
+  try{const d=await (await fetch('/api/grids')).json();const sel=document.getElementById('recgrid');
+    sel.innerHTML=(d.grids||[]).map(g=>`<option value="${g.file}">extend: ${g.name} (${g.points} pts)</option>`).join('')+'<option value="__new__">＋ new grid…</option>';
+    recGridChange();}catch(e){}
 }
+function recGridChange(){document.getElementById('recname').style.display=document.getElementById('recgrid').value==='__new__'?'block':'none';}
+async function toggleGridRec(){
+  const btn=document.getElementById('recbtn');
+  if(!grecording){
+    const sel=document.getElementById('recgrid').value; let body={action:'start'};
+    if(sel==='__new__'){const nm=document.getElementById('recname').value.trim();if(!nm){alert('name the new grid first');return;}body.name=nm;}
+    else if(sel){body.grid=sel;}
+    await post('/api/graph',body);grecording=true;btn.textContent='⏹ stop & save';btn.classList.add('rec');
+  } else {
+    const r=await post('/api/graph',{action:'stop'});grecording=false;btn.textContent='⏺ record map';btn.classList.remove('rec');
+    alert('saved '+(r.name||'grid')+' — '+(r.points||0)+' pts, '+(r.edges||0)+' edges');
+    loadGrids();loadRecGrids();
+  }
+}
+loadRecGrids();
 let chars=[], acct='robskin2004';
 async function loadChars(){try{chars=await (await fetch('/api/characters')).json()}catch(e){chars=[]}renderChars();}
 function setAcct(u){acct=u;document.getElementById('acc1').classList.toggle('on',u==='meatwad33w');document.getElementById('acc2').classList.toggle('on',u==='robskin2004');renderChars();}
@@ -171,9 +188,8 @@ async function tick(){
   document.getElementById('pos').textContent=live?('pos: '+st.pos.join(', ')):'pos: '+(st.err||'—');
   document.getElementById('m_pos').textContent=live?st.pos.join(', '):'—';
   document.getElementById('m_hdg').textContent=(live&&st.heading!=null)?(st.heading+'° '+(st.compass||'')):'—';
-  const rs=d.routes||{}, sel=document.getElementById('routesel');
-  if(d.zone!==lastZone){lastZone=d.zone;sel.innerHTML='';const ks=Object.keys(rs);(ks.length?ks:[]).forEach(n=>{const o=document.createElement('option');o.textContent=n+' ('+rs[n].points.length+' pts'+(rs[n].loop?', loop':'')+')';sel.appendChild(o)});if(!ks.length){const o=document.createElement('option');o.textContent='(no routes for this zone yet)';sel.appendChild(o)}}
-  document.getElementById('recinfo').textContent=d.recording?('● recording '+d.recording.points+' pts'):'';
+  const g=d.graph||{};
+  document.getElementById('recinfo').textContent=g.recording?('● '+(g.points||0)+' pts · '+(g.edges||0)+' edges'):'';
   document.getElementById('clog').innerHTML=(d.log||[]).slice(-30).reverse().map(l=>'<div>'+l.replace(/</g,'&lt;')+'</div>').join('');
   // nearby NODES — live from the game's harvestable array (fast, every poll, REAL nodes only)
   const nodes=st.nodes||[];

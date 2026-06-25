@@ -96,6 +96,7 @@ class Harvest:
         self.routes: dict = json.loads(ROUTES_FILE.read_text()) if ROUTES_FILE.exists() else {}
         self.graph = None                          # active dense-graph recorder (NavGraph) or None
         self._graph_n = 0                          # point count at last save
+        self._graph_file = None                    # Path of the grid being recorded (extend/new)
         self.log: list[str] = []
         # character roster — select-from-table, no typing. character -> account user;
         # password resolved from the gitignored accounts.yaml. Seed with Furyflatulence.
@@ -351,24 +352,50 @@ class Harvest:
         z = (zone or "zone").replace(" ", "_").replace("/", "_")
         return DATA / f"graph_{z}.json"
 
+    def _grid_meta_set(self, file: str, name: str) -> None:
+        """Persist the friendly name for a grid FILE in grid_meta.json (so the picker shows it)."""
+        meta = {}
+        try:
+            meta = json.loads((DATA / "grid_meta.json").read_text()) or {}
+        except Exception:
+            pass
+        names = meta.get("names", {}); names[file] = name; meta["names"] = names
+        try:
+            DATA.mkdir(parents=True, exist_ok=True)
+            (DATA / "grid_meta.json").write_text(json.dumps(meta, indent=1))
+        except Exception:
+            pass
+
     def _graph_save(self) -> None:
         if self.graph is None:
             return
         DATA.mkdir(parents=True, exist_ok=True)
-        self.graph.save(str(self._graph_path(self.graph.zone)))
+        self.graph.save(str(self._graph_file or self._graph_path(self.graph.zone)))
 
-    def graph_start(self) -> dict:
+    def graph_start(self, grid: str = "", name: str = "") -> dict:
+        """Start/resume recording the dense GRID (the map the gather tours). `grid` = extend an
+        existing grid file; `name` = start a NEW named grid; neither = the current zone's grid.
+        Points accumulate from the live position pushes (/api/ingest -> _graph_feed)."""
         zone = (self.cur_state() or {}).get("zone") or "zone"
-        p = self._graph_path(zone)
+        fn = Path(grid or "").name
+        if fn.startswith("graph_") and fn.endswith(".json") and (DATA / fn).exists():
+            p = DATA / fn                              # extend an existing grid
+        elif name.strip():
+            slug = re.sub(r"[^A-Za-z0-9]+", "_", name.strip()).strip("_") or "grid"
+            p = DATA / f"graph_{slug}.json"            # new named grid
+            self._grid_meta_set(p.name, name.strip())
+        else:
+            p = self._graph_path(zone)                 # default: this zone
+        self._graph_file = p
         self.graph = NavGraph.load(str(p)) if p.exists() else NavGraph(zone)
         if self.graph.zone is None:
             self.graph.zone = zone
-        self._graph_n = len(self.graph)            # APPEND across sessions -> accumulate
+        self._graph_n = len(self.graph)                # APPEND across sessions -> accumulate
         return self.graph_status()
 
     def graph_stop(self) -> dict:
         self._graph_save()
-        st = self.graph_status(); self.graph = None
+        st = self.graph_status(); self.graph = None; self._graph_file = None
         return st
 
     def _graph_feed(self, pos: list) -> None:
@@ -383,8 +410,10 @@ class Harvest:
         if self.graph is None:
             return {"recording": False}
         edges = sum(len(a) for a in self.graph.adj) // 2
+        f = self._graph_file or self._graph_path(self.graph.zone)
         return {"recording": True, "zone": self.graph.zone, "points": len(self.graph),
-                "edges": edges, "file": str(self._graph_path(self.graph.zone))}
+                "edges": edges, "file": f.name,
+                "name": self._grid_names().get(f.name) or self.graph.zone}
 
     # --- actions -----------------------------------------------------------
     def move(self, direction: str, ms: int) -> None:
@@ -675,9 +704,7 @@ def create_app(h: Harvest) -> FastAPI:
                 alerts.append({"kind": "rare", "msg": f'RARE: {r["item"]}'})
         st = h.cur_state()
         return {"state": st,
-                "recording": ({"name": h.recording["name"], "points": len(h.recording["points"])}
-                              if h.recording else None),
-                "routes": h.routes.get(st.get("zone") or "", {}),
+                "graph": h.graph_status(),          # live dense-GRID recorder status (points/edges)
                 "spawns": h.spawns,
                 "harvest": {"session": hl["session"], "all_time": hl["all_time"],
                             "rares": hl["rares"][-8:], "tells": hl["tells"][-8:]},
@@ -688,11 +715,8 @@ def create_app(h: Harvest) -> FastAPI:
     @app.post("/api/ingest")
     async def ingest(body: dict = Body(default={})):
         h.pushed = {"st": body, "ts": time.time()}
-        if body.get("ok") and body.get("pos"):
-            if h.recording is not None:
-                h._maybe_record(body["pos"])
-            if h.graph is not None:
-                h._graph_feed(body["pos"])
+        if body.get("ok") and body.get("pos") and h.graph is not None:
+            h._graph_feed(body["pos"])             # feed the dense GRID recorder while active
         return {"ok": True}
 
     @app.post("/api/move")
@@ -707,21 +731,14 @@ def create_app(h: Harvest) -> FastAPI:
     async def harvest():
         h.harvest_key(); return {"ok": True}
 
-    @app.post("/api/route/record")
-    async def record(body: dict = Body(default={})):
-        if body.get("action") == "start":
-            h.record_start(body.get("name", "")); return {"ok": True, "recording": True}
-        return h.record_stop()
-
-    @app.get("/api/routes")
-    async def routes(zone: str = ""):
-        return h.routes.get(zone or (h.state.get("zone") or ""), {})
+    # (removed: /api/route/record + /api/routes — the old SPARSE recorder. The map the gather
+    #  uses is the DENSE grid, recorded via /api/graph below; see the 🗺 record-map panel.)
 
     @app.post("/api/graph")
     async def graph(body: dict = Body(default={})):
         a = body.get("action")
         if a == "start":
-            return h.graph_start()
+            return h.graph_start(body.get("grid", ""), body.get("name", ""))
         if a == "stop":
             return h.graph_stop()
         return h.graph_status()
