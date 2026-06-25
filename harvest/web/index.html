@@ -12,12 +12,19 @@ header b{color:var(--accent);font-size:15px;letter-spacing:.5px}
 .zone{color:var(--good)} .pos{color:var(--muted)}
 .pill{padding:2px 8px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}
 .pill.live{color:var(--accent);border-color:var(--accent)}
-main{display:grid;grid-template-columns:300px 1fr 340px;gap:12px;padding:12px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px}
+main{display:grid;grid-template-columns:360px minmax(0,1fr) 320px;gap:12px;padding:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px;min-width:0}
 .panel h3{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
 .pending{color:var(--warn);font-style:italic;font-size:12px}
-button,select,input{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;cursor:pointer;font:inherit}
+button,select,input{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;cursor:pointer;font:inherit;max-width:100%}
+select{width:100%}
 button:hover{border-color:var(--accent)} .btnrow{display:flex;flex-wrap:wrap;gap:6px}
+.seg{display:flex;gap:0;margin-bottom:8px}
+.seg button{flex:1;border-radius:0;border-right:0}
+.seg button:first-child{border-radius:6px 0 0 6px} .seg button:last-child{border-radius:0 6px 6px 0;border-right:1px solid var(--line)}
+.seg button.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.charlist button{padding:3px 8px}
+#frame.big{aspect-ratio:16/10}
 table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:400}
 tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
 .rec{color:var(--bad)} .muted{color:var(--muted);font-size:12px}
@@ -60,14 +67,16 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
         <button onclick="stopHarvest()">⏹ stop</button></div>
       <div class="muted" id="harvmsg">pick a grid, then start — the bot tours it and harvests</div>
     </div>
-    <div class="panel"><h3>① / ⑥ character</h3>
-      <table><thead><tr><th>character</th><th>class</th><th>zone</th><th></th></tr></thead>
-        <tbody id="charrows"></tbody></table>
-      <div class="muted" id="charmsg"></div>
+    <div class="panel"><h3>① / ⑥ character — login only</h3>
+      <div class="seg">
+        <button id="acc1" onclick="setAcct('meatwad33w')">acct 1 · meatwad33w</button>
+        <button id="acc2" onclick="setAcct('robskin2004')">acct 2 · robskin2004</button></div>
+      <div id="charlist" class="charlist btnrow"></div>
+      <div class="muted" id="charmsg">picks an account → logs that character in &amp; stops (never auto-harvests)</div>
     </div>
     <div class="panel"><h3>⌨ keymap</h3>
       <table><thead><tr><th>key</th><th>action</th></tr></thead><tbody id="keymaprows"></tbody></table>
-      <div class="muted">edit at ib-data/harvest/keymap.yaml</div>
+      <div class="btnrow" style="margin-top:6px"><a href="/static/keymap.html"><button>✎ edit keymap</button></a></div>
     </div>
     <div class="panel"><h3>③ zone</h3><div id="zone2" class="muted">—</div>
       <div class="muted">players in zone: <span id="pcount" class="pending">RE pending</span></div></div>
@@ -89,6 +98,12 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
   </div>
   <!-- CENTER -->
   <div>
+    <div class="panel"><h3>▣ console</h3>
+      <img id="frame" class="big" alt="live console preview">
+      <div class="btnrow" style="margin-top:8px">
+        <button onclick="webConsole()">▣ web console</button>
+        <a href="ibconsole://open?port=5900"><button>⧉ native viewer</button></a></div>
+      <div class="muted">live preview above · same SPICE method as forge/iksar (5900)</div></div>
     <div class="panel"><h3>⊙ real-time monitor</h3>
       <div class="mon-row"><span>player position</span><b id="m_pos" style="color:var(--accent)">—</b></div>
       <div class="mon-row"><span>heading</span><span id="m_hdg">—</span></div></div>
@@ -102,12 +117,6 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
   </div>
   <!-- RIGHT -->
   <div>
-    <div class="panel"><h3>④ console</h3>
-      <img id="frame" alt="live console preview">
-      <div class="btnrow" style="margin-top:8px">
-        <button onclick="webConsole()">▣ web console</button>
-        <a href="ibconsole://open?port=5900"><button>⧉ native viewer</button></a></div>
-      <div class="muted">live preview above · same SPICE method as forge/iksar (5900)</div></div>
     <div class="panel"><h3>⑥ chat monitor (tells)</h3>
       <div id="chatmon" class="muted">no tells yet</div></div>
     <div class="panel"><h3>⚑ alerts</h3>
@@ -134,21 +143,22 @@ async function toggleRec(){
   if(!recording){await post('/api/route/record',{action:'start',name:prompt('route name?')||''});recording=true;recbtn.textContent='⏹ stop recording';recbtn.classList.add('rec')}
   else{const r=await post('/api/route/record',{action:'stop'});recording=false;recbtn.textContent='⏺ start recording';recbtn.classList.remove('rec');alert('saved '+(r.name||'')+' — '+(r.points||0)+' pts '+(r.loop?'(loop)':'(open)'))}
 }
-async function loadChars(){
-  const cs=await (await fetch('/api/characters')).json();
-  document.getElementById('charrows').innerHTML=cs.map(c=>`<tr class="sel"><td>${c.character}</td><td>${c.class||''}</td><td>${c.zone||''}</td><td><button onclick="login('${c.character}')">login</button></td></tr>`).join('')||'<tr><td class="muted" colspan=4>no characters</td></tr>';
-}
-async function login(ch){charmsg.textContent='logging in '+ch+'…';const r=await post('/api/char',{character:ch});charmsg.textContent=r.ok?('logged in '+ch):'login failed'}
+let chars=[], acct='robskin2004';
+async function loadChars(){try{chars=await (await fetch('/api/characters')).json()}catch(e){chars=[]}renderChars();}
+function setAcct(u){acct=u;document.getElementById('acc1').classList.toggle('on',u==='meatwad33w');document.getElementById('acc2').classList.toggle('on',u==='robskin2004');renderChars();}
+function renderChars(){const list=chars.filter(c=>c.user===acct);document.getElementById('charlist').innerHTML=list.length?list.map(c=>`<button onclick="loginChar('${c.character}')">${c.character}</button>`).join(''):'<span class="muted">no characters for this account</span>';}
+async function loginChar(ch){document.getElementById('charmsg').textContent='launching + logging in '+ch+'… (boots VM ~3-5 min) — watch the controller log';await post('/api/launch',{character:ch});}
+loadChars(); setAcct('robskin2004');
 const sessmsg=()=>document.getElementById('sessmsg');
 async function launch(){sessmsg().textContent='launching + logging in (boots VM, ~3-5 min)… watch the controller log';await post('/api/launch',{})}
 async function camp(){sessmsg().textContent='camping to desktop…';const r=await post('/api/camp',{});sessmsg().textContent=r.ok?'camped (client closing)':'camp failed'}
 async function shutdownVM(){if(!confirm('Shut down the VM?'))return;sessmsg().textContent='shutting down VM…';const r=await post('/api/shutdown',{});sessmsg().textContent=r.ok?'VM shutting down':'shutdown failed'}
 async function loadKeymap(){try{const k=await (await fetch('/api/keymap')).json();document.getElementById('keymaprows').innerHTML=(k.binds||[]).map(b=>`<tr><td><b>${b.key}</b></td><td>${b.action}${b.note?` <span class="muted">(${b.note})</span>`:''}</td></tr>`).join('')}catch(e){}}
 loadKeymap();
-async function loadGrids(){try{const d=await (await fetch('/api/grids')).json();const sel=document.getElementById('gridsel');sel.innerHTML=(d.grids||[]).map(g=>`<option value="${g.zone}">${g.zone} — ${g.points} pts</option>`).join('')||'<option value="">no grid recorded</option>';}catch(e){}}
+async function loadGrids(){try{const d=await (await fetch('/api/grids')).json();const sel=document.getElementById('gridsel');sel.innerHTML=(d.grids||[]).map(g=>`<option value="${g.file}">${g.name} — ${g.points} pts</option>`).join('')||'<option value="">no grid recorded</option>';}catch(e){}}
 loadGrids();
 const harvmsg=()=>document.getElementById('harvmsg');
-async function startHarvest(){const zone=document.getElementById('gridsel').value;const laps=parseInt(document.getElementById('laps').value)||40;harvmsg().textContent='starting harvest…';const r=await post('/api/gather',{action:'start',zone,laps});harvmsg().textContent=r.ok?`harvesting ${r.grid} (${r.laps} laps)`:`start failed: ${r.err||'?'}`;}
+async function startHarvest(){const grid=document.getElementById('gridsel').value;const laps=parseInt(document.getElementById('laps').value)||40;harvmsg().textContent='starting harvest…';const r=await post('/api/gather',{action:'start',grid,laps});harvmsg().textContent=r.ok?`harvesting ${r.grid} (${r.laps} laps)`:`start failed: ${r.err||'?'}`;}
 async function stopHarvest(){harvmsg().textContent='stopping…';await post('/api/gather',{action:'stop'});harvmsg().textContent='stopped';}
 async function recal(){const p=document.getElementById('m_pos').textContent.split(',').map(Number);if(p.length<3||isNaN(p[0]))return alert('no live position');const r=await post('/api/recalibrate',{x:p[0],y:p[1],z:p[2]});alert('offset '+(r.primary||'not found'))}
 function refreshFrame(){const f=document.getElementById('frame');const img=new Image();img.onload=()=>{f.src=img.src};img.src='/api/frame.jpg?t='+Date.now()}

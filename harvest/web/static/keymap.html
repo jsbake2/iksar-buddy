@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" data-theme="iksar">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ib · harvest · keymap</title>
+<link rel="stylesheet" href="/static/themes.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+header{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header b{color:var(--accent);font-size:15px;letter-spacing:.5px}
+main{max-width:820px;margin:18px auto;padding:0 16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+button,select,input{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;cursor:text;font:inherit}
+button{cursor:pointer} button:hover{border-color:var(--accent)}
+table{width:100%;border-collapse:collapse;margin:10px 0}
+th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:400;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+td input{width:100%}
+.k{width:130px} .del{width:34px;text-align:center}
+.btnrow{display:flex;gap:8px;align-items:center;margin-top:10px}
+.muted{color:var(--muted);font-size:12px}
+.status.good{color:var(--good)} .status.bad{color:var(--bad)}
+a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <b>ib · harvest</b><span class="muted">keymap editor</span>
+  <span style="flex:1"></span>
+  <a href="/">← back to dashboard</a>
+  <select id="theme" title="theme">
+    <option value="iksar">iksar</option><option value="midnight">midnight</option>
+    <option value="grafana">grafana</option><option value="amber">amber</option>
+    <option value="paper">paper</option><option value="defiler">defiler</option>
+  </select>
+</header>
+<main>
+  <div class="panel">
+    <h3 style="margin:0 0 4px">⌨ in-game keybinds</h3>
+    <div class="muted">Reference of the keys the bot + owner use in-world. Saved to
+      ib-data/harvest/keymap.yaml; also shown on the dashboard.</div>
+    <table><thead><tr><th class="k">key</th><th>action</th><th>note</th><th class="del"></th></tr></thead>
+      <tbody id="rows"></tbody></table>
+    <div class="btnrow">
+      <button onclick="addRow()">＋ add bind</button>
+      <button onclick="save()" style="background:var(--accent);color:var(--bg);border-color:var(--accent)">save</button>
+      <span id="status" class="status"></span>
+    </div>
+  </div>
+</main>
+<script>
+const $=(id)=>document.getElementById(id);
+const th=$('theme'),sv=localStorage.getItem('ibh-theme');
+if(sv){document.documentElement.dataset.theme=sv;th.value=sv}
+th.onchange=()=>{document.documentElement.dataset.theme=th.value;localStorage.setItem('ibh-theme',th.value)};
+const esc=(s)=>String(s||'').replace(/"/g,'&quot;');
+function row(b){b=b||{};return `<tr>`+
+  `<td><input class="k bk" value="${esc(b.key)}" placeholder="Ctrl+0"></td>`+
+  `<td><input class="ba" value="${esc(b.action)}" placeholder="what it does"></td>`+
+  `<td><input class="bn" value="${esc(b.note)}" placeholder="optional note"></td>`+
+  `<td class="del"><button onclick="this.closest('tr').remove()">✕</button></td></tr>`;}
+function addRow(){$('rows').insertAdjacentHTML('beforeend',row());}
+async function load(){
+  let d={}; try{d=await (await fetch('/api/keymap')).json()}catch(e){}
+  const binds=(d.binds||[]);
+  $('rows').innerHTML = binds.length ? binds.map(row).join('') : row();
+}
+async function save(){
+  const rows=[...document.querySelectorAll('#rows tr')].map(tr=>({
+    key:tr.querySelector('.bk').value.trim(),
+    action:tr.querySelector('.ba').value.trim(),
+    note:tr.querySelector('.bn').value.trim()})).filter(b=>b.key);
+  const s=$('status');
+  try{const r=await (await fetch('/api/keymap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({binds:rows})})).json();
+    if(r.ok){s.textContent='saved ✓';s.className='status good'}else{s.textContent=r.err||'error';s.className='status bad'}
+  }catch(e){s.textContent='save failed';s.className='status bad'}
+  setTimeout(()=>{s.textContent=''},2500);
+}
+load();
+</script>
+</body>
+</html>

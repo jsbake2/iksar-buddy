@@ -502,30 +502,44 @@ class Harvest:
             self.log.append(f"launch: HUD start failed ({e})")
 
     # --- self-serve harvest (route grid + start/stop), driven from the dashboard ----------
+    def _grid_names(self) -> dict:
+        """Friendly name per grid FILE (owner names a recorded area, e.g. 'Thundering Steppes SE
+        Station'); falls back to the zone. Stored in DATA/grid_meta.json {names: {file: name}}."""
+        try:
+            return (json.loads((DATA / "grid_meta.json").read_text()) or {}).get("names", {})
+        except Exception:
+            return {}
+
     def list_grids(self) -> list:
-        """Zones with a recorded dense grid (graph_<zone>.json) — the harvest route picker."""
+        """Recorded dense grids (graph_*.json) as named, selectable routes for the harvest picker.
+        File-keyed so a zone can hold several areas (e.g. SE Station, NW ...)."""
+        names = self._grid_names()
         out = []
         for p in sorted(DATA.glob("graph_*.json")):
             try:
                 g = NavGraph.load(str(p))
-                out.append({"zone": g.zone or p.stem[len("graph_"):].replace("_", " "),
-                            "points": len(g), "file": p.name})
+                zone = g.zone or p.stem[len("graph_"):].replace("_", " ")
+                out.append({"file": p.name, "name": names.get(p.name) or zone,
+                            "zone": zone, "points": len(g)})
             except Exception:
                 pass
         return out
 
-    def start_gather(self, zone: str, laps: int) -> dict:
-        """Deploy the chosen zone's grid into the guest, then fire the gather loop (self-serve)."""
-        p = self._graph_path(zone) if zone else None
-        if not (p and p.exists()):
+    def start_gather(self, grid: str, laps: int) -> dict:
+        """Deploy the chosen grid FILE into the guest, then fire the gather loop (self-serve)."""
+        fn = Path(grid or "").name                     # strip any path; must be a real grid file
+        p = (DATA / fn) if (fn.startswith("graph_") and fn.endswith(".json")
+                            and (DATA / fn).exists()) else None
+        if not p:
             grids = sorted(DATA.glob("graph_*.json"))
             if not grids:
                 return {"ok": False, "err": "no recorded grid yet — record one first"}
             p = grids[0]
         self._push_text(r"C:\ib\graph.json", p.read_text())
         self._fire_agent({"gather_loop": True, "laps": int(laps)})
-        self.log.append(f"harvest: START gather on {p.name} ({laps} laps)")
-        return {"ok": True, "grid": p.name, "laps": int(laps)}
+        name = self._grid_names().get(p.name) or p.stem
+        self.log.append(f"harvest: START gather on '{name}' ({laps} laps)")
+        return {"ok": True, "grid": name, "laps": int(laps)}
 
     def stop_gather(self) -> dict:
         """Halt the gather: STOP flag (agent bails ~instantly) + stop the scheduled task."""
@@ -610,6 +624,22 @@ class Harvest:
         except Exception:
             pass
         return km
+
+    def save_keymap(self, binds: list) -> dict:
+        """Persist the dashboard-edited keybind reference to ib-data/harvest/keymap.yaml."""
+        clean = []
+        for b in binds or []:
+            key = str((b or {}).get("key", "")).strip()
+            if not key:
+                continue
+            clean.append({"key": key, "action": str(b.get("action", "")).strip(),
+                          "note": str(b.get("note", "")).strip()})
+        try:
+            DATA.mkdir(parents=True, exist_ok=True)
+            (DATA / "keymap.yaml").write_text(yaml.safe_dump({"binds": clean}, sort_keys=False))
+        except OSError as e:
+            return {"ok": False, "err": str(e)}
+        return {"ok": True, "binds": clean}
 
     def frame_jpeg(self) -> bytes:
         """Live VM screen for the console preview panel. b'' if not grabbable."""
@@ -706,7 +736,7 @@ def create_app(h: Harvest) -> FastAPI:
         if body.get("action") == "stop":
             return await asyncio.get_running_loop().run_in_executor(None, h.stop_gather)
         return await asyncio.get_running_loop().run_in_executor(
-            None, h.start_gather, body.get("zone", ""), int(body.get("laps", 40)))
+            None, h.start_gather, body.get("grid", ""), int(body.get("laps", 40)))
 
     @app.post("/api/launch")
     async def launch(body: dict = Body(default={})):
@@ -727,6 +757,10 @@ def create_app(h: Harvest) -> FastAPI:
     @app.get("/api/keymap")
     async def keymap():
         return h.keymap()
+
+    @app.post("/api/keymap")
+    async def save_keymap(body: dict = Body(default={})):
+        return h.save_keymap(body.get("binds", []))
 
     @app.post("/api/recalibrate")
     async def recal(body: dict = Body(default={})):
