@@ -202,6 +202,24 @@ def game_present(guest: Guest, cfg: dict) -> bool:
     return n >= int(g.get("min_pixels", 20))
 
 
+def craft_window_present(guest: Guest, cfg: dict) -> bool:
+    """True iff the crafting window is OPEN — keyed on the bright window-control glyph strip in
+    its top-right (the SAME region + thresholds the in-guest reflex uses). The dark 3D world
+    behind a closed window does not light it up. FAIL-CLOSED: a read error / too few bright px =
+    NOT present, so the host NEVER clicks+types a recipe into the world (that ran the character
+    around hailing/moving). Reads the current screenshot (caller grabs first)."""
+    cw = cfg.get("craft_window", {}) or {}
+    reg = cw.get("region") or {"x": 825, "y": 104, "w": 100, "h": 23}
+    thr = int(cw.get("bright_threshold", 140))         # 0-255
+    need = int(cw.get("min_bright", 100))
+    try:
+        px = guest.crop(int(reg["x"]), int(reg["y"]), int(reg["w"]), int(reg["h"]))
+    except Exception:
+        return False
+    n = sum(1 for rgb in px.values() if (rgb[0] + rgb[1] + rgb[2]) / 3.0 >= thr)
+    return n >= need
+
+
 def chat_safe(guest: Guest, cfg: dict) -> bool:
     """Fail-closed keypress gate. True only if we're provably in the game world AND
     the chat input line is CLEAR (no typed text / cursor). Reads the current

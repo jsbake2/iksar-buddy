@@ -314,6 +314,22 @@ class CraftWorker:
         for i in range(1, attempts + 1):
             if self._stop.is_set():
                 return False
+            # HARD WINDOW GATE (owner): NEVER click the search field or type a recipe unless the
+            # crafting window is actually OPEN. With it closed the clicks + recipe letters land in
+            # the WORLD and run the character around hailing/moving. chat_safe only proves in-world,
+            # NOT that the window is up — so check craft_window explicitly and STOP the whole job if
+            # it's gone (fail-closed; one re-check to avoid a single-frame miss).
+            await self._ex(self.guest.grab)
+            if not await self._ex(sensors.craft_window_present, self.guest, self.cfg):
+                await asyncio.sleep(0.25)
+                await self._ex(self.guest.grab)
+                if not await self._ex(sensors.craft_window_present, self.guest, self.cfg):
+                    self.t.push_event(self.id, "control", "STOPPED — craft window not on screen")
+                    self.t.push_log(self.id, "craft window NOT present — refusing to type to the "
+                                    "world; stopping (open the crafting station window, then Start)")
+                    self._stop.set()
+                    self.t.update_bot(self.id, state="error", durability_mode=None)
+                    return False
             # clear the box first (the X) so stale/previous text doesn't corrupt the
             # query (owner-required; EQ2's field keeps the last search).
             if rs.get("use_clear") and clr:
