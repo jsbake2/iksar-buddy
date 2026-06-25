@@ -54,7 +54,8 @@ class CraftWorker:
 
     # -- control (called by the controller) --------------------------------
     def start(self, mode: str, trade_class: str, recipe: str = "",
-              count: int = 1, queue: list | None = None, search: str = "", station: str = "") -> None:
+              count: int = 1, queue: list | None = None, search: str = "", station: str = "",
+              timed_writ: bool = False) -> None:
         if mode == "writ":
             q = []
             for it in (queue or []):
@@ -71,7 +72,8 @@ class CraftWorker:
             # station != "" -> craft ONLY that table's recipes this pass (owner reads one writ,
             # crafts table-by-table without deleting/re-reading). "" / "all" = whole queue.
             self._pending = {"mode": "writ", "trade_class": trade_class, "queue": q,
-                             "station": "" if station in ("", "all") else station}
+                             "station": "" if station in ("", "all") else station,
+                             "timed_writ": bool(timed_writ)}
         else:
             self._pending = {"mode": "single", "trade_class": trade_class,
                              "recipe": recipe or "", "search": search or "",
@@ -102,6 +104,46 @@ class CraftWorker:
         if y > 1 and count >= y and count % y == 0:
             return count // y
         return count
+
+    def _reread_writ_queue(self, tc: str) -> list:
+        """Re-OCR the quest journal and resolve it to a fresh queue of what's STILL needed.
+        EQ2 decrements the writ objectives as items are made, so a re-read after a craft pass
+        shows the REMAINDER. Used by timed-writ auto-complete (occasional craft failures leave
+        items, and the whole timed quest fails if not finished). Same resolve + batch-collapse
+        as a manual journal read. (Reads the calibrated journal region — the journal/tracker
+        must be visible.)"""
+        try:
+            raw = sensors.ocr_journal(self.guest, self.cfg, tc)
+        except Exception:
+            return []
+        out = []
+        for rawname, resolved, verified, count, warn in recipes.resolve_writ(
+                raw, flavor_prefixes=self.cfg.get("writ_flavor_prefixes"),
+                pristine_items=self.cfg.get("pristine_prefix_items")):
+            cnt = max(1, int(count))
+            comb = self._batch_combines(cnt, tc)
+            item = {"name": resolved, "count": comb, "done": 0, "verified": verified,
+                    "station": recipes.recipe_station(resolved) if verified else "", "search": ""}
+            if comb != cnt:
+                item["writ_count"] = cnt
+            out.append(item)
+        return out
+
+    async def _craft_writ_pass(self, q: list, station: str, tc: str) -> None:
+        """Craft every in-scope item in a writ queue once, recording actual crafts in it['done']."""
+        for i, it in enumerate(q, 1):
+            if self._stop.is_set():
+                break
+            if station and (it.get("station") or "") != station:
+                continue                         # different table this pass — leave for later
+            if it.get("writ_count"):             # batch recipe: writ wants N, one combine yields N
+                self.t.push_log(self.id, f"{it['name']}: batch recipe — writ wants "
+                                f"{it['writ_count']}, crafting {it['count']} combine(s)")
+            made = await self._craft_recipe(it["name"], it["count"], tc, i, len(q),
+                                            gate_power=False,            # writs barrel forward
+                                            search=it.get("search", ""))
+            it["done"] = made                    # ACTUAL crafts done, not assumed
+            self.t.update_bot(self.id, queue=q)
 
     async def _ex(self, fn, *a):
         """Run a (blocking) guest op in the default executor."""
@@ -657,22 +699,49 @@ class CraftWorker:
             q = job["queue"]
             station = job.get("station", "")
             self.t.update_bot(self.id, queue=q)
-            for i, it in enumerate(q, 1):
-                if self._stop.is_set():
-                    break
-                if station and (it.get("station") or "") != station:
-                    continue                     # different table this pass — leave for later
-                if it.get("writ_count"):         # batch recipe: writ wants N, one combine yields N
-                    self.t.push_log(self.id, f"{it['name']}: batch recipe — writ wants "
-                                    f"{it['writ_count']}, crafting {it['count']} combine(s)")
-                made = await self._craft_recipe(it["name"], it["count"], tc, i, len(q),
-                                                gate_power=False,            # writs barrel forward
-                                                search=it.get("search", ""))
-                it["done"] = made                # ACTUAL crafts done, not assumed
-                self.t.update_bot(self.id, queue=q)
+            await self._craft_writ_pass(q, station, tc)
+
+            # TIMED WRIT (owner): occasional craft failures leave items on the writ, and the whole
+            # timed quest fails if not finished. Re-read the journal after a short delay and craft
+            # whatever still remains, looping until the journal is clear (or the round cap). EQ2
+            # updates the objective counts live, so the re-read shows only the remainder.
+            cleared = None
+            if job.get("timed_writ"):
+                cleared = False
+                delay = float(self.cfg.get("timed_writ_delay", 3.0))
+                rounds = int(self.cfg.get("timed_writ_max_rounds", 12))
+                for rnd in range(1, rounds + 1):
+                    if self._stop.is_set():
+                        break
+                    await asyncio.sleep(delay)               # owner: ~3s before re-reading the OCR
+                    if self._stop.is_set():
+                        break
+                    rq = await self._ex(self._reread_writ_queue, tc)
+                    if station:
+                        rq = [it for it in rq if (it.get("station") or "") in ("", station)]
+                    rq = [it for it in rq if int(it.get("count", 0)) > 0]
+                    if not rq:
+                        cleared = True
+                        self.t.push_event(self.id, "craft", "timed writ: journal clear — complete")
+                        break
+                    self.t.push_event(self.id, "craft",
+                                      f"timed writ: re-read found {len(rq)} remaining "
+                                      f"(round {rnd}/{rounds}) — crafting")
+                    self.t.update_bot(self.id, queue=rq)
+                    await self._craft_writ_pass(rq, station, tc)
+                    q = rq                                   # for the final status check
+
             # Status must reflect reality: 'done' ONLY if every in-scope recipe finished;
             # else 'incomplete' so a 0/6 recipe (missing mats / failed start) can't
             # masquerade as done. (Owner: "finished one, other still to go, says done — wtf".)
+            if cleared is True:
+                self.t.push_event(self.id, "craft", "timed writ COMPLETE" + (f" ({station})" if station else ""))
+                self.t.update_bot(self.id, state="done", durability_mode=None)
+                return
+            if cleared is False and not self._stop.is_set():
+                self.t.push_event(self.id, "craft", "timed writ: still incomplete after retries — check it")
+                self.t.update_bot(self.id, state="incomplete", durability_mode=None)
+                return
             scope = [it for it in q if not (station and (it.get("station") or "") != station)]
             short = [it for it in scope if int(it.get("done", 0)) < int(it.get("count", 0))]
             if short and not self._stop.is_set():

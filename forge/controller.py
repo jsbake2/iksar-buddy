@@ -136,7 +136,8 @@ class ForgeController:
             self.t.update_bot(bot_id, **clean)
 
     def start(self, bot_id: str, mode: str, trade_class: str,
-              recipe: str = "", count: int = 1, search: str = "", station: str = "") -> None:
+              recipe: str = "", count: int = 1, search: str = "", station: str = "",
+              timed_writ: bool = False) -> None:
         b = self.t.bot(bot_id)
         w = self.workers.get(bot_id)
         if not b or not w or not b["enabled"]:
@@ -147,10 +148,11 @@ class ForgeController:
         self._shutting_down.discard(bot_id)        # new job -> re-arm auto-shutdown
         if mode == "writ":
             q = b.get("queue", [])
-            w.start("writ", trade_class, queue=q, station=station)
+            w.start("writ", trade_class, queue=q, station=station, timed_writ=timed_writ)
             n = sum(1 for it in q if not station or (it.get("station") or "") == station)
             self.t.push_event(bot_id, "craft",
-                              f"writ start ({n} recipes" + (f" @ {station}" if station else "") + ")")
+                              f"writ start ({n} recipes" + (f" @ {station}" if station else "")
+                              + (", TIMED" if timed_writ else "") + ")")
         else:
             recipe = recipe or b.get("recipe", "")   # dashboard shows the saved recipe
             search = search or b.get("search", "")   # owner-tuned search text (empty -> name)

@@ -120,6 +120,9 @@
         <div class="queue-head"><span>table</span><span>recipe</span><span>search</span><span>×</span><span></span></div>
         <ul class="queue-list bot-queue"></ul>
         <div class="queue-empty">No recipes — read the journal, read the log, or add by hand.</div>
+        <label class="timed-writ-toggle" title="Timed writs fail entirely if any item is short. When checked, after the list finishes the bot waits ~3s, re-reads the journal (OCR), and crafts whatever is still listed — looping until the writ is clear. (Keep the quest journal/tracker on screen.)">
+          <input type="checkbox" class="bot-timedwrit" /> <span>⏱ Timed writ — auto-finish the remainder (re-reads the journal)</span>
+        </label>
       </div>
 
       <!-- progress -->

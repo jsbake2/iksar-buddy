@@ -66,7 +66,8 @@ class ForgeSim:
             self.t.update_bot(bot_id, **clean)
 
     def start(self, bot_id: str, mode: str, trade_class: str,
-              recipe: str = "", count: int = 1, search: str = "", station: str = "") -> None:
+              recipe: str = "", count: int = 1, search: str = "", station: str = "",
+              timed_writ: bool = False) -> None:
         b = self.t.bot(bot_id)
         if not b or not b["enabled"]:
             return

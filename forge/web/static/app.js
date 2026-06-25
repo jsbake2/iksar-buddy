@@ -143,6 +143,7 @@ function buildBotPanel(bot, tradeClasses) {
     power: q(".bot-power"),
     stPower: q(".st-power"),
     shutdone: q(".bot-shutdone"),
+    timedwrit: q(".bot-timedwrit"),
     start: q(".bot-start"),
     stop: q(".bot-stop"),
     pause: q(".bot-pause"),
@@ -211,6 +212,7 @@ function buildBotPanel(bot, tradeClasses) {
       recipe: refs.recipe.value, search: refs.search.value,
       count: parseInt(refs.count.value) || 1,
       station: refs.uiMode === "writ" ? (refs.station || "") : "",   // craft only the shown table
+      timed_writ: refs.uiMode === "writ" && !!(refs.timedwrit && refs.timedwrit.checked),
     });
   };
   refs.stop.onclick = () => post(`/api/bot/${id}/stop`);
