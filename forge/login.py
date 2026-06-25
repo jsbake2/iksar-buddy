@@ -277,6 +277,11 @@ class LoginDriver:
         g.exec_ps("Stop-Process -Name LaunchPad -Force -ErrorAction SilentlyContinue", wait=True)
         time.sleep(2)
 
+        # 1b) FORCE LOGGING ON before the game reads its config — EQ2 defaults /log off each
+        # session, which blinds the bots (no eq2log_<char>.txt for completion/counter reads).
+        self.log("logging: " + ("forced ON (eq2_recent.ini)" if g.set_logging_on()
+                                 else "could NOT set eq2_recent.ini (will rely on in-game /log)"))
+
         # 2) EverQuest2.exe --------------------------------------------------
         self.log("launching EverQuest2.exe")
         g.run_ahk(_open_ahk("EverQuest2.exe"))

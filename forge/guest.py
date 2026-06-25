@@ -282,6 +282,25 @@ class Guest:
         self.exec_ps("schtasks /End /TN ibagent; Start-Sleep 1; schtasks /Run /TN ibagent")
         return True
 
+    def set_logging_on(self) -> bool:
+        """Force EQ2 chat/combat logging ON for the NEXT session by writing the cvars into
+        eq2_recent.ini BEFORE the game starts. EQ2 reads this file at startup and REWRITES it
+        on exit, so a session that left /log off would otherwise carry that forward and the
+        bots run blind (no eq2log_<char>.txt to read for craft-completion / counter resolution).
+        Idempotent: replaces only cl_logchat + cl_use_default_log_file, every other setting is
+        preserved. Must run while the guest is up but BEFORE EverQuest2.exe launches."""
+        p = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
+             r"\EverQuest II\eq2_recent.ini").replace("\\", "\\\\")
+        ps = (
+            f"$p='{p}'; $keys='cl_logchat','cl_use_default_log_file'; "
+            "$lines = if (Test-Path $p) { @(Get-Content $p | "
+            "Where-Object { $keys -notcontains (($_ -split '\\s+')[0]) }) } else { @() }; "
+            "$lines += 'cl_logchat true','cl_use_default_log_file true'; "
+            "Set-Content -Path $p -Value $lines -Encoding ASCII; 'OK'"
+        )
+        ok = (self.exec_ps(ps) or "").strip().endswith("OK")
+        return ok
+
     # -- guest PowerShell (guest-exec; gexec.py pattern) -------------------
     def exec_ps(self, ps: str, wait: bool = True, poll: int = 60) -> str | None:
         """Run PowerShell in the guest. wait=True polls for completion and returns
