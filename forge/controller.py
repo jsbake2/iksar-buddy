@@ -71,6 +71,10 @@ class ForgeController:
                 agent_set=(lambda action, _b=bid, **p: self.set_agent_command(_b, action, **p)),
                 agent_get=(lambda _b=bid: self.agent_status(_b)))
             self.stations[bid] = bot
+            # Expose the stable LOGIN ACCOUNT (robskin2004 / meatwad33w …) on the bot so the UI can
+            # label "send to <account>" — the selected character drifts (resets on restart, doesn't
+            # follow /camp swaps), the account does not.
+            self.t.update_bot(bid, account=(self.accounts.get(bot["dom"]) or {}).get("user", ""))
 
     def _creds(self, bot_id: str) -> tuple[str, str]:
         dom = self.stations.get(bot_id, {}).get("dom", "")

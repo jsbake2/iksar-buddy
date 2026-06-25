@@ -308,7 +308,9 @@ async function loadBots() {
   const sel = $("botsel"); sel.replaceChildren();
   if (!state.bots.length) { sel.appendChild(el("option", null, "no crafters")); return; }
   for (const b of state.bots) {
-    const label = `${b.id}${b.character ? " · " + b.character : ""}${b.trade_class ? " (" + b.trade_class + ")" : ""}${b.state ? " — " + b.state : ""}`;
+    // Label by the stable LOGIN ACCOUNT, not the (drifting) selected character.
+    const who = b.account ? b.account + " acct" : (b.character || b.dom || "?");
+    const label = `${b.id} · ${who}${b.trade_class ? " (" + b.trade_class + ")" : ""}${b.state ? " — " + b.state : ""}`;
     const o = el("option", null, label); o.value = b.id; sel.appendChild(o);
   }
 }
