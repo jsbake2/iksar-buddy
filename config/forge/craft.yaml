@@ -108,7 +108,7 @@ reaction:
   confidence: 0.45
   poll_hz: 6
   debug: true
-  press_interval: 0.12
+  press_interval: 0.3      # counter mash cadence (owner 2026-06-26: 120ms over-spammed -> 300ms)
   # Times to press a counter art per event before resuming filler. Doubled 3->6
   # (owner: counters weren't being mashed enough times to register).
   counter_presses: 6
