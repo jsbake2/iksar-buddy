@@ -819,6 +819,14 @@ MOB_BL_CELL = 4.0                # blacklist granularity (m) — one cell per co
 MOB_BL_TTL = 600.0               # how long a learned mob stays blacklisted (mobs wander/respawn)
 _mob_bl: dict = {}               # (cx,cz) -> last-confirmed ts
 
+# Max distance the bot will DETOUR off its current spot to a memory-detected candidate. The node
+# vtable is shared with mobs that aren't in the actor list (Commonlands skeletons), so a detected
+# position is NOT trustworthy enough to make a long beeline to — that's how the bot ran across the
+# zone "approaching every mob as a harvest". We only grab candidates within this radius of where
+# the TRAIL already put us; farther nodes are reached when the tour walks us near them. Keeps the
+# bot on its recorded route instead of chasing distant blips.
+MAX_DETOUR = 11.0
+
 
 def blacklist_mob(x, z):
     """Mark (x,z) as a confirmed mob so the detector stops offering it as a node."""
@@ -1075,10 +1083,11 @@ def gather_loop_main(keys, laps):
             _now = time.time()
             cand = sorted((n for n in read_node_array(pm, base)
                            if _now - done.get((round(n[0] / 3), round(n[1] / 3)), 0) > DONE_TTL
-                           and reachable(graph, n[0], n[1])),
+                           and reachable(graph, n[0], n[1])
+                           and math.hypot(n[0] - x, n[1] - z) <= MAX_DETOUR),  # no long beelines to blips
                           key=lambda n: math.hypot(n[0] - x, n[1] - z))
             if not cand:
-                _dbg("hn: no reachable nodes -> travel"); return
+                _dbg("hn: no candidate within detour -> travel"); return
             # Prefer CLEAR nodes — skip ones with a mob squatting on them (a non-player actor within
             # ACTOR_BLOCK m). Only fall back to guarded nodes when nothing clear is reachable, so we
             # don't waste trips on skeleton-camp nodes we can't acquire (Ctrl+0 grabs the mob).
