@@ -270,11 +270,13 @@ _PROVISIONER_PREFIX_RE = re.compile(
 
 # Per-trade tweaks (scribe/sage recipes search by "<name> (App...)").
 _TRADE_SETTINGS = {
-    "sage":   {"extra_clean": lambda n: _SCRIBE_PREFIX_RE.sub("", n).strip(), "search_suffix": " (App"},
-    "scribe": {"extra_clean": lambda n: _SCRIBE_PREFIX_RE.sub("", n).strip(), "search_suffix": " (App"},
+    # sage/scribe: type the BASE name only and let the recipe picker match the tier (owner). The
+    # old " (App" suffix injected a stray '(' that corrupted the search; dropped.
+    "sage":   {"extra_clean": lambda n: _SCRIBE_PREFIX_RE.sub("", n).strip(), "search_suffix": "", "search_keep_tier": False},
+    "scribe": {"extra_clean": lambda n: _SCRIBE_PREFIX_RE.sub("", n).strip(), "search_suffix": "", "search_keep_tier": False},
     "provisioner": {"extra_clean": lambda n: _PROVISIONER_PREFIX_RE.sub("", n).strip(), "search_suffix": ""},
 }
-_DEFAULT_TRADE = {"extra_clean": None, "search_suffix": ""}
+_DEFAULT_TRADE = {"extra_clean": None, "search_suffix": "", "search_keep_tier": True}
 
 
 def trade_settings(trade_class: str) -> dict:
@@ -292,21 +294,26 @@ _PARENS_RE = re.compile(r"\s*\([^)]*\)")
 _QUALITY_RE = re.compile(r"\((Apprentice|Journeyman|Adept|Expert|Master|Grandmaster)\)", re.I)
 
 
-def prepare_search(text: str, limit: int = 18) -> str:
+def prepare_search(text: str, limit: int = 18, keep_tier: bool = True) -> str:
     """Turn a recipe name (or tuned search) into the string to TYPE into EQ2's search box.
 
-    KEEP the quality tier ("Expert"/"Journeyman"/…) in the search — it's required to land on the
-    right recipe (owner: "it has to put Expert in", same as Journeyman). EQ2's search matches
-    per-word prefixes, so we strip the tier's PARENS (an unmatched '(' breaks the word) and keep
-    it as a whole word, abbreviating the BASE name to fit the ~18-char field around it. Any
-    OTHER parenthetical (variant modifiers etc.) is still dropped. The OCR row-match continues to
-    disambiguate on the full name as a backstop.
+    keep_tier=True (default): KEEP the quality word ("Expert"/"Journeyman"/…) in the search —
+    required for classes where the base alone doesn't land the right recipe (owner: "it has to put
+    Expert in"). Strip the tier's PARENS (an unmatched '(' breaks the word) and keep it as a whole
+    word, abbreviating the BASE to fit the ~18-char field around it.
+
+    keep_tier=False (sage/scribe — owner): SUPPRESS the tier in the search and type only the BASE
+    name (which gets the full field budget); the OCR recipe-picker matches the tier off the full
+    `name`. Typing the tier here was eating the budget ("Fiery Blast (Journeyman)" -> "Fi Bl ...")
+    and a stray '(' from the legacy sage suffix corrupted the field.
+
+    Any OTHER parenthetical (variant modifiers etc.) is always dropped; the row-match backstops.
     """
     t = (text or "").strip()
     m = _QUALITY_RE.search(t)
     qual = m.group(1) if m else ""
     base = _PARENS_RE.sub("", t).strip() or t        # base name, all parentheticals removed
-    if not qual:
+    if not qual or not keep_tier:                    # no tier, or caller wants it picker-matched only
         return abbreviate(base, limit)
     room = limit - len(qual) - 1                      # reserve a space + the (whole) tier word
     if room < 2:                                      # tier alone ~fills the field -> abbreviate all
