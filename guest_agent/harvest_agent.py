@@ -1022,6 +1022,94 @@ def diag_wide_main(rad=10.0):
     _dbg("DIAG2 === done ===")
 
 
+def _read_cstr(pm, addr, maxlen=64):
+    """Read a NUL-terminated ASCII string at addr, '' on failure / non-text."""
+    try:
+        b = pm.read_bytes(addr, maxlen)
+    except Exception:
+        return ""
+    out = []
+    for c in b:
+        if c == 0:
+            break
+        if 32 <= c < 127:
+            out.append(chr(c))
+        else:
+            return ""                      # non-printable -> not a C string
+    return "".join(out) if len(out) >= 2 else ""
+
+
+def diag_dump_main():
+    """Dump the FULL object the player is standing on (nearest node-vtable object) so we can find a
+    field that distinguishes a harvest NODE from a mob wearing the same vtable. Stand ON a node ->
+    capture A; stand ON/next to the mis-detected mob -> capture B; diff the two. For each 8-byte
+    field we print the raw qword, the float interpretation, and — if the qword points at readable
+    memory — any ASCII string there (the object's NAME is the likely discriminator). Writes gdbg.log."""
+    import numpy as np
+    hwnd, pid, pm, base = _live_eq2()
+    if not hwnd:
+        _dbg("DUMP: no live EQ2"); return
+    px = pm.read_float(base + POS_OFF); py = pm.read_float(base + POS_OFF + 4)
+    pz = pm.read_float(base + POS_OFF + 8)
+    vts = set(base + v for v in NODE_VTS)
+    VQ = ctypes.windll.kernel32.VirtualQueryEx; VQ.restype = ctypes.c_size_t
+    h = pm.process_handle
+    best = None                            # (dist, objAddr)
+    addr = 0; mbi = _MBI()
+    while addr < 0x7fff00000000:
+        if not VQ(h, ctypes.c_void_p(addr), ctypes.byref(mbi), ctypes.sizeof(mbi)):
+            addr += 0x10000; continue
+        b0 = mbi.BaseAddress; sz = mbi.RegionSize
+        if (mbi.State == 0x1000 and not (mbi.Protect & 0x100)
+                and (mbi.Protect & 0xff) in (0x04, 0x02, 0x20)
+                and 0x10000000000 < b0 < 0x7ff000000000 and 0 < sz < 0x8000000):
+            try:
+                buf = pm.read_bytes(b0, sz)
+            except Exception:
+                buf = b""
+            if len(buf) >= 0x80:
+                arr = np.frombuffer(buf[:(len(buf) // 8) * 8], dtype="<u8")
+                for i in np.where(np.isin(arr, np.array(sorted(vts), dtype="<u8")))[0]:
+                    o = int(i) * 8
+                    if o + NODE_POS + 12 > len(buf):
+                        continue
+                    x, y, z = struct.unpack_from("<fff", buf, o + NODE_POS)
+                    if math.isfinite(x) and math.isfinite(z) and abs(y - py) < 25:
+                        d = math.hypot(x - px, z - pz)
+                        if best is None or d < best[0]:
+                            best = (d, b0 + o)
+        addr = b0 + sz if sz else addr + 0x10000
+    if best is None:
+        _dbg(f"DUMP: no node-vtable object found near player @ {px:.1f},{pz:.1f}"); return
+    d, obj = best
+    _dbg(f"DUMP === nearest node-vtable obj @ {obj:#x} (d={d:.1f}m) player @ {px:.1f},{py:.1f},{pz:.1f} ===")
+    try:
+        raw = pm.read_bytes(obj, 0x400)
+    except Exception as e:
+        _dbg(f"DUMP: read fail {e}"); return
+    for off in range(0, 0x400, 8):
+        q = struct.unpack_from("<Q", raw, off)[0]
+        f0, f1 = struct.unpack_from("<ff", raw, off)
+        i0, i1 = struct.unpack_from("<ii", raw, off)
+        note = ""
+        # vtable / pointer? show it relative to base + try to read a string there or one hop in
+        if 0x10000000000 < q < 0x7ff000000000:
+            rel = q - base
+            note = f" ptr(base+{rel:#x})" if 0 <= rel < 0x2000000 else " ptr"
+            s = _read_cstr(pm, q)
+            if not s:
+                try:                       # many EQ2 name fields are ptr->ptr->char
+                    s = _read_cstr(pm, struct.unpack_from("<Q", pm.read_bytes(q, 8), 0)[0])
+                except Exception:
+                    s = ""
+            if s:
+                note += f'  STR="{s}"'
+        elif abs(f0) > 1e-6 and abs(f0) < 1e6 and f0 == f0:
+            note = f" f0={f0:.3f}"
+        _dbg(f"  +{off:#05x}  q={q:#018x}  i=({i0},{i1}) {note}")
+    _dbg("DUMP === done ===")
+
+
 def _tour_anchors(graph):
     """Coarse list of (x,z) anchors to drive the loop, IN WALK ORDER. From the graph if recorded
     (every Nth point ~ a tour of the walked loop), else the legacy sparse route.json waypoints."""
@@ -1263,6 +1351,9 @@ def main():
         elif tgt.get("diag2"):
             diag_wide_main(float(tgt.get("rad", 10.0)))
             _status(json.dumps({"ok": True, "diag2": True, "ts": time.time()}))
+        elif tgt.get("dump"):
+            diag_dump_main()
+            _status(json.dumps({"ok": True, "dump": True, "ts": time.time()}))
         elif tgt.get("gather_loop"):
             gather_loop_main(keys, int(tgt.get("laps", 1)))
         elif tgt.get("route_loop"):
