@@ -805,12 +805,16 @@ NODE_POS = 0x60
 ACTOR_VT = 0x1782848             # monsters/NPCs/players actor vtable (pos @ +0x1f0)
 ACTOR_POS = 0x1f0
 NODE_RADIUS = 110.0
-# Node-vs-mob discriminator (2026-06-25 RE, IN PROGRESS): node-vtable objects share ALL vtables
-# with the mobs that wear them, so the only difference is a DATA field. The +0x0C=2 lead from a
-# manual dump was DISPROVEN by /consider-labelled data (a confirmed mob also had +0x0C=0 — the 2
-# was state noise from a contaminated sample). So no flag filter yet; we keep collecting labelled
-# snapshots (study_capture, off the /consider verdict) until the analyzer finds the real field.
-NODE_FLAG_OFF = None            # offset of the confirmed node/mob flag once found; None = no filter
+# Node-vs-mob discriminator — SOLVED 2026-06-25 via a /consider-labelled corpus (1 node + 7 mobs,
+# all 7 mobs unanimous). These objects all share the HEADER vtable 0x14eb830 at +0x000 (that's why
+# matching it alone caught mobs too). The real separator is the MOST-DERIVED CLASS vtable at +0x140:
+#   harvest node  -> +0x140 == 0x14eb830   (Harvestable)
+#   creature/mob  -> +0x140 == 0x14eba10   (Creature wearing the same header)
+# So 0x14eba10 was never a "sibling node vtable" — it's the MOB class vtable. Match the header at
+# +0x000, then require +0x140 to be the Harvestable vtable. No heuristics, no blacklist needed.
+NODE_HEADER_VT = 0x14eb830      # shared object-header vtable at +0x000 (node AND mob)
+NODE_CLASS_OFF = 0x140          # most-derived class vtable lives here
+NODE_CLASS_VT = 0x14eb830       # value at +0x140 that marks a real harvest node (mob = 0x14eba10)
 MOB_SAME = 3.0                   # a node candidate within this of an actor IS that actor — some mobs
                                  # (skeletons) carry the node vtable; drop them (confirmed 2026-06-24)
 ACTOR_BLOCK = 4.5                # softer: a mob this close to a (real) node likely blocks Ctrl+0
@@ -889,7 +893,8 @@ def read_node_array(pm, base):
         import numpy as np
     except Exception:
         return _node_cache["nodes"]
-    vts = np.array(sorted(base + v for v in NODE_VTS), dtype="<u8")
+    header_vt = base + NODE_HEADER_VT            # match the shared header at +0x000 (node AND mob)
+    node_class = base + NODE_CLASS_VT            # then require the Harvestable class vtable at +0x140
     actvt = base + ACTOR_VT
     VQ = ctypes.windll.kernel32.VirtualQueryEx; VQ.restype = ctypes.c_size_t
     h = pm.process_handle
@@ -909,15 +914,14 @@ def read_node_array(pm, base):
                 buf = b""
             if len(buf) >= 0x80:
                 arr = np.frombuffer(buf[:(len(buf) // 8) * 8], dtype="<u8")
-                for i in np.where(np.isin(arr, vts))[0]:
+                for i in np.where(arr == header_vt)[0]:
                     o = int(i) * 8
-                    if o + NODE_POS + 12 > len(buf):
+                    if o + NODE_CLASS_OFF + 8 > len(buf) or o + NODE_POS + 12 > len(buf):
                         continue
-                    # +0x0C flag: 0 = harvest node, nonzero = creature wearing the node vtable. Drop
-                    # creatures at the source so they never become nav targets (the real fix for
-                    # "approaching every mob as a harvest").
-                    if (NODE_FLAG_OFF is not None and o + NODE_FLAG_OFF + 4 <= len(buf)
-                            and struct.unpack_from("<I", buf, o + NODE_FLAG_OFF)[0] != 0):
+                    # THE discriminator: most-derived class vtable at +0x140. Harvest node ->
+                    # 0x14eb830; creature wearing the same header -> 0x14eba10. Drop creatures here,
+                    # at the source, so a mob can NEVER become a nav target. (RE-confirmed 7/7 mobs.)
+                    if struct.unpack_from("<Q", buf, o + NODE_CLASS_OFF)[0] != node_class:
                         continue
                     x, y, z = struct.unpack_from("<fff", buf, o + NODE_POS)
                     if (math.isfinite(x) and math.isfinite(z) and math.isfinite(y)
