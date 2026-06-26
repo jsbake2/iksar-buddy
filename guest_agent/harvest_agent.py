@@ -573,6 +573,9 @@ def harvest(hwnd):
     focus_eq2(hwnd)
     succ = 0; rare = False; node = None; debug = []
     have_node = False
+    acq = None          # what the FIRST acquire considered: 'mob' (attackable) / 'node' / None.
+                        # The caller uses 'mob' to BLACKLIST this spot — the candidate we walked
+                        # to is a creature wearing the node vtable, so never approach it again.
 
     # ---- acquire: make a NODE the current target ----
     _check_stop()
@@ -580,10 +583,12 @@ def harvest(hwnd):
     debug.append("T:" + cnew[-200:].replace("\n", " | "))
     cm = CONSIDER.search(cnew)
     if NOTARGET.search(cnew) and not cm:
-        return {"node": None, "harvests": 0, "rare": False, "done": "gone", "debug": debug}
+        return {"node": None, "harvests": 0, "rare": False, "done": "gone", "acq": acq, "debug": debug}
     if cm and not NOT_ATTACKABLE.search(cnew):
+        acq = "mob"
         tab_key(); time.sleep(0.4)                 # nearest non-player is a creature -> step past it
     elif cm:
+        acq = "node"
         node = cm.group(1).strip(); have_node = True   # /consider says node ('not attackable')
 
     # ---- probe the non-player ring with harvest presses until one is a node ----
@@ -598,7 +603,7 @@ def harvest(hwnd):
                 succ += 1; node = res[1]; have_node = True; break
             tab_key(); time.sleep(0.3)             # not harvestable here -> next non-player
         if not have_node:
-            return {"node": node, "harvests": succ, "rare": rare,
+            return {"node": node, "harvests": succ, "rare": rare, "acq": acq,
                     "done": ("mob_blocked" if succ == 0 else "depleted"), "debug": debug}
 
     # ---- deplete: harvest the HELD node target (3 pulls, bountiful counts as one) ----
@@ -613,10 +618,11 @@ def harvest(hwnd):
         elif res[0] == "fail":
             continue                               # still there -> harvest again, same target
         elif res[0] == "toofar":
-            return {"node": node, "harvests": succ, "rare": rare, "done": "toofar", "debug": debug}
+            return {"node": node, "harvests": succ, "rare": rare, "acq": acq,
+                    "done": "toofar", "debug": debug}
         else:
             break                                  # target gone -> depleted
-    return {"node": node, "harvests": succ, "rare": rare,
+    return {"node": node, "harvests": succ, "rare": rare, "acq": acq,
             "done": ("depleted" if succ else "gone"), "debug": debug}
 
 
@@ -804,6 +810,31 @@ MOB_SAME = 3.0                   # a node candidate within this of an actor IS t
 ACTOR_BLOCK = 4.5                # softer: a mob this close to a (real) node likely blocks Ctrl+0
 _node_cache = {"nodes": [], "actors": [], "ts": 0.0, "px": 0.0, "pz": 0.0}
 
+# Self-correcting mob blacklist (zone-independent). Some creatures wear the node vtable, aren't
+# in the actor list, AND stand still — beating every memory filter. The ONLY reliable verdict is
+# the game's /consider ('attackable' = mob). When we walk to a candidate and Ctrl+0 cons it as a
+# mob, we stamp its cell here; read_node_array then drops candidates near it. So the bot walks to
+# any given mob AT MOST ONCE per run, then never again — no reverse-engineering required.
+MOB_BL_CELL = 4.0                # blacklist granularity (m) — one cell per confused mob
+MOB_BL_TTL = 600.0               # how long a learned mob stays blacklisted (mobs wander/respawn)
+_mob_bl: dict = {}               # (cx,cz) -> last-confirmed ts
+
+
+def blacklist_mob(x, z):
+    """Mark (x,z) as a confirmed mob so the detector stops offering it as a node."""
+    _mob_bl[(round(x / MOB_BL_CELL), round(z / MOB_BL_CELL))] = time.time()
+
+
+def _is_blacklisted(x, z):
+    now = time.time()
+    cx, cz = round(x / MOB_BL_CELL), round(z / MOB_BL_CELL)
+    for dx in (-1, 0, 1):                         # check the 3x3 neighbourhood so a near-miss hits
+        for dz in (-1, 0, 1):
+            ts = _mob_bl.get((cx + dx, cz + dz))
+            if ts and now - ts < MOB_BL_TTL:
+                return True
+    return False
+
 
 def read_node_array(pm, base):
     """Nearby REAL harvest nodes. Heap-scan for objects whose vtable is EXACTLY a node vtable
@@ -863,8 +894,11 @@ def read_node_array(pm, base):
     actors = list(acts.values())
     # (1) Drop candidates that sit ON an actor (<MOB_SAME) — that mob IS the candidate (some
     #     skeletons carry the node vtable). Real nodes have their nearest actor many metres away.
+    #     ALSO drop anything we've already learned (via /consider) is a mob — the robust filter for
+    #     stationary, actor-list-absent creatures that beat every memory heuristic.
     survivors = [(a, x, z) for (a, x, z) in cand.values()
-                 if not any(math.hypot(x - ax, z - az) < MOB_SAME for ax, az in actors)]
+                 if not any(math.hypot(x - ax, z - az) < MOB_SAME for ax, az in actors)
+                 and not _is_blacklisted(x, z)]
     # (2) MOTION filter — the robust one: re-read each survivor's pos after a short delay; anything
     #     that MOVED is a wandering mob (skeletal trooper) carrying the node vtable. Static harvest
     #     nodes never move. Catches mobs the actor-coincidence test misses (offset/idle actor pos).
@@ -1116,6 +1150,12 @@ def gather_loop_main(keys, laps):
                 blocked += 1
                 # full DONE_TTL lockout — don't grind a camped (stationary) mob's node; the one
                 # wait-retry above already gave a wanderer its chance. Move on.
+                # If /consider confirmed this spot is a creature (acq == 'mob'), BLACKLIST it so the
+                # detector never offers it as a node again — this is what stops the bot walking to
+                # the same skeleton over and over (the actual "approaching mobs like harvests" bug).
+                if hv.get("acq") == "mob":
+                    blacklist_mob(tx, tz)
+                    _dbg(f"  BLACKLISTED mob @ {tx:.0f},{tz:.0f}")
                 prog.setdefault("mobs_skipped", []).append({"mob": hv.get("node"), "at": [tx, tz]})
                 _status(json.dumps(prog))
                 if blocked >= 2:                 # 2 mob nodes here -> camp, bail so the tour leaves
