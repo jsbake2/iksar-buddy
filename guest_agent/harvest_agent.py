@@ -594,14 +594,20 @@ def harvest(hwnd):
     # ---- probe the non-player ring with harvest presses until one is a node ----
     # A mob/empty target gives "too far"/"no eligible" -> Tab PAST it; only a real node harvests.
     # (Don't bail on the first "too far" — that was a mob sitting on the node blocking everything.)
+    # TAB PAST MOBS to the node (owner SME): in mob-dense desert a node has a carrion PACK on it, so
+    # Ctrl+0 grabs a hound and Tab must ring through several creatures before the harvestable. Probe
+    # each Tab target with a QUICK harvest test (a node harvests within ~2s; a mob/empty fails fast
+    # via 'no eligible'/'too far'), up to PROBE_TABS rings. 'Try briefly, then skip' (owner): if no
+    # node turns up in the ring, bail and move to the next node — never grind a blocked/empty spot.
+    PROBE_TABS = 10
     if not have_node:
-        for _ in range(7):                        # Tab CAN reach the node (owner SME) — ring through
-            _check_stop()                          # more targets; a mob/empty press does nothing, the
-            off = _log_len(); harvest_key(); res = _wait_harvest(off)   # node press harvests.
+        for _ in range(PROBE_TABS):
+            _check_stop()
+            off = _log_len(); harvest_key(); res = _wait_harvest(off, window=2.0)
             rare = rare or res[2]
             if res[0] == "ok":
                 succ += 1; node = res[1]; have_node = True; break
-            tab_key(); time.sleep(0.3)             # not harvestable here -> next non-player
+            tab_key(); time.sleep(0.25)            # not harvestable here -> Tab to the next target
         if not have_node:
             return {"node": node, "harvests": succ, "rare": rare, "acq": acq,
                     "done": ("mob_blocked" if succ == 0 else "depleted"), "debug": debug}
@@ -940,16 +946,14 @@ def read_node_array(pm, base):
                             acts[(round(x), round(z))] = (round(x, 1), round(z, 1))
         addr = b0 + sz if sz else addr + 0x10000
     actors = list(acts.values())
-    # (1) Drop candidates that sit ON an actor (<MOB_SAME) — that mob IS the candidate (some
-    #     skeletons carry the node vtable). Real nodes have their nearest actor many metres away.
-    #     ALSO drop anything we've already learned (via /consider) is a mob — the robust filter for
-    #     stationary, actor-list-absent creatures that beat every memory heuristic.
-    survivors = [(a, x, z) for (a, x, z) in cand.values()
-                 if not any(math.hypot(x - ax, z - az) < MOB_SAME for ax, az in actors)
-                 and not _is_blacklisted(x, z)]
-    # (2) MOTION filter — the robust one: re-read each survivor's pos after a short delay; anything
-    #     that MOVED is a wandering mob (skeletal trooper) carrying the node vtable. Static harvest
-    #     nodes never move. Catches mobs the actor-coincidence test misses (offset/idle actor pos).
+    # The +0x140 class filter (at scan time) already removed every mob, so cand is real Harvestables.
+    # Do NOT drop a node just because an actor is near it — a carrion standing ON a node would knock
+    # out a perfectly good node we want to Tab-past-and-harvest. (actors[] is still gathered, used by
+    # harvest_nearest only to PREFER clear nodes, not to delete blocked ones.)
+    survivors = list(cand.values())
+    # MOTION filter — harmless backstop: re-read each survivor's pos after a short delay; anything
+    # that MOVED is a creature (no class-vtable match should reach here, but belt-and-suspenders).
+    # Static harvest nodes never move.
     addrs = {}                                   # (round(x),round(z)) -> object address (for study dumps)
     try:
         time.sleep(0.6)
@@ -1308,18 +1312,14 @@ def gather_loop_main(keys, laps):
                 _status(json.dumps(prog))
             elif hv.get("done") in ("mob_blocked", "mob"):
                 blocked += 1
-                # full DONE_TTL lockout — don't grind a camped (stationary) mob's node; the one
-                # wait-retry above already gave a wanderer its chance. Move on.
-                # If /consider confirmed this spot is a creature (acq == 'mob'), BLACKLIST it so the
-                # detector never offers it as a node again — this is what stops the bot walking to
-                # the same skeleton over and over (the actual "approaching mobs like harvests" bug).
-                if hv.get("acq") == "mob":
-                    blacklist_mob(tx, tz)
-                    _dbg(f"  BLACKLISTED mob @ {tx:.0f},{tz:.0f}")
+                # A REAL node we couldn't grab right now (a mob on it we couldn't Tab past, or it
+                # despawned). The candidate is a real Harvestable (+0x140 filter), so do NOT blacklist
+                # it — just let the DONE_TTL (240s) skip it for now; it's retried later once the mob
+                # has wandered off ('try briefly, then skip' — owner). No permanent suppression.
                 prog.setdefault("mobs_skipped", []).append({"mob": hv.get("node"), "at": [tx, tz]})
                 _status(json.dumps(prog))
-                if blocked >= 2:                 # 2 mob nodes here -> camp, bail so the tour leaves
-                    _dbg("  mob camp -> bail this area, advance tour")
+                if blocked >= 3:                 # several blocked in a row here -> bail, advance tour
+                    _dbg("  too many blocked -> bail this area, advance tour")
                     return
             else:
                 blocked = 0                       # gone/depleted/toofar — not a mob, keep going
