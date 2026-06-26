@@ -805,6 +805,12 @@ NODE_POS = 0x60
 ACTOR_VT = 0x1782848             # monsters/NPCs/players actor vtable (pos @ +0x1f0)
 ACTOR_POS = 0x1f0
 NODE_RADIUS = 110.0
+# Node-vs-mob discriminator (2026-06-25 RE): node-vtable objects share ALL vtables with the mobs
+# that wear them, so the only difference is a DATA field. Diffing a /consider-confirmed node vs a
+# confirmed mob: the u32 at +0x0C is 0 on harvest nodes and NONZERO (saw 2) on creatures — a
+# type/flags field. We drop any candidate whose +0x0C is set. Provisional (small sample); the
+# in-gather study_capture keeps logging /consider-labelled snapshots so it self-confirms/refines.
+NODE_FLAG_OFF = 0x0C            # set NODE_FLAG_OFF=None to disable the flag filter (fall back to old behaviour)
 MOB_SAME = 3.0                   # a node candidate within this of an actor IS that actor — some mobs
                                  # (skeletons) carry the node vtable; drop them (confirmed 2026-06-24)
 ACTOR_BLOCK = 4.5                # softer: a mob this close to a (real) node likely blocks Ctrl+0
@@ -906,6 +912,12 @@ def read_node_array(pm, base):
                 for i in np.where(np.isin(arr, vts))[0]:
                     o = int(i) * 8
                     if o + NODE_POS + 12 > len(buf):
+                        continue
+                    # +0x0C flag: 0 = harvest node, nonzero = creature wearing the node vtable. Drop
+                    # creatures at the source so they never become nav targets (the real fix for
+                    # "approaching every mob as a harvest").
+                    if (NODE_FLAG_OFF is not None and o + NODE_FLAG_OFF + 4 <= len(buf)
+                            and struct.unpack_from("<I", buf, o + NODE_FLAG_OFF)[0] != 0):
                         continue
                     x, y, z = struct.unpack_from("<fff", buf, o + NODE_POS)
                     if (math.isfinite(x) and math.isfinite(z) and math.isfinite(y)
