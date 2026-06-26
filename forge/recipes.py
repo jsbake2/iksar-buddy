@@ -265,7 +265,7 @@ _SCRIBE_PREFIX_RE = re.compile(r"^(?:Apprentice\s*IV[:\s]*)?", re.IGNORECASE)
 # word so the craft-list/search lands on the real recipe. Owner-curated list; add more here as
 # they turn up.
 _PROVISIONER_PREFIX_RE = re.compile(
-    r"^\s*(?:plate|serving|cup|shot|stein|flask|glass|bowl|pot)\s+of\s+", re.IGNORECASE)
+    r"^\s*(?:plate|serving|cup|shot|stein|flask|glass|bowl|pot|bottle)\s+of\s+", re.IGNORECASE)
 
 # Per-trade tweaks (scribe/sage recipes search by "<name> (App...)").
 _TRADE_SETTINGS = {
