@@ -280,16 +280,29 @@ def search_name(name: str, trade_class: str) -> str:
 _PARENS_RE = re.compile(r"\s*\([^)]*\)")
 
 
+_QUALITY_RE = re.compile(r"\((Apprentice|Journeyman|Adept|Expert|Master|Grandmaster)\)", re.I)
+
+
 def prepare_search(text: str, limit: int = 18) -> str:
     """Turn a recipe name (or tuned search) into the string to TYPE into EQ2's search box.
 
-    1) Drop parentheticals — the tier tag like "(Journeyman)"/"(Expert)" isn't needed to
-       search (owner crafts this way); the OCR row-match still disambiguates tier by full
-       name. This alone fits most names.
-    2) If still over the field limit, abbreviate each word evenly (see abbreviate()).
+    KEEP the quality tier ("Expert"/"Journeyman"/…) in the search — it's required to land on the
+    right recipe (owner: "it has to put Expert in", same as Journeyman). EQ2's search matches
+    per-word prefixes, so we strip the tier's PARENS (an unmatched '(' breaks the word) and keep
+    it as a whole word, abbreviating the BASE name to fit the ~18-char field around it. Any
+    OTHER parenthetical (variant modifiers etc.) is still dropped. The OCR row-match continues to
+    disambiguate on the full name as a backstop.
     """
-    cleaned = _PARENS_RE.sub("", text or "").strip() or (text or "").strip()
-    return abbreviate(cleaned, limit)
+    t = (text or "").strip()
+    m = _QUALITY_RE.search(t)
+    qual = m.group(1) if m else ""
+    base = _PARENS_RE.sub("", t).strip() or t        # base name, all parentheticals removed
+    if not qual:
+        return abbreviate(base, limit)
+    room = limit - len(qual) - 1                      # reserve a space + the (whole) tier word
+    if room < 2:                                      # tier alone ~fills the field -> abbreviate all
+        return abbreviate(f"{base} {qual}", limit)
+    return f"{abbreviate(base, room)} {qual}".strip()
 
 
 def abbreviate(text: str, limit: int = 18) -> str:
