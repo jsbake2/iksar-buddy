@@ -260,10 +260,17 @@ _PREFIX_STRIP_RE = re.compile(
 )
 _SCRIBE_PREFIX_RE = re.compile(r"^(?:Apprentice\s*IV[:\s]*)?", re.IGNORECASE)
 
+# Provisioner food/drink writs name the OBJECTIVE with a serving word ("plate of roasted
+# mushrooms", "serving of …") that isn't part of the RECIPE name — strip the leading serving
+# word so the craft-list/search lands on the real recipe. (Owner: "plate of"/"serving of".
+# Add more serving words here — glass/flask/bowl/etc. — if other food/drink types show it.)
+_PROVISIONER_PREFIX_RE = re.compile(r"^\s*(?:plate|serving)\s+of\s+", re.IGNORECASE)
+
 # Per-trade tweaks (scribe/sage recipes search by "<name> (App...)").
 _TRADE_SETTINGS = {
     "sage":   {"extra_clean": lambda n: _SCRIBE_PREFIX_RE.sub("", n).strip(), "search_suffix": " (App"},
     "scribe": {"extra_clean": lambda n: _SCRIBE_PREFIX_RE.sub("", n).strip(), "search_suffix": " (App"},
+    "provisioner": {"extra_clean": lambda n: _PROVISIONER_PREFIX_RE.sub("", n).strip(), "search_suffix": ""},
 }
 _DEFAULT_TRADE = {"extra_clean": None, "search_suffix": ""}
 
