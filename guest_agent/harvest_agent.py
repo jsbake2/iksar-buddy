@@ -501,26 +501,38 @@ def _log_since(off):
         return ""
 
 
+def _ctrl_chord(vk):
+    """Send Ctrl+<vk> with the modifier GUARANTEED held while the number lands.
+
+    Why this is fussy: keybd_event queues Ctrl-down and the number-down as separate events.
+    If EQ2 samples input on a frame between them, it sees a BARE number -> that fires hotbar
+    slot 9/10 (a combat art) on the current target = the bot 'attacking' creatures. So we
+    press Ctrl, SPIN until GetAsyncKeyState confirms the OS sees it down, THEN send the
+    number, and only release Ctrl after the number is fully up. A bare number can never leak.
+    VK_CONTROL=0x11; high bit (0x8000) of GetAsyncKeyState = key currently down."""
+    KEYUP = 0x02
+    _u.keybd_event(0x11, 0, 0, 0)
+    t = time.time()
+    while not (_u.GetAsyncKeyState(0x11) & 0x8000) and time.time() - t < 0.3:
+        time.sleep(0.01)
+    time.sleep(0.05)
+    _u.keybd_event(vk, 0, 0, 0); time.sleep(0.06)
+    _u.keybd_event(vk, 0, KEYUP, 0); time.sleep(0.05)
+    _u.keybd_event(0x11, 0, KEYUP, 0); time.sleep(0.02)
+
+
 def harvest_key():
     # Ctrl+9 in-game macro = auto-target nearest node + harvest. The HOTBAR only accepts
     # Event-mode input (keybd_event), NOT SendInput scancodes (pydirectinput) — same reason
-    # AHK had to use SendMode Event for it. VK_CONTROL=0x11, '9'=0x39; flags 0=down,2=up.
-    KEYUP = 0x02
-    _u.keybd_event(0x11, 0, 0, 0); time.sleep(0.05)
-    _u.keybd_event(0x39, 0, 0, 0); time.sleep(0.05)
-    _u.keybd_event(0x39, 0, KEYUP, 0); time.sleep(0.05)
-    _u.keybd_event(0x11, 0, KEYUP, 0)
+    # AHK had to use SendMode Event for it. VK_CONTROL=0x11, '9'=0x39.
+    _ctrl_chord(0x39)
 
 
 def target_key():
     # Ctrl+0 = owner macro: TARGET nearest harvestable + /consider, in one press. A node cons
     # as 'not attackable'; a creature cons as attackable. This is our acquire+classify step —
     # harvest_key (Ctrl+9) then works the CURRENT target, so we never re-target off the node.
-    KEYUP = 0x02
-    _u.keybd_event(0x11, 0, 0, 0); time.sleep(0.05)
-    _u.keybd_event(0x30, 0, 0, 0); time.sleep(0.05)
-    _u.keybd_event(0x30, 0, KEYUP, 0); time.sleep(0.05)
-    _u.keybd_event(0x11, 0, KEYUP, 0)
+    _ctrl_chord(0x30)
 
 
 def tab_key():
