@@ -1224,13 +1224,16 @@ def gather_loop_main(keys, laps):
             x, z, _h = state(pm, base)
             # Only nodes near the MAPPED mesh (reachable) — never beeline into unmapped areas/walls.
             _now = time.time()
+            # Nearest reachable REAL node — no distance cap. The detector now returns only
+            # Harvestables (mobs filtered by the +0x140 class vtable), so every candidate is a real
+            # node and beelining to the nearest one is always correct. (The old MAX_DETOUR cap was a
+            # band-aid for when mobs leaked into this list; it just starved the bot once that was fixed.)
             cand = sorted((n for n in read_node_array(pm, base)
                            if _now - done.get((round(n[0] / 3), round(n[1] / 3)), 0) > DONE_TTL
-                           and reachable(graph, n[0], n[1])
-                           and math.hypot(n[0] - x, n[1] - z) <= MAX_DETOUR),  # no long beelines to blips
+                           and reachable(graph, n[0], n[1])),
                           key=lambda n: math.hypot(n[0] - x, n[1] - z))
             if not cand:
-                _dbg("hn: no candidate within detour -> travel"); return
+                _dbg("hn: no reachable node -> travel"); return
             # Prefer CLEAR nodes — skip ones with a mob squatting on them (a non-player actor within
             # ACTOR_BLOCK m). Only fall back to guarded nodes when nothing clear is reachable, so we
             # don't waste trips on skeleton-camp nodes we can't acquire (Ctrl+0 grabs the mob).
