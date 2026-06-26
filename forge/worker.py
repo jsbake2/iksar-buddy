@@ -305,7 +305,7 @@ class CraftWorker:
         # What to type: the owner's tuned search if set, else the recipe name. Drop
         # parentheticals + abbreviate each WORD to fit EQ2's ~18-char field — typing a
         # >18 string overran the field and scrambled the input.
-        keep_tier = trade_settings(trade_class).get("search_keep_tier", True)
+        keep_tier = trade_settings(trade_class).get("search_keep_tier", False)   # default: tier off (picker matches it)
         query = prepare_search((search or "").strip() or search_name(name, trade_class), 18,
                                keep_tier=keep_tier)
         sb = rs.get("search_click")
