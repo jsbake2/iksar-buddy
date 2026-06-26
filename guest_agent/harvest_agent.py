@@ -805,12 +805,12 @@ NODE_POS = 0x60
 ACTOR_VT = 0x1782848             # monsters/NPCs/players actor vtable (pos @ +0x1f0)
 ACTOR_POS = 0x1f0
 NODE_RADIUS = 110.0
-# Node-vs-mob discriminator (2026-06-25 RE): node-vtable objects share ALL vtables with the mobs
-# that wear them, so the only difference is a DATA field. Diffing a /consider-confirmed node vs a
-# confirmed mob: the u32 at +0x0C is 0 on harvest nodes and NONZERO (saw 2) on creatures — a
-# type/flags field. We drop any candidate whose +0x0C is set. Provisional (small sample); the
-# in-gather study_capture keeps logging /consider-labelled snapshots so it self-confirms/refines.
-NODE_FLAG_OFF = 0x0C            # set NODE_FLAG_OFF=None to disable the flag filter (fall back to old behaviour)
+# Node-vs-mob discriminator (2026-06-25 RE, IN PROGRESS): node-vtable objects share ALL vtables
+# with the mobs that wear them, so the only difference is a DATA field. The +0x0C=2 lead from a
+# manual dump was DISPROVEN by /consider-labelled data (a confirmed mob also had +0x0C=0 — the 2
+# was state noise from a contaminated sample). So no flag filter yet; we keep collecting labelled
+# snapshots (study_capture, off the /consider verdict) until the analyzer finds the real field.
+NODE_FLAG_OFF = None            # offset of the confirmed node/mob flag once found; None = no filter
 MOB_SAME = 3.0                   # a node candidate within this of an actor IS that actor — some mobs
                                  # (skeletons) carry the node vtable; drop them (confirmed 2026-06-24)
 ACTOR_BLOCK = 4.5                # softer: a mob this close to a (real) node likely blocks Ctrl+0
@@ -1286,9 +1286,13 @@ def gather_loop_main(keys, laps):
                 hv = harvest(hwnd)
             _dbg(f"  HARVEST done={hv.get('done')} n={hv.get('harvests')} node={hv.get('node')} "
                  f"dbg={hv.get('debug')}")
+            # RE corpus: label this object by the /consider verdict (acq), NOT by harvest success —
+            # a node we cons 'not attackable' is a confirmed node even if the pull was 'too far'. Far
+            # higher yield than harvest-only, and the ground truth is the game's own classification.
+            if hv.get("acq") in ("node", "mob"):
+                study_capture(pm, node_addr_at(tx, tz), hv["acq"], (tx, tz))
             if hv.get("harvests"):
                 blocked = 0
-                study_capture(pm, node_addr_at(tx, tz), "node", (tx, tz))   # CONFIRMED node (RE)
                 prog["harvests_total"] += hv["harvests"]
                 prog["events"].append({"node": hv.get("node"), "n": hv["harvests"],
                                        "rare": hv.get("rare"), "at": [tx, tz]})
@@ -1303,7 +1307,6 @@ def gather_loop_main(keys, laps):
                 # detector never offers it as a node again — this is what stops the bot walking to
                 # the same skeleton over and over (the actual "approaching mobs like harvests" bug).
                 if hv.get("acq") == "mob":
-                    study_capture(pm, node_addr_at(tx, tz), "mob", (tx, tz))  # CONFIRMED mob (RE)
                     blacklist_mob(tx, tz)
                     _dbg(f"  BLACKLISTED mob @ {tx:.0f},{tz:.0f}")
                 prog.setdefault("mobs_skipped", []).append({"mob": hv.get("node"), "at": [tx, tz]})
