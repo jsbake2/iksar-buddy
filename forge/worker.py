@@ -99,12 +99,14 @@ class CraftWorker:
 
     # -- helpers -----------------------------------------------------------
     def _batch_combines(self, count: int, trade_class: str) -> int:
-        """Some recipes batch-craft: ONE combine yields N items, so a writ objective of N is a
-        SINGLE combine, not N. Per owner (2026-06-25): alchemist consumable writs (Greater
-        Elemental Remedy, poisons, …) always yield 10 — 'make 10' = 1 craft. Configurable via
-        craft.yaml `batch_yield: {alchemist: 10}`. Only collapses EXACT multiples of the yield
-        (10->1, 20->2, 30->3) so a non-batch writ (e.g. make-5) is never under-crafted."""
-        y = int((self.cfg.get("batch_yield") or {"alchemist": 10}).get((trade_class or "").lower(), 1))
+        """Some recipes batch-craft: ONE combine yields N items, so a writ objective of N is N/yield
+        combines, not N. Per owner: alchemist consumable writs (Greater Elemental Remedy, poisons, …)
+        yield 10 ('make 10' = 1 craft); PROVISIONER food yields 2 ('make 6' = 3 crafts — the log shows
+        2 made per combine). craft.yaml `batch_yield:` MERGES over these defaults (so a partial config
+        can't drop them). Only collapses EXACT multiples of the yield (6->3, 10->1) so a non-batch
+        writ (e.g. make-5) is never under-crafted."""
+        yields = {"alchemist": 10, "provisioner": 2, **(self.cfg.get("batch_yield") or {})}
+        y = int(yields.get((trade_class or "").lower(), 1))
         if y > 1 and count >= y and count % y == 0:
             return count // y
         return count
