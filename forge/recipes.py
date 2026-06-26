@@ -267,6 +267,14 @@ _SCRIBE_PREFIX_RE = re.compile(r"^(?:Apprentice\s*IV[:\s]*)?", re.IGNORECASE)
 _PROVISIONER_PREFIX_RE = re.compile(
     # 'bott[il1]e' tolerates the OCR l->i/1 misread ("bottle" reads as "bottie") — owner saw it leak.
     r"^\s*(?:plate|serving|cup|shot|stein|flask|glass|bowl|pot|bott[il1]e)\s+of\s+", re.IGNORECASE)
+# Some provisioner writs also TAIL the objective with the category word ("Mountain Man drink" ->
+# recipe "Mountain Man"). Strip a trailing 'drink'/'food'. Owner-curated; add more if they appear.
+_PROVISIONER_SUFFIX_RE = re.compile(r"\s+(?:drink|food)\s*$", re.IGNORECASE)
+
+
+def _clean_provisioner(n: str) -> str:
+    return _PROVISIONER_SUFFIX_RE.sub("", _PROVISIONER_PREFIX_RE.sub("", n)).strip()
+
 
 # Per-trade tweaks (scribe/sage recipes search by "<name> (App...)").
 _TRADE_SETTINGS = {
@@ -274,7 +282,7 @@ _TRADE_SETTINGS = {
     # old " (App" suffix injected a stray '(' that corrupted the search; dropped.
     "sage":   {"extra_clean": lambda n: _SCRIBE_PREFIX_RE.sub("", n).strip(), "search_suffix": "", "search_keep_tier": False},
     "scribe": {"extra_clean": lambda n: _SCRIBE_PREFIX_RE.sub("", n).strip(), "search_suffix": "", "search_keep_tier": False},
-    "provisioner": {"extra_clean": lambda n: _PROVISIONER_PREFIX_RE.sub("", n).strip(), "search_suffix": ""},
+    "provisioner": {"extra_clean": _clean_provisioner, "search_suffix": ""},
 }
 _DEFAULT_TRADE = {"extra_clean": None, "search_suffix": "", "search_keep_tier": False}
 
