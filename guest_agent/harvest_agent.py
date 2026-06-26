@@ -828,6 +828,30 @@ _mob_bl: dict = {}               # (cx,cz) -> last-confirmed ts
 MAX_DETOUR = 11.0
 
 
+STUDY = r"C:\ib\study.jsonl"     # labelled object snapshots for offline node/mob discriminator RE
+_study_n = [0]
+
+
+def study_capture(pm, addr, label, xz):
+    """Append a GROUND-TRUTH-labelled snapshot of a node-vtable object to STUDY (jsonl). label is
+    'node' (we harvested it) or 'mob' (Ctrl+0 cons'd it attackable). Off the gather's hot path,
+    fully guarded — never let RE logging break harvesting. We dump 0x400 raw bytes + the module
+    base so pointer fields can be normalised offline. Capped so a long run can't fill the disk."""
+    if addr is None or _study_n[0] >= 400:
+        return
+    try:
+        _hwnd, _pid, _pm, base = None, None, pm, 0
+        base = pymem.process.module_from_name(pm.process_handle, "EverQuest2.exe").lpBaseOfDll
+        raw = pm.read_bytes(addr, 0x400)
+        rec = {"label": label, "xz": [round(xz[0], 1), round(xz[1], 1)], "ts": round(time.time(), 1),
+               "addr": addr, "base": base, "hex": raw.hex()}
+        with open(STUDY, "a") as f:
+            f.write(json.dumps(rec) + "\n")
+        _study_n[0] += 1
+    except Exception:
+        pass
+
+
 def blacklist_mob(x, z):
     """Mark (x,z) as a confirmed mob so the detector stops offering it as a node."""
     _mob_bl[(round(x / MOB_BL_CELL), round(z / MOB_BL_CELL))] = time.time()
@@ -910,6 +934,7 @@ def read_node_array(pm, base):
     # (2) MOTION filter — the robust one: re-read each survivor's pos after a short delay; anything
     #     that MOVED is a wandering mob (skeletal trooper) carrying the node vtable. Static harvest
     #     nodes never move. Catches mobs the actor-coincidence test misses (offset/idle actor pos).
+    addrs = {}                                   # (round(x),round(z)) -> object address (for study dumps)
     try:
         time.sleep(0.6)
         kept = []
@@ -921,12 +946,26 @@ def read_node_array(pm, base):
             except Exception:
                 pass
             kept.append((x, z))
+            addrs[(round(x), round(z))] = a
         nodes = kept
     except Exception:
         nodes = [(x, z) for _a, x, z in survivors]
+        addrs = {(round(x), round(z)): a for a, x, z in survivors}
     nodes.sort(key=lambda n: math.hypot(n[0] - px, n[1] - pz))
-    _node_cache.update(nodes=nodes, actors=actors, ts=time.time(), px=px, pz=pz)
+    _node_cache.update(nodes=nodes, actors=actors, ts=time.time(), px=px, pz=pz, addrs=addrs)
     return nodes
+
+
+def node_addr_at(x, z):
+    """Object address of the detected node-candidate nearest (x,z) from the last scan, or None.
+    Lets the gather snapshot the exact object it just harvested / hit a mob on (study labelling)."""
+    addrs = _node_cache.get("addrs") or {}
+    best, ba = None, None
+    for (rx, rz), a in addrs.items():
+        d = math.hypot(rx - x, rz - z)
+        if best is None or d < best:
+            best, ba = d, a
+    return ba if (best is not None and best <= 3.0) else None
 
 
 def read_actors(pm, base):
@@ -1237,6 +1276,7 @@ def gather_loop_main(keys, laps):
                  f"dbg={hv.get('debug')}")
             if hv.get("harvests"):
                 blocked = 0
+                study_capture(pm, node_addr_at(tx, tz), "node", (tx, tz))   # CONFIRMED node (RE)
                 prog["harvests_total"] += hv["harvests"]
                 prog["events"].append({"node": hv.get("node"), "n": hv["harvests"],
                                        "rare": hv.get("rare"), "at": [tx, tz]})
@@ -1251,6 +1291,7 @@ def gather_loop_main(keys, laps):
                 # detector never offers it as a node again — this is what stops the bot walking to
                 # the same skeleton over and over (the actual "approaching mobs like harvests" bug).
                 if hv.get("acq") == "mob":
+                    study_capture(pm, node_addr_at(tx, tz), "mob", (tx, tz))  # CONFIRMED mob (RE)
                     blacklist_mob(tx, tz)
                     _dbg(f"  BLACKLISTED mob @ {tx:.0f},{tz:.0f}")
                 prog.setdefault("mobs_skipped", []).append({"mob": hv.get("node"), "at": [tx, tz]})
