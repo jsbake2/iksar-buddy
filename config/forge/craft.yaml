@@ -276,7 +276,8 @@ timings:
   running_timeout: 2.5
   poll: 0.12
   begin_detect: 1.5
-  max_craft_time: 90.0
+  max_craft_time: 300.0      # per-craft safety ceiling; raised 90->300 for slow provisioner crafts
+                             # (completion is log-gated, so normal crafts still end immediately) — owner 2026-06-26
   mana_wait: 25.0
 writ_flavor_prefixes:
 - Rune of
