@@ -204,16 +204,26 @@ _ARTICLE_RE = re.compile(r"^(a|an|the)\s+", re.IGNORECASE)
 
 def _pristine_variants(name: str) -> list[str]:
     """Names to RETRY when a writ objective isn't in the DB: many house/furniture/container recipes
-    are named 'a pristine X' while the writ drops 'pristine' (objective 'a large burlap rug' ->
-    recipe 'a pristine large burlap rug'). Insert 'pristine' after a leading article (and bare).
-    Empty if already pristine. (owner: try this whenever the recipe isn't found.)"""
+    are named 'a pristine X' while the writ drops the word — and often the ARTICLE too (live OCR
+    reads 'Large Burlap Rug', the recipe is 'a pristine large burlap rug'). So insert 'pristine'
+    after whatever article is present, and when none is, try each article 'a/an/the pristine X'
+    (plus bare). The DB index lookup is case-insensitive, so case doesn't matter. Empty if already
+    pristine. (owner: try this whenever the recipe isn't found.)"""
     if "pristine" in name.lower():
         return []
     m = _ARTICLE_RE.match(name)
+    rest = name[m.end():] if m else name
+    out = []
     if m:
-        art, rest = m.group(0), name[m.end():]
-        return [f"{art}pristine {rest}", f"pristine {rest}"]
-    return [f"pristine {name}"]
+        out.append(f"{m.group(0)}pristine {rest}")    # keep the OCR's own article first
+    for art in ("a", "an", "the", ""):                 # DB recipes are usually 'a pristine X'
+        out.append((f"{art} pristine {rest}" if art else f"pristine {rest}"))
+    seen, uniq = set(), []
+    for v in out:
+        k = v.lower()
+        if k not in seen:
+            seen.add(k); uniq.append(v)
+    return uniq
 
 
 def _match_recipe(b: str, t: str, q: str, idx: dict, base_list: list,
