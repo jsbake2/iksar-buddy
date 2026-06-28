@@ -199,6 +199,40 @@ def _pristine_fix(name: str, keywords: list[str]) -> str:
     return name
 
 
+_ARTICLE_RE = re.compile(r"^(a|an|the)\s+", re.IGNORECASE)
+
+
+def _pristine_variants(name: str) -> list[str]:
+    """Names to RETRY when a writ objective isn't in the DB: many house/furniture/container recipes
+    are named 'a pristine X' while the writ drops 'pristine' (objective 'a large burlap rug' ->
+    recipe 'a pristine large burlap rug'). Insert 'pristine' after a leading article (and bare).
+    Empty if already pristine. (owner: try this whenever the recipe isn't found.)"""
+    if "pristine" in name.lower():
+        return []
+    m = _ARTICLE_RE.match(name)
+    if m:
+        art, rest = m.group(0), name[m.end():]
+        return [f"{art}pristine {rest}", f"pristine {rest}"]
+    return [f"pristine {name}"]
+
+
+def _match_recipe(b: str, t: str, q: str, idx: dict, base_list: list,
+                  prefixes: list, base_cutoff: float):
+    """Resolve (base, tier, quality) to a canonical DB recipe name, or None. Tries the base and
+    flavor-prefix-stripped variants; exact index hit first, else a close fuzzy base match; then
+    requires the same tier (and quality when both known)."""
+    for bv in _base_variants(b, prefixes):
+        cands = [bv.lower()] if bv.lower() in idx else \
+                [m.lower() for m in difflib.get_close_matches(bv, base_list, n=1, cutoff=base_cutoff)]
+        for cb in cands:
+            entries = idx.get(cb, [])
+            pick = next((en for et, eq, en in entries if et == t and (not q or not eq or eq == q)), None) \
+                or next((en for et, eq, en in entries if et == t), None)
+            if pick:
+                return pick
+    return None
+
+
 def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
                  flavor_prefixes: list[str] | None = None,
                  pristine_items: list[str] | None = None) -> list[tuple[str, str, bool, int, str]]:
@@ -223,21 +257,18 @@ def resolve_writ(items: dict[str, int], base_cutoff: float = 0.86,
         b, t, q = _decompose(clean)
         canon, verified = clean, False
         if names:
-            # Try the full base first; if it doesn't match, try flavor-prefix-stripped variants
-            # ("Essence of Aggressive Defense" -> "Aggressive Defense"). Same tier+quality.
-            for bv in _base_variants(b, prefixes):
-                cands = [bv.lower()] if bv.lower() in idx else \
-                        [m.lower() for m in difflib.get_close_matches(bv, base_list, n=1, cutoff=base_cutoff)]
-                pick = None
-                for cb in cands:
-                    entries = idx.get(cb, [])
-                    pick = next((en for et, eq, en in entries if et == t and (not q or not eq or eq == q)), None) \
-                        or next((en for et, eq, en in entries if et == t), None)
+            # Match the base (+ flavor-prefix-stripped variants), same tier+quality.
+            pick = _match_recipe(b, t, q, idx, base_list, prefixes, base_cutoff)
+            if not pick:
+                # NOT FOUND -> retry with 'pristine' inserted: many house/furniture/container
+                # recipes are named 'a pristine X' but the writ objective drops it (owner).
+                for pv in _pristine_variants(clean):
+                    pb, pt, pq = _decompose(pv)
+                    pick = _match_recipe(pb, pt, pq, idx, base_list, prefixes, base_cutoff)
                     if pick:
                         break
-                if pick:
-                    canon, verified = pick, True
-                    break
+            if pick:
+                canon, verified = pick, True
         # Flag leftover special chars (after {}->() normalization) so the owner can fix
         # OCR noise. A verified DB match is clean by definition; only warn on the OCR name.
         warn = "" if verified else odd_chars(clean)
