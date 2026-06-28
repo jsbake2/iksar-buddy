@@ -535,6 +535,16 @@ class ForgeController:
         for bid in list(self.workers):
             self.shutdown(bid)
 
+    async def _camp_desktop(self, g) -> None:
+        """Type '/camp desktop' into EQ2 chat — clean logout all the way to the OS (closes the
+        client). Clicks the chat input first so the command lands in chat, never the world."""
+        loop = asyncio.get_running_loop()
+        ci = (self.cfg_profile.get("chat_input", {}) or {}).get("region")
+        if ci:
+            await loop.run_in_executor(None, g.click, ci["x"] + ci["w"] // 2, ci["y"] + ci["h"] // 2)
+            await asyncio.sleep(0.4)
+        await loop.run_in_executor(None, g.type_text, "/camp desktop", True)
+
     async def _shutdown(self, bot_id: str) -> None:
         g = self.guests.get(bot_id)
         if not g:
@@ -545,11 +555,13 @@ class ForgeController:
             w.stop()
         self._release(bot_id)
         self.t.update_bot(bot_id, state="off")
-        self.t.push_event(bot_id, "control", "shutdown: quitting EQ2 + powering off VM")
-        # quit EQ2 first (clean), then graceful VM power-off (ACPI -> Windows shutdown)
-        await loop.run_in_executor(None, g.exec_ps,
-                                   "Stop-Process -Name EverQuest2 -Force -ErrorAction SilentlyContinue", False)
-        await asyncio.sleep(2)
+        # owner standard: /camp desktop -> wait 25s -> power off the VM
+        self.t.push_event(bot_id, "control", "shutdown: /camp desktop -> wait 25s -> power off VM")
+        try:
+            await self._camp_desktop(g)
+        except Exception as e:                       # noqa: BLE001 — never block the power-off
+            self.t.push_log(bot_id, f"/camp desktop failed ({e}); powering off anyway")
+        await asyncio.sleep(25)
         ok = await loop.run_in_executor(None, g.shutdown_vm)
         self.t.update_bot(bot_id, vm_running=False)
         self.t.push_event(bot_id, "control", "VM shutdown sent" if ok else "VM shutdown FAILED")
@@ -561,29 +573,16 @@ class ForgeController:
         if not g:
             return
         loop = asyncio.get_running_loop()
-        self.t.push_event(bot_id, "control", "list complete -> camp + power off")
-        # camp out cleanly (same as the Camp button) before pulling the VM down
-        camp = (self.keymap.get("camp") or "Ctrl+-").strip()
+        self.t.push_event(bot_id, "control", "list complete -> /camp desktop -> wait 25s -> power off")
+        # owner standard: /camp desktop (clean logout to OS), wait 25s, then power off
         try:
-            if camp.startswith("/"):
-                ci = (self.cfg_profile.get("chat_input", {}) or {}).get("region")
-                if ci:
-                    await loop.run_in_executor(None, g.click,
-                                               ci["x"] + ci["w"] // 2, ci["y"] + ci["h"] // 2)
-                    await asyncio.sleep(0.4)
-                await loop.run_in_executor(None, g.type_text, camp, True)
-            else:
-                await loop.run_in_executor(None, g.press_keys, camp)
-            self.t.push_event(bot_id, "control", f"camping ({camp})")
-            await asyncio.sleep(float(self.cfg_profile.get("timings", {}).get("camp_wait", 28.0)))
+            await self._camp_desktop(g)
+            await asyncio.sleep(25)
         except Exception as e:                       # noqa: BLE001 — never let it hang the power-off
             self.t.push_log(bot_id, f"camp before shutdown failed ({e}); powering off anyway")
         self._release(bot_id)
         self.t.update_bot(bot_id, state="off")
         self.t.push_event(bot_id, "control", "powering off VM")
-        await loop.run_in_executor(None, g.exec_ps,
-                                   "Stop-Process -Name EverQuest2 -Force -ErrorAction SilentlyContinue", False)
-        await asyncio.sleep(2)
         ok = await loop.run_in_executor(None, g.shutdown_vm)
         self.t.update_bot(bot_id, vm_running=False)
         self.t.push_event(bot_id, "control", "VM powered off" if ok else "VM power-off FAILED")

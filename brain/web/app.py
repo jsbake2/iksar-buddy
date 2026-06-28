@@ -491,12 +491,15 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
 
     @app.post("/api/shutdown")
     async def shutdown():
-        """Shutdown: power off the healer VM directly (no camp wait). Windows ACPI
-        shutdown closes EQ2 cleanly; forces off if it hangs (stop_bot.sh "none")."""
-        telemetry.push_event("control", "Shutdown VM (no camp)")
+        """Shutdown (owner standard): camp to desktop, wait 25s for the countdown + client exit,
+        then power off the VM. The healer camps via its configured camp keybind (set it to '/camp
+        desktop' in-game). Falls back to a direct power-off if no camp key is set."""
+        camp = brain.cfg.key_for("camp") or "none"
+        camp_wait = str(int(brain.cfg.threshold("camp_wait_s", 25)))
+        telemetry.push_event("control", f"Shutdown VM (camp {camp} + {camp_wait}s)")
 
         async def _go():
-            await _run_bot_script("stop_bot.sh", "none", "0")
+            await _run_bot_script("stop_bot.sh", camp, camp_wait)
             telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": False})
         asyncio.create_task(_go())
         return {"ok": True, "shutdown": "started"}

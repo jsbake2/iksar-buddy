@@ -630,6 +630,15 @@ class Harvest:
         r = subprocess.run(VIRSH + ["shutdown", DOM], capture_output=True, text=True)
         return {"ok": r.returncode == 0, "msg": (r.stdout + r.stderr).strip()}
 
+    def shutdown(self) -> dict:
+        """Web 'Shutdown' (owner standard): /camp desktop -> wait 25s for the camp countdown +
+        client exit -> power off the VM. Camping to desktop first avoids yanking the VM out from
+        under a live EQ2 client."""
+        self.camp_desktop()                          # types /camp desktop into chat
+        self.log.append("shutdown: /camp desktop sent, waiting 25s before VM power-off")
+        time.sleep(25)
+        return self.shutdown_vm()
+
     def keymap(self) -> dict:
         """In-game keybind reference (editable at ib-data/harvest/keymap.yaml)."""
         f = DATA / "keymap.yaml"
@@ -769,7 +778,8 @@ def create_app(h: Harvest) -> FastAPI:
 
     @app.post("/api/shutdown")
     async def shutdown():
-        return await asyncio.get_running_loop().run_in_executor(None, h.shutdown_vm)
+        # owner standard: /camp desktop -> wait 25s -> power off (not a bare VM power-off)
+        return await asyncio.get_running_loop().run_in_executor(None, h.shutdown)
 
     @app.get("/api/keymap")
     async def keymap():
