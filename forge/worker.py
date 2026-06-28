@@ -31,6 +31,10 @@ log = logging.getLogger("forge.worker")
 
 WAIT_BUTTON_S = 30.0      # give up waiting for Begin/Retry after this (then idle)
 
+# Woodworker AMMO recipes (batch-craft 100/combine): arrows, crossbow bolts, shuriken, throwing
+# axe/dagger/hammer. Whole-word match so it can't catch a non-ammo name. Bows/totems/etc. -> 1.
+_AMMO_RE = re.compile(r"\b(?:arrow|bolt|shuriken|throwing)\b", re.IGNORECASE)
+
 
 class CraftWorker:
     def __init__(self, guest: Guest, profile: dict, profile_dir: Path,
@@ -68,7 +72,7 @@ class CraftWorker:
                     cnt = max(1, int(d.get("count", 1)))
                 except (TypeError, ValueError):
                     cnt = 1
-                comb = self._batch_combines(cnt, trade_class)
+                comb = self._batch_combines(cnt, trade_class, d.get("name", ""))
                 d["count"] = comb                 # what the bot actually combines
                 if comb != cnt:
                     d["writ_count"] = cnt          # remember the EQ2 objective (yield-N per combine)
@@ -98,15 +102,20 @@ class CraftWorker:
         self._paused = (not self._paused) if on is None else on
 
     # -- helpers -----------------------------------------------------------
-    def _batch_combines(self, count: int, trade_class: str) -> int:
+    def _batch_combines(self, count: int, trade_class: str, recipe_name: str = "") -> int:
         """Some recipes batch-craft: ONE combine yields N items, so a writ objective of N is N/yield
-        combines, not N. Per owner: alchemist consumable writs (Greater Elemental Remedy, poisons, …)
-        yield 10 ('make 10' = 1 craft); PROVISIONER food yields 2 ('make 6' = 3 crafts — the log shows
-        2 made per combine). craft.yaml `batch_yield:` MERGES over these defaults (so a partial config
-        can't drop them). Only collapses EXACT multiples of the yield (6->3, 10->1) so a non-batch
-        writ (e.g. make-5) is never under-crafted."""
+        combines, not N. Per owner: alchemist consumable writs yield 10 ('make 10' = 1 craft);
+        PROVISIONER food yields 2. WOODWORKER is MIXED — AMMO (arrows / crossbow bolts / shuriken /
+        throwing weapons) batch 100 per combine, while bows/totems/etc. make 1 — so woodworker yield
+        is decided PER RECIPE by name, not per class. craft.yaml `batch_yield:` MERGES over the
+        defaults; `woodworker_ammo` overrides the 100. Only collapses EXACT multiples of the yield
+        (100->1, 6->3) so a non-batch writ is never under-crafted."""
+        tc = (trade_class or "").lower()
         yields = {"alchemist": 10, "provisioner": 2, **(self.cfg.get("batch_yield") or {})}
-        y = int(yields.get((trade_class or "").lower(), 1))
+        y = int(yields.get(tc, 1))
+        if tc == "woodworker":                       # mixed class: ammo batches, everything else = 1
+            ammo_y = int((self.cfg.get("batch_yield") or {}).get("woodworker_ammo", 100))
+            y = ammo_y if _AMMO_RE.search(recipe_name or "") else 1
         if y > 1 and count >= y and count % y == 0:
             return count // y
         return count
@@ -127,7 +136,7 @@ class CraftWorker:
                 raw, flavor_prefixes=self.cfg.get("writ_flavor_prefixes"),
                 pristine_items=self.cfg.get("pristine_prefix_items")):
             cnt = max(1, int(count))
-            comb = self._batch_combines(cnt, tc)
+            comb = self._batch_combines(cnt, tc, resolved)
             item = {"name": resolved, "count": comb, "done": 0, "verified": verified,
                     "station": recipes.recipe_station(resolved) if verified else "", "search": ""}
             if comb != cnt:
