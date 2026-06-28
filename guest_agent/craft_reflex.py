@@ -82,6 +82,11 @@ class CraftReflex:
         # between combines before Begin works again (owner) — the guest double-clicks this.
         self._select_click = self.r.get("select_click")
         self._templates: list = []
+        self._templates_captured = False  # capture the 3 art icons ONCE per writ, BEFORE any press,
+                                          # then reuse — re-grabbing per craft snapshotted a greyed
+                                          # art (still on its 3.5s reuse from the prior craft's spam)
+        self._twins: dict = {}            # {(i,j): (x,y,w,h)} near-identical art pairs + the region
+                                          # where they DIFFER, auto-derived at capture -> tiebreak
         self._filler_i = 0
         self._last_counter = None
         self._cnt_baseline = None        # (mean_r, mean_g) when the counter icon appeared
@@ -217,7 +222,58 @@ class CraftReflex:
                 self._templates.append(_grab(sct, b["x"], b["y"], b["w"], b["h"]))
             except Exception:                    # noqa: BLE001
                 self._templates.append(None)
+        self._twins = self._find_twins(self._templates)
+        if self._twins:
+            self.log(f"reflex: near-identical art pair(s) {list(self._twins)} -> diff-region tiebreak armed")
         return sum(1 for t in self._templates if t is not None)
+
+    def _find_twins(self, tmpls) -> dict:
+        """Auto-detect VISUALLY NEAR-IDENTICAL art icons (e.g. woodworker #1 all-blue vs #2 blue+
+        wood-strip) and compute the small region where they actually DIFFER, so the matcher can
+        break a tie the full-icon match can't. Returns {(i,j): (x,y,w,h)} in template coords.
+
+        Fully data-driven: derived from whatever icons loaded this craft, so it needs NO per-class
+        config and NEVER fires for classes whose 3 icons are already distinct (no twin detected ->
+        empty dict -> existing match runs unchanged). The hotbar slot-number badge (top-right) is
+        masked out of the diff so it isn't mistaken for the discriminator (the reaction icon has no
+        badge)."""
+        rc = self.r.get("reaction", {}) or {}
+        twin_sim = float(rc.get("twin_sim", 0.60))      # mutual match >= this => 'twins' (share most
+                                                        # of the icon; distinct arts score well under)
+        diff_thr = int(rc.get("twin_diff_thr", 36))     # per-pixel BGR delta that counts as 'differs'
+        badge = int(rc.get("badge_corner", 14))         # top-right slot-number badge size to ignore
+        twins: dict = {}
+        for i in range(len(tmpls)):
+            for j in range(i + 1, len(tmpls)):
+                a, b = tmpls[i], tmpls[j]
+                if a is None or b is None or a.shape != b.shape:
+                    continue
+                res = cv2.matchTemplate(a, b, cv2.TM_CCOEFF_NORMED)
+                _, sim, _, _ = cv2.minMaxLoc(res)
+                if sim < twin_sim:                       # distinct icons -> not a twin, leave alone
+                    continue
+                d = cv2.absdiff(a, b)
+                d = d.max(axis=2) if d.ndim == 3 else d
+                if badge > 0:                            # ignore the slot-number badge corner
+                    d[:badge, max(0, d.shape[1] - badge):] = 0
+                diff = d > diff_thr
+                H, W = diff.shape
+                frac = float(rc.get("twin_band_frac", 0.40))   # a row/col must be >=frac different
+                # Find the DISCRIMINATING BAND: rows that mostly differ (a horizontal strip, e.g.
+                # woodworker's wood bottom) and/or cols that mostly differ (a vertical strip / side).
+                # Take the tightest valid band so the tiebreak matches only where the arts diverge,
+                # ignoring the shared bulk + scattered AA noise. Generalises to strip/side/corner.
+                hot_r = np.where(diff.sum(axis=1) >= frac * W)[0]
+                hot_c = np.where(diff.sum(axis=0) >= frac * H)[0]
+                cands = []
+                if hot_r.size >= 2:
+                    y0 = int(hot_r.min()); cands.append((0, y0, W, int(hot_r.max()) - y0 + 1))
+                if hot_c.size >= 2:
+                    x0 = int(hot_c.min()); cands.append((x0, 0, int(hot_c.max()) - x0 + 1, H))
+                if not cands:                            # no concentrated difference -> can't split
+                    continue
+                twins[(i, j)] = min(cands, key=lambda r: r[2] * r[3])   # tightest discriminating band
+        return twins
 
     @staticmethod
     def _mean_rgb(arr):
@@ -247,7 +303,36 @@ class CraftReflex:
             scores.append(round(float(mx), 3))
             if mx > thresh and mx > best_val:
                 best, best_val = i + 1, mx
+        # TWIN TIEBREAK (#2): the full-icon match can't separate near-identical arts (woodworker #1
+        # all-blue vs #2 blue+wood share ~65% of the icon). If the two best scores are a detected
+        # twin pair and they're close, re-decide on ONLY the region where the icons differ (the wood
+        # strip), auto-derived at capture. No-op for distinct icons (no twin -> empty dict).
+        if best is not None and self._twins and len(scores) >= 2:
+            order = sorted(range(len(scores)), key=lambda k: scores[k], reverse=True)
+            i0, i1 = order[0], order[1]
+            key = (min(i0, i1), max(i0, i1))
+            margin = float((self.r.get("reaction", {}) or {}).get("twin_margin", 0.06))
+            if key in self._twins and scores[i0] > thresh and scores[i0] - scores[i1] < margin:
+                x, y, w, h = self._twins[key]
+                s0 = self._match_region(arr, self._templates[key[0]], x, y, w, h)
+                s1 = self._match_region(arr, self._templates[key[1]], x, y, w, h)
+                win = key[0] if s0 >= s1 else key[1]
+                if win + 1 != best:
+                    self.log(f"reflex: twin tiebreak {key} close ({scores[i0]:.2f}/{scores[i1]:.2f})"
+                             f" -> diff-region {s0:.2f}/{s1:.2f} => counter#{win + 1}")
+                best = win + 1
         return best, scores, arr
+
+    @staticmethod
+    def _match_region(arr, tmpl, x, y, w, h) -> float:
+        """Max TM_CCOEFF_NORMED of just the (x,y,w,h) sub-region of `tmpl` against the reaction grab
+        `arr` — used to break a twin tie on the region where the two arts actually differ."""
+        crop = tmpl[y:y + h, x:x + w]
+        if crop.size == 0 or crop.shape[0] > arr.shape[0] or crop.shape[1] > arr.shape[1]:
+            return 0.0
+        res = cv2.matchTemplate(arr, crop, cv2.TM_CCOEFF_NORMED)
+        _, mx, _, _ = cv2.minMaxLoc(res)
+        return float(mx)
 
     def _mode(self, sct) -> str:
         """Durability mode from the OWNER-MARKED pixel on the green durability bar:
@@ -484,6 +569,7 @@ class CraftReflex:
         craft (fuel returned, item not made) is retried ONCE (owner), then we stop short."""
         count = int(self.r.get("count", 1))
         self.crafts_done = 0
+        self._templates_captured = False     # new writ/recipe -> capture fresh templates once, pre-spam
         self._activate_eq2()
         self.log(f"reflex: craft_run START — {count} craft(s) in-guest")
         while self.crafts_done < count and not self.should_stop():
@@ -509,6 +595,7 @@ class CraftReflex:
 
     def run(self) -> bool:
         """Single craft: react until done. The host started + confirmed running."""
+        self._templates_captured = False     # fresh capture for this react session
         return self._react_until_done() == "success"
 
     def _react_until_done(self) -> str:
@@ -534,21 +621,26 @@ class CraftReflex:
         dbg_n = 0
         self._activate_eq2()
         with mss.mss() as sct:
-            got = self._capture_templates(sct)
-            self.log(f"reflex: captured {got} counter templates; reacting (debug={debug})")
-            if debug:
-                try:
-                    dbg_dir.mkdir(parents=True, exist_ok=True)
-                    for f in dbg_dir.glob("*.png"):
-                        f.unlink()
-                    full = _grab(sct, 0, 0, 1920, 1080)
-                    cv2.imwrite(str(dbg_dir / "full.png"), full)
-                    for i, t in enumerate(self._templates):
-                        if t is not None:
-                            cv2.imwrite(str(dbg_dir / f"tmpl_{i}.png"), t)
-                    self.log(f"reflex: dumped full.png + {got} templates to {dbg_dir}")
-                except Exception as e:           # noqa: BLE001
-                    self.log(f"reflex: debug dump failed: {e}")
+            # Capture the 3 art icons ONCE per writ, on the FIRST craft only — BEFORE any art is
+            # pressed, so they're bright. Reusing for later crafts (same recipe -> same arts) avoids
+            # re-grabbing an icon that's greyed from the previous craft's spam (owner's bug).
+            if not self._templates_captured:
+                got = self._capture_templates(sct)
+                self._templates_captured = True
+                self.log(f"reflex: captured {got} counter templates (once/writ, pre-spam); reacting (debug={debug})")
+                if debug:
+                    try:
+                        dbg_dir.mkdir(parents=True, exist_ok=True)
+                        for f in dbg_dir.glob("*.png"):
+                            f.unlink()
+                        full = _grab(sct, 0, 0, 1920, 1080)
+                        cv2.imwrite(str(dbg_dir / "full.png"), full)
+                        for i, t in enumerate(self._templates):
+                            if t is not None:
+                                cv2.imwrite(str(dbg_dir / f"tmpl_{i}.png"), t)
+                        self.log(f"reflex: dumped full.png + {got} templates to {dbg_dir}")
+                    except Exception as e:       # noqa: BLE001
+                        self.log(f"reflex: debug dump failed: {e}")
             t0 = time.time()
             last_done = 0.0
             last_filler = 0.0
