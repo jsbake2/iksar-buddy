@@ -224,12 +224,20 @@ class ForgeController:
         # snap to the canonical recipe; everything else keeps its cleaned name (roman numerals
         # fixed) and is flagged UNVERIFIED — we never substitute a wrong recipe.
         queue, unverified, flagged = [], 0, 0
+        w = self.workers.get(bot_id)
+        tc = b.get("trade_class", "")
         for rawname, resolved, verified, count, warn in recipes.resolve_writ(
                 raw, flavor_prefixes=self.cfg_profile.get("writ_flavor_prefixes"),
                 pristine_items=self.cfg_profile.get("pristine_prefix_items")):
             station = recipes.recipe_station(resolved) if verified else ""
-            item = {"name": resolved, "count": count, "done": 0,
+            # Collapse batch recipes (ammo 100/combine, food 2, …) to COMBINES at read time so the UI
+            # shows what we'll actually craft (3), not the writ item count (300). writ_count keeps the
+            # objective. Idempotent with worker.start (3 < yield -> no further collapse).
+            comb = w._batch_combines(count, tc, resolved) if w else count
+            item = {"name": resolved, "count": comb, "done": 0,
                     "verified": verified, "station": station}
+            if comb != count:
+                item["writ_count"] = count
             if warn:                       # OCR left an unexpected char -> surface it to fix
                 item["warn"] = warn
                 flagged += 1
