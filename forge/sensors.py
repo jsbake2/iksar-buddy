@@ -473,6 +473,18 @@ def recipe_row_blobs(guest: Guest, cfg: dict) -> list[str]:
     return [blob for blob, _ in _row_candidates(guest, cfg)]
 
 
+_ROMAN_RE = re.compile(r"\b([ivxl]{1,4})\b", re.IGNORECASE)
+
+
+def _roman_tier(s: str) -> str:
+    """The standalone roman-numeral tier in a recipe row/name ('iv'), '' if none. The tier is
+    significant but ≤2 chars, so the >=3 token filter drops it — without it the picker can't tell
+    'Solar Flare IV' from 'Solar Flare VI', nor a no-tier base ('Peerless Predator (Journeyman)')
+    from its tier'd siblings ('… V (Journeyman)'). Tolerates the OCR l->i misread (IV read as lV)."""
+    m = _ROMAN_RE.search(s)
+    return m.group(1).lower().replace("l", "i") if m else ""
+
+
 def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | None:
     """Click point of the result row whose name matches `name`: full token-coverage AND no
     surplus WORD (a row with an extra word — 'Tranquil'/'Imbued'/'Blessed' Burlap Pantaloons,
@@ -494,10 +506,11 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
     # on a pure tie prefer the row carrying the target's quality -> always the writ's version.
     qualities = ("apprentice", "journeyman", "adept", "expert", "master", "grandmaster")
     target_q = next((q for q in qualities if q in name_l), None)
+    target_roman = _roman_tier(name_l)         # '' for a base recipe; reject rows with a diff tier
     # On a pure tie, prefer Journeyman: explicit when the target names it, else the default
     # (jeweler/scholar writs are always Journeyman). Harmless for gear (no quality rows).
     prefer_q = target_q or "journeyman"
-    want_len = sum(len(t) for t in want)
+    want_len = sum(len(t) for t in want) + len(target_roman)   # the roman is part of the target
     # Surplus-letter budget beyond the target tokens: OCR noise (a stray glyph or two) is fine,
     # but a whole extra WORD (~5+ chars) means a different recipe -> reject. Roman/quality tails
     # are already part of `want` for tier'd names, so this targets prefix/suffix variants.
@@ -513,8 +526,16 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
         if target_q and any(_contains(blob, q) for q in qualities if q != target_q):
             log.debug("recipe row click=%s REJECT (wrong quality, want %s) blob=%r", click, target_q, blob)
             continue
+        # Wrong-TIER reject: the roman tier IS the recipe — 'Solar Flare IV' must not match
+        # '… VI', and a no-tier base must not match its tier'd siblings.
+        if _roman_tier(blob) != target_roman:
+            log.debug("recipe row click=%s REJECT (tier %r != %r) blob=%r",
+                      click, _roman_tier(blob), target_roman, blob)
+            continue
         score = sum(1 for t in want if _contains(blob, t)) / len(want)
-        extra = max(0, len(blob) - want_len)
+        # Surplus = extra LETTERS only (ignore spaces/parens, which inflated the count and rejected
+        # legit tier'd names); a whole extra word still trips it (Tranquil/Imbued/of-X).
+        extra = max(0, sum(len(t) for t in re.findall(r"[a-z]+", blob)) - want_len)
         if extra > max_extra:                  # extra word -> different recipe (Tranquil/of-X)
             log.debug("recipe row click=%s REJECT (extra word, %d) blob=%r", click, extra, blob)
             continue
