@@ -510,7 +510,9 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
     # On a pure tie, prefer Journeyman: explicit when the target names it, else the default
     # (jeweler/scholar writs are always Journeyman). Harmless for gear (no quality rows).
     prefer_q = target_q or "journeyman"
-    want_len = sum(len(t) for t in want) + len(target_roman)   # the roman is part of the target
+    if target_roman and target_roman not in want:     # the result-row blob is SPACE-STRIPPED, so a
+        want = want + [target_roman]                   # \b roman match fails — fold the tier into
+    want_len = sum(len(t) for t in want)               # coverage instead (substring-matchable)
     # Surplus-letter budget beyond the target tokens: OCR noise (a stray glyph or two) is fine,
     # but a whole extra WORD (~5+ chars) means a different recipe -> reject. Roman/quality tails
     # are already part of `want` for tier'd names, so this targets prefix/suffix variants.
@@ -525,12 +527,6 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
         # Wrong-quality reject: target wants one quality, this row's OCR shows a different one.
         if target_q and any(_contains(blob, q) for q in qualities if q != target_q):
             log.debug("recipe row click=%s REJECT (wrong quality, want %s) blob=%r", click, target_q, blob)
-            continue
-        # Wrong-TIER reject: the roman tier IS the recipe — 'Solar Flare IV' must not match
-        # '… VI', and a no-tier base must not match its tier'd siblings.
-        if _roman_tier(blob) != target_roman:
-            log.debug("recipe row click=%s REJECT (tier %r != %r) blob=%r",
-                      click, _roman_tier(blob), target_roman, blob)
             continue
         score = sum(1 for t in want if _contains(blob, t)) / len(want)
         # Surplus = extra LETTERS only (ignore spaces/parens, which inflated the count and rejected
