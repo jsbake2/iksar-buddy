@@ -133,6 +133,10 @@ _QUALITIES = ["Apprentice", "Journeyman", "Adept", "Expert", "Master", "Grandmas
 _RECIPE_INDEX: tuple[dict, list] | None = None
 
 
+# A valid roman numeral (I..XXXIX), for re-reading an OCR-garbled tier token.
+_VALID_ROMAN = re.compile(r"^(?=[IVX])X{0,3}(?:IX|IV|V?I{0,3})$")
+
+
 def _decompose(name: str) -> tuple[str, str, str]:
     """(base, tier, quality) — base name without the roman tier or the '(Quality)' tag."""
     n = _fix_roman(name)
@@ -142,6 +146,15 @@ def _decompose(name: str) -> tuple[str, str, str]:
         q = difflib.get_close_matches(qm.group(1).strip(), _QUALITIES, n=1, cutoff=0.6)
         quality = q[0] if q else qm.group(1).strip()
     n = _PARENS_RE.sub("", n).strip()
+    # Rescue an OCR-garbled trailing roman tier: 'IV' often reads as 'lV'/'1V'/'|V' (I->l/1/|) or
+    # lowercase 'iv' — _tier (case-sensitive, clean-I only) then drops it and the name matches the
+    # NO-roman base recipe, stripping the tier ('Silent Threat IV' -> 'Silent Threat'). Normalize the
+    # last token to a proper roman first when it cleans up to a valid one.
+    parts = n.rsplit(" ", 1)
+    if len(parts) == 2:
+        cand = parts[1].upper().replace("L", "I").replace("1", "I").replace("|", "I")
+        if cand != parts[1] and _VALID_ROMAN.match(cand):
+            n = parts[0] + " " + cand
     tier = _tier(n)
     base = re.sub(r"(?:^|\s)" + re.escape(tier) + r"$", "", n).strip() if tier else n
     return base, tier, quality
