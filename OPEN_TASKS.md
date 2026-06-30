@@ -17,6 +17,12 @@ Defense II"** (both real Journeyman spells) returned **0 hits** — the writ DB-
   WANT_CATEGORIES (or add a spell-specific pull) and re-aggregate. Until then, writs with those
   recipes show ⚠ unverified (still craftable — the cleaned name searches fine).
 
+## 🆕 To do (added 2026-06-30)
+- **Verify staged-not-deployed serving-word commits reached `~/ib-app`.** `9e6b580` (add
+  `bottle of` to provisioner serving words) and `4d78145` (tolerate OCR `l→i/1` on `bott[il1]e`)
+  were committed with "staged, not deployed" notes. Confirm they're actually in the live
+  `~/ib-app/forge/` on 10.0.0.16 (`grep "bottle of" recipes`), redeploy + restart ib-forge if not.
+
 ## ✅ Done recently (context)
 - In-guest reflex agent (crafter): fast counter loop, 12 Hz.
 - Counter mechanic fixed: counters always press the icon's art (**1/2/3**); 4/5/6 are pump/filler only.
