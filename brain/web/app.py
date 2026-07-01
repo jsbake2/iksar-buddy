@@ -92,13 +92,14 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     app = FastAPI(title="ib", docs_url=None, redoc_url=None)
 
     @app.middleware("http")
-    async def _no_cache_html(request, call_next):
-        """HTML must never be cached — otherwise a popped-out window (focus/group) keeps
-        loading a stale page that references an old versioned .js, so our cache-busts
-        never take. HTML always revalidates; the ?v= on js/css handles those."""
+    async def _no_cache_dynamic(request, call_next):
+        """HTML and ALL /api/ responses must never be cached — there's a Cloudflare
+        tunnel in front, and a cached /api/snapshot (from before `profile` existed) or a
+        stale popped-out .html silently breaks the dashboard. Only the ?v= static js/css
+        stay cacheable. no-store so the CF edge won't hold them."""
         resp = await call_next(request)
         path = request.url.path
-        if path == "/" or path.endswith(".html"):
+        if path == "/" or path.endswith(".html") or path.startswith("/api/"):
             resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         return resp
 
