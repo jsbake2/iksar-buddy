@@ -71,6 +71,7 @@ const DIRGE_CATALOG = [
 ];
 
 // active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).
+const FOCUS_BUILD = "b5";        // bump on focus.js changes — shown in the header for verification
 let kind = "healer";
 let CATALOG = HEALER_CATALOG;
 let BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
@@ -82,6 +83,14 @@ function setKind(k) {
   DEFAULT = CATALOG.filter((c) => c.hot).map((c) => c.id);
   ENSURE = ENSURE_BY_KIND[k] || [];
   layout = loadLocal();     // this kind's cached layout (or its default); server overrides
+  const b = document.querySelector(".focus-brand");   // show detected kind + build (diagnostic)
+  if (b) b.textContent = "ib focus · " + k + " · " + FOCUS_BUILD;
+}
+// kind from the live profile: prefer the explicit `kind` (what the main page uses),
+// fall back to deriving from maint_role.
+function kindOf(profile) {
+  const p = profile || {};
+  return p.kind || (p.maint_role === "none" ? "dirge" : "healer");
 }
 
 // ward->hot 1:1 by active healer profile (Defiler wards vs Fury HoTs).
@@ -162,7 +171,7 @@ if (armChip) armChip.onclick = () =>
   fetch(`/api/control/${state.running ? "pause" : "resume"}`, { method: "POST" }).catch(() => {});
 function applyState(s) {
   // swap the whole catalog + saved layout when the active profile's kind changes
-  const k = (s.profile || {}).maint_role === "none" ? "dirge" : "healer";
+  const k = kindOf(s.profile);
   if (k !== kind) { setKind(k); render(); loadServerLayout(); }   // repaint immediately in the new kind
   // ward->hot relabel on profile change (re-render once; maintRole then stable)
   const mr = (s.profile || {}).maint_role || "ward";
@@ -339,7 +348,7 @@ function connect() {
 async function init() {
   try {
     const p = await (await fetch("/api/profiles?t=" + Date.now())).json();
-    setKind(p && p.maint_role === "none" ? "dirge" : "healer");
+    setKind(kindOf(p));
   } catch (_) {}
   render();
   connect();
