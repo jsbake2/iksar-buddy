@@ -17,12 +17,13 @@ const HEALER_BTNS = [
   { act: "follow", label: "Follow", cls: "b-follow" },
   { act: "rez", label: "Rez", cls: "b-rez" },
 ];
-// Dirge: individual buffs per member (no heals/wards/cures) + follow + rez.
+// Dirge: buffs per member (no heals/wards/cures) + follow. The main page's buff
+// matrix is the full interface; these are quick per-member casts. Roles match joar.yaml.
 const DIRGE_BTNS = [
-  { act: "ibuff_1", label: "Buff 1", cls: "b-buff" },
-  { act: "ibuff_2", label: "Buff 2", cls: "b-buff" },
+  { act: "ind_buff_1", label: "Buff 1", cls: "b-buff" },
+  { act: "ind_buff_2", label: "Buff 2", cls: "b-buff" },
+  { act: "temp_buff_1", label: "Temp", cls: "b-buff" },
   { act: "follow", label: "Follow", cls: "b-follow" },
-  { act: "rez", label: "Rez", cls: "b-rez" },
 ];
 let BTNS = HEALER_BTNS;
 

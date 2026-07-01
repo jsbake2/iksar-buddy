@@ -1,60 +1,47 @@
-# Healer-tool profile: JOAR (Dirge — SUPPORT/bard, NOT a healer). No wards, HoTs,
-# reactive heals, or cures. maintenance_role/group_maintenance_role = none, so the
-# decision loop has no heal heartbeat and queues no auto actions — Joar is driven by
-# manual dashboard buttons (buffs, follow) for now. All heal/ward/cure roles are left
-# blank on purpose; the policy loop skips unmapped roles (brain/policy.py `_is_mapped`).
+# Healer-tool profile: JOAR (Dirge — SUPPORT/bard, NOT a healer). No heals/wards/cures.
+# maintenance_role/group_maintenance_role = none -> the dashboard renders the DIRGE
+# layout: a buff matrix (buffs x group members) + utility on the main page; combat
+# (attacks/debuffs/aoe/deaggro) + utility on the focus window. policy.py skips absent
+# roles, so Joar queues no auto actions.
 #
-# Account: account3 (matte123) — a NEW EQ2 account, so this is effectively a 3rd box.
-# It is NOT launchable off the healer VM's login until it has its own dom/box; creds
-# resolve by account (charswitch -> creds_for_character). Config-only for now per owner
-# ("just add it, don't log it in — currently in use").
-#
-# Owner fills the real Dirge keybinds (buffs, follow, utility). Keys below are the
-# carried-over healer keymap layout with heal roles cleared.
+# Account: account3 (matte123). Owner fills keys via the ⌨ keymap page. Buff roles
+# (temp_buff_* / ind_buff_*) carry a `name:` the owner sets in the keymap — that name
+# is the row label on the main page where the buff is cast onto a group member.
 
 healer: dirge
-# NO heal/ward/cure/HoT roles — a Dirge has none. They're omitted entirely so the
-# keymap page shows only the Dirge kit (policy.py skips any role that isn't present).
 abilities:
-  # === DIRGE action set (drives the dashboard buff/debuff/combo layout) =========
-  # Roles are grouped by PREFIX; the dashboard renders one section per group and a
-  # per-member row for the individual buffs. Owner fills the keys (keymap page) and
-  # relabels via `desc`. Add more in any group by continuing the number (ibuff_3, ...).
-  #
-  # 1) individual buffs — cast on a chosen group member (per-member buttons)
-  ibuff_1:  { key: '', mode: manual, desc: 'individual buff 1' }
-  ibuff_2:  { key: '', mode: manual, desc: 'individual buff 2' }
-  # 2) tank buffs — always land on group position 2 (F2)
-  tbuff_1:  { key: '', mode: manual, desc: 'tank buff 1' }
-  tbuff_2:  { key: '', mode: manual, desc: 'tank buff 2' }
-  # 3) self buffs — cast on Joar (F1)
-  sbuff_1:  { key: '', mode: manual, desc: 'self buff 1' }
-  sbuff_2:  { key: '', mode: manual, desc: 'self buff 2' }
-  # 4) debuffs — cast on the current target
-  dbuff_1:  { key: '', mode: manual, desc: 'debuff 1' }
-  dbuff_2:  { key: '', mode: manual, desc: 'debuff 2' }
-  # 5) group buffs — no target (AE / group-wide)
-  gbuff_1:  { key: '', mode: manual, desc: 'group buff 1' }
-  gbuff_2:  { key: '', mode: manual, desc: 'group buff 2' }
-  # 6) damage combos — cast during combat (sequence of arts)
-  combo_1:  { key: '', mode: manual, desc: 'damage combo 1' }
-  combo_2:  { key: '', mode: manual, desc: 'damage combo 2' }
-  combo_3:  { key: '', mode: manual, desc: 'damage combo 3' }
+  # === BUFFS — cast on a group member from the main-page matrix (named in keymap) ===
+  # temp buffs (re-applied often)
+  temp_buff_1: { key: '', mode: manual, name: '', desc: 'temp buff 1' }
+  temp_buff_2: { key: '', mode: manual, name: '', desc: 'temp buff 2' }
+  temp_buff_3: { key: '', mode: manual, name: '', desc: 'temp buff 3' }
+  temp_buff_4: { key: '', mode: manual, name: '', desc: 'temp buff 4' }
+  # individual (permanent) buffs
+  ind_buff_1:  { key: '', mode: manual, name: '', desc: 'individual buff 1' }
+  ind_buff_2:  { key: '', mode: manual, name: '', desc: 'individual buff 2' }
+  ind_buff_3:  { key: '', mode: manual, name: '', desc: 'individual buff 3' }
+  ind_buff_4:  { key: '', mode: manual, name: '', desc: 'individual buff 4' }
 
-  # --- combat utility ---
-  deaggro:  { key: '=', mode: manual, desc: 'de-aggro / drop threat' }
-  rez:      { key: '',  mode: manual, cast_ms: 6000, desc: 'battle rez (target dead member via F-key first)' }
+  # === COMBAT — on the focus window ===
+  debuff_1:     { key: '', mode: manual, desc: 'debuff 1' }
+  debuff_2:     { key: '', mode: manual, desc: 'debuff 2' }
+  attack_1:     { key: '', mode: manual, desc: 'attack 1' }
+  attack_2:     { key: '', mode: manual, desc: 'attack 2' }
+  enc_attack_1: { key: '', mode: manual, desc: 'encounter attack 1' }
+  enc_attack_2: { key: '', mode: manual, desc: 'encounter attack 2' }
+  aoe_attack:   { key: '', mode: manual, desc: 'aoe attack' }
+  deaggro:      { key: '=', mode: manual, desc: 'de-aggro / drop threat' }
 
-  # --- movement / utility ---
-  follow:      { key: Alt+=,  mode: manual, desc: 'auto-follow toggle (follow the tank)' }
+  # === UTILITY / MOVEMENT ===
+  follow:      { key: Alt+=,  mode: manual, desc: 'auto-follow toggle' }
   stop_follow: { key: Ctrl+=, mode: manual, desc: 'stop following' }
   jump:        { key: Space,  mode: manual, desc: 'jump (un-stick / pathing)' }
-  sow:         { key: '',     mode: manual, desc: 'run-speed buff (Selo''s) on the group' }
+  sow:         { key: '',     mode: manual, desc: 'run-speed (Selo''s)' }
   call_home:   { key: Alt+-,  mode: manual, desc: 'call to home' }
-  evac:        { key: '',     mode: manual, desc: 'emergency evac / GTFO' }
+  evac:        { key: '',     mode: manual, desc: 'emergency evac' }
   hail:        { key: '',     mode: manual, desc: 'hail NPC' }
   item_use:    { key: '',     mode: manual, desc: 'use item (totem / temp buff)' }
-  camp:        { key: Ctrl+-, mode: manual, desc: 'camp/exit (/camp desktop) — used by Stop Bot' }
+  camp:        { key: Ctrl+-, mode: manual, desc: 'camp (/camp desktop) — used by Stop Bot' }
 
 group_target_keys:
 - F1

@@ -91,17 +91,18 @@ _GROUP_ACTIONS = {
 def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     app = FastAPI(title="ib", docs_url=None, redoc_url=None)
 
-    # Dirge (support) action categories, keyed by ability-role prefix. The dashboard
-    # renders a buff/debuff/combo layout instead of the healer heal-grid when a profile
-    # has no maintenance heal (maint_role == 'none'). Owner fills the keys in the keymap.
-    _DIRGE_CATS = [("individual", "ibuff_"), ("tank", "tbuff_"), ("self", "sbuff_"),
-                   ("debuff", "dbuff_"), ("group", "gbuff_"), ("combo", "combo_")]
+    # Dirge (support) main-page BUFF MATRIX data: the temp + individual (permanent)
+    # buffs, each with the owner-set `name` (from the keymap) used as the matrix row
+    # label. Columns are the live group members; a cell casts that buff on that member.
+    # Combat (attacks/debuffs/aoe) + most utility live on the focus window, not here.
+    _DIRGE_BUFFS = [("temp", "temp_buff_"), ("individual", "ind_buff_")]
 
     def _dirge_actions() -> dict:
         ab = brain.cfg.ability_map.get("abilities", {}) or {}
         out: dict = {}
-        for cat, pref in _DIRGE_CATS:
-            items = [{"role": r, "label": (sp or {}).get("desc") or r,
+        for cat, pref in _DIRGE_BUFFS:
+            items = [{"role": r, "name": (sp or {}).get("name") or "",
+                      "label": (sp or {}).get("desc") or r,
                       "key": bool((sp or {}).get("key") and (sp or {}).get("key") != "none")}
                      for r, sp in ab.items() if r.startswith(pref)]
             if items:
@@ -276,6 +277,9 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             # push the fresh keymap + NAMES to the agent so combat detection (which filters
             # the log to group-member names) and targeting update live, no reconnect needed.
             await brain.push_config()
+            # refresh the dashboard profile state so edited buff NAMES show on the buff
+            # matrix immediately (Dirge main page reads them from here).
+            telemetry.update(profile=_profile_state())
         except Exception as e:  # pragma: no cover
             return JSONResponse({"error": str(e)}, status_code=500)
         telemetry.push_event("config", "keymap saved")

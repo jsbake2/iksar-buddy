@@ -124,7 +124,7 @@ let gridBuilt = false;
 function buildGrid(members) {
   const grid = $("actionGrid");
   grid.innerHTML = "";
-  if (profileKind === "dirge") { buildBuffGrid(grid, members); return; }
+  if (profileKind === "dirge") { buildBuffMatrix(grid, members); return; }
   const head = document.createElement("div");
   head.className = "ctl-row head";
   head.innerHTML = `<span>member</span><span>heal</span><span>${maintRole}</span>` +
@@ -153,55 +153,49 @@ function buildGrid(members) {
   gridBuilt = true;
 }
 
-// ---- Dirge (support): per-member INDIVIDUAL-buff grid + buff/debuff/combo sections ----
-function _btnAttr(a, slot) {
-  // slot === null -> group/no-target (data-group); else target that member's F-key (data-act/data-slot)
-  const t = `title="${a.label}${a.key ? "" : " — set a key in ⌨ keymap"}"`;
-  const cls = a.key ? "" : ' class="unset"';
-  return slot === null
-    ? `<button${cls} data-group="${a.role}" ${t}>${a.label}</button>`
-    : `<button${cls} data-act="${a.role}" data-slot="${slot}" ${t}>${a.label}</button>`;
-}
+// ---- Dirge (support): BUFF MATRIX (buff rows x member cols) + utility ----
 function _bind(el) {
   el.querySelectorAll("[data-group]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.group}`)));
   el.querySelectorAll("[data-act]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.act}/${b.dataset.slot}`)));
 }
-function buildBuffGrid(grid, members) {
-  const ib = dirgeActions.individual || [];
-  const cols = `1.4fr repeat(${Math.max(ib.length, 1)}, 1fr)`;
+// Rows = temp buffs then individual (permanent) buffs, labelled by the owner's keymap
+// NAME. Columns = live group members. A cell casts that buff on that member.
+function buildBuffMatrix(grid, members) {
+  const rows = [...(dirgeActions.temp || []), ...(dirgeActions.individual || [])];
+  const cols = `1.7fr repeat(${Math.max(members.length, 1)}, 1fr)`;
   const head = document.createElement("div");
   head.className = "ctl-row head"; head.style.gridTemplateColumns = cols;
-  head.innerHTML = `<span>member</span>` +
-    (ib.length ? ib.map((a) => `<span>${a.label}</span>`).join("") : `<span class="muted">individual buffs — add ibuff_* keys</span>`);
+  head.innerHTML = `<span>buff</span>` +
+    (members.length ? members.map((m) => `<span>${m.name || FALLBACK_NAMES[m.slot] || "slot" + m.slot}</span>`).join("")
+                    : `<span class="muted">no group members present</span>`);
   grid.appendChild(head);
-  members.forEach((m) => {
+  rows.forEach((b) => {
     const row = document.createElement("div");
     row.className = "ctl-row"; row.style.gridTemplateColumns = cols;
-    const name = m.name || FALLBACK_NAMES[m.slot] || `slot${m.slot}`;
-    row.innerHTML = `<div class="who">${name}<small>${m.role || ""}</small></div>` +
-      ib.map((a) => {
-        const t = `${a.label}${a.key ? "" : " — set a key in ⌨ keymap"}`;
-        return `<button class="act buff${a.key ? "" : " unset"}" data-act="${a.role}" data-slot="${m.slot}" title="${t}">buff</button>`;
+    const label = b.name || b.label;
+    const unset = b.key ? "" : " unset";
+    row.innerHTML =
+      `<div class="who${unset}" title="${b.label}${b.key ? "" : " — set a key in ⌨ keymap"}">${label}</div>` +
+      members.map((m) => {
+        const who = m.name || FALLBACK_NAMES[m.slot] || "slot" + m.slot;
+        return `<button class="act buff${unset}" data-act="${b.role}" data-slot="${m.slot}" title="cast ${label} on ${who}">cast</button>`;
       }).join("");
     grid.appendChild(row);
   });
   _bind(grid);
   gridBuilt = true;
 }
+// Main-page utility (combat — attacks/debuffs/aoe — lives on the focus window).
+const DIRGE_UTIL = [
+  ["follow", "Follow"], ["stop_follow", "Stop Follow"], ["jump", "Jump"], ["sow", "SoW"],
+  ["call_home", "Call Home"], ["evac", "Evac"], ["hail", "Hail"], ["item_use", "Item"],
+  ["deaggro", "De-aggro"], ["camp", "Camp"],
+];
 function buildDirgeSections() {
   const box = $("dirgeSections"); if (!box) return;
-  const A = dirgeActions;
-  // [title, items, targetSlot]  (targetSlot null = no target / current target)
-  const secs = [
-    ["Tank buffs (group pos 2)", A.tank, 1],
-    ["Self buffs", A.self, 0],
-    ["Debuffs (current target)", A.debuff, null],
-    ["Group buffs", A.group, null],
-    ["Damage combos (combat)", A.combo, null],
-  ].filter(([, items]) => items && items.length);
-  box.innerHTML = secs.map(([title, items, slot]) =>
-    `<div class="ctl-sec"><h3>${title}</h3><div class="sbtns">` +
-    items.map((a) => _btnAttr(a, slot)).join("") + `</div></div>`).join("");
+  box.innerHTML = `<div class="ctl-sec"><h3>Utility</h3><div class="sbtns">` +
+    DIRGE_UTIL.map(([role, label]) => `<button data-group="${role}" title="${label}">${label}</button>`).join("") +
+    `</div></div>`;
   _bind(box);
 }
 

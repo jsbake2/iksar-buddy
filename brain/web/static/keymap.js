@@ -18,9 +18,14 @@ function row(role, entry, container, isMacro) {
   div.className = "km-row" + (entry.key ? "" : " unmapped");
   const desc = entry.desc || "";
   const mode = entry.mode || (isMacro ? "macro" : "");
+  // Buff roles carry a `name` — an editable label shown on the main-page buff matrix.
+  const nameable = !isMacro && entry.name !== undefined;
+  const descCell = nameable
+    ? `<input class="km-name-in" data-role="${role}" value="${(entry.name || "").replace(/"/g, "&quot;")}" placeholder="buff name — shows on main page" spellcheck="false" />`
+    : `<div class="km-desc">${desc}</div>`;
   div.innerHTML =
-    `<div class="km-role">${role}${isMacro ? '<span class="km-tag">macro</span>' : ""}</div>` +
-    `<div class="km-desc">${desc}</div>` +
+    `<div class="km-role">${role}${isMacro ? '<span class="km-tag">macro</span>' : (nameable ? '<span class="km-tag">buff</span>' : "")}</div>` +
+    descCell +
     `<input class="km-key" data-role="${role}" data-macro="${isMacro ? 1 : 0}" value="${entry.key || ""}" placeholder="unmapped" spellcheck="false" />` +
     (isMacro ? `<div class="km-mode-cell">—</div>`
              : `<select class="km-mode" data-role="${role}">
@@ -74,6 +79,9 @@ function collect() {
   });
   document.querySelectorAll(".km-mode").forEach((sel) => {
     if (km.abilities[sel.dataset.role]) km.abilities[sel.dataset.role].mode = sel.value;
+  });
+  document.querySelectorAll(".km-name-in").forEach((inp) => {   // buff display names
+    if (km.abilities[inp.dataset.role]) km.abilities[inp.dataset.role].name = inp.value.trim();
   });
   km.group_target_keys = Array.from(document.querySelectorAll(".km-tk"))
     .sort((a, b) => a.dataset.slot - b.dataset.slot).map((i) => i.value.trim());

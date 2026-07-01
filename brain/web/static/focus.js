@@ -44,33 +44,30 @@ const HEALER_CATALOG = [
   { id: "rez_group", label: "Rez Group", kind: "group", action: "rez" },
 ];
 
-// Dirge (support) catalog — NO heals/wards/cures. Buffs target an explicit slot
-// (tank = group pos 2 / slot 1; self = slot 0); debuffs/group-buffs/combos are
-// no-target group casts. Roles match config/profiles/joar.yaml.
+// Dirge (support) catalog — COMBAT (attacks / debuffs / aoe) + utility + state
+// control. NO heals/wards/cures and NO buffs (buffs are cast per-member on the MAIN
+// page's buff matrix). Roles match config/profiles/joar.yaml.
 const DIRGE_CATALOG = [
-  { id: "tbuff_1", label: "Tank Buff 1", kind: "member", action: "tbuff_1", slot: 1, hot: 1 },
-  { id: "tbuff_2", label: "Tank Buff 2", kind: "member", action: "tbuff_2", slot: 1 },
-  { id: "sbuff_1", label: "Self Buff 1", kind: "member", action: "sbuff_1", slot: 0, hot: 1 },
-  { id: "sbuff_2", label: "Self Buff 2", kind: "member", action: "sbuff_2", slot: 0 },
-  { id: "gbuff_1", label: "Group Buff 1", kind: "group", action: "gbuff_1", hot: 1 },
-  { id: "gbuff_2", label: "Group Buff 2", kind: "group", action: "gbuff_2" },
-  { id: "combo_1", label: "Combo 1", kind: "group", action: "combo_1", hot: 1 },
-  { id: "combo_2", label: "Combo 2", kind: "group", action: "combo_2", hot: 1 },
-  { id: "combo_3", label: "Combo 3", kind: "group", action: "combo_3" },
-  { id: "dbuff_1", label: "Debuff 1", kind: "group", action: "dbuff_1", hot: 1 },
-  { id: "dbuff_2", label: "Debuff 2", kind: "group", action: "dbuff_2" },
+  { id: "attack_1", label: "Attack 1", kind: "group", action: "attack_1", hot: 1 },
+  { id: "attack_2", label: "Attack 2", kind: "group", action: "attack_2", hot: 1 },
+  { id: "enc_attack_1", label: "Enc Attack 1", kind: "group", action: "enc_attack_1", hot: 1 },
+  { id: "enc_attack_2", label: "Enc Attack 2", kind: "group", action: "enc_attack_2" },
+  { id: "aoe_attack", label: "AoE Attack", kind: "group", action: "aoe_attack", hot: 1 },
+  { id: "debuff_1", label: "Debuff 1", kind: "group", action: "debuff_1", hot: 1 },
+  { id: "debuff_2", label: "Debuff 2", kind: "group", action: "debuff_2" },
   { id: "deaggro", label: "De-aggro", kind: "group", action: "deaggro" },
-  { id: "rez_group", label: "Rez", kind: "group", action: "rez" },
   { id: "follow", label: "Follow", kind: "group", action: "follow", hot: 1 },
   { id: "stop_follow", label: "Stop Follow", kind: "group", action: "stop_follow" },
   { id: "jump", label: "Jump", kind: "group", action: "jump" },
-  { id: "sow", label: "SoW", kind: "group", action: "sow", hot: 1 },
+  { id: "sow", label: "SoW", kind: "group", action: "sow" },
   { id: "call_home", label: "Call Home", kind: "group", action: "call_home" },
   { id: "evac", label: "Evac", kind: "group", action: "evac", danger: 1 },
+  { id: "hail", label: "Hail", kind: "group", action: "hail" },
+  { id: "item_use", label: "Item", kind: "group", action: "item_use" },
+  { id: "camp", label: "Camp", kind: "group", action: "camp" },
   { id: "reset_combat", label: "⟲ RESET COMBAT", kind: "post", path: "/api/combat/reset", big: 1, hot: 1 },
   { id: "force_in", label: "⚔ Force In Combat", kind: "override", action: "force_combat", hot: 1 },
   { id: "force_out", label: "⏹ Force OOC", kind: "override", action: "force_ooc", danger: 1, hot: 1 },
-  { id: "food", label: "🍖 Food", kind: "post", path: "/api/macro/food", hot: 1 },
 ];
 
 // active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).

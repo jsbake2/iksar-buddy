@@ -374,7 +374,9 @@ button.launch:hover { filter:brightness(1.08); }
 .km-desc { color:var(--muted); font-size:12px; }
 .km-key, .km-tk, .km-name { background:var(--panel2); border:1px solid var(--line); color:var(--fg);
   border-radius:6px; padding:6px 9px; font-family:ui-monospace,monospace; font-size:13px; width:100%; }
-.km-key:focus, .km-tk:focus, .km-name:focus { outline:none; border-color:var(--accent); }
+.km-name-in { background:var(--panel2); border:1px dashed color-mix(in srgb,var(--accent2,#7aa2ff) 55%,var(--line));
+  color:var(--fg); border-radius:6px; padding:5px 9px; font-size:12px; width:100%; }
+.km-key:focus, .km-tk:focus, .km-name:focus, .km-name-in:focus { outline:none; border-color:var(--accent); }
 .km-row.unmapped .km-key { border-color:var(--warn); background:color-mix(in srgb,var(--warn) 12%,var(--panel2)); }
 .km-mode { background:var(--panel2); border:1px solid var(--line); color:var(--fg);
   border-radius:6px; padding:6px; font-size:12px; }
