@@ -257,18 +257,27 @@ class Guest:
     def push_file(self, local_path, guest_path: str) -> bool:
         """Copy a host-side file into the guest, no shared folder. Used to keep the
         in-guest reflex agent (craft_reflex.py) in lockstep with the repo so guests
-        never run stale counter logic. Returns True on a confirmed write."""
+        never run stale counter logic. Returns True on a confirmed write.
+
+        The base64 is written in CHUNKS: one guest-exec command has a hard length limit
+        (~a few KB), so a large file (craft_reflex.py is ~47KB -> ~63KB b64) must be
+        appended to a staging .b64 in pieces then decoded — inlining it all in a single
+        command silently fails (which stopped sync_reflex from ever landing)."""
         import base64 as _b64
         from pathlib import Path as _Path
         try:
             data = _Path(local_path).read_bytes()
         except Exception:
             return False
-        b = _b64.b64encode(data).decode("ascii")
+        b = _b64.b64encode(data).decode("ascii")   # b64 alphabet has no quotes -> safe inline
         gp = guest_path.replace("\\", "\\\\")
-        ps = (f"$b=[Convert]::FromBase64String('{b}');"
-              f"[IO.File]::WriteAllBytes('{gp}',$b);(Get-Item '{gp}').Length")
-        out = self.exec_ps(ps)
+        b64p = gp + ".b64"
+        self.exec_ps(f"Remove-Item '{gp}','{b64p}' -ErrorAction SilentlyContinue")
+        for i in range(0, len(b), 6000):
+            self.exec_ps(f"Add-Content -Path '{b64p}' -Value '{b[i:i + 6000]}' -NoNewline")
+        out = self.exec_ps(
+            f"[IO.File]::WriteAllBytes('{gp}',[Convert]::FromBase64String((Get-Content -Raw '{b64p}')));"
+            f"Remove-Item '{b64p}' -ErrorAction SilentlyContinue;(Get-Item '{gp}').Length")
         return bool(out and out.strip().isdigit())
 
     def sync_reflex(self) -> bool:
