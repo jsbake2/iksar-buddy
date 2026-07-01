@@ -336,7 +336,9 @@ class Brain:
                     iv = float(self.cfg.threshold(f"pbuff_{i}_interval_s", 0) or 0)
                     bk = self.cfg.key_for(f"pbuff_{i}")
                     if iv > 0 and bk and bk != "none" and now - self._last_pbuff[i] >= iv:
-                        await self.send("command", role=f"pbuff_{i}", key=bk, target_slot=0,
+                        tgt = int(self.cfg.threshold(f"pbuff_{i}_target", 0) or 0)
+                        slot = tgt - 1 if tgt >= 1 else 0     # 1-6 -> slot 0-5; 0/1 -> self
+                        await self.send("command", role=f"pbuff_{i}", key=bk, target_slot=slot,
                                         manual=False, reason=f"periodic buff {i}")
                         self._last_pbuff[i] = now
                         self._next_action_at = now + GLOBAL_GCD_S

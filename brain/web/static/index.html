@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ib</title>
-  <link rel="stylesheet" href="themes.css?v=20260701a" />
+  <link rel="stylesheet" href="themes.css?v=20260701k" />
 </head>
 <body>
   <!-- top bar -->
@@ -90,20 +90,22 @@
         <span class="tune-hint">recast tank <span class="maint-word">ward</span> this often in combat · 0 = off</span>
       </div>
 
-      <!-- Dirge automation tuning (shown only for a support/Dirge profile) -->
-      <div class="tune-row dirge-only" hidden style="flex-wrap:wrap;gap:8px">
+      <!-- Dirge mana-feed threshold (shown only for a support/Dirge profile) -->
+      <div class="tune-row dirge-only" hidden>
         <label class="tune" title="power fraction below which pos 2/3/4 get a mana feed; 0 = off">
           mana feed &lt;<input type="number" id="tMana" min="0" max="1" step="0.05" style="width:60px" /></label>
-        <label class="tune" title="recast periodic buff 1 every N s in combat; 0 = off">
-          buff 1<input type="number" id="tPb1" min="0" max="600" step="1" style="width:58px" /><span>s</span></label>
-        <label class="tune" title="periodic buff 2 interval; 0 = off">
-          buff 2<input type="number" id="tPb2" min="0" max="600" step="1" style="width:58px" /><span>s</span></label>
-        <label class="tune" title="periodic buff 3 interval; 0 = off">
-          buff 3<input type="number" id="tPb3" min="0" max="600" step="1" style="width:58px" /><span>s</span></label>
-        <label class="tune" title="periodic buff 4 interval; 0 = off">
-          buff 4<input type="number" id="tPb4" min="0" max="600" step="1" style="width:58px" /><span>s</span></label>
-        <span class="tune-hint">mana feed is reactive · periodic buffs recast in combat · 0 = off</span>
+        <span class="tune-hint">reactive mana feed on group positions 2/3/4 · 0 = off</span>
       </div>
+    </section>
+
+    <!-- RECAST BUFFS (Dirge only) — one row per periodic buff: name, interval, target,
+         live countdown, and a manual cast that resets that timer. Filled by app.js. -->
+    <section class="panel dirge-only recast-panel" id="recastPanel" hidden style="order:2">
+      <h2>Recast buffs <span class="sub">auto-recast in combat · ▶ casts now &amp; resets</span></h2>
+      <div class="recast-head">
+        <span>buff</span><span>every</span><span>target</span><span>next</span><span></span>
+      </div>
+      <div id="recastRows"></div>
     </section>
 
     <!-- GROUP panel removed from the main page (cluttered) — use the ⊟ group pop-out -->
@@ -266,6 +268,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260701j"></script>
+  <script src="app.js?v=20260701k"></script>
 </body>
 </html>

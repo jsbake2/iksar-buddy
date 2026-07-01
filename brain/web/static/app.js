@@ -60,6 +60,58 @@ const DIRGE_TUNES = { tMana: "mana_heal_floor", tPb1: "pbuff_1_interval_s",
   }));
 })();
 
+// ---- Dirge recast-buffs panel: rows (name/interval/target) + live countdown + cast ----
+let recastSig = "";
+const recastState = {};        // n -> { next_at (epoch s), interval }
+function buildRecast(buffs) {
+  const box = $("recastRows"); if (!box) return;
+  box.innerHTML = "";
+  buffs.forEach((b) => {
+    const nm = b.name || b.label;
+    const row = document.createElement("div");
+    row.className = "recast-row" + (b.key_set ? "" : " unset");
+    row.innerHTML =
+      `<span class="rc-name" title="${nm}${b.key_set ? "" : " — set a key in ⌨ keymap"}">${nm}</span>` +
+      `<label class="rc-cell"><input class="rc-int" type="number" min="0" max="600" step="1" value="${b.interval_s}" title="recast interval (s); 0 = off"/><span>s</span></label>` +
+      `<label class="rc-cell"><input class="rc-tgt" type="number" min="0" max="6" step="1" value="${b.target}" title="target group slot 1-6; blank/1 = self"/></label>` +
+      `<span class="rc-count" id="rcCount${b.n}">—</span>` +
+      `<button class="rc-exec" title="cast now + reset the timer">▶</button>`;
+    row.querySelector(".rc-int").onchange = (e) => {
+      const v = parseFloat(e.target.value);
+      if (!isNaN(v)) postJSON("/api/tunables", { ["pbuff_" + b.n + "_interval_s"]: v });
+    };
+    row.querySelector(".rc-tgt").onchange = (e) => {
+      const v = parseInt(e.target.value, 10);
+      if (!isNaN(v)) postJSON("/api/tunables", { ["pbuff_" + b.n + "_target"]: v });
+    };
+    row.querySelector(".rc-exec").onclick = () => {
+      post("/api/dirge/buff/" + b.n + "/execute");
+      const st = recastState[b.n];
+      if (st) st.next_at = Date.now() / 1000 + (st.interval || 0);   // reset countdown locally
+    };
+    box.appendChild(row);
+  });
+}
+async function pollRecast() {
+  if (profileKind !== "dirge") return;               // only for a Dirge profile
+  let d;
+  try { d = await (await fetch("/api/dirge/buffs")).json(); } catch (_) { return; }
+  if (!d || !Array.isArray(d.buffs)) return;
+  const sig = d.buffs.map((b) => b.n + (b.name || b.label) + b.key_set).join("|");
+  if (sig !== recastSig) { recastSig = sig; buildRecast(d.buffs); }   // rebuild only when names/keys change
+  d.buffs.forEach((b) => (recastState[b.n] = { next_at: Date.now() / 1000 + b.next_in_s, interval: b.interval_s }));
+}
+function tickRecast() {
+  [1, 2, 3, 4].forEach((n) => {
+    const el = $("rcCount" + n), st = recastState[n];
+    if (!el || !st) return;
+    if (!st.interval) { el.textContent = "off"; return; }
+    const rem = st.next_at - Date.now() / 1000;
+    el.textContent = rem <= 0 ? "now" : Math.ceil(rem) + "s";
+  });
+}
+if ($("recastPanel")) { pollRecast(); setInterval(pollRecast, 3000); setInterval(tickRecast, 500); }
+
 // ---- healer profile selector (top bar) ------------------------------------
 const profileSel = $("profile");
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);

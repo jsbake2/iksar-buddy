@@ -49,3 +49,7 @@ pbuff_1_interval_s: 0       # recast periodic buff 1 every N s in combat; 0 = of
 pbuff_2_interval_s: 0
 pbuff_3_interval_s: 0
 pbuff_4_interval_s: 0
+pbuff_1_target: 0           # optional cast target, group slot 1-6; 0/1 = self
+pbuff_2_target: 0
+pbuff_3_target: 0
+pbuff_4_target: 0

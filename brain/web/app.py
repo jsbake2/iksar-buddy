@@ -322,6 +322,10 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         "pbuff_2_interval_s": (float, 0.0, 600.0),
         "pbuff_3_interval_s": (float, 0.0, 600.0),
         "pbuff_4_interval_s": (float, 0.0, 600.0),
+        "pbuff_1_target": (float, 0.0, 6.0),
+        "pbuff_2_target": (float, 0.0, 6.0),
+        "pbuff_3_target": (float, 0.0, 6.0),
+        "pbuff_4_target": (float, 0.0, 6.0),
     }
 
     @app.get("/api/tunables")
@@ -355,6 +359,43 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             return JSONResponse({"error": str(e)}, status_code=500)
         telemetry.push_event("config", "tuning: " + ", ".join(f"{k}={v}" for k, v in applied.items()))
         return {"ok": True, "applied": applied}
+
+    # --- Dirge recast-buff panel: per-buff state (name/key/interval/target + live
+    # countdown from the server's _last_pbuff timer) and a manual execute-and-reset.
+    @app.get("/api/dirge/buffs")
+    async def dirge_buffs():
+        now = time.time()
+        ab = brain.cfg.ability_map.get("abilities", {}) or {}
+        out = []
+        for i in (1, 2, 3, 4):
+            spec = ab.get(f"pbuff_{i}") or {}
+            key = spec.get("key") or ""
+            iv = float(brain.cfg.threshold(f"pbuff_{i}_interval_s", 0) or 0)
+            last = brain._last_pbuff.get(i, 0.0)
+            next_in = max(0.0, (last + iv) - now) if (iv > 0 and last > 0) else 0.0
+            out.append({"n": i, "name": spec.get("name") or "",
+                        "label": spec.get("desc") or f"buff {i}",
+                        "key_set": bool(key and key != "none"),
+                        "interval_s": iv,
+                        "target": int(brain.cfg.threshold(f"pbuff_{i}_target", 0) or 0),
+                        "next_in_s": round(next_in, 1)})
+        return {"buffs": out}
+
+    @app.post("/api/dirge/buff/{n}/execute")
+    async def dirge_buff_execute(n: int):
+        if n not in (1, 2, 3, 4):
+            return JSONResponse({"error": "bad buff"}, status_code=400)
+        role = f"pbuff_{n}"
+        key = brain.cfg.key_for(role)
+        if not key or key == "none":
+            return JSONResponse({"error": "no key mapped"}, status_code=400)
+        tgt = int(brain.cfg.threshold(f"pbuff_{n}_target", 0) or 0)
+        slot = tgt - 1 if tgt >= 1 else 0
+        await brain.send("command", role=role, key=key, target_slot=slot, manual=True,
+                         reason=f"manual periodic buff {n}")
+        brain._last_pbuff[n] = time.time()      # reset the auto-recast countdown
+        telemetry.push_event("manual", f"cast {role}")
+        return {"ok": True}
 
     @app.post("/api/role/{slot}/{role}")
     async def set_role(slot: int, role: str):
