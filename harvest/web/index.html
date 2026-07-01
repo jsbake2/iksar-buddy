@@ -211,12 +211,13 @@ async function tick(){
   document.getElementById('chatmon').innerHTML=tells.length?tells.slice(-8).reverse().map(t=>
     `<div><b class="zone">${(t.from||'?').replace(/</g,'&lt;')}</b>: ${(t.msg||'').replace(/</g,'&lt;')}</div>`).join(''):'no tells yet';
   // alerts
-  const al=d.alerts||[]; const col={combat:'var(--bad)',pm:'var(--accent)',rare:'var(--good)',stuck:'var(--warn)'};
+  const al=d.alerts||[]; const col={combat:'var(--bad)',pm:'var(--accent)',rare:'var(--good)',stuck:'var(--warn)',bags:'var(--warn)'};
   document.getElementById('alerts').innerHTML=al.length?al.map(a=>
     `<div style="color:${col[a.kind]||'var(--fg)'}">● ${a.kind.toUpperCase()} — ${(a.msg||'').replace(/</g,'&lt;')}</div>`).join(''):'<span class="muted">clear</span>';
   // toasts + OS notifications for new rares / tells (diff by newest timestamp)
   notifyNew((d.harvest&&d.harvest.rares)||[], 'rare', r=>['Rare harvest found!', r.item+(r.node?` (${r.node})`:''), 'good']);
   notifyNew((d.harvest&&d.harvest.tells)||[], 'tell', t=>[`Tell from ${t.from}`, t.msg, 'warn']);
+  notifyNew((d.harvest&&d.harvest.bagsfull)||[], 'bags', ()=>['Bags full', 'inventory full — harvesting is blocked', 'error']);
 }
 const _seen={};
 function notifyNew(arr, key, fmt){

@@ -56,6 +56,8 @@ EQ2_LOG = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
 RE_HARVEST = re.compile(r"You (mine|forage|gather|fell|trap|acquire|catch|chop|cut) (\d+) "
                         r"\\aITEM [^:]*:([^\\]+)\\/a from the (.+?)\.")
 RE_RARE    = re.compile(r"You have found a rare item")
+RE_BAGS    = re.compile(r"inventory is full|bags?\s+(?:are|is)\s+full|"
+                        r"no (?:more )?room|not enough (?:free )?(?:inventory )?space", re.I)
 RE_TELL    = re.compile(r"\\aPC[^:]*:([^\\]+)\\/a tells you,\s*\"(.*?)\"")
 RE_COMBAT  = re.compile(r"(hits? YOU|YOU take|tries to (?:hit|slash|crush|pierce) YOU|"
                         r"You are no longer)", re.I)
@@ -92,7 +94,7 @@ class Harvest:
                             "all_time": saved.get("all_time", {}),
                             "rares": saved.get("rares", []),
                             "tells": saved.get("tells", []),
-                            "combat_ts": 0, "_off": None}
+                            "bagsfull": [], "combat_ts": 0, "_off": None}
         self.routes: dict = json.loads(ROUTES_FILE.read_text()) if ROUTES_FILE.exists() else {}
         self.graph = None                          # active dense-graph recorder (NavGraph) or None
         self._graph_n = 0                          # point count at last save
@@ -276,6 +278,13 @@ class Harvest:
                         self.harvest_log["tells"].append({"from": mt.group(1), "msg": mt.group(2), "t": time.time()})
                         self.harvest_log["tells"] = self.harvest_log["tells"][-20:]
                         changed = True
+                        continue
+                    if RE_BAGS.search(line):
+                        bf = self.harvest_log["bagsfull"]
+                        if not bf or time.time() - bf[-1]["t"] > 60:   # debounce: repeats while full
+                            bf.append({"t": time.time()})
+                            self.harvest_log["bagsfull"] = bf[-10:]
+                            changed = True
                         continue
                     if RE_COMBAT.search(line):
                         self.harvest_log["combat_ts"] = time.time()
@@ -711,12 +720,15 @@ def create_app(h: Harvest) -> FastAPI:
         for r in hl["rares"][-3:]:
             if now - r["t"] < 120:
                 alerts.append({"kind": "rare", "msg": f'RARE: {r["item"]}'})
+        if hl.get("bagsfull") and now - hl["bagsfull"][-1]["t"] < 120:
+            alerts.append({"kind": "bags", "msg": "bags full"})
         st = h.cur_state()
         return {"state": st,
                 "graph": h.graph_status(),          # live dense-GRID recorder status (points/edges)
                 "spawns": h.spawns,
                 "harvest": {"session": hl["session"], "all_time": hl["all_time"],
-                            "rares": hl["rares"][-8:], "tells": hl["tells"][-8:]},
+                            "rares": hl["rares"][-8:], "tells": hl["tells"][-8:],
+                            "bagsfull": hl.get("bagsfull", [])[-4:]},
                 "alerts": alerts,
                 "zone": st.get("zone"), "log": h.log[-30:],
                 "src": "push" if (time.time() - h.pushed["ts"] < 3.0) else "poll"}

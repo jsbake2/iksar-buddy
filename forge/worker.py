@@ -178,6 +178,9 @@ class CraftWorker:
             self.t.update_bot(self.id, state="incomplete", durability_mode=None)
         else:
             self.t.push_event(self.id, "craft", "batch complete" + (f" ({station})" if station else ""))
+            self.t.notify(self.id, "Craft cycle complete",
+                          f"{len(scope)} recipe(s) done" + (f" ({station})" if station else ""),
+                          level="good")
             self.t.update_bot(self.id, state="done", durability_mode=None)
 
     def _report_failures(self, q: list, station: str) -> None:
@@ -880,9 +883,10 @@ class CraftWorker:
             # masquerade as done. (Owner: "finished one, other still to go, says done — wtf".)
             if cleared is True:
                 self.t.push_event(self.id, "craft", "timed writ COMPLETE" + (f" ({station})" if station else ""))
-                if writ_mode == "timed" and retried:         # recovered from a failure -> tell the owner
-                    self.t.notify(self.id, "Timed writ complete",
-                                  "recovered — journal is clear", level="good")
+                self.t.notify(self.id, "Craft cycle complete",
+                              ("timed writ done — recovered from a failure" if retried
+                               else "timed writ done") + (f" ({station})" if station else ""),
+                              level="good")
                 self.t.update_bot(self.id, state="done", durability_mode=None)
                 return
             if cleared is False and not self._stop.is_set():
@@ -897,6 +901,9 @@ class CraftWorker:
                                             search=job.get("search", ""))
             full = made >= int(job.get("count", 1))
             self.t.push_event(self.id, "craft", "done" if full else f"incomplete — {made}/{job.get('count',1)}")
+            if full:
+                self.t.notify(self.id, "Craft cycle complete",
+                              f"{job.get('recipe','recipe')} ×{made} done", level="good")
             self.t.update_bot(self.id, state="done" if full else "incomplete", durability_mode=None)
 
     async def run(self) -> None:
