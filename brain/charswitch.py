@@ -29,18 +29,24 @@ from forge.login import LoginDriver, load_accounts, _camp_ahk, WORLD
 HEALER_DOM = "iksar_buddy"
 Log = Callable[[str], None]
 
-# character -> account roster lives in the brain config (shared source of truth).
-_CONFIG_DIR = Path(os.environ.get(
-    "IB_CONFIG_DIR", str(Path(__file__).resolve().parent.parent / "config")))
-# brain-owned account credentials (gitignored, NOT under forge's data dir).
-_BRAIN_ACCOUNTS = Path(os.environ.get(
-    "IB_DATA_DIR", str(Path.home() / "ib-data"))) / "accounts.yaml"
+
+def _config_dir() -> Path:
+    # character -> account roster lives in the brain config (read at call time so
+    # IB_CONFIG_DIR overrides + hot edits apply).
+    return Path(os.environ.get(
+        "IB_CONFIG_DIR", str(Path(__file__).resolve().parent.parent / "config")))
+
+
+def _brain_accounts_path() -> Path:
+    # brain-owned account credentials (gitignored, NOT under forge's data dir).
+    return Path(os.environ.get(
+        "IB_DATA_DIR", str(Path.home() / "ib-data"))) / "accounts.yaml"
 
 
 def _roster() -> dict:
     """character -> {account, adventure, tradeskill} from config/characters.yaml."""
     try:
-        data = yaml.safe_load((_CONFIG_DIR / "characters.yaml").read_text("utf-8")) or {}
+        data = yaml.safe_load((_config_dir() / "characters.yaml").read_text("utf-8")) or {}
     except (OSError, yaml.YAMLError):
         return {}
     return data.get("characters") or {}
@@ -54,7 +60,7 @@ def account_of(character: str) -> str:
 def _brain_accounts() -> tuple[dict, str]:
     """Brain-owned EQ2 creds, keyed by account label. ({}, WORLD) if missing."""
     try:
-        data = yaml.safe_load(_BRAIN_ACCOUNTS.read_text("utf-8")) or {}
+        data = yaml.safe_load(_brain_accounts_path().read_text("utf-8")) or {}
     except (OSError, yaml.YAMLError):
         return {}, WORLD
     return (data.get("accounts") or {}), (data.get("world") or WORLD)

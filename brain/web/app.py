@@ -121,35 +121,39 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
 
     @app.post("/api/profile/{name}/swap")
     async def swap_profile(name: str):
-        """Camp-and-switch: log the current toon out to char-select, pick the target
-        profile's character, then (only if that succeeds) commit the profile config
-        swap. Lets the owner change healer/character in-game without a relog — works
-        for same-account toons (Jenskin<->Croolst); cross-account needs Stop+Launch."""
-        from ..charswitch import healer_switch
+        """Switch to the target profile's character in-world, then (only if that
+        succeeds) commit the profile config swap. Account-aware (charswitch.healer_change):
+        a SAME-account toon (Jenskin<->Croolst) /camp-switches; a DIFFERENT-account toon
+        (e.g. Joar on account3) logs OUT and back IN with that account's credentials —
+        no Stop+Launch needed."""
+        from ..charswitch import healer_change, account_of
         if name not in brain.cfg.list_profiles():
             return JSONResponse({"error": "unknown profile"}, status_code=404)
         target_char = brain.cfg.peek_select_character(name)
         if not target_char:
             return JSONResponse({"error": "profile has no character"}, status_code=400)
-        telemetry.push_event("control", f"camp+switch -> {name} ({target_char})")
+        current_char = brain.cfg.select_character            # who's in world now
+        cross = account_of(target_char) != account_of(current_char)
+        verb = "relog" if cross else "camp+switch"
+        telemetry.push_event("control", f"{verb} -> {name} ({target_char})")
 
         async def _go():
             loop = asyncio.get_running_loop()
             # push_event touches asyncio.Queues -> hop back to the loop thread
             tlog = lambda m: loop.call_soon_threadsafe(telemetry.push_event, "switch", m)
-            # disarm while we switch so the loop can't fire stray keys mid-camp
+            # disarm while we switch so the loop can't fire stray keys mid-camp/relog
             await brain.send("command", role="_pause", key="", target_slot=None,
-                             reason="camp+switch")
-            ok = await loop.run_in_executor(None, healer_switch, target_char, tlog)
+                             reason=verb)
+            ok = await loop.run_in_executor(None, healer_change, target_char, current_char, tlog)
             if ok:
                 brain.cfg.set_profile(name)
                 await brain.push_config()
                 telemetry.update(profile=_profile_state())
                 telemetry.push_event("config", f"profile -> {name} ({brain.cfg.healer_class})")
             else:
-                telemetry.push_event("switch", "camp+switch failed — profile unchanged")
+                telemetry.push_event("switch", f"{verb} failed — profile unchanged")
         asyncio.create_task(_go())
-        return {"ok": True, "swap": name, "character": target_char}
+        return {"ok": True, "swap": name, "character": target_char, "cross_account": cross}
 
     @app.get("/api/frame.jpg")
     async def frame():

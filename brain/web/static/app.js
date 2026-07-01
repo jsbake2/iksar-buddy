@@ -74,7 +74,7 @@ const swapBtn = $("swapBtn");
 if (swapBtn) swapBtn.onclick = () => {
   const v = profileSel ? profileSel.value : "";
   if (!v) return;
-  if (confirm(`Camp + switch to ${cap(v)}?\n\nCamps the current character out to char-select, selects ${cap(v)}'s character, and loads in-world. Then re-ARM when ready. (Same-account toons only.)`))
+  if (confirm(`Switch to ${cap(v)}?\n\nSame account: camps out and loads ${cap(v)}'s character in-world.\nDifferent account (e.g. the Dirge): logs OUT and back IN with that account's login.\nThen re-ARM when ready.`))
     post(`/api/profile/${v}/swap`);
 };
 
