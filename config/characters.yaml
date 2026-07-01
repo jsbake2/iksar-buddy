@@ -17,4 +17,6 @@ characters:
   Foxyman: { account: account1, adventure: crusader,     tradeskill: alchemist }   # tank (class TBD)
   Jenskin:  { account: account2, adventure: defiler,      tradeskill: jeweler }
   Croolst:  { account: account2, adventure: fury,         tradeskill: sage }
+  Croalst:  { account: account2, adventure: inquisitor,   tradeskill: "" }          # healer (croalst profile, tank Paraphon)
+  Paraphon: { account: account1, adventure: "",           tradeskill: "" }          # tank (croalst profile)
   Joar:     { account: account3, adventure: dirge,        tradeskill: "" }          # support (bard) — buffs/follow, no heals/wards

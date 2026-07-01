@@ -91,12 +91,34 @@ _GROUP_ACTIONS = {
 def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     app = FastAPI(title="ib", docs_url=None, redoc_url=None)
 
+    # Dirge (support) action categories, keyed by ability-role prefix. The dashboard
+    # renders a buff/debuff/combo layout instead of the healer heal-grid when a profile
+    # has no maintenance heal (maint_role == 'none'). Owner fills the keys in the keymap.
+    _DIRGE_CATS = [("individual", "ibuff_"), ("tank", "tbuff_"), ("self", "sbuff_"),
+                   ("debuff", "dbuff_"), ("group", "gbuff_"), ("combo", "combo_")]
+
+    def _dirge_actions() -> dict:
+        ab = brain.cfg.ability_map.get("abilities", {}) or {}
+        out: dict = {}
+        for cat, pref in _DIRGE_CATS:
+            items = [{"role": r, "label": (sp or {}).get("desc") or r,
+                      "key": bool((sp or {}).get("key") and (sp or {}).get("key") != "none")}
+                     for r, sp in ab.items() if r.startswith(pref)]
+            if items:
+                out[cat] = sorted(items, key=lambda x: x["role"])
+        return out
+
     def _profile_state() -> dict:
+        # kind drives the whole Manual-Control layout: 'dirge' = buffs/debuffs/combos,
+        # 'healer' = the heal/ward/cure/rez grid.
+        kind = "dirge" if brain.cfg.maint_role == "none" else "healer"
         return {"active": brain.cfg.active_profile,
                 "available": brain.cfg.list_profiles(),
                 "healer": brain.cfg.healer_class,
-                "maint_role": brain.cfg.maint_role,                 # ward | hot
-                "group_maint_role": brain.cfg.group_maint_role,     # group_ward | group_hot
+                "kind": kind,
+                "actions": _dirge_actions() if kind == "dirge" else {},
+                "maint_role": brain.cfg.maint_role,                 # ward | hot | none
+                "group_maint_role": brain.cfg.group_maint_role,     # group_ward | group_hot | none
                 "names": {str(k): v for k, v in brain.cfg.names.items()}}
 
     # seed the dashboard with the current profile
@@ -369,9 +391,15 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         telemetry.push_event("control", "combat reset (unstick)")
         return {"ok": True}
 
+    def _profile_role(action: str):
+        """A role defined in the active profile's abilities (e.g. a Dirge buff/combo).
+        Lets the dashboard drive any profile-defined role without a hardcoded whitelist."""
+        ab = brain.cfg.ability_map.get("abilities", {}) or {}
+        return action if action in ab else None
+
     @app.post("/api/act/{action}/{slot}")
     async def act_member(action: str, slot: int):
-        role = _MEMBER_ACTIONS.get(action)
+        role = _MEMBER_ACTIONS.get(action) or _profile_role(action)   # profile roles: buffs on a slot
         if role is None or not (0 <= slot < 6):
             return JSONResponse({"error": "unknown member action"}, status_code=400)
         members = telemetry.snapshot.get("members", [])
@@ -431,7 +459,7 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             await brain.send("command", role="spell_attack", key=key,
                              target_slot=slot, manual=True, reason="spell attack (assist tank)")
             return {"ok": True, "action": action, "slot": slot}
-        role = _GROUP_ACTIONS.get(action)
+        role = _GROUP_ACTIONS.get(action) or _profile_role(action)   # profile roles: group buffs/debuffs/combos
         if role is None:
             return JSONResponse({"error": "unknown group action"}, status_code=400)
         telemetry.push_event("manual", action.replace("_", " "))

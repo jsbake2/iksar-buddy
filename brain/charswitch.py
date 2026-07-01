@@ -23,8 +23,7 @@ from typing import Callable
 
 import yaml
 
-from forge.guest import Guest
-from forge.login import LoginDriver, load_accounts, _camp_ahk, WORLD
+from forge.login import LoginDriver, load_accounts, WORLD
 
 HEALER_DOM = "iksar_buddy"
 Log = Callable[[str], None]
@@ -84,35 +83,61 @@ def _creds(target_char: str = "") -> tuple[str, str, str]:
     return creds_for_character(target_char)
 
 
+class _LogList(list):
+    """A list whose .append forwards to a callback — routes the harvest controller's
+    internal log into the healer's telemetry log."""
+    def __init__(self, log: Log) -> None:
+        super().__init__(); self._log = log
+
+    def append(self, m) -> None:  # type: ignore[override]
+        self._log(m)
+
+
+def _agent_login(log: Log):
+    """Build the login stack for the healer VM (iksar_buddy) using the SAME code path
+    as harvest: the in-guest agent types the login form via keybd_event, because AHK
+    Send does NOT land on this VM's fullscreen client (validated — AHK left the
+    password blank; the agent typer logs in first try). Returns (harvest_ctl, driver)
+    where the driver's form_typer is harvest's agent typer."""
+    from harvest.__main__ import Harvest       # lazy: heavy import, avoids a cycle
+    h = Harvest()
+    h.log = _LogList(log)                       # harvest's typer/deploy logs -> healer log
+    drv = LoginDriver(h.g, log, form_typer=h._agent_type_login)
+    return h, drv
+
+
 def healer_login(target_char: str, log: Log = lambda _m: None) -> bool:
     """Launch Bot: power on the healer VM and log directly into `target_char` (the
-    active profile's character). If EQ2 is already in world as another SAME-account
-    toon, /camp-switches instead. Blocking — run in an executor."""
+    active profile's character). Blocking — run in an executor."""
     if not target_char:
         log("launch: no character set on the active profile"); return False
     user, pw, world = _creds(target_char)
     if not (user and pw):
         log(f"launch: no credentials for {target_char} (set ~/ib-data/accounts.yaml)"); return False
-    drv = LoginDriver(Guest(HEALER_DOM), log)
+    _h, drv = _agent_login(log)
     return drv.boot_and_login(user, pw, target_char, world)
 
 
 def healer_switch(target_char: str, log: Log = lambda _m: None) -> bool:
-    """Same-account character change via in-game '/camp <name>'. Blocking. True once
-    in world. Use healer_change() when you don't know if the account matches."""
+    """Same-account character change via in-game '/camp <name>' (typed by the guest
+    agent — AHK doesn't land on this VM). Blocking. True once in world. Use
+    healer_change() when you don't know if the account matches."""
     if not target_char:
         log("switch: no target character"); return False
-    g = Guest(HEALER_DOM)
-    if not g.eq2_running():
+    h, drv = _agent_login(log)
+    if not h.g.eq2_running():
         log("switch: EQ2 not running (use Launch)"); return False
-    return LoginDriver(g, log).camp_to(target_char)
+    log(f"switch: /camp {target_char}")
+    h._fire_agent({"chat": f"/camp {target_char}"})
+    return drv._await_world(target_char, 60)
 
 
 def healer_change(target_char: str, current_char: str = "",
                   log: Log = lambda _m: None) -> bool:
-    """Select `target_char` — the account-aware switch the dashboard drives.
+    """Select `target_char` — the account-aware switch the dashboard drives. All
+    keyboard interaction with the fullscreen client goes through the guest agent.
 
-    Same account as `current_char` (or nothing running) -> /camp switch or a normal
+    Same account as `current_char` (or nothing running) -> /camp switch or a cold
     launch. DIFFERENT account (e.g. an account3 Dirge while an account2 healer is in
     world) -> log OUT (/camp desktop) then log back IN with the target account's
     credentials. Blocking — run in an executor."""
@@ -121,23 +146,24 @@ def healer_change(target_char: str, current_char: str = "",
     user, pw, world = _creds(target_char)
     if not (user and pw):
         log(f"change: no credentials for {target_char} (set ~/ib-data/accounts.yaml)"); return False
-    g = Guest(HEALER_DOM)
-    drv = LoginDriver(g, log)
+    h, drv = _agent_login(log)
 
-    if not g.eq2_running():                                   # nothing in world -> cold launch
+    if not h.g.eq2_running():                                 # nothing in world -> cold launch
         return drv.boot_and_login(user, pw, target_char, world)
 
     same_account = account_of(target_char) == account_of(current_char) and account_of(target_char)
     if same_account:
         log(f"change: same account -> /camp {target_char}")
-        return drv.camp_to(target_char)
+        h._fire_agent({"chat": f"/camp {target_char}"})
+        return drv._await_world(target_char, 60)
 
-    # cross-account: EQ2 can't swap accounts in place — exit to desktop, then relog.
+    # cross-account: EQ2 can't swap accounts in place — agent types /camp desktop to
+    # exit the client, then a full relogin with the target account's creds.
     log(f"change: cross-account ({account_of(current_char) or '?'} -> "
         f"{account_of(target_char)}); logging out to relog as {target_char}")
-    g.run_ahk(_camp_ahk("desktop"))                          # /camp desktop (client exits)
+    h._fire_agent({"chat": "/camp desktop"})                 # agent types it (AHK won't land)
     for _ in range(40):                                       # ~/camp countdown + client close
-        if not g.eq2_running():
+        if not h.g.eq2_running():
             break
         time.sleep(2)
     else:

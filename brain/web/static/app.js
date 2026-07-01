@@ -12,6 +12,12 @@ const FALLBACK_NAMES = ["self", "slot1", "slot2", "slot3", "slot4", "slot5"];
 // 1:1 — every ward/group-ward label + action becomes hot/group-hot for a Fury.
 let maintRole = "ward";
 let groupMaintRole = "group_ward";
+// Profile KIND drives the Manual-Control layout: 'healer' = heal/ward/cure/rez grid;
+// 'dirge' (support) = per-member buff grid + buff/debuff/combo sections. dirgeActions
+// is the categorized role layout from the backend (see _dirge_actions in app.py).
+let profileKind = "healer";
+let dirgeActions = {};
+let dirgeSig = "";
 
 // ---- theme persistence ----------------------------------------------------
 const themeSel = $("theme");
@@ -65,6 +71,18 @@ function renderProfile(p) {
     if (eb) { eb.dataset.group = "emergency_" + maintRole; eb.textContent = "emergency " + maintRole; }
     document.querySelectorAll(".maint-word").forEach((el) => (el.textContent = maintRole));
   }
+  // ---- healer vs Dirge (support) layout swap ----
+  const kind = p.kind || "healer";
+  const sig = JSON.stringify(p.actions || {});
+  if (kind !== profileKind || sig !== dirgeSig) {
+    profileKind = kind; dirgeActions = p.actions || {}; dirgeSig = sig;
+    const dirge = kind === "dirge";
+    document.querySelectorAll(".healer-only").forEach((el) => (el.hidden = dirge));
+    const ds = $("dirgeSections"); if (ds) ds.hidden = !dirge;
+    document.querySelectorAll(".tune-row").forEach((el) => (el.hidden = dirge));  // ward-recast n/a
+    gridSig = "";                        // force the per-member grid to rebuild in the new mode
+    if (dirge) buildDirgeSections();
+  }
 }
 if (profileSel) profileSel.onchange = () => {
   if (confirm(`Switch healer profile to ${cap(profileSel.value)}?\n\nThis swaps the keymap + character config only (no in-game camp). Use ⇄ swap to camp + switch the live character.`))
@@ -106,6 +124,7 @@ let gridBuilt = false;
 function buildGrid(members) {
   const grid = $("actionGrid");
   grid.innerHTML = "";
+  if (profileKind === "dirge") { buildBuffGrid(grid, members); return; }
   const head = document.createElement("div");
   head.className = "ctl-row head";
   head.innerHTML = `<span>member</span><span>heal</span><span>${maintRole}</span>` +
@@ -132,6 +151,58 @@ function buildGrid(members) {
     (b) => (b.onclick = () => post(`/api/act/${b.dataset.act}/${b.dataset.slot}`))
   );
   gridBuilt = true;
+}
+
+// ---- Dirge (support): per-member INDIVIDUAL-buff grid + buff/debuff/combo sections ----
+function _btnAttr(a, slot) {
+  // slot === null -> group/no-target (data-group); else target that member's F-key (data-act/data-slot)
+  const t = `title="${a.label}${a.key ? "" : " — set a key in ⌨ keymap"}"`;
+  const cls = a.key ? "" : ' class="unset"';
+  return slot === null
+    ? `<button${cls} data-group="${a.role}" ${t}>${a.label}</button>`
+    : `<button${cls} data-act="${a.role}" data-slot="${slot}" ${t}>${a.label}</button>`;
+}
+function _bind(el) {
+  el.querySelectorAll("[data-group]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.group}`)));
+  el.querySelectorAll("[data-act]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.act}/${b.dataset.slot}`)));
+}
+function buildBuffGrid(grid, members) {
+  const ib = dirgeActions.individual || [];
+  const cols = `1.4fr repeat(${Math.max(ib.length, 1)}, 1fr)`;
+  const head = document.createElement("div");
+  head.className = "ctl-row head"; head.style.gridTemplateColumns = cols;
+  head.innerHTML = `<span>member</span>` +
+    (ib.length ? ib.map((a) => `<span>${a.label}</span>`).join("") : `<span class="muted">individual buffs — add ibuff_* keys</span>`);
+  grid.appendChild(head);
+  members.forEach((m) => {
+    const row = document.createElement("div");
+    row.className = "ctl-row"; row.style.gridTemplateColumns = cols;
+    const name = m.name || FALLBACK_NAMES[m.slot] || `slot${m.slot}`;
+    row.innerHTML = `<div class="who">${name}<small>${m.role || ""}</small></div>` +
+      ib.map((a) => {
+        const t = `${a.label}${a.key ? "" : " — set a key in ⌨ keymap"}`;
+        return `<button class="act buff${a.key ? "" : " unset"}" data-act="${a.role}" data-slot="${m.slot}" title="${t}">buff</button>`;
+      }).join("");
+    grid.appendChild(row);
+  });
+  _bind(grid);
+  gridBuilt = true;
+}
+function buildDirgeSections() {
+  const box = $("dirgeSections"); if (!box) return;
+  const A = dirgeActions;
+  // [title, items, targetSlot]  (targetSlot null = no target / current target)
+  const secs = [
+    ["Tank buffs (group pos 2)", A.tank, 1],
+    ["Self buffs", A.self, 0],
+    ["Debuffs (current target)", A.debuff, null],
+    ["Group buffs", A.group, null],
+    ["Damage combos (combat)", A.combo, null],
+  ].filter(([, items]) => items && items.length);
+  box.innerHTML = secs.map(([title, items, slot]) =>
+    `<div class="ctl-sec"><h3>${title}</h3><div class="sbtns">` +
+    items.map((a) => _btnAttr(a, slot)).join("") + `</div></div>`).join("");
+  _bind(box);
 }
 
 // ---- power sparkline ------------------------------------------------------

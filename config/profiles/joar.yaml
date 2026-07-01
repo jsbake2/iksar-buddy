@@ -85,12 +85,30 @@ abilities:
     mode: manual
     desc: use item (totem / temp buff)
 
-  # --- buffs (manual; the core of the Dirge's job — owner maps the real keys) ---
-  buff1:      { key: Alt+5, mode: manual, desc: buff key 1 }
-  buff2:      { key: Alt+6, mode: manual, desc: buff key 2 }
-  buff_tank:  { key: Alt+7, mode: manual, desc: 'buff: tank (hate/melee buffs)' }
-  buff_dps:   { key: Alt+8, mode: manual, desc: 'buff: DPS' }
-  buff_self:  { key: Alt+9, mode: manual, desc: 'buff: self' }
+  # === DIRGE action set (drives the dashboard buff/debuff/combo layout) =========
+  # Roles are grouped by PREFIX; the dashboard renders one section per group and a
+  # per-member row for the individual buffs. Owner fills the keys (keymap page) and
+  # relabels via `desc`. Add more in any group by continuing the number (ibuff_3, ...).
+  #
+  # 1) individual buffs — cast on a chosen group member (per-member buttons)
+  ibuff_1:  { key: '', mode: manual, desc: 'individual buff 1' }
+  ibuff_2:  { key: '', mode: manual, desc: 'individual buff 2' }
+  # 2) tank buffs — always land on group position 2 (F2)
+  tbuff_1:  { key: '', mode: manual, desc: 'tank buff 1' }
+  tbuff_2:  { key: '', mode: manual, desc: 'tank buff 2' }
+  # 3) self buffs — cast on Joar (F1)
+  sbuff_1:  { key: '', mode: manual, desc: 'self buff 1' }
+  sbuff_2:  { key: '', mode: manual, desc: 'self buff 2' }
+  # 4) debuffs — cast on the current target
+  dbuff_1:  { key: '', mode: manual, desc: 'debuff 1' }
+  dbuff_2:  { key: '', mode: manual, desc: 'debuff 2' }
+  # 5) group buffs — no target (AE / group-wide)
+  gbuff_1:  { key: '', mode: manual, desc: 'group buff 1' }
+  gbuff_2:  { key: '', mode: manual, desc: 'group buff 2' }
+  # 6) damage combos — cast during combat (sequence of arts)
+  combo_1:  { key: '', mode: manual, desc: 'damage combo 1' }
+  combo_2:  { key: '', mode: manual, desc: 'damage combo 2' }
+  combo_3:  { key: '', mode: manual, desc: 'damage combo 3' }
 
 group_target_keys:
 - F1
