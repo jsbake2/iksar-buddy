@@ -144,8 +144,8 @@ function renderProfile(p) {
     profileKind = kind; dirgeActions = p.actions || {}; dirgeSig = asig;
     const dirge = kind === "dirge";
     document.querySelectorAll(".healer-only").forEach((el) => (el.hidden = dirge));
+    document.querySelectorAll(".dirge-only").forEach((el) => (el.hidden = !dirge));  // recast panel, mana feed
     const ds = $("dirgeSections"); if (ds) ds.hidden = !dirge;
-    document.querySelectorAll(".tune-row").forEach((el) => (el.hidden = dirge));  // ward-recast n/a
     gridSig = "";                        // force the per-member grid to rebuild in the new mode
     if (dirge) buildDirgeSections();
   }
