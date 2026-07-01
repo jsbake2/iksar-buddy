@@ -13,78 +13,9 @@
 # carried-over healer keymap layout with heal roles cleared.
 
 healer: dirge
+# NO heal/ward/cure/HoT roles — a Dirge has none. They're omitted entirely so the
+# keymap page shows only the Dirge kit (policy.py skips any role that isn't present).
 abilities:
-  # --- combat (manual; a Dirge has combat arts but we're not auto-firing them yet) ---
-  attack:
-    key: ''
-    mode: manual
-    desc: send pet + assist / combat art (fill if you want it on combat start)
-  spell_attack:
-    key: ''
-    mode: manual
-    desc: offensive art (manual only)
-  debuff:
-    key: ''
-    mode: manual
-    desc: debuff/slow incoming target
-  deaggro:
-    key: '='
-    mode: manual
-    desc: de-aggro / drop threat
-
-  # --- heals / wards / cures: N/A for a Dirge (left blank -> loop skips them) ---
-  direct_heal:    { key: '', mode: auto, cast_ms: 1500, desc: 'N/A (Dirge)' }
-  critical_heal:  { key: '', mode: auto, cast_ms: 1500, desc: 'N/A (Dirge)' }
-  emergency_heal: { key: '', mode: auto, cast_ms: 800,  desc: 'N/A (Dirge)' }
-  cure:           { key: '', mode: auto, cast_ms: 500,  desc: 'N/A (Dirge)' }
-  group_heal:     { key: '', mode: auto, cast_ms: 1500, desc: 'N/A (Dirge)' }
-  group_cure:     { key: 'none', mode: auto, cast_ms: 800, desc: 'N/A (Dirge)' }
-
-  # --- revive: Dirges get a battle-rez; manual for now (target via group F-key) ---
-  rez:
-    key: ''
-    mode: manual
-    cast_ms: 6000
-    desc: battle rez (target dead member via group_target_keys first) -- fill if learned
-
-  # --- utility / movement (the real Dirge kit — follow + buffs are the ask) ---
-  follow:
-    key: Alt+=
-    mode: manual
-    desc: auto-follow toggle (follow the tank)
-  stop_follow:
-    key: Ctrl+=
-    mode: manual
-    desc: stop following
-  call_home:
-    key: Alt+-
-    mode: manual
-    desc: call to home
-  hail:
-    key: ''
-    mode: manual
-    desc: hail NPC
-  jump:
-    key: Space
-    mode: manual
-    desc: jump (un-stick / pathing)
-  sow:
-    key: ''
-    mode: manual
-    desc: run-speed buff (Dirge selo's-style / totem) on the group
-  evac:
-    key: ''
-    mode: manual
-    desc: emergency evac / GTFO
-  camp:
-    key: Ctrl+-
-    mode: manual
-    desc: camp/exit macro (bound to /camp desktop) -- pressed by Stop Bot before VM shutdown
-  item_use:
-    key: ''
-    mode: manual
-    desc: use item (totem / temp buff)
-
   # === DIRGE action set (drives the dashboard buff/debuff/combo layout) =========
   # Roles are grouped by PREFIX; the dashboard renders one section per group and a
   # per-member row for the individual buffs. Owner fills the keys (keymap page) and
@@ -109,6 +40,21 @@ abilities:
   combo_1:  { key: '', mode: manual, desc: 'damage combo 1' }
   combo_2:  { key: '', mode: manual, desc: 'damage combo 2' }
   combo_3:  { key: '', mode: manual, desc: 'damage combo 3' }
+
+  # --- combat utility ---
+  deaggro:  { key: '=', mode: manual, desc: 'de-aggro / drop threat' }
+  rez:      { key: '',  mode: manual, cast_ms: 6000, desc: 'battle rez (target dead member via F-key first)' }
+
+  # --- movement / utility ---
+  follow:      { key: Alt+=,  mode: manual, desc: 'auto-follow toggle (follow the tank)' }
+  stop_follow: { key: Ctrl+=, mode: manual, desc: 'stop following' }
+  jump:        { key: Space,  mode: manual, desc: 'jump (un-stick / pathing)' }
+  sow:         { key: '',     mode: manual, desc: 'run-speed buff (Selo''s) on the group' }
+  call_home:   { key: Alt+-,  mode: manual, desc: 'call to home' }
+  evac:        { key: '',     mode: manual, desc: 'emergency evac / GTFO' }
+  hail:        { key: '',     mode: manual, desc: 'hail NPC' }
+  item_use:    { key: '',     mode: manual, desc: 'use item (totem / temp buff)' }
+  camp:        { key: Ctrl+-, mode: manual, desc: 'camp/exit (/camp desktop) — used by Stop Bot' }
 
 group_target_keys:
 - F1
