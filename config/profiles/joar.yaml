@@ -1,0 +1,119 @@
+# Healer-tool profile: JOAR (Dirge — SUPPORT/bard, NOT a healer). No wards, HoTs,
+# reactive heals, or cures. maintenance_role/group_maintenance_role = none, so the
+# decision loop has no heal heartbeat and queues no auto actions — Joar is driven by
+# manual dashboard buttons (buffs, follow) for now. All heal/ward/cure roles are left
+# blank on purpose; the policy loop skips unmapped roles (brain/policy.py `_is_mapped`).
+#
+# Account: account3 (matte123) — a NEW EQ2 account, so this is effectively a 3rd box.
+# It is NOT launchable off the healer VM's login until it has its own dom/box; creds
+# resolve by account (charswitch -> creds_for_character). Config-only for now per owner
+# ("just add it, don't log it in — currently in use").
+#
+# Owner fills the real Dirge keybinds (buffs, follow, utility). Keys below are the
+# carried-over healer keymap layout with heal roles cleared.
+
+healer: dirge
+abilities:
+  # --- combat (manual; a Dirge has combat arts but we're not auto-firing them yet) ---
+  attack:
+    key: ''
+    mode: manual
+    desc: send pet + assist / combat art (fill if you want it on combat start)
+  spell_attack:
+    key: ''
+    mode: manual
+    desc: offensive art (manual only)
+  debuff:
+    key: ''
+    mode: manual
+    desc: debuff/slow incoming target
+  deaggro:
+    key: '='
+    mode: manual
+    desc: de-aggro / drop threat
+
+  # --- heals / wards / cures: N/A for a Dirge (left blank -> loop skips them) ---
+  direct_heal:    { key: '', mode: auto, cast_ms: 1500, desc: 'N/A (Dirge)' }
+  critical_heal:  { key: '', mode: auto, cast_ms: 1500, desc: 'N/A (Dirge)' }
+  emergency_heal: { key: '', mode: auto, cast_ms: 800,  desc: 'N/A (Dirge)' }
+  cure:           { key: '', mode: auto, cast_ms: 500,  desc: 'N/A (Dirge)' }
+  group_heal:     { key: '', mode: auto, cast_ms: 1500, desc: 'N/A (Dirge)' }
+  group_cure:     { key: 'none', mode: auto, cast_ms: 800, desc: 'N/A (Dirge)' }
+
+  # --- revive: Dirges get a battle-rez; manual for now (target via group F-key) ---
+  rez:
+    key: ''
+    mode: manual
+    cast_ms: 6000
+    desc: battle rez (target dead member via group_target_keys first) -- fill if learned
+
+  # --- utility / movement (the real Dirge kit — follow + buffs are the ask) ---
+  follow:
+    key: Alt+=
+    mode: manual
+    desc: auto-follow toggle (follow the tank)
+  stop_follow:
+    key: Ctrl+=
+    mode: manual
+    desc: stop following
+  call_home:
+    key: Alt+-
+    mode: manual
+    desc: call to home
+  hail:
+    key: ''
+    mode: manual
+    desc: hail NPC
+  jump:
+    key: Space
+    mode: manual
+    desc: jump (un-stick / pathing)
+  sow:
+    key: ''
+    mode: manual
+    desc: run-speed buff (Dirge selo's-style / totem) on the group
+  evac:
+    key: ''
+    mode: manual
+    desc: emergency evac / GTFO
+  camp:
+    key: Ctrl+-
+    mode: manual
+    desc: camp/exit macro (bound to /camp desktop) -- pressed by Stop Bot before VM shutdown
+  item_use:
+    key: ''
+    mode: manual
+    desc: use item (totem / temp buff)
+
+  # --- buffs (manual; the core of the Dirge's job — owner maps the real keys) ---
+  buff1:      { key: Alt+5, mode: manual, desc: buff key 1 }
+  buff2:      { key: Alt+6, mode: manual, desc: buff key 2 }
+  buff_tank:  { key: Alt+7, mode: manual, desc: 'buff: tank (hate/melee buffs)' }
+  buff_dps:   { key: Alt+8, mode: manual, desc: 'buff: DPS' }
+  buff_self:  { key: Alt+9, mode: manual, desc: 'buff: self' }
+
+group_target_keys:
+- F1
+- F2
+- F3
+- F4
+- F5
+- F6
+slot_roles:
+- support
+- tank
+- dps
+- dps
+- healer
+- support
+tank_slot: 1
+maintenance_role: none
+group_maintenance_role: none
+names:
+  '0': Joar
+  '1': ''
+  '2': ''
+  '3': ''
+  '4': ''
+  '5': ''
+select_character: Joar

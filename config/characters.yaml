@@ -17,3 +17,4 @@ characters:
   Foxyman: { account: account1, adventure: crusader,     tradeskill: alchemist }   # tank (class TBD)
   Jenskin:  { account: account2, adventure: defiler,      tradeskill: jeweler }
   Croolst:  { account: account2, adventure: fury,         tradeskill: sage }
+  Joar:     { account: account3, adventure: dirge,        tradeskill: "" }          # support (bard) — buffs/follow, no heals/wards
