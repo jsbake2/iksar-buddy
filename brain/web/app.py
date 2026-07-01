@@ -141,6 +141,14 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     async def snapshot():
         return telemetry.snapshot
 
+    @app.get("/api/live/{nonce}")
+    async def live_snapshot(nonce: str):
+        """Same as /api/snapshot but with a UNIQUE path per request (the caller passes a
+        timestamp/nonce). The Cloudflare edge caches by path and was serving a stale
+        /api/snapshot (query strings ignored); a fresh path is always a cache miss, so
+        this can never be served stale. Used by the pop-out windows' state poll."""
+        return telemetry.snapshot
+
     @app.get("/api/profiles")
     async def get_profiles():
         return _profile_state()

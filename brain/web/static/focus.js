@@ -71,7 +71,7 @@ const DIRGE_CATALOG = [
 ];
 
 // active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).
-const FOCUS_BUILD = "b7";        // bump on focus.js changes — shown in the header for verification
+const FOCUS_BUILD = "b8";        // bump on focus.js changes — shown in the header for verification
 let kind = "healer";
 let CATALOG = HEALER_CATALOG;
 let BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
@@ -354,7 +354,9 @@ function connect() {
 // truth. Cheap, and it makes the window correct even if the WS never connects.
 async function poll() {
   try {
-    const s = await (await fetch("/api/snapshot?t=" + Date.now())).json();
+    // UNIQUE PATH per request — the CF edge caches by path and was serving a stale
+    // /api/snapshot (ignoring the ?t query). A fresh path is always a cache miss.
+    const s = await (await fetch("/api/live/" + Date.now())).json();
     applyState(s);
   } catch (_) {}
 }
