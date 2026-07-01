@@ -78,6 +78,21 @@
 /* keymap editor modal: wide box with an embedded keymap.html iframe */
 .km-modal-box { width:min(760px,94vw); height:86vh; padding:12px 16px; display:flex; flex-direction:column; }
 .km-frame { flex:1; width:100%; border:none; border-radius:8px; background:var(--bg); margin-top:6px; }
+/* toast notifications (shared with brain; see toast.js) */
+#ibToasts { position:fixed; top:14px; right:14px; z-index:9999; display:flex; flex-direction:column; gap:8px;
+  width:min(340px,90vw); pointer-events:none; }
+.ib-toast { pointer-events:auto; position:relative; background:var(--panel); border:1px solid var(--line);
+  border-left:4px solid var(--accent); border-radius:9px; padding:10px 30px 10px 12px; cursor:pointer;
+  box-shadow:0 8px 30px rgba(0,0,0,.45); opacity:0; transform:translateX(24px); transition:opacity .2s, transform .2s; }
+.ib-toast.in { opacity:1; transform:translateX(0); }
+.ib-toast.out { opacity:0; transform:translateX(24px); }
+.ib-toast-t { font-weight:700; font-size:13px; color:var(--fg); }
+.ib-toast-d { font-size:12px; color:var(--muted); margin-top:3px; word-break:break-word; }
+.ib-toast-x { position:absolute; top:6px; right:9px; color:var(--faint); font-size:12px; line-height:1; }
+.ib-toast.good { border-left-color:var(--good); }
+.ib-toast.warn { border-left-color:#d9a441; }
+.ib-toast.error { border-left-color:var(--bad); }
+.ib-toast.info { border-left-color:var(--accent); }
 .cm-sub { color:var(--muted); font-size:12px; margin:0 0 14px; }
 .cm-opt { border:1px solid var(--line); border-radius:9px; padding:12px; margin-bottom:10px; background:var(--panel2); }
 .cm-opt-h { font-weight:700; font-size:13px; margin-bottom:8px; }

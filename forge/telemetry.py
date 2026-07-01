@@ -55,6 +55,7 @@ class ForgeTelemetry:
         self._events: list[dict] = []
         self._trade_classes = trade_classes or []
         self._crafters = crafters or []           # [{character, class, vm}]
+        self._notice: dict | None = None          # latest toast-worthy notification
         self._subs: set[asyncio.Queue] = set()
 
     def set_crafters(self, crafters: list) -> None:
@@ -96,6 +97,16 @@ class ForgeTelemetry:
         }])[-keep:]
         self._publish()
 
+    def notify(self, bot_id: str, title: str, detail: str = "",
+               level: str = "warn", sys: bool = True) -> None:
+        """Raise a toast-worthy notification: the dashboard pops a stacking toast and
+        (level != 'info' or sys) fires an OS notification. Also logged to the event
+        stream so it's not lost. level: info | good | warn | error. `sys` requests an
+        OS-level notification (browser Notification API)."""
+        self._notice = {"ts": time.time(), "bot": bot_id, "title": title,
+                        "detail": detail, "level": level, "sys": sys}
+        self.push_event(bot_id, "notify", f"{title}{': ' + detail if detail else ''}")
+
     # -- snapshot + pub/sub ------------------------------------------------
     @property
     def snapshot(self) -> dict:
@@ -103,6 +114,7 @@ class ForgeTelemetry:
             "bots": self._bots,
             "order": self._order,
             "events": self._events,
+            "notice": self._notice,
             "trade_classes": self._trade_classes,
             "crafters": self._crafters,
             "ts": time.time(),

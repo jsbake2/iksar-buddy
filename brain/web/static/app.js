@@ -287,6 +287,7 @@ function buildDirgeSections() {
     `<button data-accept="invite">accept invite</button>` +
     `<button data-accept="quest">accept quest</button>` +
     `<button data-accept="revive">accept revive</button>` +
+    `<button data-accept="trade">accept trade</button>` +
     `</div></div>`;
   _bind(box);
 }
@@ -464,6 +465,7 @@ function render(s) {
 
   // ---- events ----
   renderEvents(s.events || []);
+  ibNotify.fromSnapshot(s);
 }
 
 const ROLES = ["healer", "tank", "dps", "support", "none"];

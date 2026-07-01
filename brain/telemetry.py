@@ -42,6 +42,7 @@ class Telemetry:
             "members": [_member(i) for i in range(6)],
             "own": {"power": 1.0, "casting": False, "mana_gated": False},
             "events": [],            # rolling cast/cure/rez/control event stream
+            "notice": None,          # latest toast-worthy notification
             "vm": {"name": "iksar_buddy", "running": None, "ip": None},
             "host": {},              # host load + passed-through 4070 stats
             "updated": time.time(),
@@ -72,6 +73,15 @@ class Telemetry:
         evs.append({"ts": time.time(), "kind": kind, "detail": detail})
         del evs[:-120]
         self._broadcast()
+
+    def notify(self, title: str, detail: str = "", level: str = "warn",
+               sys: bool = True) -> None:
+        """Raise a toast-worthy notification: the dashboard pops a stacking toast and
+        fires an OS notification (browser Notification API). Also logged to the event
+        stream. level: info | good | warn | error."""
+        self.snapshot["notice"] = {"ts": time.time(), "title": title,
+                                   "detail": detail, "level": level, "sys": sys}
+        self.push_event("notify", f"{title}{': ' + detail if detail else ''}")
 
     def _broadcast(self) -> None:
         dead = []

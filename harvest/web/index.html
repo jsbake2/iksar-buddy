@@ -129,6 +129,7 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
       <div class="muted">after a client update (uses /loc seed)</div></div>
   </div>
 </main>
+<script src="/static/toast.js"></script>
 <script>
 // theme
 const th=document.getElementById('theme'); const sv=localStorage.getItem('ibh-theme');
@@ -213,6 +214,21 @@ async function tick(){
   const al=d.alerts||[]; const col={combat:'var(--bad)',pm:'var(--accent)',rare:'var(--good)',stuck:'var(--warn)'};
   document.getElementById('alerts').innerHTML=al.length?al.map(a=>
     `<div style="color:${col[a.kind]||'var(--fg)'}">● ${a.kind.toUpperCase()} — ${(a.msg||'').replace(/</g,'&lt;')}</div>`).join(''):'<span class="muted">clear</span>';
+  // toasts + OS notifications for new rares / tells (diff by newest timestamp)
+  notifyNew((d.harvest&&d.harvest.rares)||[], 'rare', r=>['Rare harvest found!', r.item+(r.node?` (${r.node})`:''), 'good']);
+  notifyNew((d.harvest&&d.harvest.tells)||[], 'tell', t=>[`Tell from ${t.from}`, t.msg, 'warn']);
+}
+const _seen={};
+function notifyNew(arr, key, fmt){
+  if(!arr.length) return;
+  const newest=Math.max(...arr.map(x=>x.t||0));
+  if(_seen[key]===undefined){_seen[key]=newest;return;}  // prime: skip backlog on load
+  if(newest<=_seen[key]) return;
+  arr.filter(x=>(x.t||0)>_seen[key]).forEach(x=>{
+    const[t,dt,lv]=fmt(x); ibNotify.show(t,dt,lv);
+    if(typeof Notification!=='undefined'&&Notification.permission==='granted'){try{new Notification(t,{body:dt||''})}catch(e){}}
+  });
+  _seen[key]=newest;
 }
 loadChars();setInterval(tick,1500);tick();setInterval(refreshFrame,1500);refreshFrame();
 </script>

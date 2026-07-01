@@ -347,6 +347,9 @@ class CraftWorker:
                     self.t.push_event(self.id, "control", "STOPPED — craft window not on screen")
                     self.t.push_log(self.id, "craft window NOT present — refusing to type to the "
                                     "world; stopping (open the crafting station window, then Start)")
+                    self.t.notify(self.id, "Table not targeted",
+                                  "craft window not on screen — open the station, then Start",
+                                  level="error")
                     self._stop.set()
                     self.t.update_bot(self.id, state="error", durability_mode=None)
                     return False
@@ -402,6 +405,8 @@ class CraftWorker:
                                      f"— rows seen: {seen or '[]'} — retrying")
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
+            self.t.notify(self.id, "Recipe not found",
+                          f"OCR failed to find a valid recipe for '{name}'", level="error")
             return False
         self._row_click = list(row_click)            # remember the row so the guest can RE-SELECT
         # DOUBLE-click the row icon to LOAD, then VERIFY it loaded (Begin/Create appears).
@@ -424,6 +429,8 @@ class CraftWorker:
             if r2:
                 row_click = r2
         self.t.push_log(self.id, f"recipe '{name}' didn't load — skipping")
+        self.t.notify(self.id, "Recipe won't load",
+                      f"'{name}' matched but wouldn't open — skipping", level="error")
         return False
 
     async def _focus_craft(self) -> None:
@@ -558,6 +565,8 @@ class CraftWorker:
                     self._agent_set("idle")
                     self.t.push_log(self.id, "craft never went active (no reactions — missing "
                                              "materials / didn't start) — skipping recipe")
+                    self.t.notify(self.id, "Unable to start crafting",
+                                  "craft never went active (missing materials?)", level="error")
                     return False
             if not st.get("alive"):              # agent died mid-craft -> finish host-side
                 self.t.push_log(self.id, "agent went silent mid-craft — taking over host-side")
@@ -773,6 +782,8 @@ class CraftWorker:
                 self.t.push_log(self.id, "not running (no stop sign) — clicking start again")
             if not started:
                 self.t.push_log(self.id, f"couldn't start craft {done + 1}/{count} — stopping")
+                self.t.notify(self.id, "Unable to start crafting",
+                              f"'{name}' wouldn't begin (materials? Begin disabled?)", level="error")
                 break
             if await self._react(gate_power=gate_power):
                 self.t.push_log(self.id, f"craft {done + 1}/{count} complete")
@@ -823,6 +834,14 @@ class CraftWorker:
                 cleared = False
                 delay = float(self.cfg.get("timed_writ_delay", 3.0))
                 rounds = int(self.cfg.get("timed_writ_max_rounds", 12))
+                # An EMPTY re-read means either the writ is genuinely done OR the journal
+                # OCR just failed/blipped (tracker not visible for that frame). We must NOT
+                # treat a single empty read as "complete" — that was the bug where the retry
+                # never ran and a still-unfinished writ got reported done. Require N
+                # CONSECUTIVE empty reads before concluding the journal is clear.
+                confirm = max(1, int(self.cfg.get("timed_writ_confirm_empties", 2)))
+                empty_streak = 0
+                retried = False
                 for rnd in range(1, rounds + 1):
                     if self._stop.is_set():
                         break
@@ -834,12 +853,24 @@ class CraftWorker:
                         rq = [it for it in rq if (it.get("station") or "") in ("", station)]
                     rq = [it for it in rq if int(it.get("count", 0)) > 0]
                     if not rq:
-                        cleared = True
-                        self.t.push_event(self.id, "craft", "timed writ: journal clear — complete")
-                        break
+                        empty_streak += 1
+                        if empty_streak >= confirm:
+                            cleared = True
+                            self.t.push_event(self.id, "craft", "timed writ: journal clear — complete")
+                            break
+                        self.t.push_event(self.id, "craft",
+                                          f"timed writ: re-read empty ({empty_streak}/{confirm}) "
+                                          f"— re-checking before calling it done")
+                        continue                             # re-read again; don't false-complete
+                    empty_streak = 0                         # got a real read -> reset
                     self.t.push_event(self.id, "craft",
                                       f"timed writ: re-read found {len(rq)} remaining "
                                       f"(round {rnd}/{rounds}) — crafting")
+                    if not retried:                          # first recovery pass -> notify the owner
+                        retried = True
+                        self.t.notify(self.id, "Timed writ retry",
+                                      f"{len(rq)} recipe(s) still on the writ — re-crafting",
+                                      level="warn")
                     self.t.update_bot(self.id, queue=rq)
                     await self._craft_writ_pass(rq, station, tc)
                     q = rq                                   # for the final status check
@@ -849,10 +880,15 @@ class CraftWorker:
             # masquerade as done. (Owner: "finished one, other still to go, says done — wtf".)
             if cleared is True:
                 self.t.push_event(self.id, "craft", "timed writ COMPLETE" + (f" ({station})" if station else ""))
+                if writ_mode == "timed" and retried:         # recovered from a failure -> tell the owner
+                    self.t.notify(self.id, "Timed writ complete",
+                                  "recovered — journal is clear", level="good")
                 self.t.update_bot(self.id, state="done", durability_mode=None)
                 return
             if cleared is False and not self._stop.is_set():
                 self.t.push_event(self.id, "craft", "timed writ: still incomplete after retries — check it")
+                self.t.notify(self.id, "Timed writ incomplete",
+                              "still items left after retries — check it", level="error")
                 self.t.update_bot(self.id, state="incomplete", durability_mode=None)
                 return
             self._writ_status(q, station)

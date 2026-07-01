@@ -65,6 +65,8 @@ class Brain:
         self._dps_spell_at = 0.0     # 2-man dps cycle: when to fire the scheduled spell_attack
         self._last_prepull = 0.0     # debounce the tank's incoming-call -> pre_pull
         self._last_pbuff = {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0}   # Dirge periodic-buff timers
+        self._dead_prev: dict = {}   # slot -> was-dead last tick (death-edge detection)
+        self._own_dead_prev = False  # bot's own death edge
 
     # -- outbound ----------------------------------------------------------
     async def send(self, type_: str, **data) -> None:
@@ -235,6 +237,24 @@ class Brain:
             host=d.get("host", {}),
         )
         self.telemetry.set_members(member_rows)
+
+        # Death edges -> toast/OS notification (fire ONCE per death, reset on revive).
+        for row in member_rows:
+            slot, dead = row["slot"], bool(row.get("dead"))
+            if dead and not self._dead_prev.get(slot) and row.get("present"):
+                who = row.get("name") or f"slot {slot}"
+                is_tank = (row.get("role") == "tank")
+                self.telemetry.notify("Bot has died" if is_tank else f"{who} has died",
+                                      f"{who} ({row.get('role') or 'member'}) is down",
+                                      level="error" if is_tank else "warn")
+            self._dead_prev[slot] = dead
+        own_hp = float(d.get("own_hp", 1.0) or 1.0)
+        # only trust an own-death read when we're actually in-world (else a misread /
+        # not-in-world 0 HP would false-fire); edge-triggered, resets on revive.
+        own_dead = bool(cf.get("game_present")) and own_hp <= 0.01
+        if own_dead and not self._own_dead_prev:
+            self.telemetry.notify("Bot has died", "the healer is down", level="error")
+        self._own_dead_prev = own_dead
 
         # decide() returns a PRIORITY BURST. Fire the FIRST entry that's off cooldown +
         # past the GCD; over successive GCDs this pours the whole stack (all heal tiers +

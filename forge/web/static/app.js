@@ -513,6 +513,7 @@ function render(s) {
     if (refs && bots[id]) updateBotPanel(refs, bots[id]);
   });
   renderEvents(s.events || []);
+  ibNotify.fromSnapshot(s);
 }
 
 // ---- global controls ------------------------------------------------------

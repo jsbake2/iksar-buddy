@@ -631,7 +631,8 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     # for autonomous use only, which isn't wired).
     _ACCEPT = {"invite": ["invite_accept.py"],
                "quest": ["quest_accept.py", "--accept"],
-               "revive": ["revive_accept.py"]}
+               "revive": ["revive_accept.py"],
+               "trade": ["trade_accept.py"]}
 
     async def _run_helper(argv: list, label: str):
         path = str(Path.home() / "ib-build" / argv[0])
