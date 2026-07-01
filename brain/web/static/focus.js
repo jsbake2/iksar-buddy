@@ -71,7 +71,7 @@ const DIRGE_CATALOG = [
 ];
 
 // active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).
-const FOCUS_BUILD = "b8";        // bump on focus.js changes — shown in the header for verification
+const FOCUS_BUILD = "b9";        // bump on focus.js changes — shown in the header for verification
 let kind = "healer";
 let CATALOG = HEALER_CATALOG;
 let BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
@@ -171,11 +171,15 @@ if (armChip) armChip.onclick = () =>
   fetch(`/api/control/${state.running ? "pause" : "resume"}`, { method: "POST" }).catch(() => {});
 function applyState(s) {
   // swap the whole catalog + saved layout when the active profile's kind changes
-  const k = kindOf(s.profile);
-  if (k !== kind) { setKind(k); render(); loadServerLayout(); }   // repaint immediately in the new kind
-  // ward->hot relabel on profile change (re-render once; maintRole then stable)
-  const mr = (s.profile || {}).maint_role || "ward";
-  if (mr !== maintRole) { maintRole = mr; render(); }
+  // Only touch kind/maintRole when the snapshot ACTUALLY carries a profile. Some
+  // sources (a WS frame through Cloudflare) arrive without it — those must not revert
+  // the kind back to the healer default. The /api/live poll always carries the profile.
+  if (s.profile) {
+    const k = kindOf(s.profile);
+    if (k !== kind) { setKind(k); render(); loadServerLayout(); }   // repaint in the new kind
+    const mr = s.profile.maint_role || "ward";
+    if (mr !== maintRole) { maintRole = mr; render(); }
+  }
   state.running = !!s.running;
   const cf = s.chat_focus || {};
   state.chat_safe = cf.safe;
@@ -211,11 +215,6 @@ function applyState(s) {
       ? false : (missing || state.chat_safe === false);
     b.classList.toggle("disabled", dis);
   });
-  // DIAGNOSTIC: what does the websocket actually deliver for `profile`?
-  const brand = document.querySelector(".focus-brand");
-  const p = s.profile;
-  if (brand) brand.textContent = "focus·" + kind + "·" + FOCUS_BUILD + "·ws:" +
-    (p ? (p.kind ?? "?") + "/" + (p.maint_role ?? "?") : "NO-PROFILE");
 }
 
 // ---- fire ----------------------------------------------------------------
