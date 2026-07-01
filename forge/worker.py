@@ -72,10 +72,17 @@ class CraftWorker:
                     cnt = max(1, int(d.get("count", 1)))
                 except (TypeError, ValueError):
                     cnt = 1
-                comb = self._batch_combines(cnt, trade_class, d.get("name", ""))
-                d["count"] = comb                 # what the bot actually combines
-                if comb != cnt:
-                    d["writ_count"] = cnt          # remember the EQ2 objective (yield-N per combine)
+                # If this item was ALREADY collapsed to combines at read time
+                # (controller.reads_writ sets writ_count then), `cnt` is already the
+                # combine count — do NOT collapse again. Re-collapsing an EVEN combine
+                # count double-divides (make-4 -> 2 combines -> 1) and under-crafts.
+                if d.get("writ_count"):
+                    d["count"] = cnt
+                else:
+                    comb = self._batch_combines(cnt, trade_class, d.get("name", ""))
+                    d["count"] = comb             # what the bot actually combines
+                    if comb != cnt:
+                        d["writ_count"] = cnt      # remember the EQ2 objective (yield-N per combine)
                 q.append(d)
             # station != "" -> craft ONLY that table's recipes this pass (owner reads one writ,
             # crafts table-by-table without deleting/re-reading). "" / "all" = whole queue.

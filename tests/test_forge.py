@@ -289,3 +289,24 @@ def test_match_recipe_row_extra_word_only_variant_skips(monkeypatch):
     fake = _row(["Tranquil", "Burlap", "Pantaloons"], y=210)
     monkeypatch.setattr(sensors, "_ocr_words", lambda g, r: fake)
     assert sensors.match_recipe_row(None, {"recipe_select": {}}, "Burlap Pantaloons") is None
+
+
+# ---- batch-combine collapse (provisioner yield-2, etc.) --------------------
+def test_writ_start_does_not_double_collapse_already_collapsed_item(tmp_path):
+    """A make-4 provisioner writ (yield 2) collapses to 2 combines at read time
+    (writ_count=4 set). worker.start must NOT collapse it again to 1."""
+    from forge.worker import CraftWorker
+    w = CraftWorker(guest=None, profile={}, profile_dir=tmp_path, tele=None, bot_id="t")
+    w.start("writ", "provisioner",
+            queue=[{"name": "Sharkfin Soup", "count": 2, "writ_count": 4}])
+    got = w._pending["queue"][0]
+    assert got["count"] == 2 and got["writ_count"] == 4     # not re-divided to 1
+
+
+def test_writ_start_collapses_a_raw_uncollapsed_item(tmp_path):
+    """A raw make-4 item (no writ_count) still collapses once: 4 items / yield 2 = 2."""
+    from forge.worker import CraftWorker
+    w = CraftWorker(guest=None, profile={}, profile_dir=tmp_path, tele=None, bot_id="t")
+    w.start("writ", "provisioner", queue=[{"name": "Sharkfin Soup", "count": 4}])
+    got = w._pending["queue"][0]
+    assert got["count"] == 2 and got["writ_count"] == 4
