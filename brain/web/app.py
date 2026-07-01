@@ -91,6 +91,17 @@ _GROUP_ACTIONS = {
 def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     app = FastAPI(title="ib", docs_url=None, redoc_url=None)
 
+    @app.middleware("http")
+    async def _no_cache_html(request, call_next):
+        """HTML must never be cached — otherwise a popped-out window (focus/group) keeps
+        loading a stale page that references an old versioned .js, so our cache-busts
+        never take. HTML always revalidates; the ?v= on js/css handles those."""
+        resp = await call_next(request)
+        path = request.url.path
+        if path == "/" or path.endswith(".html"):
+            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        return resp
+
     # Dirge (support) main-page BUFF MATRIX data: the temp + individual (permanent)
     # buffs, each with the owner-set `name` (from the keymap) used as the matrix row
     # label. Columns are the live group members; a cell casts that buff on that member.

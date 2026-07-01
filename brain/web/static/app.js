@@ -112,12 +112,15 @@ const shutdownBtn = $("shutdownBtn");
 if (shutdownBtn) shutdownBtn.onclick = () => {
   if (confirm("Shutdown VM?\n\nPowers off the VM immediately — NO camp logout. Windows closes EQ2 cleanly; forces off if it hangs.")) post("/api/shutdown");
 };
+// Cache-bust the popout URL each click: a same-name window.open with an UNCHANGED
+// url just re-focuses the (possibly stale) window without reloading — so a new ?t=
+// forces the popout to actually navigate + fetch the current html/js.
 const focusBtn = $("focusBtn");
 if (focusBtn) focusBtn.onclick = () =>
-  window.open("focus.html", "ibfocus", "width=430,height=600,menubar=no,toolbar=no,location=no,status=no");
+  window.open("focus.html?t=" + Date.now(), "ibfocus", "width=430,height=600,menubar=no,toolbar=no,location=no,status=no");
 const groupBtn = $("groupBtn");
 if (groupBtn) groupBtn.onclick = () =>
-  window.open("group.html", "ibgroup", "width=480,height=640,menubar=no,toolbar=no,location=no,status=no");
+  window.open("group.html?t=" + Date.now(), "ibgroup", "width=480,height=640,menubar=no,toolbar=no,location=no,status=no");
 
 // ---- build the per-member action grid (modernized action_list) ------------
 let gridBuilt = false;
