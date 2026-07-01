@@ -73,9 +73,9 @@ function renderProfile(p) {
   }
   // ---- healer vs Dirge (support) layout swap ----
   const kind = p.kind || "healer";
-  const sig = JSON.stringify(p.actions || {});
-  if (kind !== profileKind || sig !== dirgeSig) {
-    profileKind = kind; dirgeActions = p.actions || {}; dirgeSig = sig;
+  const asig = JSON.stringify(p.actions || {});
+  if (kind !== profileKind || asig !== dirgeSig) {
+    profileKind = kind; dirgeActions = p.actions || {}; dirgeSig = asig;
     const dirge = kind === "dirge";
     document.querySelectorAll(".healer-only").forEach((el) => (el.hidden = dirge));
     const ds = $("dirgeSections"); if (ds) ds.hidden = !dirge;
