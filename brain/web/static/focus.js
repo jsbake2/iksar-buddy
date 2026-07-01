@@ -71,7 +71,7 @@ const DIRGE_CATALOG = [
 ];
 
 // active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).
-const FOCUS_BUILD = "b5";        // bump on focus.js changes — shown in the header for verification
+const FOCUS_BUILD = "b7";        // bump on focus.js changes — shown in the header for verification
 let kind = "healer";
 let CATALOG = HEALER_CATALOG;
 let BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
@@ -211,6 +211,11 @@ function applyState(s) {
       ? false : (missing || state.chat_safe === false);
     b.classList.toggle("disabled", dis);
   });
+  // DIAGNOSTIC: what does the websocket actually deliver for `profile`?
+  const brand = document.querySelector(".focus-brand");
+  const p = s.profile;
+  if (brand) brand.textContent = "focus·" + kind + "·" + FOCUS_BUILD + "·ws:" +
+    (p ? (p.kind ?? "?") + "/" + (p.maint_role ?? "?") : "NO-PROFILE");
 }
 
 // ---- fire ----------------------------------------------------------------
@@ -344,6 +349,15 @@ function connect() {
   ws.onclose = () => setTimeout(connect, 1500);
   ws.onerror = () => ws.close();
 }
+// HTTP snapshot poll — the WS doesn't reliably reach this popout through Cloudflare,
+// so drive state (incl. the profile kind) off a cache-busted GET as the source of
+// truth. Cheap, and it makes the window correct even if the WS never connects.
+async function poll() {
+  try {
+    const s = await (await fetch("/api/snapshot?t=" + Date.now())).json();
+    applyState(s);
+  } catch (_) {}
+}
 // determine the profile kind FIRST (so the right catalog + layout load), then paint.
 async function init() {
   try {
@@ -353,5 +367,7 @@ async function init() {
   render();
   connect();
   loadServerLayout();   // override the local cache with the server-saved layout for this kind
+  poll();
+  setInterval(poll, 1500);
 }
 init();
