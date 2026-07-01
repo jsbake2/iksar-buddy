@@ -187,7 +187,7 @@ function buildBuffMatrix(grid, members) {
 }
 // Main-page utility (combat — attacks/debuffs/aoe — lives on the focus window).
 const DIRGE_UTIL = [
-  ["follow", "Follow"], ["stop_follow", "Stop Follow"], ["jump", "Jump"], ["sow", "SoW"],
+  ["follow", "Follow"], ["stop_follow", "Stop Follow"], ["jump", "Jump"],
   ["call_home", "Call Home"], ["evac", "Evac"], ["hail", "Hail"], ["item_use", "Item"],
   ["deaggro", "De-aggro"], ["camp", "Camp"],
 ];
