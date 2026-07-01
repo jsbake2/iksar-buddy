@@ -105,7 +105,8 @@ const ENSURE_BY_KIND = {
 let ENSURE = ENSURE_BY_KIND.healer;
 function mergeLayout(s) {
   if (!s || !Array.isArray(s.ids)) return { ids: DEFAULT.slice(), cols: 3, ensured: ENSURE.slice(), colors: {} };
-  s.ids = s.ids.filter((id) => BY_ID[id]);          // drop retired actions (e.g. buff1/buff2)
+  s.ids = s.ids.filter((id) => BY_ID[id]);          // drop actions not in THIS kind's catalog
+  if (!s.ids.length) s.ids = DEFAULT.slice();       // file was all wrong-kind ids -> use this kind's default
   const ensured = new Set(s.ensured || []);
   for (const id of ENSURE) {
     if (!ensured.has(id)) { if (!s.ids.includes(id)) s.ids.push(id); ensured.add(id); }
@@ -124,22 +125,23 @@ function loadLocal() {
 // localStorage cache for instant first paint. The server copy is the source of truth.
 function saveLayout() {
   localStorage.setItem(LS(), JSON.stringify(layout));
-  fetch("/api/focus-layout", { method: "POST", headers: { "Content-Type": "application/json" },
+  // POST with our KIND so a healer window can't overwrite the dirge file (and vice-versa)
+  fetch("/api/focus-layout?kind=" + kind, { method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(layout) }).catch(() => {});
 }
 let layout = loadLocal();           // instant from cache; the server copy overrides on load
 async function loadServerLayout() {
   try {
-    const r = await fetch("/api/focus-layout");
+    const r = await fetch("/api/focus-layout?kind=" + kind);
     if (!r.ok) return;
     const s = await r.json();
     if (s && Array.isArray(s.ids)) {  // server has a saved layout -> use it (the source of truth)
       layout = mergeLayout(s);
       localStorage.setItem(LS(), JSON.stringify(layout));
       render();
-    } else {                          // server empty (first run) -> seed it from our local layout
-      saveLayout();
     }
+    // server empty -> keep the local/default layout; do NOT auto-POST (that seeded the
+    // wrong kind's buttons before an explicit edit). The file is written on first edit.
   } catch (_) {}
 }
 

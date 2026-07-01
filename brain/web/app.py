@@ -237,13 +237,16 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     # focus/group windows (which follow the active profile) load the right one.
     _LEGACY_FOCUS = brain.cfg.config_dir / "focus_layout.json"
 
-    def _focus_layout_path() -> "Path":
-        kind = "dirge" if brain.cfg.maint_role == "none" else "healer"
+    def _focus_layout_path(kind: str | None = None) -> "Path":
+        # The CLIENT passes its kind (its catalog) so a healer-catalog window can never
+        # write the dirge file (and vice-versa). Fall back to the active profile's kind.
+        if kind not in ("healer", "dirge"):
+            kind = "dirge" if brain.cfg.maint_role == "none" else "healer"
         return brain.cfg.config_dir / f"focus_layout_{kind}.json"
 
     @app.get("/api/focus-layout")
-    async def get_focus_layout():
-        p = _focus_layout_path()
+    async def get_focus_layout(kind: str | None = None):
+        p = _focus_layout_path(kind)
         # migrate the pre-split single layout into the healer slot on first read
         if not p.exists() and p.name == "focus_layout_healer.json" and _LEGACY_FOCUS.exists():
             p = _LEGACY_FOCUS
@@ -255,11 +258,11 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         return {}
 
     @app.post("/api/focus-layout")
-    async def post_focus_layout(payload: dict = Body(...)):
+    async def post_focus_layout(payload: dict = Body(...), kind: str | None = None):
         if not isinstance(payload.get("ids"), list):
             return JSONResponse({"error": "missing ids"}, status_code=400)
         try:
-            _focus_layout_path().write_text(json.dumps(payload), encoding="utf-8")
+            _focus_layout_path(kind).write_text(json.dumps(payload), encoding="utf-8")
         except OSError as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         return {"ok": True}

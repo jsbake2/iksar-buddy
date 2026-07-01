@@ -157,6 +157,7 @@ function buildGrid(members) {
 function _bind(el) {
   el.querySelectorAll("[data-group]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.group}`)));
   el.querySelectorAll("[data-act]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.act}/${b.dataset.slot}`)));
+  el.querySelectorAll("[data-accept]").forEach((b) => (b.onclick = () => post(`/api/accept/${b.dataset.accept}`)));
 }
 // Rows = temp buffs then individual (permanent) buffs, labelled by the owner's keymap
 // NAME. Columns = live group members. A cell casts that buff on that member.
@@ -193,8 +194,14 @@ const DIRGE_UTIL = [
 ];
 function buildDirgeSections() {
   const box = $("dirgeSections"); if (!box) return;
-  box.innerHTML = `<div class="ctl-sec"><h3>Utility</h3><div class="sbtns">` +
+  box.innerHTML =
+    `<div class="ctl-sec"><h3>Utility</h3><div class="sbtns">` +
     DIRGE_UTIL.map(([role, label]) => `<button data-group="${role}" title="${label}">${label}</button>`).join("") +
+    `</div></div>` +
+    `<div class="ctl-sec"><h3>Clicks</h3><div class="sbtns">` +
+    `<button data-accept="invite">accept invite</button>` +
+    `<button data-accept="quest">accept quest</button>` +
+    `<button data-accept="revive">accept revive</button>` +
     `</div></div>`;
   _bind(box);
 }
