@@ -95,6 +95,9 @@ body {
   animation:alarmPulse 1s ease-in-out infinite;
 }
 .alarm[hidden] { display:none; }
+/* the [hidden] attribute must win over element display rules (.tune-row/.panel use
+   flex/grid, which otherwise override it) — so JS el.hidden=true actually hides. */
+[hidden] { display:none !important; }
 .alarm-icon { width:24px; height:24px; border-radius:50%; background:#fff; color:var(--bad);
   display:grid; place-items:center; font-weight:900; }
 .alarm-count { font-weight:600; opacity:.9; }
