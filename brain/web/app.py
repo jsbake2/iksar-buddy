@@ -231,13 +231,24 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
 
     # --- focus-window button layout: persisted SERVER-SIDE (survives cache clears,
     # different browsers/devices, and our deploys) instead of per-browser localStorage.
-    _FOCUS_LAYOUT = brain.cfg.config_dir / "focus_layout.json"
+    # PER PROFILE KIND — the healer keeps its nicely-arranged layout while the Dirge
+    # gets its own (no heal buttons). Keyed off the ACTIVE profile's kind so the
+    # focus/group windows (which follow the active profile) load the right one.
+    _LEGACY_FOCUS = brain.cfg.config_dir / "focus_layout.json"
+
+    def _focus_layout_path() -> "Path":
+        kind = "dirge" if brain.cfg.maint_role == "none" else "healer"
+        return brain.cfg.config_dir / f"focus_layout_{kind}.json"
 
     @app.get("/api/focus-layout")
     async def get_focus_layout():
-        if _FOCUS_LAYOUT.exists():
+        p = _focus_layout_path()
+        # migrate the pre-split single layout into the healer slot on first read
+        if not p.exists() and p.name == "focus_layout_healer.json" and _LEGACY_FOCUS.exists():
+            p = _LEGACY_FOCUS
+        if p.exists():
             try:
-                return json.loads(_FOCUS_LAYOUT.read_text(encoding="utf-8"))
+                return json.loads(p.read_text(encoding="utf-8"))
             except (OSError, ValueError):
                 pass
         return {}
@@ -247,7 +258,7 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         if not isinstance(payload.get("ids"), list):
             return JSONResponse({"error": "missing ids"}, status_code=400)
         try:
-            _FOCUS_LAYOUT.write_text(json.dumps(payload), encoding="utf-8")
+            _focus_layout_path().write_text(json.dumps(payload), encoding="utf-8")
         except OSError as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         return {"ok": True}

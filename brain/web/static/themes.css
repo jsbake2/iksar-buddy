@@ -494,6 +494,7 @@ button.launch:hover { filter:brightness(1.08); }
 .gm-act.b-ward  { background:color-mix(in srgb,var(--ward) 26%,var(--panel2)); border-color:color-mix(in srgb,var(--ward) 55%,var(--line)); }
 .gm-act.b-cure  { background:color-mix(in srgb,var(--accent) 22%,var(--panel2)); border-color:color-mix(in srgb,var(--accent) 50%,var(--line)); }
 .gm-act.b-rez   { background:color-mix(in srgb,var(--warn) 24%,var(--panel2)); border-color:color-mix(in srgb,var(--warn) 55%,var(--line)); }
+.gm-act.b-buff  { background:color-mix(in srgb,var(--accent2,#7aa2ff) 22%,var(--panel2)); border-color:color-mix(in srgb,var(--accent2,#7aa2ff) 50%,var(--line)); }
 .gm-act.flagged { animation:alarmPulse 1.1s infinite; border-width:2px; }
 
 /* editor drawer */

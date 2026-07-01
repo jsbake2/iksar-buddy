@@ -4,7 +4,8 @@ const $ = (id) => document.getElementById(id);
 
 // Full catalog. kind 'group' -> POST /api/act/<action>. kind 'role' -> resolve
 // the slot of <role> from live telemetry, then POST /api/act/<action>/<slot>.
-const CATALOG = [
+// kind 'member' -> POST /api/act/<action>/<slot> with an EXPLICIT slot (buffs).
+const HEALER_CATALOG = [
   { id: "gather", label: "⛏ Gather", kind: "group", action: "gather", hot: 1 },
   { id: "pre_pull", label: "Pre-Pull", kind: "group", action: "pre_pull", hot: 1 },
   { id: "heal_tank", label: "Heal Tank", kind: "role", action: "heal", role: "tank", hot: 1 },
@@ -42,8 +43,49 @@ const CATALOG = [
   { id: "deaggro", label: "De-aggro", kind: "group", action: "deaggro" },
   { id: "rez_group", label: "Rez Group", kind: "group", action: "rez" },
 ];
-const BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
-const DEFAULT = CATALOG.filter((c) => c.hot).map((c) => c.id);
+
+// Dirge (support) catalog — NO heals/wards/cures. Buffs target an explicit slot
+// (tank = group pos 2 / slot 1; self = slot 0); debuffs/group-buffs/combos are
+// no-target group casts. Roles match config/profiles/joar.yaml.
+const DIRGE_CATALOG = [
+  { id: "tbuff_1", label: "Tank Buff 1", kind: "member", action: "tbuff_1", slot: 1, hot: 1 },
+  { id: "tbuff_2", label: "Tank Buff 2", kind: "member", action: "tbuff_2", slot: 1 },
+  { id: "sbuff_1", label: "Self Buff 1", kind: "member", action: "sbuff_1", slot: 0, hot: 1 },
+  { id: "sbuff_2", label: "Self Buff 2", kind: "member", action: "sbuff_2", slot: 0 },
+  { id: "gbuff_1", label: "Group Buff 1", kind: "group", action: "gbuff_1", hot: 1 },
+  { id: "gbuff_2", label: "Group Buff 2", kind: "group", action: "gbuff_2" },
+  { id: "combo_1", label: "Combo 1", kind: "group", action: "combo_1", hot: 1 },
+  { id: "combo_2", label: "Combo 2", kind: "group", action: "combo_2", hot: 1 },
+  { id: "combo_3", label: "Combo 3", kind: "group", action: "combo_3" },
+  { id: "dbuff_1", label: "Debuff 1", kind: "group", action: "dbuff_1", hot: 1 },
+  { id: "dbuff_2", label: "Debuff 2", kind: "group", action: "dbuff_2" },
+  { id: "deaggro", label: "De-aggro", kind: "group", action: "deaggro" },
+  { id: "rez_group", label: "Rez", kind: "group", action: "rez" },
+  { id: "follow", label: "Follow", kind: "group", action: "follow", hot: 1 },
+  { id: "stop_follow", label: "Stop Follow", kind: "group", action: "stop_follow" },
+  { id: "jump", label: "Jump", kind: "group", action: "jump" },
+  { id: "sow", label: "SoW", kind: "group", action: "sow", hot: 1 },
+  { id: "call_home", label: "Call Home", kind: "group", action: "call_home" },
+  { id: "evac", label: "Evac", kind: "group", action: "evac", danger: 1 },
+  { id: "reset_combat", label: "⟲ RESET COMBAT", kind: "post", path: "/api/combat/reset", big: 1, hot: 1 },
+  { id: "force_in", label: "⚔ Force In Combat", kind: "override", action: "force_combat", hot: 1 },
+  { id: "force_out", label: "⏹ Force OOC", kind: "override", action: "force_ooc", danger: 1, hot: 1 },
+  { id: "food", label: "🍖 Food", kind: "post", path: "/api/macro/food", hot: 1 },
+];
+
+// active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).
+let kind = "healer";
+let CATALOG = HEALER_CATALOG;
+let BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
+let DEFAULT = CATALOG.filter((c) => c.hot).map((c) => c.id);
+function setKind(k) {
+  kind = k;
+  CATALOG = k === "dirge" ? DIRGE_CATALOG : HEALER_CATALOG;
+  BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
+  DEFAULT = CATALOG.filter((c) => c.hot).map((c) => c.id);
+  ENSURE = ENSURE_BY_KIND[k] || [];
+  layout = loadLocal();     // this kind's cached layout (or its default); server overrides
+}
 
 // ward->hot 1:1 by active healer profile (Defiler wards vs Fury HoTs).
 let maintRole = "ward";
@@ -54,12 +96,16 @@ const MAINT_MAP = {
 };
 const resolved = (c) => (MAINT_MAP[c.id] ? { ...c, ...MAINT_MAP[c.id][maintRole] } : c);
 
-// ---- persisted layout (per browser) --------------------------------------
-const LS = "ib-focus-layout-v1";
+// ---- persisted layout (per browser + server, PER KIND) --------------------
+const LS = () => "ib-focus-layout-" + kind;    // cache key per profile kind
 // Buttons added after the first release. Each is merged into an existing saved
 // layout ONCE (tracked in `ensured`) so the owner gets them without a reset, but
-// a later manual delete still sticks.
-const ENSURE = ["reset_combat", "force_in", "force_out", "auto_combat", "follow_tank", "follow_dps", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage", "food"];
+// a later manual delete still sticks. Per kind — the Dirge catalog is all-new.
+const ENSURE_BY_KIND = {
+  healer: ["reset_combat", "force_in", "force_out", "auto_combat", "follow_tank", "follow_dps", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage", "food"],
+  dirge: [],
+};
+let ENSURE = ENSURE_BY_KIND.healer;
 function mergeLayout(s) {
   if (!s || !Array.isArray(s.ids)) return { ids: DEFAULT.slice(), cols: 3, ensured: ENSURE.slice(), colors: {} };
   s.ids = s.ids.filter((id) => BY_ID[id]);          // drop retired actions (e.g. buff1/buff2)
@@ -74,13 +120,13 @@ function mergeLayout(s) {
 }
 function loadLocal() {
   let s = null;
-  try { s = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
+  try { s = JSON.parse(localStorage.getItem(LS())); } catch (_) {}
   return mergeLayout(s);
 }
 // Persist to the SERVER (survives cache clears / different browsers / our updates) PLUS a
 // localStorage cache for instant first paint. The server copy is the source of truth.
 function saveLayout() {
-  localStorage.setItem(LS, JSON.stringify(layout));
+  localStorage.setItem(LS(), JSON.stringify(layout));
   fetch("/api/focus-layout", { method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(layout) }).catch(() => {});
 }
@@ -92,7 +138,7 @@ async function loadServerLayout() {
     const s = await r.json();
     if (s && Array.isArray(s.ids)) {  // server has a saved layout -> use it (the source of truth)
       layout = mergeLayout(s);
-      localStorage.setItem(LS, JSON.stringify(layout));
+      localStorage.setItem(LS(), JSON.stringify(layout));
       render();
     } else {                          // server empty (first run) -> seed it from our local layout
       saveLayout();
@@ -116,6 +162,9 @@ const armChip = $("fArm");
 if (armChip) armChip.onclick = () =>
   fetch(`/api/control/${state.running ? "pause" : "resume"}`, { method: "POST" }).catch(() => {});
 function applyState(s) {
+  // swap the whole catalog + saved layout when the active profile's kind changes
+  const k = (s.profile || {}).maint_role === "none" ? "dirge" : "healer";
+  if (k !== kind) { setKind(k); loadServerLayout(); }   // loadServerLayout re-renders
   // ward->hot relabel on profile change (re-render once; maintRole then stable)
   const mr = (s.profile || {}).maint_role || "ward";
   if (mr !== maintRole) { maintRole = mr; render(); }
@@ -163,6 +212,9 @@ function fire(c, btn) {
     const slot = state.roleSlot[c.role];
     if (slot === undefined) { flash(btn, "no " + c.role); return; }
     url = `/api/act/${c.action}/${slot}`;
+    msg = state.chat_safe === false ? "chat busy" : "sent";
+  } else if (c.kind === "member") {              // explicit slot (Dirge buffs: tank=1, self=0)
+    url = `/api/act/${c.action}/${c.slot}`;
     msg = state.chat_safe === false ? "chat busy" : "sent";
   } else if (c.kind === "override") {
     url = `/api/override/${c.action}`;          // state control: works disarmed
@@ -284,6 +336,14 @@ function connect() {
   ws.onclose = () => setTimeout(connect, 1500);
   ws.onerror = () => ws.close();
 }
-render();
-connect();
-loadServerLayout();   // override the local cache with the server-saved layout (persists across updates)
+// determine the profile kind FIRST (so the right catalog + layout load), then paint.
+async function init() {
+  try {
+    const p = await (await fetch("/api/profiles")).json();
+    setKind(p && p.maint_role === "none" ? "dirge" : "healer");
+  } catch (_) {}
+  render();
+  connect();
+  loadServerLayout();   // override the local cache with the server-saved layout for this kind
+}
+init();

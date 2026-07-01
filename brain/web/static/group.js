@@ -6,16 +6,25 @@ const pct = (v) => Math.round((v ?? 0) * 100);
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const FALLBACK_NAMES = ["self", "slot1", "slot2", "slot3", "slot4", "slot5"];
 let maintRole = "ward";   // 'ward' (Defiler) | 'hot' (Fury) — from the active profile
+let kind = "healer";      // 'healer' (heal/ward/cure) | 'dirge' (per-member buffs)
 
 // Per-member buttons. action -> POST /api/act/<action>/<slot> (manual; the agent
 // targets that member's F-key then casts). Cure is generic.
-const BTNS = [
+const HEALER_BTNS = [
   { act: "heal", label: "Heal", cls: "b-heal" },
   { act: "ward", label: "Ward", cls: "b-ward" },
   { act: "cure", label: "Cure", cls: "b-cure" },
   { act: "follow", label: "Follow", cls: "b-follow" },
   { act: "rez", label: "Rez", cls: "b-rez" },
 ];
+// Dirge: individual buffs per member (no heals/wards/cures) + follow + rez.
+const DIRGE_BTNS = [
+  { act: "ibuff_1", label: "Buff 1", cls: "b-buff" },
+  { act: "ibuff_2", label: "Buff 2", cls: "b-buff" },
+  { act: "follow", label: "Follow", cls: "b-follow" },
+  { act: "rez", label: "Rez", cls: "b-rez" },
+];
+let BTNS = HEALER_BTNS;
 
 // theme (shared with dashboard/focus)
 const savedTheme = localStorage.getItem("ib-theme");
@@ -58,6 +67,13 @@ function cardFor(slot) {
 
 function render(s) {
   running = !!s.running;
+  // swap the per-member button set when the active profile's kind changes; drop the
+  // cached cards so they rebuild (heal/ward/cure  <->  individual buffs).
+  const k = (s.profile || {}).maint_role === "none" ? "dirge" : "healer";
+  if (k !== kind) {
+    kind = k; BTNS = kind === "dirge" ? DIRGE_BTNS : HEALER_BTNS;
+    Object.keys(els).forEach((slot) => { els[slot].remove(); delete els[slot]; });
+  }
   // ward->hot 1:1 for a Fury profile (relabel existing cards + use it for new ones)
   const mr = (s.profile || {}).maint_role || "ward";
   if (mr !== maintRole) {
@@ -94,8 +110,9 @@ function render(s) {
     fill.style.width = (m.dead ? 100 : hp) + "%";
     fill.className = m.dead ? "dead" : crit ? "crit" : hp < 60 ? "low" : "";
     // highlight the action that matters: cure when afflicted, rez when dead
-    el.querySelector(".b-cure").classList.toggle("flagged", needsCure && !m.dead);
-    el.querySelector(".b-rez").classList.toggle("flagged", m.dead);
+    // (.b-cure is healer-only — the Dirge card has no cure button)
+    el.querySelector(".b-cure")?.classList.toggle("flagged", needsCure && !m.dead);
+    el.querySelector(".b-rez")?.classList.toggle("flagged", m.dead);
   });
   // drop cards for members no longer present
   Object.keys(els).forEach((slot) => {
