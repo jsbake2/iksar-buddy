@@ -171,3 +171,23 @@ def healer_change(target_char: str, current_char: str = "",
         return False
     time.sleep(3)
     return drv.boot_and_login(user, pw, target_char, world)  # VM up, EQ2 down -> full login
+
+
+def healer_camp_desktop(log: Log = lambda _m: None) -> bool:
+    """Cleanly camp to desktop (log the character out of the world) via the guest
+    agent — the SAME '/camp desktop' path forge uses, but routed through the in-guest
+    agent because the fullscreen healer VM has no calibrated chat-input region and a
+    raw send-key would risk landing in the world (chat-safety). Blocks until the EQ2
+    client exits. True if it exited, False on timeout. No VM power-off here — the
+    caller powers the VM down after this returns."""
+    h, _drv = _agent_login(log)
+    if not h.g.eq2_running():
+        log("camp: EQ2 not running (nothing to camp)"); return True
+    log("camp: /camp desktop (agent)")
+    h._fire_agent({"chat": "/camp desktop"})
+    for _ in range(40):                                       # ~/camp countdown + client close
+        if not h.g.eq2_running():
+            log("camp: client exited"); return True
+        time.sleep(2)
+    log("camp: client didn't exit after /camp desktop (timeout)")
+    return False

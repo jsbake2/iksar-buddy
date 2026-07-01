@@ -594,32 +594,35 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         asyncio.create_task(_go())
         return {"ok": True, "launch": "started"}
 
+    async def _camp_then_poweroff(label: str):
+        """Shared Stop/Shutdown path — SAME sequence forge uses: disarm the loop, camp
+        to desktop via the guest agent (the fullscreen healer VM has no calibrated
+        chat-input region, so a raw send-key could leak '/camp desktop' into the world;
+        the agent's keybd_event chat handler is the proven-safe route), wait for the
+        client to exit, THEN power off the VM (stop_bot.sh with camp='none' just does
+        the virsh power-off)."""
+        from ..charswitch import healer_camp_desktop
+        loop = asyncio.get_running_loop()
+        tlog = lambda m: loop.call_soon_threadsafe(telemetry.push_event, "control", m)
+        # disarm so the loop can't fire stray keys mid-camp
+        await brain.send("command", role="_pause", key="", target_slot=None, reason=label)
+        await loop.run_in_executor(None, healer_camp_desktop, tlog)
+        await _run_bot_script("stop_bot.sh", "none", "0")     # power-off only (already camped)
+        telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": False})
+
     @app.post("/api/stop")
     async def stop():
-        """Stop Bot: press the camp key (clean logout) then shut down the VM."""
-        camp = brain.cfg.key_for("camp") or "none"
-        camp_wait = str(int(brain.cfg.threshold("camp_wait_s", 25)))
+        """Stop Bot: camp to desktop (guest agent) then power off the VM."""
         telemetry.push_event("control", "Stop Bot (camp + shutdown)")
-
-        async def _go():
-            await _run_bot_script("stop_bot.sh", camp, camp_wait)
-            telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": False})
-        asyncio.create_task(_go())
+        asyncio.create_task(_camp_then_poweroff("Stop Bot"))
         return {"ok": True, "stop": "started"}
 
     @app.post("/api/shutdown")
     async def shutdown():
-        """Shutdown (owner standard): camp to desktop, wait 25s for the countdown + client exit,
-        then power off the VM. The healer camps via its configured camp keybind (set it to '/camp
-        desktop' in-game). Falls back to a direct power-off if no camp key is set."""
-        camp = brain.cfg.key_for("camp") or "none"
-        camp_wait = str(int(brain.cfg.threshold("camp_wait_s", 25)))
-        telemetry.push_event("control", f"Shutdown VM (camp {camp} + {camp_wait}s)")
-
-        async def _go():
-            await _run_bot_script("stop_bot.sh", camp, camp_wait)
-            telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": False})
-        asyncio.create_task(_go())
+        """Shutdown: camp to desktop (guest agent — same process as forge) then power
+        off the VM."""
+        telemetry.push_event("control", "Shutdown VM (camp + power off)")
+        asyncio.create_task(_camp_then_poweroff("Shutdown VM"))
         return {"ok": True, "shutdown": "started"}
 
     # Dialog accepts: run the host-side OCR-and-click helper ONCE on click (no

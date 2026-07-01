@@ -49,6 +49,19 @@ function openConsoleModal(title, spicePort) {
 $("cmClose").onclick = () => ($("consoleModal").hidden = true);
 $("consoleModal").onclick = (e) => { if (e.target.id === "consoleModal") $("consoleModal").hidden = true; };
 
+// ---- keymap editor modal (embeds keymap.html chrome-stripped) --------------
+const keymapModal = $("keymapModal"), kmFrame = $("kmFrame"), keymapBtn = $("keymapBtn");
+function openKeymap() {
+  if (!keymapModal || !kmFrame) return;
+  kmFrame.src = "/keymap.html?embed=1&t=" + Date.now();      // fresh each open
+  keymapModal.hidden = false;
+}
+function closeKeymap() { if (keymapModal) { keymapModal.hidden = true; kmFrame.src = "about:blank"; } }
+if (keymapBtn) keymapBtn.onclick = openKeymap;
+if ($("kmClose")) $("kmClose").onclick = closeKeymap;
+if (keymapModal) keymapModal.onclick = (e) => { if (e.target === keymapModal) closeKeymap(); };
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && keymapModal && !keymapModal.hidden) closeKeymap(); });
+
 // ---- bot panels -----------------------------------------------------------
 const botEls = {};          // id -> { root, refs..., uiMode, queueSig }
 const tpl = $("botTpl");

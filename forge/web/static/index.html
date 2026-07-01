@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ib · forge</title>
   <link rel="stylesheet" href="themes.css?v=20260614" />
-  <link rel="stylesheet" href="forge.css?v=20260617d" />
+  <link rel="stylesheet" href="forge.css?v=20260701a" />
 </head>
 <body>
   <!-- top bar -->
@@ -22,7 +22,7 @@
     <button class="km-link danger-link" id="allShutdown" title="quit EQ2 + power off all forge VMs">⏻ shutdown all</button>
     <a class="km-link" href="/recipes.html" title="browse 37k recipes by class/level; build &amp; send craft lists">📜 recipes</a>
     <a class="km-link" href="/chars.html" title="map crafters (character + class + VM)">⌨ characters</a>
-    <a class="km-link" href="/keymap.html" title="camp command + craft art keys">⌨ keymap</a>
+    <button class="km-link" id="keymapBtn" title="camp command + craft art keys">⌨ keymap</button>
     <a class="km-link" href="/calibrate.html" title="capture the crafting window (pixels, regions, reaction buttons)">⚙ set up tradeskills</a>
     <label class="theme">
       <span>theme</span>
@@ -117,7 +117,7 @@
           <button class="src-btn bot-addrow" title="add a recipe row by hand">＋ Add recipe</button>
         </div>
         <div class="station-bar bot-stations" hidden title="filter the writ to one crafting table; Start crafts only the shown table"></div>
-        <div class="queue-head"><span>table</span><span>recipe</span><span>search</span><span>×</span><span></span></div>
+        <div class="queue-head"><span>table</span><span>recipe</span><span>search</span><span>qty</span><span></span></div>
         <ul class="queue-list bot-queue"></ul>
         <div class="queue-empty">No recipes — read the journal, read the log, or add by hand.</div>
         <div class="writ-mode" role="radiogroup">
@@ -192,6 +192,15 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260617c"></script>
+  <!-- keymap editor modal: embeds keymap.html (chrome-stripped). Saving pushes the
+       new keymap to the crafters immediately. -->
+  <div id="keymapModal" class="cm-overlay" hidden>
+    <div class="cm-box km-modal-box">
+      <div class="cm-head"><b>⌨ Keymap</b><button class="cm-x" id="kmClose">✕</button></div>
+      <iframe id="kmFrame" class="km-frame" title="keymap editor"></iframe>
+    </div>
+  </div>
+
+  <script src="app.js?v=20260701a"></script>
 </body>
 </html>

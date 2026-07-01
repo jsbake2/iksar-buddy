@@ -75,6 +75,9 @@
 .cm-head b { font-size:16px; flex:1; }
 .cm-x { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; }
 .cm-x:hover { color:var(--fg); }
+/* keymap editor modal: wide box with an embedded keymap.html iframe */
+.km-modal-box { width:min(760px,94vw); height:86vh; padding:12px 16px; display:flex; flex-direction:column; }
+.km-frame { flex:1; width:100%; border:none; border-radius:8px; background:var(--bg); margin-top:6px; }
 .cm-sub { color:var(--muted); font-size:12px; margin:0 0 14px; }
 .cm-opt { border:1px solid var(--line); border-radius:9px; padding:12px; margin-bottom:10px; background:var(--panel2); }
 .cm-opt-h { font-weight:700; font-size:13px; margin-bottom:8px; }

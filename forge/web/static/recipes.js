@@ -235,6 +235,11 @@ function renderTray() {
   for (const [k, v] of arr) {
     const li = el("li");
     li.append(el("span", null, v.recipe), el("span", "tl-meta", v.level != null ? `L${v.level}` : (v.cls || "")));
+    const cnt = el("input", "tl-count"); cnt.type = "number"; cnt.min = "1"; cnt.max = "999";
+    cnt.value = v.count || 1; cnt.title = "how many to craft";
+    cnt.onclick = (e) => e.stopPropagation();
+    cnt.onchange = () => { v.count = parseInt(cnt.value) || 1; cnt.value = v.count; };
+    li.appendChild(cnt);
     const x = el("span", "x", "✕"); x.title = "remove"; x.onclick = (e) => { e.stopPropagation(); state.sel.delete(k); render(); };
     li.appendChild(x); list.appendChild(li);
   }

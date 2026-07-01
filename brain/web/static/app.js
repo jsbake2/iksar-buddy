@@ -172,11 +172,11 @@ if (resetCombatBtn) resetCombatBtn.onclick = () => post("/api/combat/reset");
 $("launchBtn").onclick = () => post("/api/launch");
 const stopBtn = $("stopBtn");
 if (stopBtn) stopBtn.onclick = () => {
-  if (confirm("Stop Bot?\n\nPresses your camp key for a clean logout, waits out the countdown, then shuts down the VM.")) post("/api/stop");
+  if (confirm("Stop Bot?\n\nCamps to desktop for a clean logout (guest agent, chat-safe), waits for the client to exit, then powers off the VM.")) post("/api/stop");
 };
 const shutdownBtn = $("shutdownBtn");
 if (shutdownBtn) shutdownBtn.onclick = () => {
-  if (confirm("Shutdown VM?\n\nPowers off the VM immediately — NO camp logout. Windows closes EQ2 cleanly; forces off if it hangs.")) post("/api/shutdown");
+  if (confirm("Shutdown VM?\n\nCamps to desktop (guest agent, same process as forge), waits for the client to exit, then powers off the VM.")) post("/api/shutdown");
 };
 // Cache-bust the popout URL each click: a same-name window.open with an UNCHANGED
 // url just re-focuses the (possibly stale) window without reloading — so a new ?t=

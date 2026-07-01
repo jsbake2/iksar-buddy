@@ -20,7 +20,12 @@
     .km-in:focus { outline:none; border-color:var(--accent); }
     .km-actions { display:flex; align-items:center; gap:14px; padding:6px 0 30px; }
     .km-status { font-size:13px; } .km-status.good { color:var(--good); } .km-status.bad { color:var(--bad); }
+    /* embed mode: shown inside the dashboard keymap modal — drop the page chrome */
+    html.embed header { display:none; }
+    html.embed .km-main { margin:6px auto; max-width:none; padding:0 6px 12px; }
+    html.embed, html.embed body { background:transparent; }
   </style>
+  <script>if (location.search.includes("embed")) document.documentElement.classList.add("embed");</script>
 </head>
 <body>
   <header class="bar">
