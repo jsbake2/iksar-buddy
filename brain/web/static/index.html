@@ -89,6 +89,21 @@
           <input type="number" id="wardHb" min="0" max="60" step="0.1" /><span>s</span></label>
         <span class="tune-hint">recast tank <span class="maint-word">ward</span> this often in combat · 0 = off</span>
       </div>
+
+      <!-- Dirge automation tuning (shown only for a support/Dirge profile) -->
+      <div class="tune-row dirge-only" hidden style="flex-wrap:wrap;gap:8px">
+        <label class="tune" title="power fraction below which pos 2/3/4 get a mana feed; 0 = off">
+          mana feed &lt;<input type="number" id="tMana" min="0" max="1" step="0.05" style="width:60px" /></label>
+        <label class="tune" title="recast periodic buff 1 every N s in combat; 0 = off">
+          buff 1<input type="number" id="tPb1" min="0" max="600" step="1" style="width:58px" /><span>s</span></label>
+        <label class="tune" title="periodic buff 2 interval; 0 = off">
+          buff 2<input type="number" id="tPb2" min="0" max="600" step="1" style="width:58px" /><span>s</span></label>
+        <label class="tune" title="periodic buff 3 interval; 0 = off">
+          buff 3<input type="number" id="tPb3" min="0" max="600" step="1" style="width:58px" /><span>s</span></label>
+        <label class="tune" title="periodic buff 4 interval; 0 = off">
+          buff 4<input type="number" id="tPb4" min="0" max="600" step="1" style="width:58px" /><span>s</span></label>
+        <span class="tune-hint">mana feed is reactive · periodic buffs recast in combat · 0 = off</span>
+      </div>
     </section>
 
     <!-- GROUP panel removed from the main page (cluttered) — use the ⊟ group pop-out -->
@@ -251,6 +266,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260701d"></script>
+  <script src="app.js?v=20260701j"></script>
 </body>
 </html>

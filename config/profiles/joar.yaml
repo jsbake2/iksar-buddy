@@ -32,6 +32,17 @@ abilities:
   aoe_attack:   { key: '', mode: manual, desc: 'aoe attack' }
   deaggro:      { key: '=', mode: manual, desc: 'de-aggro / drop threat' }
 
+  # === AUTOMATION (host loop; owner sets keys + timings in the Dirge tuning panel) ===
+  # Mana feed — reactive on group positions 2/3/4 power (mana_heal_floor). Group when 2+
+  # low, else individual on the lowest.
+  mana_heal:       { key: '', mode: auto, desc: 'mana feed (single target)' }
+  group_mana_heal: { key: '', mode: auto, desc: 'mana feed (group)' }
+  # 4 periodic buffs — recast in combat on their own timers (pbuff_N_interval_s).
+  pbuff_1:  { key: '', mode: auto, desc: 'periodic buff 1' }
+  pbuff_2:  { key: '', mode: auto, desc: 'periodic buff 2' }
+  pbuff_3:  { key: '', mode: auto, desc: 'periodic buff 3' }
+  pbuff_4:  { key: '', mode: auto, desc: 'periodic buff 4' }
+
   # === UTILITY / MOVEMENT ===
   follow:      { key: Alt+=,  mode: manual, desc: 'auto-follow toggle' }
   stop_follow: { key: Ctrl+=, mode: manual, desc: 'stop following' }

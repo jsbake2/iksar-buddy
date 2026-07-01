@@ -315,6 +315,13 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         "ward_heartbeat_s": (float, 0.0, 60.0),
         "hp_standard": (float, 0.0, 1.0),
         "mana_floor": (float, 0.0, 1.0),
+        # Dirge automation
+        "mana_heal_floor": (float, 0.0, 1.0),
+        "mana_heal_recast_s": (float, 0.0, 60.0),
+        "pbuff_1_interval_s": (float, 0.0, 600.0),
+        "pbuff_2_interval_s": (float, 0.0, 600.0),
+        "pbuff_3_interval_s": (float, 0.0, 600.0),
+        "pbuff_4_interval_s": (float, 0.0, 600.0),
     }
 
     @app.get("/api/tunables")

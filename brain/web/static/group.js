@@ -17,15 +17,19 @@ const HEALER_BTNS = [
   { act: "follow", label: "Follow", cls: "b-follow" },
   { act: "rez", label: "Rez", cls: "b-rez" },
 ];
-// Dirge: buffs per member (no heals/wards/cures) + follow. The main page's buff
-// matrix is the full interface; these are quick per-member casts. Roles match joar.yaml.
-const DIRGE_BTNS = [
-  { act: "ind_buff_1", label: "Buff 1", cls: "b-buff" },
-  { act: "ind_buff_2", label: "Buff 2", cls: "b-buff" },
-  { act: "temp_buff_1", label: "Temp", cls: "b-buff" },
-  { act: "follow", label: "Follow", cls: "b-follow" },
-];
+// Dirge: the SAME buffs as the main-page matrix — every temp + individual buff, one
+// per-member cast button (labelled by the owner's keymap name) + follow. Derived live
+// from the profile's actions so it always matches the main page.
+function dirgeButtonsFrom(profile) {
+  const a = (profile || {}).actions || {};
+  const btns = [...(a.temp || []), ...(a.individual || [])].map((b) => ({
+    act: b.role, label: b.name || b.label || b.role, cls: "b-buff" + (b.key ? "" : " unset"),
+  }));
+  btns.push({ act: "follow", label: "Follow", cls: "b-follow" });
+  return btns;
+}
 let BTNS = HEALER_BTNS;
+let buffSig = "";         // (kind + button set) signature — rebuild cards when it changes
 
 // theme (shared with dashboard/focus)
 const savedTheme = localStorage.getItem("ib-theme");
@@ -68,20 +72,25 @@ function cardFor(slot) {
 
 function render(s) {
   running = !!s.running;
-  // swap the per-member button set when the active profile's kind changes; drop the
-  // cached cards so they rebuild (heal/ward/cure  <->  individual buffs).
-  const k = (s.profile || {}).maint_role === "none" ? "dirge" : "healer";
-  if (k !== kind) {
-    kind = k; BTNS = kind === "dirge" ? DIRGE_BTNS : HEALER_BTNS;
-    Object.keys(els).forEach((slot) => { els[slot].remove(); delete els[slot]; });
-  }
-  // ward->hot 1:1 for a Fury profile (relabel existing cards + use it for new ones)
-  const mr = (s.profile || {}).maint_role || "ward";
-  if (mr !== maintRole) {
-    maintRole = mr;
-    document.querySelectorAll(".gm-act.b-ward").forEach((b) => {
-      b.dataset.act = mr; b.textContent = cap(mr);
-    });
+  // Only adjust the layout when the frame actually carries a profile — some WS frames
+  // through Cloudflare arrive without it, and must not flip us back to the healer set.
+  const p = s.profile;
+  if (p) {
+    const k = p.maint_role === "none" ? "dirge" : "healer";
+    const btns = k === "dirge" ? dirgeButtonsFrom(p) : HEALER_BTNS;
+    const sig = k + ":" + btns.map((b) => `${b.act}/${b.label}/${b.cls}`).join(",");
+    if (sig !== buffSig) {          // kind or buff-set (names/keys) changed -> rebuild cards
+      buffSig = sig; kind = k; BTNS = btns;
+      Object.keys(els).forEach((slot) => { els[slot].remove(); delete els[slot]; });
+    }
+    // ward->hot 1:1 for a Fury profile (relabel existing cards + use it for new ones)
+    const mr = p.maint_role || "ward";
+    if (mr !== maintRole) {
+      maintRole = mr;
+      document.querySelectorAll(".gm-act.b-ward").forEach((b) => {
+        b.dataset.act = mr; b.textContent = cap(mr);
+      });
+    }
   }
   const cf = s.chat_focus || {};
   const arm = $("fArm");
@@ -128,4 +137,11 @@ function connect() {
   ws.onclose = () => setTimeout(connect, 1500);
   ws.onerror = () => ws.close();
 }
+// HTTP snapshot poll (unique path defeats the CF edge cache) — the WS doesn't reliably
+// reach this popout through Cloudflare, so drive state off a cache-busted GET too.
+async function poll() {
+  try { render(await (await fetch("/api/live/" + Date.now())).json()); } catch (_) {}
+}
 connect();
+poll();
+setInterval(poll, 1500);

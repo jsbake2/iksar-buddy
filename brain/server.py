@@ -64,6 +64,7 @@ class Brain:
         self._last_debuff = 0.0      # 2-man dps cycle: last debuff
         self._dps_spell_at = 0.0     # 2-man dps cycle: when to fire the scheduled spell_attack
         self._last_prepull = 0.0     # debounce the tank's incoming-call -> pre_pull
+        self._last_pbuff = {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0}   # Dirge periodic-buff timers
 
     # -- outbound ----------------------------------------------------------
     async def send(self, type_: str, **data) -> None:
@@ -300,6 +301,46 @@ class Brain:
                                     manual=False, reason="combat debuff")
                     self._last_debuff = now
                     self._next_action_at = now + GLOBAL_GCD_S
+
+            # DIRGE mana feed (REACTIVE): restore power to the mana-users in group positions
+            # 2/3/4 (slots 1-3). GROUP feed when 2+ are below mana_heal_floor, else INDIVIDUAL
+            # on the lowest. Reactive to sensed per-member power -> runs in or out of combat,
+            # only fires when someone's actually low, per-target recast so it never spams.
+            # mana_heal_floor 0/absent disables it. (Only the Dirge maps these keys.)
+            mhf = float(self.cfg.threshold("mana_heal_floor", 0) or 0)
+            if mhf > 0 and self.sm.override is None and now >= self._next_action_at:
+                low = [m for m in world.members
+                       if m.slot in (1, 2, 3) and not m.dead and m.power < mhf]
+                gk, ik = self.cfg.key_for("group_mana_heal"), self.cfg.key_for("mana_heal")
+                recast = float(self.cfg.threshold("mana_heal_recast_s", 6.0) or 6.0)
+                if len(low) >= 2 and gk and gk != "none" \
+                        and now >= self._cooldowns.get(("group_mana_heal", None), 0.0):
+                    await self.send("command", role="group_mana_heal", key=gk,
+                                    target_slot=None, manual=False, reason="group mana feed")
+                    self._cooldowns[("group_mana_heal", None)] = now + recast
+                    self._next_action_at = now + GLOBAL_GCD_S
+                elif low and ik and ik != "none":
+                    t = min(low, key=lambda m: m.power)
+                    if now >= self._cooldowns.get(("mana_heal", t.slot), 0.0):
+                        await self.send("command", role="mana_heal", key=ik, target_slot=t.slot,
+                                        manual=False, reason=f"mana feed s{t.slot} {t.power:.0%}")
+                        self._cooldowns[("mana_heal", t.slot)] = now + recast
+                        self._next_action_at = now + GLOBAL_GCD_S
+
+            # DIRGE periodic buffs: recast up to 4 maintenance buffs on their own timers,
+            # IN_COMBAT only (owner's call), each cast on self (F1). pbuff_N_interval_s = 0
+            # disables that slot; one buff per GCD.
+            if self.sm.state == State.IN_COMBAT and self.sm.override is None \
+                    and now >= self._next_action_at:
+                for i in (1, 2, 3, 4):
+                    iv = float(self.cfg.threshold(f"pbuff_{i}_interval_s", 0) or 0)
+                    bk = self.cfg.key_for(f"pbuff_{i}")
+                    if iv > 0 and bk and bk != "none" and now - self._last_pbuff[i] >= iv:
+                        await self.send("command", role=f"pbuff_{i}", key=bk, target_slot=0,
+                                        manual=False, reason=f"periodic buff {i}")
+                        self._last_pbuff[i] = now
+                        self._next_action_at = now + GLOBAL_GCD_S
+                        break
 
 
 async def serve(brain: Brain, host: str, port: int) -> asyncio.AbstractServer:

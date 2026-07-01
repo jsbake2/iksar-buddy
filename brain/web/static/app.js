@@ -45,6 +45,20 @@ if (wardHb) {
     if (!isNaN(v)) postJSON("/api/tunables", { ward_heartbeat_s: v });
   };
 }
+// Dirge automation tunables: mana-feed floor + 4 periodic-buff intervals.
+const DIRGE_TUNES = { tMana: "mana_heal_floor", tPb1: "pbuff_1_interval_s",
+  tPb2: "pbuff_2_interval_s", tPb3: "pbuff_3_interval_s", tPb4: "pbuff_4_interval_s" };
+(function wireDirgeTunes() {
+  const ids = Object.keys(DIRGE_TUNES).filter((id) => $(id));
+  if (!ids.length) return;
+  fetch("/api/tunables").then((r) => r.json()).then((t) => {
+    ids.forEach((id) => { if (t && t[DIRGE_TUNES[id]] != null) $(id).value = t[DIRGE_TUNES[id]]; });
+  }).catch(() => {});
+  ids.forEach((id) => ($(id).onchange = () => {
+    const v = parseFloat($(id).value);
+    if (!isNaN(v)) postJSON("/api/tunables", { [DIRGE_TUNES[id]]: v });
+  }));
+})();
 
 // ---- healer profile selector (top bar) ------------------------------------
 const profileSel = $("profile");
