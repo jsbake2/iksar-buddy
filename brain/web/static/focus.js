@@ -133,16 +133,16 @@ let layout = loadLocal();           // instant from cache; the server copy overr
 async function loadServerLayout() {
   try {
     const r = await fetch("/api/focus-layout?kind=" + kind);
-    if (!r.ok) return;
-    const s = await r.json();
-    if (s && Array.isArray(s.ids)) {  // server has a saved layout -> use it (the source of truth)
-      layout = mergeLayout(s);
-      localStorage.setItem(LS(), JSON.stringify(layout));
-      render();
+    if (r.ok) {
+      const s = await r.json();
+      if (s && Array.isArray(s.ids) && s.ids.length) {   // server has a saved layout -> source of truth
+        layout = mergeLayout(s);
+        localStorage.setItem(LS(), JSON.stringify(layout));
+      }
+      // server empty -> keep this kind's default (set by setKind); do NOT auto-POST.
     }
-    // server empty -> keep the local/default layout; do NOT auto-POST (that seeded the
-    // wrong kind's buttons before an explicit edit). The file is written on first edit.
   } catch (_) {}
+  render();   // ALWAYS repaint (default or server layout) — a kind switch must show up
 }
 
 // theme (shared with dashboard)
@@ -163,7 +163,7 @@ if (armChip) armChip.onclick = () =>
 function applyState(s) {
   // swap the whole catalog + saved layout when the active profile's kind changes
   const k = (s.profile || {}).maint_role === "none" ? "dirge" : "healer";
-  if (k !== kind) { setKind(k); loadServerLayout(); }   // loadServerLayout re-renders
+  if (k !== kind) { setKind(k); render(); loadServerLayout(); }   // repaint immediately in the new kind
   // ward->hot relabel on profile change (re-render once; maintRole then stable)
   const mr = (s.profile || {}).maint_role || "ward";
   if (mr !== maintRole) { maintRole = mr; render(); }
@@ -338,7 +338,7 @@ function connect() {
 // determine the profile kind FIRST (so the right catalog + layout load), then paint.
 async function init() {
   try {
-    const p = await (await fetch("/api/profiles")).json();
+    const p = await (await fetch("/api/profiles?t=" + Date.now())).json();
     setKind(p && p.maint_role === "none" ? "dirge" : "healer");
   } catch (_) {}
   render();
