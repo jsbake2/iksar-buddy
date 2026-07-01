@@ -350,6 +350,9 @@ button.launch:hover { filter:brightness(1.08); }
 .cm-overlay[hidden] { display:none; }
 .cm-box { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 20px;
   width:min(560px,92vw); box-shadow:0 12px 40px #000a; }
+/* keymap editor modal: big box holding the chrome-stripped keymap page in an iframe */
+.km-modal-box { width:min(980px,94vw); height:88vh; padding:12px 16px; display:flex; flex-direction:column; }
+.km-frame { flex:1; width:100%; border:none; border-radius:8px; background:var(--bg); margin-top:6px; }
 .cm-head { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
 .cm-head b { font-size:16px; flex:1; }
 .cm-x { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; }

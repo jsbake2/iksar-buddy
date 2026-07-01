@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ib</title>
-  <link rel="stylesheet" href="themes.css?v=20260701m" />
+  <link rel="stylesheet" href="themes.css?v=20260701n" />
 </head>
 <body>
   <!-- top bar -->
@@ -26,7 +26,7 @@
     <button class="km-link" id="consoleBtn" title="connect to the VM console — web (works anywhere) or native">⧉ console</button>
     <button class="km-link" id="focusBtn" title="pop out a quick-action window">⊞ focus</button>
     <button class="km-link" id="groupBtn" title="pop out per-member group control">⊟ group</button>
-    <a class="km-link" href="/keymap.html" title="edit keybind map">⌨ keymap</a>
+    <button class="km-link" id="keymapBtn" title="edit keybind map">⌨ keymap</button>
     <label class="theme">
       <span>theme</span>
       <select id="theme">
@@ -247,6 +247,16 @@
     </section>
   </main>
 
+  <!-- keymap editor modal: embeds keymap.html (chrome-stripped). Saving pushes fresh
+       profile state over the websocket, so buff names on the main UI update live. -->
+  <div id="keymapModal" class="cm-overlay" hidden>
+    <div class="cm-box km-modal-box">
+      <div class="cm-head"><b>⌨ Keymap <span class="sub" id="kmModalProfile"></span></b>
+        <button class="cm-x" id="kmClose">✕</button></div>
+      <iframe id="kmFrame" class="km-frame" title="keymap editor"></iframe>
+    </div>
+  </div>
+
   <!-- console connect modal: web (one click) + native (copy the tunnel command) -->
   <div id="consoleModal" class="cm-overlay" hidden>
     <div class="cm-box">
@@ -268,6 +278,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260701m"></script>
+  <script src="app.js?v=20260701n"></script>
 </body>
 </html>

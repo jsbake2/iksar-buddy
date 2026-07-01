@@ -188,6 +188,22 @@ const groupBtn = $("groupBtn");
 if (groupBtn) groupBtn.onclick = () =>
   window.open("group.html?t=" + Date.now(), "ibgroup", "width=480,height=640,menubar=no,toolbar=no,location=no,status=no");
 
+// ---- keymap editor as a MODAL (embeds the chrome-stripped keymap page) ----
+// Saving in the iframe POSTs /api/keymap, which pushes fresh profile state over the
+// websocket -> the main-page buff matrix + recast panel pick up new NAMES live.
+const keymapModal = $("keymapModal"), kmFrame = $("kmFrame"), keymapBtn = $("keymapBtn");
+function openKeymap() {
+  if (!keymapModal || !kmFrame) return;
+  kmFrame.src = "/keymap.html?embed=1&t=" + Date.now();     // fresh each open
+  const lbl = $("kmModalProfile"); if (lbl && profileSel) lbl.textContent = cap(profileSel.value);
+  keymapModal.hidden = false;
+}
+function closeKeymap() { if (keymapModal) { keymapModal.hidden = true; kmFrame.src = "about:blank"; } }
+if (keymapBtn) keymapBtn.onclick = openKeymap;
+if ($("kmClose")) $("kmClose").onclick = closeKeymap;
+if (keymapModal) keymapModal.onclick = (e) => { if (e.target === keymapModal) closeKeymap(); };  // backdrop click
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && keymapModal && !keymapModal.hidden) closeKeymap(); });
+
 // ---- build the per-member action grid (modernized action_list) ------------
 let gridBuilt = false;
 function buildGrid(members) {
