@@ -82,6 +82,11 @@ class Telemetry:
         self.snapshot["notice"] = {"ts": time.time(), "title": title,
                                    "detail": detail, "level": level, "sys": sys}
         self.push_event("notify", f"{title}{': ' + detail if detail else ''}")
+        try:                                          # phone push (ntfy) — best-effort
+            from shared import push as _push
+            _push.push(title, detail, level)
+        except Exception:
+            pass
 
     def _broadcast(self) -> None:
         dead = []

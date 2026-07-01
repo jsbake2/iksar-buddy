@@ -200,6 +200,7 @@ function openKeymap() {
 }
 function closeKeymap() { if (keymapModal) { keymapModal.hidden = true; kmFrame.src = "about:blank"; } }
 if (keymapBtn) keymapBtn.onclick = openKeymap;
+ibNotify.phone(document.getElementById("phoneBtn"));
 if ($("kmClose")) $("kmClose").onclick = closeKeymap;
 if (keymapModal) keymapModal.onclick = (e) => { if (e.target === keymapModal) closeKeymap(); };  // backdrop click
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && keymapModal && !keymapModal.hidden) closeKeymap(); });

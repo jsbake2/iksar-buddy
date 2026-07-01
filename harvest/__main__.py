@@ -28,6 +28,15 @@ from forge.guest import Guest                      # reuse the proven host I/O c
 from forge.login import LoginDriver, load_accounts
 from harvest.nav_graph import Graph as NavGraph    # dense waypoint graph (OgreNav-style)
 
+
+def _push(title: str, detail: str = "", level: str = "info") -> None:
+    """Best-effort phone push (shared ntfy config). Never raises."""
+    try:
+        from shared import push as _p
+        _p.push(title, detail, level)
+    except Exception:
+        pass
+
 DOM = "iksar_buddy"                                 # the GPU VM
 SPICE_PORT = 5900                                  # iksar_buddy SPICE (same as the healer)
 GUEST_PY = r"C:\ib\py\python.exe"
@@ -269,6 +278,7 @@ class Harvest:
                             self.harvest_log["rares"].append({"item": item, "node": node, "t": time.time()})
                             self.harvest_log["rares"] = self.harvest_log["rares"][-20:]
                             rare_armed = False
+                            _push("Rare harvest found!", f"{item}" + (f" ({node})" if node else ""), "good")
                         changed = True
                         continue
                     if RE_RARE.search(line):
@@ -278,6 +288,7 @@ class Harvest:
                         self.harvest_log["tells"].append({"from": mt.group(1), "msg": mt.group(2), "t": time.time()})
                         self.harvest_log["tells"] = self.harvest_log["tells"][-20:]
                         changed = True
+                        _push(f"Tell from {mt.group(1)}", mt.group(2), "warn")
                         continue
                     if RE_BAGS.search(line):
                         bf = self.harvest_log["bagsfull"]
@@ -285,6 +296,7 @@ class Harvest:
                             bf.append({"t": time.time()})
                             self.harvest_log["bagsfull"] = bf[-10:]
                             changed = True
+                            _push("Bags full", "inventory full — harvesting is blocked", "error")
                         continue
                     if RE_COMBAT.search(line):
                         self.harvest_log["combat_ts"] = time.time()
@@ -732,6 +744,16 @@ def create_app(h: Harvest) -> FastAPI:
                 "alerts": alerts,
                 "zone": st.get("zone"), "log": h.log[-30:],
                 "src": "push" if (time.time() - h.pushed["ts"] < 3.0) else "poll"}
+
+    @app.get("/api/push")
+    async def push_state():
+        from shared import push as _p
+        return _p.status()
+
+    @app.post("/api/push")
+    async def push_set(body: dict = Body(default={})):
+        from shared import push as _p
+        return _p.set_enabled(bool(body.get("enabled", True)))
 
     @app.post("/api/ingest")
     async def ingest(body: dict = Body(default={})):

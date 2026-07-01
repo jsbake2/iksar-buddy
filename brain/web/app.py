@@ -141,6 +141,16 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     async def snapshot():
         return telemetry.snapshot
 
+    @app.get("/api/push")
+    async def push_state():
+        from shared import push as _push
+        return _push.status()
+
+    @app.post("/api/push")
+    async def push_set(payload: dict = Body(default={})):
+        from shared import push as _push
+        return _push.set_enabled(bool(payload.get("enabled", True)))
+
     @app.get("/api/live/{nonce}")
     async def live_snapshot(nonce: str):
         """Same as /api/snapshot but with a UNIQUE path per request (the caller passes a

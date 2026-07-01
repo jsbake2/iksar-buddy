@@ -106,6 +106,11 @@ class ForgeTelemetry:
         self._notice = {"ts": time.time(), "bot": bot_id, "title": title,
                         "detail": detail, "level": level, "sys": sys}
         self.push_event(bot_id, "notify", f"{title}{': ' + detail if detail else ''}")
+        try:                                          # phone push (ntfy) — best-effort
+            from shared import push as _push
+            _push.push(title, detail, level)
+        except Exception:
+            pass
 
     # -- snapshot + pub/sub ------------------------------------------------
     @property

@@ -48,6 +48,16 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
     async def snapshot():
         return tele.snapshot
 
+    @app.get("/api/push")
+    async def push_state():
+        from shared import push as _push
+        return _push.status()
+
+    @app.post("/api/push")
+    async def push_set(payload: dict = Body(default={})):
+        from shared import push as _push
+        return _push.set_enabled(bool(payload.get("enabled", True)))
+
     async def _exec(fn, *a):
         return await asyncio.get_running_loop().run_in_executor(None, fn, *a)
 

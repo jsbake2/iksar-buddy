@@ -1,0 +1,15 @@
+# Phone-push config. Copy to ~/ib-data/push.yaml (the gitignored data dir) and set a
+# long, random topic. Every ib app (forge/brain/harvest) reads this same file per-push,
+# so the dashboard "phone" toggle silences all three at once.
+#
+# On your phone: install the "ntfy" app (F-Droid / App Store / Play), then subscribe to
+# the exact `topic` below. Alerts arrive with the app CLOSED (server -> phone push).
+#
+# The topic name is effectively a shared secret on the public ntfy.sh server — anyone who
+# knows it can read/send. Keep it random. To self-host later, point `server` at your own
+# ntfy behind the cloudflared tunnel.
+ntfy:
+  server: https://ntfy.sh
+  topic: ib-CHANGE-ME-to-a-long-random-string
+  enabled: true          # the dashboard 🔔/🔕 toggle flips this at runtime
+  min_level: info         # floor to push: info | good | warn | error

@@ -38,6 +38,29 @@ const ibNotify = (() => {
     ask: askPerm,
     // manual toast (local UI feedback, no OS notification)
     show(title, detail, level) { toast(title, detail, level); },
+    // wire a header button to the shared ntfy phone-push on/off state (/api/push)
+    async phone(btn) {
+      if (!btn) return;
+      const paint = (s) => {
+        btn.dataset.on = s.enabled ? "1" : "0";
+        btn.disabled = !s.configured;
+        btn.textContent = (s.configured && s.enabled) ? "🔔 phone" : "🔕 phone";
+        btn.title = !s.configured ? "phone push not set up (see ~/ib-data/push.yaml)"
+          : s.enabled ? "phone alerts ON — click to mute (silences all ib apps)"
+                      : "phone alerts OFF — click to enable";
+      };
+      try { paint(await (await fetch("/api/push")).json()); } catch (_) {}
+      btn.onclick = async () => {
+        const cur = btn.dataset.on === "1";
+        try {
+          paint(await (await fetch("/api/push", { method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enabled: !cur }) })).json());
+        } catch (_) {}
+      };
+      // reflect out-of-band changes (another app's toggle) every 10s
+      setInterval(async () => { try { paint(await (await fetch("/api/push")).json()); } catch (_) {} }, 10000);
+    },
     // drive from a websocket snapshot: fires once per new notice.ts
     fromSnapshot(snap) {
       const n = snap && snap.notice;

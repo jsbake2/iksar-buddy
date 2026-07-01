@@ -41,6 +41,7 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
   <span class="pos" id="pos">pos: —</span>
   <span class="pill" id="link">●</span>
   <span style="flex:1"></span>
+  <button id="phoneBtn" title="phone alerts" style="margin-right:8px">🔕 phone</button>
   <select id="theme" title="theme">
     <option value="iksar">iksar</option><option value="midnight">midnight</option>
     <option value="grafana">grafana</option><option value="amber">amber</option>
@@ -231,6 +232,7 @@ function notifyNew(arr, key, fmt){
   });
   _seen[key]=newest;
 }
+ibNotify.phone(document.getElementById('phoneBtn'));
 loadChars();setInterval(tick,1500);tick();setInterval(refreshFrame,1500);refreshFrame();
 </script>
 </body>
