@@ -324,6 +324,10 @@ def reaction_event(guest: Guest, cfg: dict, templates: list, fresh: bool = True)
 _OCR_SCALE = 2          # upscale before OCR: recipe/char rows are thin light text on a
 #                         near-black bg; at 1x tesseract reads NOTHING. 2x + a lower
 #                         threshold makes them legible. Coords are scaled back to guest px.
+# A recipe result row that spans more than this many guest px (top of first word to
+# bottom of last) occupies TWO lines — a wrapped long name. One line is ~18-22px, two
+# ~34-40px, so 28 splits them. Triggers the dynamic-row path (fixed slots misalign then).
+_WRAP_SPAN_PX = 28
 
 
 def _ocr_words(guest: Guest, region: dict) -> list[dict]:
@@ -450,21 +454,38 @@ def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int]]
     the row's center). The per-row mode is deterministic: fixed box per slot, fixed click."""
     rs = cfg.get("recipe_select", {})
     slots = rs.get("result_rows") or []
-    if slots:
+    icon_x = int(rs.get("icon_x", 244))
+
+    # DYNAMIC grouped rows: OCR the whole list, group words by Y (merging a wrapped 2-line
+    # recipe name into ONE row) and click the row's true center. Robust to variable row
+    # height. Built first so we can detect whether any row WRAPS. Best-effort: if this OCR
+    # path is unavailable, we just don't detect wrap and use the fixed slots.
+    dyn, wrapped = [], False
+    try:
+        grouped = _recipe_rows(guest, cfg)
+    except Exception:
+        grouped = []
+    for ws in grouped:
+        blob = _alpha(" ".join(w["text"] for w in ws))
+        span = max(w["y"] + w["h"] for w in ws) - min(w["y"] for w in ws)
+        if span > _WRAP_SPAN_PX:                 # words on two lines -> a wrapped name
+            wrapped = True
+        y = sum(w["y"] + w["h"] // 2 for w in ws) // len(ws)
+        dyn.append((blob, (icon_x, y)))
+
+    # Fixed per-slot boxes are calibrated + deterministic, but ONLY when every result is a
+    # single line. A wrapped 2-line name shifts every row below it, so the fixed boxes
+    # misalign and a wrapped continuation ("Broadcloth Pantaloons", missing its "Imbued"
+    # prefix) gets read as a PHANTOM recipe and mis-picked. When a wrap is present (or no
+    # fixed slots are calibrated), use the dynamic rows that merged the name back together.
+    if slots and not wrapped:
         out = []
         for s in slots:
             ocr, click = s.get("ocr"), s.get("click")
-            if not ocr or not click:
-                continue
-            out.append((_ocr_line(guest, ocr), (int(click[0]), int(click[1]))))
+            if ocr and click:
+                out.append((_ocr_line(guest, ocr), (int(click[0]), int(click[1]))))
         return out
-    icon_x = int(rs.get("icon_x", 244))
-    out = []
-    for ws in _recipe_rows(guest, cfg):
-        blob = _alpha(" ".join(w["text"] for w in ws))
-        y = sum(w["y"] + w["h"] // 2 for w in ws) // len(ws)
-        out.append((blob, (icon_x, y)))
-    return out
+    return dyn
 
 
 def recipe_row_blobs(guest: Guest, cfg: dict) -> list[str]:

@@ -310,3 +310,23 @@ def test_writ_start_collapses_a_raw_uncollapsed_item(tmp_path):
     w.start("writ", "provisioner", queue=[{"name": "Sharkfin Soup", "count": 4}])
     got = w._pending["queue"][0]
     assert got["count"] == 2 and got["writ_count"] == 4
+
+
+def test_match_recipe_row_wrapped_two_line_name(monkeypatch):
+    """A long name wraps to 2 lines. Fixed per-slot boxes would misread the wrapped
+    continuation as a phantom recipe and mis-pick the imbued row; the dynamic path merges
+    the two lines back into the FULL name so 'Imbued' is seen and rejected, and the plain
+    row is picked at its true center. (Reproduces the tailor Imbued-Pantaloons bug.)"""
+    from forge import sensors
+    def W(x, y, t): return {"x": x, "y": y, "w": 40, "h": 16, "text": t}
+    # row 1 = imbued, wrapped across y=266 and y=284 (span 34 > _WRAP_SPAN_PX -> wrap)
+    row_imbued = [W(260, 266, "Imbued"), W(305, 266, "Tranquil"),
+                  W(360, 266, "Broadcloth"), W(260, 284, "Pantaloons")]
+    # row 2 = the plain target, wrapped across y=311 and y=329
+    row_plain = [W(260, 311, "Tranquil"), W(320, 311, "Broadcloth"), W(260, 329, "Pantaloons")]
+    monkeypatch.setattr(sensors, "_recipe_rows", lambda g, c: [row_imbued, row_plain])
+    # cfg HAS fixed slots — the wrap must override them and use the dynamic rows.
+    cfg = {"recipe_select": {"result_rows": [{"ocr": {"x": 0, "y": 0, "w": 1, "h": 1}, "click": [9, 9]}],
+                             "icon_x": 244}}
+    click = sensors.match_recipe_row(None, cfg, "Tranquil Broadcloth Pantaloons")
+    assert click is not None and 300 < click[1] < 345, f"should pick the PLAIN row center, got {click}"
