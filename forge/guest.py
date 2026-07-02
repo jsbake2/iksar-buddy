@@ -73,7 +73,21 @@ class Guest:
     def start_vm(self) -> bool:
         if self.is_running():
             return True
-        return self._virsh("start", self.dom).returncode == 0
+        # `virsh start` can lag well past the default 8s command timeout when the host
+        # is loaded (other VMs + GPU work) — but the domain still boots. Give it room,
+        # and if the call errors OR times out, VERIFY via domstate rather than aborting
+        # the whole login (the old bug: a slow start threw TimeoutExpired and stranded
+        # the VM at the desktop with no LaunchPad/login).
+        try:
+            if self._virsh("start", self.dom, timeout=60).returncode == 0:
+                return True
+        except subprocess.TimeoutExpired:
+            pass
+        for _ in range(15):
+            if self.is_running():
+                return True
+            time.sleep(1)
+        return False
 
     def shutdown_vm(self) -> bool:
         return self._virsh("shutdown", self.dom).returncode == 0
