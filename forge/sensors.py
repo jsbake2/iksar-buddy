@@ -328,6 +328,10 @@ _OCR_SCALE = 2          # upscale before OCR: recipe/char rows are thin light te
 # bottom of last) occupies TWO lines — a wrapped long name. One line is ~18-22px, two
 # ~34-40px, so 28 splits them. Triggers the dynamic-row path (fixed slots misalign then).
 _WRAP_SPAN_PX = 28
+# Max vertical span of ONE recipe row (its two wrapped lines). Must sit between the
+# wrap line-spacing (~16px) and the recipe row-pitch (~33px) so a wrapped continuation
+# merges but the next recipe splits. See _recipe_rows.
+_ROW_TOP_GAP = 26
 
 
 def _ocr_words(guest: Guest, region: dict) -> list[dict]:
@@ -440,7 +444,13 @@ def _recipe_rows(guest: Guest, cfg: dict) -> list[list]:
     words.sort(key=lambda w: w["y"])
     rows: list[list] = []
     for w in words:
-        if rows and w["y"] - rows[-1][-1]["y"] <= 26:   # wrapped 2-line name ~16px
+        # Group against the row's TOP word, NOT the previous word. Comparing to the
+        # previous word chain-merges everything: a 2-line wrap (~16px) then the next
+        # recipe's first line (~16px from the wrap) keep chaining, fusing several
+        # recipes into one blob (e.g. broadcloth+cloth hex dolls). A recipe's two
+        # wrapped lines span ≤ _ROW_TOP_GAP; the NEXT recipe starts a full row-pitch
+        # (~33px) below this row's top, so it splits cleanly into its own row.
+        if rows and w["y"] - rows[-1][0]["y"] <= _ROW_TOP_GAP:
             rows[-1].append(w)
         else:
             rows.append([w])
