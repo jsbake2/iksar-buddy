@@ -52,8 +52,11 @@ COMBAT_DECAY_S = 5.0
 # attacks in combat, so his damage lines are a clean trigger; mob->group damage
 # and misses count too. HP-delta above is the fallback for when someone pulls
 # without Robskin / the log read lags. Path is per server+character.
-EQ2_LOG = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
-           r"\EverQuest II\logs\Wuoshi\eq2log_Jenskin.txt")
+# The combat log we tail is the BOT'S OWN client log — i.e. the character selected
+# in the dashboard (slot 0 = names[0], pushed via CONFIG). Templated on the character
+# so a profile/character switch retargets the log without a restart.
+EQ2_LOG_TMPL = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
+                r"\EverQuest II\logs\Wuoshi\eq2log_{char}.txt")
 COMBAT_LOG_POLL_S = 1.0
 # Lines that only appear during combat (heals/regen/buffs deliberately excluded).
 # Real format is "<X> hits <Y> for 35 piercing damage" (NOT "points of ...").
@@ -171,6 +174,12 @@ class HostAgent:
                 last_hb = t
             await asyncio.sleep(max(0, self.period - (time.time() - t)))
 
+    def _log_path(self) -> str:
+        """EQ2 chat-log path for the ACTIVE character (dashboard dropdown = names[0]).
+        Falls back to the last-known/default if names aren't set yet."""
+        char = (self._names.get(0) or "").strip() or "Jenskin"
+        return EQ2_LOG_TMPL.format(char=char)
+
     async def _combat_log_loop(self) -> None:
         """Trip combat on RECENT group-named damage lines in Jenskin's EQ2 log.
         Each line is "(epoch)[date] text"; we read the guest's current epoch in the
@@ -178,11 +187,14 @@ class HostAgent:
         counts only if it happened within COMBAT_DECAY_S. The group-name filter
         ignores the rest of the zone's combat spam. Runs even while disarmed."""
         loop = asyncio.get_running_loop()
-        ps = (
-            "Write-Output ('NOW=' + [int][double]::Parse((Get-Date -UFormat %s))); "
-            f"if (Test-Path -LiteralPath '{EQ2_LOG}') "
-            f"{{ Get-Content -LiteralPath '{EQ2_LOG}' -Tail 250 }}")
         while True:
+            # Rebuild each poll so the path follows the CURRENT character (names[0],
+            # set from CONFIG on every profile switch) — no restart needed.
+            log_path = self._log_path()
+            ps = (
+                "Write-Output ('NOW=' + [int][double]::Parse((Get-Date -UFormat %s))); "
+                f"if (Test-Path -LiteralPath '{log_path}') "
+                f"{{ Get-Content -LiteralPath '{log_path}' -Tail 250 }}")
             try:
                 out = await loop.run_in_executor(None, self._guest_read, ps)
                 if out:
