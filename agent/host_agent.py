@@ -357,7 +357,12 @@ class HostAgent:
         """Write the key sequence to the guest and fire the Event-mode AHK task.
         Re-checks nothing here (the chat gate already passed in _on_command); keep
         the window between gate and press tiny by injecting immediately."""
-        ps = (f"Set-Content C:\\ib\\keys.txt '{seq}' -NoNewline; "
+        # Self-heal the inject task: it can come up DISABLED after a VM (re)boot, and a
+        # disabled task makes Start-ScheduledTask a silent no-op — every press vanishes
+        # with no error (this bit us: 'INJECTED' logged but nothing reached the game).
+        # Enable is a cheap no-op when already enabled.
+        ps = (f"Enable-ScheduledTask -TaskName ibkey -EA SilentlyContinue | Out-Null; "
+              f"Set-Content C:\\ib\\keys.txt '{seq}' -NoNewline; "
               f"Start-ScheduledTask -TaskName ibkey")
         try:
             subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
