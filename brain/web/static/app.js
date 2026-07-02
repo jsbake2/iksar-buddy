@@ -73,7 +73,7 @@ function buildRecast(buffs) {
     row.innerHTML =
       `<span class="rc-name" title="${nm}${b.key_set ? "" : " — set a key in ⌨ keymap"}">${nm}</span>` +
       `<label class="rc-cell"><input class="rc-int" type="number" min="0" max="600" step="1" value="${b.interval_s}" title="recast interval (s); 0 = off"/><span>s</span></label>` +
-      `<label class="rc-cell"><input class="rc-tgt" type="number" min="0" max="6" step="1" value="${b.target}" title="target group slot 1-6; blank/1 = self"/></label>` +
+      `<label class="rc-cell"><input class="rc-tgt" type="number" min="0" max="5" step="1" value="${b.target}" title="target group slot: 0 = self, 1 = next member … 5 = 6th"/></label>` +
       `<span class="rc-count" id="rcCount${b.n}">—</span>` +
       `<button class="rc-exec" title="cast now + reset the timer">▶</button>`;
     row.querySelector(".rc-int").onchange = (e) => {

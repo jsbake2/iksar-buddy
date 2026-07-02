@@ -332,10 +332,10 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         "pbuff_2_interval_s": (float, 0.0, 600.0),
         "pbuff_3_interval_s": (float, 0.0, 600.0),
         "pbuff_4_interval_s": (float, 0.0, 600.0),
-        "pbuff_1_target": (float, 0.0, 6.0),
-        "pbuff_2_target": (float, 0.0, 6.0),
-        "pbuff_3_target": (float, 0.0, 6.0),
-        "pbuff_4_target": (float, 0.0, 6.0),
+        "pbuff_1_target": (float, 0.0, 5.0),
+        "pbuff_2_target": (float, 0.0, 5.0),
+        "pbuff_3_target": (float, 0.0, 5.0),
+        "pbuff_4_target": (float, 0.0, 5.0),
     }
 
     @app.get("/api/tunables")
@@ -400,7 +400,7 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         if not key or key == "none":
             return JSONResponse({"error": "no key mapped"}, status_code=400)
         tgt = int(brain.cfg.threshold(f"pbuff_{n}_target", 0) or 0)
-        slot = tgt - 1 if tgt >= 1 else 0
+        slot = max(0, min(5, tgt))              # 0 = self, 1 = next member, ... 5 = 6th
         await brain.send("command", role=role, key=key, target_slot=slot, manual=True,
                          reason=f"manual periodic buff {n}")
         brain._last_pbuff[n] = time.time()      # reset the auto-recast countdown
