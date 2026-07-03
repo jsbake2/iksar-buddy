@@ -244,6 +244,7 @@ function _bind(el) {
   el.querySelectorAll("[data-group]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.group}`)));
   el.querySelectorAll("[data-act]").forEach((b) => (b.onclick = () => post(`/api/act/${b.dataset.act}/${b.dataset.slot}`)));
   el.querySelectorAll("[data-accept]").forEach((b) => (b.onclick = () => post(`/api/accept/${b.dataset.accept}`)));
+  el.querySelectorAll("[data-nudge]").forEach((b) => (b.onclick = () => post(`/api/nudge/${b.dataset.nudge}`)));
 }
 // Rows = temp buffs then individual (permanent) buffs, labelled by the owner's keymap
 // NAME. Columns = live group members. A cell casts that buff on that member.
@@ -281,6 +282,13 @@ const DIRGE_UTIL = [
 function buildDirgeSections() {
   const box = $("dirgeSections"); if (!box) return;
   box.innerHTML =
+    `<div class="ctl-sec"><h3>Movement</h3>` +
+    `<div class="nudge-pad" title="tap-hold ~0.3s">` +
+    `<button data-nudge="w" class="nudge nudge-w">W</button>` +
+    `<button data-nudge="a" class="nudge nudge-a">A</button>` +
+    `<button data-nudge="s" class="nudge nudge-s">S</button>` +
+    `<button data-nudge="d" class="nudge nudge-d">D</button>` +
+    `</div></div>` +
     `<div class="ctl-sec"><h3>Utility</h3><div class="sbtns">` +
     DIRGE_UTIL.map(([role, label]) => `<button data-group="${role}" title="${label}">${label}</button>`).join("") +
     `</div></div>` +
