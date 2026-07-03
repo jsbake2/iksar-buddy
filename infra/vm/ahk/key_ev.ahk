@@ -39,15 +39,18 @@ sendKey(spec) {
     }
     ; Release any modifier we DON'T want for this key, right before pressing it.
     ; A stuck Alt (e.g. latched in the guest by the SPICE console swallowing an
-    ; Alt-up) would otherwise turn a bare "1" into "Alt+1". Doing it here -- not
-    ; just once at script start -- closes the gap before the keypress.
-    for mm in ["Alt", "Ctrl", "Shift", "LWin"] {
-        keep := false
-        for m in mods
-            if (m = mm)
-                keep := true
-        if (!keep)
-            SendEvent("{" mm " up}")
+    ; Alt-up) would otherwise turn a bare "1" into "Alt+1". Only needed when we're
+    ; pressing a MODIFIED key (to drop the other mods) -- a bare key was already
+    ; fully cleared by the pre-sequence clear below, so skip this ~160ms loop for it.
+    if (mods.Length) {
+        for mm in ["Alt", "Ctrl", "Shift", "LWin"] {
+            keep := false
+            for m in mods
+                if (m = mm)
+                    keep := true
+            if (!keep)
+                SendEvent("{" mm " up}")
+        }
     }
     ; named keys (F2, Space) need braces; single chars (incl. "=", "+") are sent
     ; as-is -- the "{= down}" key-event form is invalid and would crash AHK.
@@ -69,13 +72,14 @@ sendKey(spec) {
 if !WinExist("EverQuest II")
     ExitApp
 WinActivate("EverQuest II")
-Sleep 250
+Sleep 40   ; the agent only injects when the game is already foreground (chat guard),
+           ; so this is just a tiny settle, not a wait for the window to come up
 ; Clear any modifier stranded by a prior instance that #SingleInstance Force
 ; killed mid-combo (between {Mod down} and {Mod up}). Without this, an interrupted
 ; Alt+= / Ctrl+N injection leaves Alt/Ctrl "held" in the guest -- which shows up
 ; as stuck-Alt in the SPICE console and breaks in-game input until cleared.
 Send("{Alt up}{Ctrl up}{Shift up}{LWin up}")
-Sleep 80   ; let the clear settle so its {Ctrl up} can't bleed into a Ctrl+ combo
+Sleep 30   ; let the clear settle so its {Ctrl up} can't bleed into a Ctrl+ combo
 seq := Trim(FileRead("C:\ib\keys.txt"), " `t`r`n")
 for part in StrSplit(seq, ",") {
     k := Trim(part, " `t`r`n")
@@ -95,6 +99,6 @@ for part in StrSplit(seq, ",") {
         continue
     }
     sendKey(k)
-    Sleep 110
+    Sleep 30
 }
 FileAppend("ev-keys [" seq "] @" A_Now "`n", "C:\ib\key.logf")

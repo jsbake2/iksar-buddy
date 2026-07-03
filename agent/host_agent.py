@@ -136,8 +136,23 @@ class HostAgent:
         self._names = dict(NAMES)
         self._name_re = NAME_RE
 
+    async def _ensure_inject_task_loop(self) -> None:
+        """Keep the in-guest 'ibkey' task ENABLED, OFF the inject hot path. It can come
+        up disabled after a VM (re)boot, and a disabled task makes Start-ScheduledTask a
+        silent no-op (every press vanishes). Enable is slow (~1-2s) so we do it here on a
+        slow cadence, not per keypress. Best-effort; never raises."""
+        loop = asyncio.get_running_loop()
+        while True:
+            try:
+                await loop.run_in_executor(None, self._guest_read,
+                    "Enable-ScheduledTask -TaskName ibkey -EA SilentlyContinue | Out-Null; 'ok'")
+            except Exception as e:
+                log.debug("ensure-inject-task error: %s", e)
+            await asyncio.sleep(90)
+
     async def run(self) -> None:
         asyncio.create_task(self._combat_log_loop())   # runs independent of brain link
+        asyncio.create_task(self._ensure_inject_task_loop())  # keep ibkey enabled (off hot path)
         while True:
             try:
                 reader, writer = await asyncio.open_connection(self.host, self.port)
@@ -353,16 +368,40 @@ class HostAgent:
         finally:
             self._injecting = False
 
+    def _virsh(self, cmd: dict, timeout: float = 6.0) -> dict:
+        r = subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
+                            "qemu-agent-command", DOM, json.dumps(cmd)],
+                           capture_output=True, text=True, timeout=timeout)
+        return json.loads(r.stdout)["return"]
+
+    def _inject_fast(self, seq: str) -> bool:
+        """Write keys.txt via the guest-agent FILE API (no PowerShell cold-start) and
+        trigger the interactive-session AHK via native schtasks (no PowerShell). Cuts
+        ~2 PowerShell spawns (~0.5-1s) off the press-to-action path. False on any
+        failure so the caller can fall back to the proven PowerShell path."""
+        try:
+            h = self._virsh({"execute": "guest-file-open",
+                             "arguments": {"path": "C:\\ib\\keys.txt", "mode": "w"}})
+            self._virsh({"execute": "guest-file-write", "arguments": {
+                "handle": h, "buf-b64": base64.b64encode(seq.encode()).decode()}})
+            self._virsh({"execute": "guest-file-close", "arguments": {"handle": h}})
+            self._virsh({"execute": "guest-exec", "arguments": {
+                "path": "schtasks.exe", "arg": ["/Run", "/TN", "ibkey"]}})
+            return True
+        except Exception as e:
+            log.debug("fast inject failed, falling back to PS: %s", e)
+            return False
+
     def _inject(self, seq: str, role: str) -> None:
         """Write the key sequence to the guest and fire the Event-mode AHK task.
         Re-checks nothing here (the chat gate already passed in _on_command); keep
-        the window between gate and press tiny by injecting immediately."""
-        # Self-heal the inject task: it can come up DISABLED after a VM (re)boot, and a
-        # disabled task makes Start-ScheduledTask a silent no-op — every press vanishes
-        # with no error (this bit us: 'INJECTED' logged but nothing reached the game).
-        # Enable is a cheap no-op when already enabled.
-        ps = (f"Enable-ScheduledTask -TaskName ibkey -EA SilentlyContinue | Out-Null; "
-              f"Set-Content C:\\ib\\keys.txt '{seq}' -NoNewline; "
+        the window between gate and press tiny by injecting immediately. The task's
+        enabled-state is kept healthy off this path by _ensure_inject_task_loop."""
+        if self._inject_fast(seq):
+            log.info("INJECTED %s -> [%s]", role, seq)
+            return
+        # fallback: the original PowerShell path (slower but proven)
+        ps = (f"Set-Content C:\\ib\\keys.txt '{seq}' -NoNewline; "
               f"Start-ScheduledTask -TaskName ibkey")
         try:
             subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
@@ -371,7 +410,7 @@ class HostAgent:
                                 "path": "powershell.exe",
                                 "arg": ["-NoProfile", "-Command", ps]}})],
                            capture_output=True, timeout=8)
-            log.info("INJECTED %s -> [%s]", role, seq)
+            log.info("INJECTED(ps) %s -> [%s]", role, seq)
         except Exception as e:  # pragma: no cover
             log.warning("inject failed: %s", e)
 
