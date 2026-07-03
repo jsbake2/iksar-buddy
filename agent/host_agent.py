@@ -23,8 +23,34 @@ import logging
 import os
 import re
 import subprocess
+from pathlib import Path
 
 _DAEMON_ENABLED = True    # in-guest key daemon fast path (~<0.1s vs ~0.5s one-shot)
+
+# The daemon isn't in the VM base image, so a revert/reboot wipes it. The agent
+# self-deploys it (script + task) when the heartbeat stops advancing. Script lives
+# next to this module; runs from C:\ib\keyd.ahk via the 'ibkeyd' task in the
+# interactive session (same principal as the one-shot 'ibkey' task).
+_DAEMON_GUEST_SCRIPT = r"C:\ib\keyd.ahk"
+_DAEMON_GUEST_XML = r"C:\ib\ibkeyd.xml"
+_IBKEYD_XML = (
+    '<?xml version="1.0" encoding="UTF-16"?>\n'
+    '<Task version="1.3" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">\n'
+    '  <RegistrationInfo><URI>\\ibkeyd</URI></RegistrationInfo>\n'
+    '  <Principals><Principal id="Author">'
+    '<UserId>S-1-5-21-1061650457-3563521756-761907317-1000</UserId>'
+    '<LogonType>InteractiveToken</LogonType><RunLevel>HighestAvailable</RunLevel>'
+    '</Principal></Principals>\n'
+    '  <Settings><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>'
+    '<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>'
+    '<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>'
+    '<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>'
+    '<UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine></Settings>\n'
+    '  <Triggers />\n'
+    '  <Actions Context="Author"><Exec>'
+    '<Command>C:\\ib\\ahk\\AutoHotkey64.exe</Command>'
+    '<Arguments>C:\\ib\\keyd.ahk</Arguments></Exec></Actions>\n'
+    '</Task>')
 import time
 
 from shared import protocol as proto
@@ -141,6 +167,7 @@ class HostAgent:
                                               # so the daemon never mistakes a new press for
                                               # a stale token it already ran
         self._daemon_ok = False     # is the in-guest key daemon alive? (health-checked)
+        self._hb_prev = None        # last heartbeat mtime — alive = it ADVANCED (clock-jump safe)
 
     async def _ensure_inject_task_loop(self) -> None:
         """Health-check the persistent in-guest key DAEMON (fast path, ~<0.1s) and keep
@@ -151,25 +178,32 @@ class HostAgent:
         loop = asyncio.get_running_loop()
         while True:
             try:
-                out = await loop.run_in_executor(None, self._guest_read,
-                    "$hb=(Get-Item C:\\ib\\keydaemon.hb -EA SilentlyContinue).LastWriteTime;"
-                    "if($hb){[int]((Get-Date)-$hb).TotalSeconds}else{9999}")
-                age = int((out or "9999").strip() or 9999)
-                if age <= 5:
+                # ALIVE = the heartbeat mtime ADVANCED since last check. Comparing to the
+                # previous reading (not to wall-clock 'now') is immune to the guest clock
+                # jumping — which it does, and which the old age-based check mistook for a
+                # healthy daemon while it was actually dead (fed a corpse, nothing injected).
+                ticks = (await loop.run_in_executor(None, self._guest_read,
+                    "(Get-Item C:\\ib\\keydaemon.hb -EA SilentlyContinue).LastWriteTime.Ticks") or "").strip()
+                alive = bool(ticks) and self._hb_prev is not None and ticks != self._hb_prev
+                self._hb_prev = ticks
+                if alive:
                     if not self._daemon_ok:
-                        log.info("key daemon healthy (hb age %ss) — fast path on", age)
+                        log.info("key daemon healthy (hb advancing) — fast path on")
                     self._daemon_ok = True
                 else:
                     if self._daemon_ok:
-                        log.warning("key daemon stale (hb age %ss) — restart + fallback", age)
+                        log.warning("key daemon not advancing — redeploy + one-shot fallback")
                     self._daemon_ok = False
+                    # (re)deploy the task+script (handles a VM revert that wiped it), then
+                    # nudge it in case it exists but exited.
+                    await loop.run_in_executor(None, self._deploy_daemon)
                     await loop.run_in_executor(None, self._guest_read,
                         "schtasks.exe /Run /TN ibkeyd 2>&1 | Out-Null; 'ok'")
                 await loop.run_in_executor(None, self._guest_read,
                     "Enable-ScheduledTask -TaskName ibkey -EA SilentlyContinue | Out-Null; 'ok'")
             except Exception as e:
                 log.debug("ensure-inject-task error: %s", e)
-            await asyncio.sleep(10)
+            await asyncio.sleep(8)
 
     async def run(self) -> None:
         asyncio.create_task(self._combat_log_loop())   # runs independent of brain link
@@ -405,6 +439,35 @@ class HostAgent:
                     pass
             time.sleep(0.15)
         raise RuntimeError(f"virsh agent-command failed: {last[:160]!r}")
+
+    def _deploy_daemon(self) -> bool:
+        """(Re)deploy the in-guest key daemon: push the script + 'ibkeyd' task and start
+        it. Self-heals after a VM revert/reboot wipes it. Only called when the daemon is
+        NOT running (so keyd.ahk isn't locked). Best-effort; never raises."""
+        try:
+            script = (Path(__file__).resolve().parent / "key_daemon.ahk").read_bytes()
+        except OSError as e:
+            log.warning("daemon self-deploy: script missing on host: %s", e)
+            return False
+        try:
+            # fresh, writable target (a stale copy can become write-denied)
+            self._guest_read(f"attrib -R {_DAEMON_GUEST_SCRIPT} 2>&1 | Out-Null; "
+                             f"Remove-Item {_DAEMON_GUEST_SCRIPT} -Force -EA SilentlyContinue")
+            for path, data in ((_DAEMON_GUEST_SCRIPT, script),
+                               (_DAEMON_GUEST_XML, _IBKEYD_XML.encode("utf-16"))):
+                h = self._virsh({"execute": "guest-file-open",
+                                 "arguments": {"path": path, "mode": "w"}})
+                self._virsh({"execute": "guest-file-write", "arguments": {
+                    "handle": h, "buf-b64": base64.b64encode(data).decode()}})
+                self._virsh({"execute": "guest-file-close", "arguments": {"handle": h}})
+            self._guest_read(
+                f"Register-ScheduledTask -TaskName ibkeyd -Xml (Get-Content '{_DAEMON_GUEST_XML}' -Raw) -Force | Out-Null; "
+                "Start-ScheduledTask -TaskName ibkeyd")
+            log.info("self-deployed in-guest key daemon (was missing/dead)")
+            return True
+        except Exception as e:
+            log.warning("daemon self-deploy failed: %s", e)
+            return False
 
     def _inject_daemon(self, seq: str) -> bool:
         """FAST path: hand the sequence to the always-running in-guest daemon by writing
