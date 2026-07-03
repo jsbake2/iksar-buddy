@@ -11,7 +11,8 @@
 ; "Mod+Key" (Ctrl+1, Alt+=). A "pause_<seconds>" element waits (for cast times in
 ; pre-pull / buff combos). EQ2 only registers legacy Event-mode input.
 SendMode "Event"
-SetKeyDelay 40, 40
+SetKeyDelay 6, 12   ; 12ms hold (EQ2 Event mode registers it) + 6ms gap. The old 40/40
+                    ; held+waited 80ms per key event — a 4-key modifier clear cost ~320ms.
 SetTitleMatchMode 2
 
 ; Belt-and-suspenders: on any clean exit, release modifiers so we never leave one
