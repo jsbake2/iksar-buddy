@@ -568,6 +568,13 @@ class Harvest:
         hv = Path(__file__).resolve().parent
         ga = hv.parent / "guest_agent"
         files = {ga / "harvest_agent.py": r"C:\ib\agent\harvest_agent.py",
+                 # P3.2 split: harvest_agent.py is a thin entrypoint over these six
+                 ga / "agentio.py": r"C:\ib\agent\agentio.py",
+                 ga / "win_input.py": r"C:\ib\agent\win_input.py",
+                 ga / "eq2mem.py": r"C:\ib\agent\eq2mem.py",
+                 ga / "nav.py": r"C:\ib\agent\nav.py",
+                 ga / "harvest_loops.py": r"C:\ib\agent\harvest_loops.py",
+                 ga / "diag.py": r"C:\ib\agent\diag.py",
                  ga / "hud_overlay.py": r"C:\ib\agent\hud_overlay.py",
                  ga / "offsets.py": r"C:\ib\agent\offsets.py",
                  hv / "nav_graph.py": r"C:\ib\agent\nav_graph.py",

@@ -192,6 +192,23 @@ class LoginDriver:
         r, g, b = px
         return r > 120 and b < 60 and (r - g) > 60 and (g - b) > 20
 
+    def _settle_until(self, cond: Callable[[], bool], timeout: float,
+                      period: float = 1.0) -> bool:
+        """Condition-or-timeout settle (REFACTOR P2.5): poll `cond` and return as
+        soon as it's true, else give up at `timeout`. Replaces the blind
+        time.sleep(N) settles — same worst case (the old N becomes the timeout),
+        faster whenever the screen is already there. Never raises; a False return
+        just means 'proceed like the old blind sleep did'."""
+        t0 = time.time()
+        while time.time() - t0 < timeout:
+            try:
+                if cond():
+                    return True
+            except Exception:
+                pass
+            time.sleep(period)
+        return False
+
     # --- phase gates ---------------------------------------------------------
     def _launchpad_up(self) -> bool:
         out = self.g.exec_ps("if (Get-Process LaunchPad -ErrorAction SilentlyContinue) {'Y'}")
@@ -257,7 +274,8 @@ class LoginDriver:
                 time.sleep(2)
             else:
                 self.log("LaunchPad never appeared"); return False
-        time.sleep(8)
+        # window-render settle: proceed the moment PLAY or the LOGIN form shows
+        self._settle_until(lambda: self._play_ready() or self._launchpad_login_needed(), 8)
 
         # auto-login is the norm; only log in if PLAY hasn't appeared and a LOGIN
         # form is showing. Then accept the EULA if it pops.
@@ -270,14 +288,16 @@ class LoginDriver:
                 self.log("LaunchPad LOGIN form — entering credentials")
                 g.run_ahk(_lp_login_ahk(user, password))
                 logged_in = True
-                time.sleep(6)
+                # post-submit settle: PLAY going ready ends it early; otherwise the
+                # EULA poll right after covers the accept dialog
+                self._settle_until(self._play_ready, 6)
                 self._accept_eula_if_present()
             time.sleep(3)
         else:
             self.log("LaunchPad PLAY never went ready (patch stuck?) — continuing anyway")
         self.log("LaunchPad ready; closing it")
         g.exec_ps("Stop-Process -Name LaunchPad -Force -ErrorAction SilentlyContinue", wait=True)
-        time.sleep(2)
+        self._settle_until(lambda: not self._launchpad_up(), 5)   # confirm it's gone
 
         # 1b) FORCE LOGGING ON before the game reads its config — EQ2 defaults /log off each
         # session, which blinds the bots (no eq2log_<char>.txt for completion/counter reads).

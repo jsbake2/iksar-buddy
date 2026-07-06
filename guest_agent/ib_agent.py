@@ -43,6 +43,63 @@ LOG_PATH = HERE / "agent.log"
 
 VERSION = "0.1.0"
 
+# --- in-guest combat-log tail (REFACTOR P2.3) -------------------------------
+# The host's combat detection used to run `Get-Content -Tail 250` on the EQ2 log
+# through qemu-guest-exec every second — a ~1s PowerShell round-trip per poll.
+# We're IN the guest, so tail the log directly (open+seek, incremental reads)
+# and mirror the recent tail to a tiny file the host reads instead. The host
+# keeps its old tail-250 poll as the fallback when this file goes stale
+# (agent down / log missing), so nothing regresses if this thread dies.
+EQ2_LOG_DIR = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
+               r"\EverQuest II\logs\Wuoshi")
+TAIL_OUT = r"C:\ib\combat_tail.txt"
+TAIL_LINES = 250        # match the host's old Get-Content -Tail 250 window
+TAIL_PERIOD_S = 0.25    # incremental read cadence (local file; effectively free)
+RELOCATE_S = 5.0        # re-pick the freshest eq2log_*.txt (character switches)
+
+
+def _tail_loop() -> None:
+    """Daemon thread: tail the freshest eq2log_*.txt and mirror the last
+    TAIL_LINES raw lines (original "(epoch)[date] ..." format — the host parser
+    is unchanged) to TAIL_OUT atomically. Never raises; if the log dir is
+    missing (non-EQ2 VM) it just idles and the host fallback carries on."""
+    import collections
+    import glob
+    import os
+    buf: collections.deque[str] = collections.deque(maxlen=TAIL_LINES)
+    path, f, checked = None, None, 0.0
+    while True:
+        try:
+            now = time.time()
+            if now - checked >= RELOCATE_S:
+                checked = now
+                logs = glob.glob(os.path.join(EQ2_LOG_DIR, "eq2log_*.txt"))
+                fresh = max(logs, key=os.path.getmtime) if logs else None
+                if fresh and fresh != path:
+                    if f:
+                        f.close()
+                    path, f = fresh, open(fresh, "r", errors="replace")
+                    f.seek(0, os.SEEK_END)       # only NEW lines; host seeds recency anyway
+                    buf.clear()
+                    log(f"log tail -> {fresh}")
+            if f is None:
+                time.sleep(RELOCATE_S)
+                continue
+            new = f.read()                       # incremental: file pos persists
+            if new:
+                buf.extend(new.splitlines())
+                tmp = TAIL_OUT + ".tmp"
+                with open(tmp, "w", errors="replace") as out:
+                    out.write("\n".join(buf))
+                os.replace(tmp, TAIL_OUT)        # atomic: host never sees a partial file
+            elif f.tell() > os.path.getsize(path):
+                f.close()                        # log truncated/rotated -> reopen from start
+                path, f = None, None
+        except Exception:                        # noqa: BLE001 — tail must never die loudly
+            time.sleep(2.0)
+            path, f = None, None
+        time.sleep(TAIL_PERIOD_S)
+
 
 def log(msg: str) -> None:
     line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} {msg}"
@@ -197,6 +254,7 @@ class Agent:
 
 def main() -> int:
     cfg = load_cfg()
+    threading.Thread(target=_tail_loop, daemon=True).start()   # P2.3 combat-log mirror
     while True:
         try:
             Agent(cfg).run()

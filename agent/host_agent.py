@@ -270,10 +270,17 @@ class HostAgent:
             # Rebuild each poll so the path follows the CURRENT character (names[0],
             # set from CONFIG on every profile switch) — no restart needed. Double any
             # ' so the config-owned path can't break out of the PS single-quotes.
+            # FAST PATH (P2.3): ib_agent tails the log in-guest and mirrors the last
+            # 250 lines to C:\ib\combat_tail.txt — read that tiny file when it's fresh
+            # (< 5s old) instead of Get-Content -Tail 250 on the full log. Stale/absent
+            # mirror (agent down) -> the old tail poll, so nothing regresses.
             log_path = self._log_path().replace("'", "''")
             ps = (
                 "Write-Output ('NOW=' + [int][double]::Parse((Get-Date -UFormat %s))); "
-                f"if (Test-Path -LiteralPath '{log_path}') "
+                "$m = Get-Item 'C:\\ib\\combat_tail.txt' -EA SilentlyContinue; "
+                "if ($m -and ((Get-Date) - $m.LastWriteTime).TotalSeconds -lt 5) "
+                "{ Get-Content -LiteralPath $m.FullName } "
+                f"elseif (Test-Path -LiteralPath '{log_path}') "
                 f"{{ Get-Content -LiteralPath '{log_path}' -Tail 250 }}")
             try:
                 out = await loop.run_in_executor(None, self._guest_read, ps)
