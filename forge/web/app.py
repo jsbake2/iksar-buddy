@@ -13,6 +13,8 @@ from fastapi import Body, FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
+import web_common
+
 from ..sim import ForgeSim
 from ..telemetry import ForgeTelemetry
 
@@ -430,6 +432,6 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
         app.mount("/recipedata", StaticFiles(directory=str(RECIPE_DATA)), name="recipedata")
 
     if STATIC.exists():
-        app.mount("/", StaticFiles(directory=str(STATIC), html=True), name="static")
+        app.mount("/", web_common.app_statics(STATIC), name="static")  # + web_common fallthrough (P0.5)
 
     return app

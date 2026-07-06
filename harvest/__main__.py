@@ -14,8 +14,8 @@ from pathlib import Path
 import uvicorn
 import yaml
 from fastapi import FastAPI, Body, WebSocket
-from fastapi.responses import HTMLResponse, JSONResponse, Response
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, Response
+import web_common
 
 try:
     import setproctitle
@@ -859,7 +859,7 @@ def create_app(h: Harvest) -> FastAPI:
         # (heap spawn-manager) will get their own fast path once that RE lands.
 
     if (WEB / "static").exists():
-        app.mount("/static", StaticFiles(directory=str(WEB / "static")), name="static")
+        app.mount("/static", web_common.app_statics(WEB / "static", html=False), name="static")  # + web_common fallthrough (P0.5)
     return app
 
 

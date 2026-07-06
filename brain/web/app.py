@@ -15,7 +15,7 @@ from pathlib import Path
 import yaml
 from fastapi import Body, FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
-from fastapi.staticfiles import StaticFiles
+import web_common
 
 from shared import tunables
 
@@ -748,6 +748,7 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
                 await websocket.close()
 
     if STATIC.exists():
-        app.mount("/", StaticFiles(directory=str(STATIC), html=True), name="static")
+        # app statics + web_common fallthrough (shared spice tree / toast.js — P0.5)
+        app.mount("/", web_common.app_statics(STATIC), name="static")
 
     return app

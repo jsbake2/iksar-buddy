@@ -33,7 +33,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["shared", "brain", "brain.web", "agent",
-            "forge", "forge.web", "harvest", "guest_agent"]
+            "forge", "forge.web", "harvest", "guest_agent", "web_common"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
