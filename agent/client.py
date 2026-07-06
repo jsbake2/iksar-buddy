@@ -69,6 +69,12 @@ class Agent:
             elif msg.type == proto.CONFIG:
                 self.calibration = msg.data.get("calibration", {}) or {}
                 self.guard.calibration = self.calibration
+                # overlay sensor geometry + detection tunables + profile names
+                # onto guest_sense (REFACTOR P1.3 — YAML is the source of truth,
+                # the .py constants are fallbacks)
+                guest_sense.apply_calibration(self.calibration)
+                guest_sense.apply_tuning(msg.data.get("thresholds", {}) or {})
+                guest_sense.apply_names(msg.data.get("names", {}) or {})
                 log.info("received config (calibration keys: %s)", list(self.calibration))
             elif msg.type == proto.WELCOME:
                 log.info("welcomed by brain (protocol v%s)", msg.data.get("protocol"))

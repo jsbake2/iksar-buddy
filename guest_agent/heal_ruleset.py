@@ -21,8 +21,10 @@ from __future__ import annotations
 
 import json
 
-# Bar fill colors + the chat-input region. Verified against a full-res guest frame
-# (2026-06-17). Greens are the HP bar (full + slightly-dimmed), blue the power bar.
+# Bar fill colors + the chat-input region — FALLBACKS; calibration.yaml's
+# bar_colors / sensor.chat_input override them in build_heal_ruleset (P1.4).
+# Verified against a full-res guest frame (2026-06-17). Greens are the HP bar
+# (full + slightly-dimmed), blue the power bar.
 GREEN = [0, 255, 0]
 GREEN_ALT = [0, 222, 0]
 BLUE = [113, 113, 240]
@@ -30,9 +32,11 @@ CHAT_INPUT_REGION = {"x": 50, "y": 1019, "w": 208, "h": 22}   # from agent.guest
 CHAT_BRIGHT_THRESHOLD = 25
 
 # Where along each bar to sample (fraction of the track, left=0 right=1). HP bars
-# deplete right->left, so a higher fraction trips at higher HP. ALIGNED to the brain's
-# thresholds.yaml: std 0.90 (heal below 90% HP), cri 0.75 (bigger heal below 75%).
-# mana ~0.24 = "don't std-heal under ~24% power".
+# deplete right->left, so a higher fraction trips at higher HP. Sourced from
+# thresholds.yaml (hp_standard/hp_critical/mana_floor) when the caller passes it;
+# these are the fallbacks. NOTE the historical MANA fallback is 0.24, NOT the
+# brain's mana_floor 0.30 — the old "ALIGNED" comment lied. With thresholds
+# passed, the reflex now genuinely follows mana_floor.
 STD_FRAC = 0.90
 CRI_FRAC = 0.75
 MANA_FRAC = 0.24
@@ -53,15 +57,31 @@ def _usable(ab: dict | None) -> bool:
     return True
 
 
-def build_heal_ruleset(calibration: dict, ability_map: dict) -> dict:
+def build_heal_ruleset(calibration: dict, ability_map: dict,
+                       thresholds: dict | None = None) -> dict:
     cal = calibration or {}
     am = ability_map or {}
+    th = thresholds or {}
     gb = cal.get("group_bars", {}) or {}
     x0 = int(gb.get("x0", 33)); x1 = int(gb.get("x1", 139))
     hp_y = int(gb.get("hp_base_y", 120)); pitch = int(gb.get("pitch", 75))
     slots = int(gb.get("slots", 6))
     pwr = cal.get("power_bar", {}) or {}
     px0 = int(pwr.get("x0", 19)); px1 = int(pwr.get("x1", 128)); pwy = int(pwr.get("y", 46))
+
+    # bar colors + heal fracs from the owner-tunable YAML (module consts fall back)
+    bc = cal.get("bar_colors", {}) or {}
+    green = list(bc.get("hp_full_rgb", GREEN))
+    green_alt = list(bc.get("hp_alt_rgb", GREEN_ALT))
+    blue = list(bc.get("power_rgb", BLUE))
+    std_frac = float(th.get("hp_standard", STD_FRAC))
+    cri_frac = float(th.get("hp_critical", CRI_FRAC))
+    mana_frac = float(th.get("mana_floor", MANA_FRAC))
+    sensor = cal.get("sensor", {}) or {}
+    ci = sensor.get("chat_input")
+    chat_region = ({"x": int(ci[0]), "y": int(ci[1]), "w": int(ci[2]), "h": int(ci[3])}
+                   if ci else dict(CHAT_INPUT_REGION))
+    chat_thresh = int(sensor.get("chat_bright_thresh", CHAT_BRIGHT_THRESHOLD))
 
     abil = am.get("abilities", {}) or {}
     gtk = am.get("group_target_keys") or ["F1", "F2", "F3", "F4", "F5", "F6"]
@@ -77,15 +97,15 @@ def build_heal_ruleset(calibration: dict, ability_map: dict) -> dict:
     cure_ab = abil.get("cure") or {}
     cure_key = str(cure_ab.get("key")) if _usable(cure_ab) else None
 
-    std_x = round(x0 + STD_FRAC * (x1 - x0))
-    cri_x = round(x0 + CRI_FRAC * (x1 - x0))
-    mana_x = round(px0 + MANA_FRAC * (px1 - px0))
+    std_x = round(x0 + std_frac * (x1 - x0))
+    cri_x = round(x0 + cri_frac * (x1 - x0))
+    mana_x = round(px0 + mana_frac * (px1 - px0))
 
     standard, critical, group_check = {}, {}, {}
     for i in range(slots):
         y = hp_y + pitch * i
-        standard[str(i)] = {"action": f"heal_{i}_std", "loc": [std_x, y], "clr": GREEN, "alt_clr": GREEN_ALT}
-        critical[str(i)] = {"action": f"heal_{i}_cri", "loc": [cri_x, y], "clr": GREEN, "alt_clr": GREEN_ALT}
+        standard[str(i)] = {"action": f"heal_{i}_std", "loc": [std_x, y], "clr": green, "alt_clr": green_alt}
+        critical[str(i)] = {"action": f"heal_{i}_cri", "loc": [cri_x, y], "clr": green, "alt_clr": green_alt}
         # presence: HP-row left edge is green when a member is present, black when empty
         group_check[str(i)] = {"loc": [x0, y], "clr": [0, 0, 0]}
 
@@ -111,10 +131,10 @@ def build_heal_ruleset(calibration: dict, ability_map: dict) -> dict:
         "tol": 14,
         "cure_present_clr": [0, 0, 0],
         "game_present": {"region": {"x": px0, "y": pwy - 2, "w": px1 - px0, "h": 6},
-                         "blue": BLUE, "tolerance": 40, "min_pixels": 20},
-        "chat_input": {"region": dict(CHAT_INPUT_REGION), "bright_threshold": CHAT_BRIGHT_THRESHOLD},
+                         "blue": blue, "tolerance": 40, "min_pixels": 20},
+        "chat_input": {"region": chat_region, "bright_threshold": chat_thresh},
         "pixels": {
-            "self_mana": {"loc": [mana_x, pwy], "clr": BLUE},
+            "self_mana": {"loc": [mana_x, pwy], "clr": blue},
             "group_check": group_check,
             "standard": standard,
             "critical": critical,
@@ -143,6 +163,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cd = Path(a.config_dir) if a.config_dir else None
     cal_path = a.calibration or (cd / "calibration.yaml" if cd else None)
+    th_path = cd / "thresholds.yaml" if cd else None
     if a.profile:
         prof_path = a.profile
     elif cd:
@@ -153,7 +174,8 @@ def main(argv: list[str] | None = None) -> int:
     if not cal_path or not prof_path:
         ap.error("need --config-dir or both --calibration and --profile")
 
-    ruleset = build_heal_ruleset(_load_yaml(str(cal_path)), _load_yaml(str(prof_path)))
+    th = _load_yaml(str(th_path)) if th_path and th_path.exists() else {}
+    ruleset = build_heal_ruleset(_load_yaml(str(cal_path)), _load_yaml(str(prof_path)), th)
     print(json.dumps(ruleset, indent=2))
     return 0
 

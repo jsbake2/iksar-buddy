@@ -1,0 +1,31 @@
+# Harvest controller tunables (REFACTOR P1.6) — read by harvest/__main__.py at
+# startup via shared.tunables. Every key is optional; missing keys fall back to
+# the defaults baked into the code. IB_CONFIG_DIR relocates this file with the
+# rest of the config.
+
+dom: iksar_buddy            # libvirt domain the harvester drives
+spice_port: 5900            # SPICE display port (viewer link on the dashboard)
+active_char: Furyflatulence # default character until a login sets it
+
+# Game login form (EQ2 fullscreen 1920x1080), measured 2026-06-24: click the
+# username field to focus it, OCR the region to verify the name really changed.
+user_click: [743, 442]
+username_ocr: [700, 432, 112, 22]   # x, y, w, h
+
+# EQ2 chat/combat log (authoritative event stream); {char} filled per-login.
+eq2_log_template: 'C:\Users\Public\Daybreak Game Company\Installed Games\EverQuest II\logs\Wuoshi\eq2log_{char}.txt'
+
+# Movement keys (EQ2 defaults). down/up via AHK so we can blend/hold.
+move_keys:
+  forward: w
+  back: s
+  left: a
+  right: d
+  strafeL: q
+  strafeR: e
+  jump: Space
+
+# Where the persistent in-guest sensor (sense_push.py) POSTs its state, and how
+# often. Passed to the guest as argv on deploy — change + redeploy sensor.
+ingest_url: http://10.0.0.16:18082/api/ingest
+ingest_hz: 8.0

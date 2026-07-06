@@ -35,8 +35,12 @@ def _push(title: str, detail: str = "", level: str = "info") -> None:
     except Exception:
         pass
 
-DOM = "iksar_buddy"                                 # the GPU VM
-SPICE_PORT = 5900                                  # iksar_buddy SPICE (same as the healer)
+# Tunables below are FALLBACKS — config/harvest.yaml overrides them (P1.6).
+from shared import tunables
+_HCFG = tunables.harvest()
+
+DOM = _HCFG.get("dom") or "iksar_buddy"             # the GPU VM
+SPICE_PORT = int(_HCFG.get("spice_port", 5900))    # iksar_buddy SPICE (same as the healer)
 GUEST_PY = r"C:\ib\py\python.exe"
 GUEST_READER = r"C:\ib\agent\harvest_read.py"
 GUEST_SPAWNS = r"C:\ib\agent\spawns_live.py"       # nearby-entity scanner (vtable RE)
@@ -51,12 +55,13 @@ LAUNCH_AHK = (
 )
 # Game login form (EQ2 fullscreen 1920x1080): click the username field to set focus, OCR it to
 # verify the username actually changed (the silent-stale-username bug). Measured 2026-06-24.
-USER_CLICK = (743, 442)
-USERNAME_OCR = (700, 432, 112, 22)
+USER_CLICK = tuple(_HCFG.get("user_click") or (743, 442))
+USERNAME_OCR = tuple(_HCFG.get("username_ocr") or (700, 432, 112, 22))
 HARVEST_DB = DATA / "harvested.json"               # all-time harvested-item tallies
 # EQ2 chat/combat log (the authoritative event stream). server=Wuoshi; char filled per-login.
-EQ2_LOG = (r"C:\Users\Public\Daybreak Game Company\Installed Games"
-           r"\EverQuest II\logs\Wuoshi\eq2log_{char}.txt")
+EQ2_LOG = _HCFG.get("eq2_log_template") or (
+    r"C:\Users\Public\Daybreak Game Company\Installed Games"
+    r"\EverQuest II\logs\Wuoshi\eq2log_{char}.txt")
 
 # --- log line patterns ------------------------------------------------------
 RE_HARVEST = re.compile(r"You (mine|forage|gather|fell|trap|acquire|catch|chop|cut) (\d+) "
@@ -74,8 +79,14 @@ ROUTES_FILE = DATA / "routes.json"
 WEB = Path(__file__).resolve().parent / "web"
 
 # movement keys (EQ2 defaults; tunable). down/up via AHK so we can blend/hold.
-MOVE_KEYS = {"forward": "w", "back": "s", "left": "a", "right": "d",
-             "strafeL": "q", "strafeR": "e", "jump": "Space"}
+MOVE_KEYS = _HCFG.get("move_keys") or {
+    "forward": "w", "back": "s", "left": "a", "right": "d",
+    "strafeL": "q", "strafeR": "e", "jump": "Space"}
+
+# in-guest sensor push target (passed as argv on deploy; sense_push falls back
+# to its baked-in default when absent)
+INGEST_URL = _HCFG.get("ingest_url") or "http://10.0.0.16:18082/api/ingest"
+INGEST_HZ = float(_HCFG.get("ingest_hz", 8.0))
 
 
 class Harvest:
@@ -84,7 +95,7 @@ class Harvest:
         self.state: dict = {"ok": False, "err": "starting"}   # guest-exec fallback reader
         self.pushed: dict = {"st": {"ok": False}, "ts": 0.0}  # fast push from in-guest sensor
         self.spawns: dict = {"mobs": [], "nodes": [], "ts": 0}   # vtable-scan cache (slow scan)
-        self.active_char: str = "Furyflatulence"
+        self.active_char: str = _HCFG.get("active_char") or "Furyflatulence"
         self.recording: dict | None = None        # {name, zone, points:[[x,y,z,t]]}
         # log-derived state, DURABLY PERSISTED server-side (survives restarts; client only
         # displays it). Stored whole in HARVEST_DB.
@@ -280,7 +291,8 @@ class Harvest:
             "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | "
             "Where-Object {$_.CommandLine -like '*sense_push*'} | "
             "ForEach-Object {Stop-Process -Id $_.ProcessId -Force -EA SilentlyContinue}; "
-            f"Start-Process -FilePath '{GUEST_PY}' -ArgumentList '{GUEST_PUSH}' -WindowStyle Hidden"])
+            f"Start-Process -FilePath '{GUEST_PY}' "
+            f"-ArgumentList '{GUEST_PUSH} {INGEST_URL} {INGEST_HZ}' -WindowStyle Hidden"])
 
     def read_guest(self) -> dict:
         out = self._gx(GUEST_PY, [GUEST_READER])

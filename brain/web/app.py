@@ -17,6 +17,8 @@ from fastapi import Body, FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
+from shared import tunables
+
 from ..server import Brain
 from ..state import Override
 from ..telemetry import CURE_TYPES, Telemetry
@@ -32,7 +34,8 @@ _frame_cache: dict = {"ts": 0.0, "data": b""}
 # refreshing FRAME_PPM, so the file holds a STALE frame — we'd serve last-known
 # state forever. Check domstate so the live view can show "powered off" instead.
 VIRSH = ["sudo", "-n", "virsh", "-c", "qemu:///system"]
-HEALER_DOM = "iksar_buddy"
+# calibration.yaml healer_dom overrides (P1.5); the literal is the fallback.
+HEALER_DOM = tunables.calibration().get("healer_dom") or "iksar_buddy"
 _vm_state: dict = {"ts": 0.0, "off": False}
 
 

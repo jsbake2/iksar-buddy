@@ -23,10 +23,14 @@ from __future__ import annotations
 import re
 import subprocess
 
+from shared import tunables
+
 DOM = "iksar_buddy"
 PPM = "/tmp/ib_sensor.ppm"
 
 # ---- geometry (derived live; see session-2026-06-11.md work blocks 2-3) -----
+# FALLBACK defaults — config/calibration.yaml (healer_dom + sensor:) overrides
+# them at import below (REFACTOR P1.3); edit THERE after a UI move.
 SELF_FRAME = (0, 30, 160, 70)      # top-left own-player frame: x,y,w,h
 SELF_TRACK = (19, 128)             # own HP/power bar track x-range
 GRP_TRACK = (33, 139)              # group member bar track x-range (fill measure)
@@ -36,6 +40,10 @@ HP_PWR_GAP = 8                      # HP row sits this many px above power
 ROW_DY = 32                         # detriment row center below the power row
 CELL_XC = [43, 66, 88, 112, 135]    # 5 detriment cell centers (x)
 INSET = 6
+BLUE_MIN_PX = 12                    # min blue px in a row to call it a power bar
+BRIGHT_SUM = 90                     # r+g+b above this = lit bar px
+ICON_SUM = 120                      # r+g+b above this = lit icon px
+ICON_FRAC = 0.4                     # fraction of a cell lit => detriment
 
 # Uncurable effects detectable by a STABLE color signature. Revive sickness is
 # NOT here: its icon average color + cell vary wildly per death (software:103,26,61
@@ -57,13 +65,44 @@ CHAT_INPUT = (50, 1019, 208, 22)        # x, y, w, h
 CHAT_BRIGHT_THRESH = 25                  # bright-px count above which = active
 
 
+def _overlay_calibration() -> None:
+    """Overlay config/calibration.yaml onto the module constants (P1.3/P1.5).
+    self_scan (y0,y1) maps onto SELF_FRAME's y/h. Missing keys keep the baked-in
+    fallback; a broken YAML degrades to all-fallbacks (tunables.load -> {})."""
+    global DOM, SELF_FRAME
+    cal = tunables.calibration()
+    DOM = cal.get("healer_dom") or DOM
+    s = cal.get("sensor") or {}
+    table = {"self_track": ("SELF_TRACK", tuple), "grp_track": ("GRP_TRACK", tuple),
+             "pwr_base_y": ("PWR_BASE", int), "pitch": ("PITCH", int),
+             "slots": ("SLOTS", int), "search": ("SEARCH", int),
+             "hp_pwr_gap": ("HP_PWR_GAP", int), "row_dy": ("ROW_DY", int),
+             "cell_xc": ("CELL_XC", list), "inset": ("INSET", int),
+             "chat_input": ("CHAT_INPUT", tuple),
+             "chat_bright_thresh": ("CHAT_BRIGHT_THRESH", int),
+             "blue_min_px": ("BLUE_MIN_PX", int), "bright_sum": ("BRIGHT_SUM", int),
+             "icon_sum": ("ICON_SUM", int), "icon_frac": ("ICON_FRAC", float)}
+    for key, (name, cast) in table.items():
+        if s.get(key) is not None:
+            try:
+                globals()[name] = cast(s[key])
+            except (TypeError, ValueError):
+                pass
+    if s.get("self_scan"):
+        y0, y1 = s["self_scan"]
+        SELF_FRAME = (SELF_FRAME[0], int(y0), SELF_FRAME[2], int(y1) - int(y0))
+
+
+_overlay_calibration()
+
+
 def _sh(*a) -> subprocess.CompletedProcess:
     return subprocess.run(list(a), capture_output=True, text=True)
 
 
 def is_blue(c):  r, g, b = c; return b > 100 and b > r + 20 and b > g
-def is_bright(c): r, g, b = c; return (r + g + b) > 90    # lit bar vs dark track
-def is_icon(c):  r, g, b = c; return (r + g + b) > 120    # lit icon vs black cell
+def is_bright(c): r, g, b = c; return (r + g + b) > BRIGHT_SUM   # lit bar vs dark track
+def is_icon(c):  r, g, b = c; return (r + g + b) > ICON_SUM   # lit icon vs black cell
 
 
 def is_ignored(rgb):
@@ -98,7 +137,7 @@ class HostSensor:
             n = sum(1 for x in range(tx0, tx1) if is_blue(pix.get((x, y), (0, 0, 0))))
             if n > best_n:
                 best_y, best_n = y, n
-        return best_y if best_n >= 12 else None
+        return best_y if best_n >= BLUE_MIN_PX else None
 
     def _fill(self, pix, track, y) -> int:
         tx0, tx1 = track
@@ -121,7 +160,7 @@ class HostSensor:
             n = sum(1 for x in range(tx0, tx1) if is_blue(pix.get((x, y), (0, 0, 0))))
             if n > best_n:
                 best_y, best_n = y, n
-        return best_y if best_n >= 12 else None
+        return best_y if best_n >= BLUE_MIN_PX else None
 
     def read_members(self, pix) -> list[dict]:
         """Per present group slot: hp%, power%, dead, detriments, cure-needed."""
@@ -144,7 +183,7 @@ class HostSensor:
                    for x in range(xc - INSET, xc + INSET + 1)
                    for y in range(row_y - INSET, row_y + INSET + 1)]
             lit = [c for c in box if is_icon(c)]
-            if len(lit) > 0.4 * len(box):
+            if len(lit) > ICON_FRAC * len(box):
                 avg = tuple(sum(c[i] for c in lit) // len(lit) for i in range(3))
                 cells.append({"cell": ci, "rgb": list(avg), "ignored": is_ignored(avg)})
         cure = any(c["ignored"] is None for c in cells)

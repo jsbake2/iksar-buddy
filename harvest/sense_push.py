@@ -9,7 +9,7 @@ no inbound port, opsec-clean). The host serves the pushed state instantly.
 Read-only (pos/heading/zone/nodes); no input, no window — safe to run anytime.
 """
 from __future__ import annotations
-import struct, time, math, json, urllib.request
+import struct, sys, time, math, json, urllib.request
 
 # Offsets come from the ONE shared module (REFACTOR P0.4); deploy pushes it
 # alongside this file as C:\ib\agent\offsets.py.
@@ -17,8 +17,10 @@ try:
     from offsets import HDG_OFF, NODE_HI, NODE_LO, POS_OFF, PROC, ZONE_PTR  # in-guest sibling
 except ImportError:
     from guest_agent.offsets import HDG_OFF, NODE_HI, NODE_LO, POS_OFF, PROC, ZONE_PTR
-HOST = "http://10.0.0.16:18082/api/ingest"
-HZ = 8.0
+# Push target + rate: argv from the deployer (harvest/__main__.py start_sensor,
+# sourced from config/harvest.yaml — REFACTOR P1.6); baked-in defaults otherwise.
+HOST = sys.argv[1] if len(sys.argv) > 1 else "http://10.0.0.16:18082/api/ingest"
+HZ = float(sys.argv[2]) if len(sys.argv) > 2 else 8.0
 
 
 def _eq2_pids():

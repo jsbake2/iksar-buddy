@@ -23,9 +23,11 @@ from typing import Callable
 
 import yaml
 
+from shared import tunables
 from shared.login import LoginDriver, load_accounts, WORLD
 
-HEALER_DOM = "iksar_buddy"
+# calibration.yaml healer_dom overrides (P1.5); the literal is the fallback.
+HEALER_DOM = tunables.calibration().get("healer_dom") or "iksar_buddy"
 Log = Callable[[str], None]
 
 

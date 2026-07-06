@@ -25,23 +25,20 @@ log = logging.getLogger("ib.brain.server")
 # more times" bug. GLOBAL_GCD caps how often ANY command goes out; the per-action
 # cooldown blocks repeating the SAME (action,target) until it has had time to land
 # and show. A DIFFERENT action (e.g. a heal after a cure) is NOT blocked, so
-# healing is never starved. Values are land+sensor-lag estimates; tune per spell.
-# 0.6 (was 0.9): the brain acts on EVERY sensor tick (~0.7s @ 1.4Hz) instead of every other,
-# which had doubled the gap between casts to ~1.4s. This is the floor the host path can do;
-# the in-guest 10Hz healer would push it to ~0.1s.
+# healing is never starved.
+#
+# TUNABLES LIVE IN thresholds.yaml (gcd_s / cooldowns_s / cooldown_default_s /
+# prepull_debounce_s — hot-reloaded, REFACTOR P1.1); the constants below are the
+# FALLBACK defaults when a key is absent.
 GLOBAL_GCD_S = 0.6
 ACTION_COOLDOWN_S = {
-    # cure tightened to match the faster sense rate: a multi-detriment member gets cleaned in
-    # ~1.6s/cure instead of ~3s.
     "cure": 1.6, "group_cure": 1.6,
     "ward": 5.0, "group_ward": 5.0,
-    # heals tightened so emergency POURS (fires every sensor tick); critical/standard a touch
-    # slower to conserve power. With shared key '4' the de-dup gives one heal/burst, so these
-    # cooldowns set the actual heal cadence: emergency ~0.7s, critical ~0.8s, standard ~1.0s.
     "group_heal": 1.2, "direct_heal": 1.0, "critical_heal": 0.8,
     "emergency_heal": 0.6, "emergency_ward": 1.0,
 }
 DEFAULT_COOLDOWN_S = 1.5
+PREPULL_DEBOUNCE_S = 3.0
 # Re-press the attack key every few seconds while in combat so the bot keeps
 # assisting onto whatever the tank retargets. Only fires in the GAPS (when no
 # heal/cure is needed this cycle) so it never steals a cast from healing. It only
@@ -84,6 +81,7 @@ class Brain:
         and the character names it shows/uses for combat detection, follow the profile."""
         await self.send(proto.CONFIG, ability_map=self.cfg.ability_map,
                         calibration=self.cfg.calibration,
+                        thresholds=self.cfg.thresholds,
                         names=self.cfg.names)
 
     async def push_command(self, action: Action) -> None:
@@ -145,6 +143,19 @@ class Brain:
         elif msg.type == proto.HELLO:
             log.info("agent hello: %s", msg.data)
 
+    # -- pacing knobs (thresholds.yaml, hot-reloaded; constants = fallbacks) --
+    def _gcd(self) -> float:
+        return float(self.cfg.threshold("gcd_s", GLOBAL_GCD_S) or GLOBAL_GCD_S)
+
+    def _cooldown_for(self, role: str) -> float:
+        table = self.cfg.thresholds.get("cooldowns_s") or {}
+        if role in table:
+            return float(table[role])
+        if role in ACTION_COOLDOWN_S:
+            return ACTION_COOLDOWN_S[role]
+        return float(self.cfg.threshold("cooldown_default_s", DEFAULT_COOLDOWN_S)
+                     or DEFAULT_COOLDOWN_S)
+
     async def _on_state_event(self, msg: Message) -> None:
         d = msg.data
         world = WorldState(
@@ -179,7 +190,9 @@ class Brain:
         if d.get("prepull_trigger"):
             now = time.time()
             ppk = self.cfg.key_for("pre_pull")
-            if ppk and ppk != "none" and now - self._last_prepull >= 3.0:
+            debounce = float(self.cfg.threshold("prepull_debounce_s", PREPULL_DEBOUNCE_S)
+                             or PREPULL_DEBOUNCE_S)
+            if ppk and ppk != "none" and now - self._last_prepull >= debounce:
                 tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
                 await self.send("command", role="pre_pull", key=ppk, target_slot=tank_slot,
                                 manual=False, reason="tank called incoming -> pre-pull")
@@ -187,43 +200,7 @@ class Brain:
                 self.telemetry.push_event("cast", "pre-pull (tank called incoming)")
                 log.info("pre-pull fired (tank incoming-call)")
 
-        # Map each member's lit detriment cells to display type-labels. The 5
-        # cells are ASSUMED to correspond positionally to the 5 cure categories;
-        # curing is generic regardless, so this is display-only (owner can fix
-        # the order). `cure` is the real, type-agnostic trigger.
-        from .telemetry import CURE_TYPES, SLOT_ROLES
-        names = d.get("names", {})
-        slot_roles = self.cfg.ability_map.get("slot_roles") or SLOT_ROLES
-        present_slots = {m.slot for m in world.members}
-        member_rows = []
-        for slot in range(6):
-            m = world.member(slot)
-            present = slot in present_slots
-            rez_sick = bool(m is not None and getattr(m, "rez_sick", False))
-            dets = []
-            # rez-sick members DO have lit cells, but they're uncurable revive
-            # sickness -- don't show them as cure-type detriments (that read as
-            # "cursed"); the rez badge conveys the state instead.
-            if m is not None and not rez_sick:
-                for cell in (m.detriments or []):
-                    idx = cell.get("cell") if isinstance(cell, dict) else cell
-                    if isinstance(idx, int) and 0 <= idx < len(CURE_TYPES) \
-                            and (not isinstance(cell, dict) or not cell.get("ignored")):
-                        dets.append(CURE_TYPES[idx])
-            member_rows.append({
-                "slot": slot,
-                "name": names.get(str(slot), names.get(slot, "")),
-                "role": slot_roles[slot] if slot < len(slot_roles) else "",
-                "present": present,
-                "hp": (m.hp if m is not None else 1.0),
-                "ward": (m.ward if m is not None else True),
-                "dead": (m.dead if m is not None else False),
-                "power": (m.power if m is not None else 1.0),
-                "critical": bool(m is not None and m.hp < float(self.cfg.thresholds.get("tank_emergency_hp", 0.35))),
-                "detriments": dets,
-                "rez_sick": rez_sick,
-            })
-
+        member_rows = self._build_member_rows(d, world)
         cf = d.get("chat_focus") or {}
         self.telemetry.update(
             state=self.sm.state.value,
@@ -237,8 +214,66 @@ class Brain:
             host=d.get("host", {}),
         )
         self.telemetry.set_members(member_rows)
+        self._notify_death_edges(member_rows, d, cf)
 
-        # Death edges -> toast/OS notification (fire ONCE per death, reset on revive).
+        # decide() returns a PRIORITY BURST. Fire the FIRST entry that's off cooldown +
+        # past the GCD; over successive GCDs this pours the whole stack (all heal tiers +
+        # wards) until the target recovers. If nothing fires (empty burst or all on
+        # cooldown), fall through to the heartbeat table (gap-fillers).
+        now = time.time()
+        fired = False
+        if now >= self._next_action_at:
+            for action in decide(world, self.cfg, self.sm.state):
+                key = (action.role, action.target_slot)
+                if now >= self._cooldowns.get(key, 0.0):
+                    await self.push_command(action)
+                    self._next_action_at = now + self._gcd()
+                    self._cooldowns[key] = now + self._cooldown_for(action.role)
+                    fired = True
+                    break
+        if not fired:
+            await self._run_heartbeats(world, now)
+
+    def _build_member_rows(self, d: dict, world: WorldState) -> list[dict]:
+        """Telemetry member rows. Each member's lit detriment cells map to display
+        type-labels; the 5 cells are ASSUMED to correspond positionally to the 5
+        cure categories — curing is generic regardless, so this is display-only
+        (owner can fix the order). `cure` is the real, type-agnostic trigger."""
+        from .telemetry import CURE_TYPES, SLOT_ROLES
+        names = d.get("names", {})
+        slot_roles = self.cfg.ability_map.get("slot_roles") or SLOT_ROLES
+        present_slots = {m.slot for m in world.members}
+        rows = []
+        for slot in range(6):
+            m = world.member(slot)
+            rez_sick = bool(m is not None and getattr(m, "rez_sick", False))
+            dets = []
+            # rez-sick members DO have lit cells, but they're uncurable revive
+            # sickness -- don't show them as cure-type detriments (that read as
+            # "cursed"); the rez badge conveys the state instead.
+            if m is not None and not rez_sick:
+                for cell in (m.detriments or []):
+                    idx = cell.get("cell") if isinstance(cell, dict) else cell
+                    if isinstance(idx, int) and 0 <= idx < len(CURE_TYPES) \
+                            and (not isinstance(cell, dict) or not cell.get("ignored")):
+                        dets.append(CURE_TYPES[idx])
+            rows.append({
+                "slot": slot,
+                "name": names.get(str(slot), names.get(slot, "")),
+                "role": slot_roles[slot] if slot < len(slot_roles) else "",
+                "present": slot in present_slots,
+                "hp": (m.hp if m is not None else 1.0),
+                "ward": (m.ward if m is not None else True),
+                "dead": (m.dead if m is not None else False),
+                "power": (m.power if m is not None else 1.0),
+                "critical": bool(m is not None and m.hp < float(self.cfg.thresholds.get("tank_emergency_hp", 0.35))),
+                "detriments": dets,
+                "rez_sick": rez_sick,
+            })
+        return rows
+
+    def _notify_death_edges(self, member_rows: list[dict], d: dict, cf: dict) -> None:
+        """Toast/OS notification on each death EDGE (fire once, reset on revive)."""
         for row in member_rows:
             slot, dead = row["slot"], bool(row.get("dead"))
             if dead and not self._dead_prev.get(slot) and row.get("present"):
@@ -256,115 +291,112 @@ class Brain:
             self.telemetry.notify("Bot has died", "the healer is down", level="error")
         self._own_dead_prev = own_dead
 
-        # decide() returns a PRIORITY BURST. Fire the FIRST entry that's off cooldown +
-        # past the GCD; over successive GCDs this pours the whole stack (all heal tiers +
-        # wards) until the target recovers. If nothing fires (empty burst or all on
-        # cooldown), fall through to the ward/assist heartbeats.
-        actions = decide(world, self.cfg, self.sm.state)
-        now = time.time()
-        fired = False
-        if now >= self._next_action_at:
-            for action in actions:
-                key = (action.role, action.target_slot)
-                if now >= self._cooldowns.get(key, 0.0):
-                    await self.push_command(action)
-                    self._next_action_at = now + GLOBAL_GCD_S
-                    self._cooldowns[key] = now + ACTION_COOLDOWN_S.get(
-                        action.role, DEFAULT_COOLDOWN_S)
-                    fired = True
-                    break
-        # Ward heartbeat: with no ward-bar sensing, recast the tank ward on a timer
-        # while IN_COMBAT (a Defiler's core mitigation). Only in the gaps (nothing in the
-        # burst fired) and only in combat -- if end-of-combat detection were loose this
-        # would burn mana, which is why combat-end is kept tight. Interval is owner-
-        # tunable (ward_heartbeat_s); 0/absent disables it.
-        if not fired:
-            hb = float(self.cfg.threshold("ward_heartbeat_s", 0) or 0)
-            mr = self.cfg.maint_role                 # 'ward' (Defiler) or 'hot' (Fury)
-            wkey = self.cfg.key_for(mr)
-            if (hb > 0 and wkey and wkey != "none"
-                    and self.sm.state == State.IN_COMBAT and self.sm.override is None
-                    and now >= self._next_action_at and now - self._last_ward >= hb):
-                tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
-                await self.send("command", role=mr, key=wkey, target_slot=tank_slot,
-                                manual=False, reason=f"{mr} heartbeat")
-                self._last_ward = now
-                self._next_action_at = now + GLOBAL_GCD_S
-            # Pet/assist heartbeat: re-send the pet + assist (the attack key) on a timer
-            # while IN_COMBAT so the pet stays on the tank's target (owner: pet sent on
-            # combat START and PERIODICALLY). Targets the tank then presses attack, exactly
-            # like the combat-start assist. Tunable assist_heartbeat_s (0/absent disables).
-            ah = float(self.cfg.threshold("assist_heartbeat_s", ASSIST_INTERVAL_S) or 0)
-            akey = self.cfg.key_for("attack")
-            if (ah > 0 and akey and akey != "none"
-                    and self.sm.state == State.IN_COMBAT and self.sm.override is None
-                    and now >= self._next_action_at and now - self._last_assist >= ah):
-                tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
-                await self.send("command", role="attack", key=akey, target_slot=tank_slot,
-                                manual=False, reason="pet/assist heartbeat")
-                self._last_assist = now
-                self._next_action_at = now + GLOBAL_GCD_S
-            # COMBAT DEBUFF: in ANY group, debuff the tank's target every debuff_cycle_s.
-            # Debuffs are high-value; the old spell-attack was puny and drained power, so it's
-            # gone. SKIPPED under debuff_power_floor power so offense never starves the heals.
-            # Targets the tank (-> EQ2 implied-target the mob). Lowest priority in the gap
-            # (heals/wards/pet already had their shot) and only IN_COMBAT.
-            elif (self.sm.state == State.IN_COMBAT and self.sm.override is None
-                    and now >= self._next_action_at):
-                cyc = float(self.cfg.threshold("debuff_cycle_s", 10.0) or 0)
-                pfloor = float(self.cfg.threshold("debuff_power_floor", 0.50))
-                dbk = self.cfg.key_for("debuff")
-                if (cyc > 0 and dbk and dbk != "none" and world.own_power >= pfloor
-                        and now - self._last_debuff >= cyc):
-                    tank_slot = int(self.cfg.ability_map.get("tank_slot", 0))
-                    await self.send("command", role="debuff", key=dbk, target_slot=tank_slot,
-                                    manual=False, reason="combat debuff")
-                    self._last_debuff = now
-                    self._next_action_at = now + GLOBAL_GCD_S
+    # -- heartbeat table (P3.1) ---------------------------------------------
+    # Gap-filler commands, evaluated in priority order when the decide() burst
+    # fired nothing. Each _hb_* spec returns None (not due) or
+    # (role, key, target_slot, reason, stamp_fn). The runner enforces the shared
+    # skeleton ONCE: override clear + GCD passed; the first spec that fires wins
+    # the gap (bumping the GCD deadline blocks the rest until a later event) —
+    # exactly the old hand-rolled blocks' behavior. Adding the next Dirge/Fury
+    # automation = adding one spec method to the tuple below.
+    async def _run_heartbeats(self, world: WorldState, now: float) -> None:
+        for spec in (self._hb_maint, self._hb_assist, self._hb_debuff,
+                     self._hb_mana_feed, self._hb_pbuffs):
+            if self.sm.override is not None or now < self._next_action_at:
+                return
+            cmd = spec(world, now)
+            if cmd is None:
+                continue
+            role, key, slot, reason, stamp = cmd
+            await self.send("command", role=role, key=key, target_slot=slot,
+                            manual=False, reason=reason)
+            stamp()
+            self._next_action_at = now + self._gcd()
+            return
 
-            # DIRGE mana feed (REACTIVE): restore power to the mana-users in group positions
-            # 2/3/4 (slots 1-3). GROUP feed when 2+ are below mana_heal_floor, else INDIVIDUAL
-            # on the lowest. Reactive to sensed per-member power -> runs in or out of combat,
-            # only fires when someone's actually low, per-target recast so it never spams.
-            # mana_heal_floor 0/absent disables it. (Only the Dirge maps these keys.)
-            mhf = float(self.cfg.threshold("mana_heal_floor", 0) or 0)
-            if mhf > 0 and self.sm.override is None and now >= self._next_action_at:
-                low = [m for m in world.members
-                       if m.slot in (1, 2, 3) and not m.dead and m.power < mhf]
-                gk, ik = self.cfg.key_for("group_mana_heal"), self.cfg.key_for("mana_heal")
-                recast = float(self.cfg.threshold("mana_heal_recast_s", 6.0) or 6.0)
-                if len(low) >= 2 and gk and gk != "none" \
-                        and now >= self._cooldowns.get(("group_mana_heal", None), 0.0):
-                    await self.send("command", role="group_mana_heal", key=gk,
-                                    target_slot=None, manual=False, reason="group mana feed")
-                    self._cooldowns[("group_mana_heal", None)] = now + recast
-                    self._next_action_at = now + GLOBAL_GCD_S
-                elif low and ik and ik != "none":
-                    t = min(low, key=lambda m: m.power)
-                    if now >= self._cooldowns.get(("mana_heal", t.slot), 0.0):
-                        await self.send("command", role="mana_heal", key=ik, target_slot=t.slot,
-                                        manual=False, reason=f"mana feed s{t.slot} {t.power:.0%}")
-                        self._cooldowns[("mana_heal", t.slot)] = now + recast
-                        self._next_action_at = now + GLOBAL_GCD_S
+    def _tank_slot(self) -> int:
+        return int(self.cfg.ability_map.get("tank_slot", 0))
 
-            # DIRGE periodic buffs: recast up to 4 maintenance buffs on their own timers,
-            # IN_COMBAT only (owner's call), each cast on self (F1). pbuff_N_interval_s = 0
-            # disables that slot; one buff per GCD.
-            if self.sm.state == State.IN_COMBAT and self.sm.override is None \
-                    and now >= self._next_action_at:
-                for i in (1, 2, 3, 4):
-                    iv = float(self.cfg.threshold(f"pbuff_{i}_interval_s", 0) or 0)
-                    bk = self.cfg.key_for(f"pbuff_{i}")
-                    if iv > 0 and bk and bk != "none" and now - self._last_pbuff[i] >= iv:
-                        # target is the GROUP SLOT directly: 0 = self (F1), 1 = next
-                        # member (F2), ... 5 = 6th (F6). Matches EQ2's F-key order.
-                        tgt = int(self.cfg.threshold(f"pbuff_{i}_target", 0) or 0)
-                        slot = max(0, min(5, tgt))
-                        await self.send("command", role=f"pbuff_{i}", key=bk, target_slot=slot,
-                                        manual=False, reason=f"periodic buff {i}")
-                        self._last_pbuff[i] = now
-                        self._next_action_at = now + GLOBAL_GCD_S
-                        break
+    def _hb_maint(self, world: WorldState, now: float):
+        """Ward/HoT heartbeat: with no ward-bar sensing, recast the tank ward on a
+        timer while IN_COMBAT (a Defiler's core mitigation). If end-of-combat
+        detection were loose this would burn mana — combat-end is kept tight.
+        ward_heartbeat_s 0/absent disables."""
+        hb = float(self.cfg.threshold("ward_heartbeat_s", 0) or 0)
+        mr = self.cfg.maint_role                 # 'ward' (Defiler) or 'hot' (Fury)
+        wkey = self.cfg.key_for(mr)
+        if (hb > 0 and wkey and wkey != "none" and self.sm.state == State.IN_COMBAT
+                and now - self._last_ward >= hb):
+            def stamp(): self._last_ward = now
+            return (mr, wkey, self._tank_slot(), f"{mr} heartbeat", stamp)
+        return None
+
+    def _hb_assist(self, world: WorldState, now: float):
+        """Pet/assist heartbeat: re-send the attack key on a timer while IN_COMBAT
+        so the pet stays on the tank's target (owner: pet sent on combat START and
+        PERIODICALLY). assist_heartbeat_s 0 disables."""
+        ah = float(self.cfg.threshold("assist_heartbeat_s", ASSIST_INTERVAL_S) or 0)
+        akey = self.cfg.key_for("attack")
+        if (ah > 0 and akey and akey != "none" and self.sm.state == State.IN_COMBAT
+                and now - self._last_assist >= ah):
+            def stamp(): self._last_assist = now
+            return ("attack", akey, self._tank_slot(), "pet/assist heartbeat", stamp)
+        return None
+
+    def _hb_debuff(self, world: WorldState, now: float):
+        """COMBAT DEBUFF: debuff the tank's target every debuff_cycle_s (implied-
+        target via the tank). SKIPPED under debuff_power_floor so offense never
+        starves the heals. Lowest combat priority in the gap."""
+        if self.sm.state != State.IN_COMBAT:
+            return None
+        cyc = float(self.cfg.threshold("debuff_cycle_s", 10.0) or 0)
+        pfloor = float(self.cfg.threshold("debuff_power_floor", 0.50))
+        dbk = self.cfg.key_for("debuff")
+        if (cyc > 0 and dbk and dbk != "none" and world.own_power >= pfloor
+                and now - self._last_debuff >= cyc):
+            def stamp(): self._last_debuff = now
+            return ("debuff", dbk, self._tank_slot(), "combat debuff", stamp)
+        return None
+
+    def _hb_mana_feed(self, world: WorldState, now: float):
+        """DIRGE mana feed (REACTIVE): restore power to the mana-users in group
+        positions 2/3/4 (slots 1-3). GROUP feed when 2+ are below mana_heal_floor,
+        else INDIVIDUAL on the lowest. Runs in OR out of combat, per-target recast
+        so it never spams. mana_heal_floor 0/absent disables. (Dirge-only keys.)"""
+        mhf = float(self.cfg.threshold("mana_heal_floor", 0) or 0)
+        if mhf <= 0:
+            return None
+        low = [m for m in world.members
+               if m.slot in (1, 2, 3) and not m.dead and m.power < mhf]
+        gk, ik = self.cfg.key_for("group_mana_heal"), self.cfg.key_for("mana_heal")
+        recast = float(self.cfg.threshold("mana_heal_recast_s", 6.0) or 6.0)
+        if len(low) >= 2 and gk and gk != "none" \
+                and now >= self._cooldowns.get(("group_mana_heal", None), 0.0):
+            def stamp(): self._cooldowns[("group_mana_heal", None)] = now + recast
+            return ("group_mana_heal", gk, None, "group mana feed", stamp)
+        if low and ik and ik != "none":
+            t = min(low, key=lambda m: m.power)
+            if now >= self._cooldowns.get(("mana_heal", t.slot), 0.0):
+                def stamp(): self._cooldowns[("mana_heal", t.slot)] = now + recast
+                return ("mana_heal", ik, t.slot, f"mana feed s{t.slot} {t.power:.0%}", stamp)
+        return None
+
+    def _hb_pbuffs(self, world: WorldState, now: float):
+        """DIRGE periodic buffs: recast up to 4 maintenance buffs on their own
+        timers, IN_COMBAT only (owner's call). pbuff_N_interval_s = 0 disables a
+        slot; one buff per GCD. Target is the GROUP SLOT directly: 0 = self (F1),
+        1 = next member (F2), ... 5 = 6th (F6) — matches EQ2's F-key order."""
+        if self.sm.state != State.IN_COMBAT:
+            return None
+        for i in (1, 2, 3, 4):
+            iv = float(self.cfg.threshold(f"pbuff_{i}_interval_s", 0) or 0)
+            bk = self.cfg.key_for(f"pbuff_{i}")
+            if iv > 0 and bk and bk != "none" and now - self._last_pbuff[i] >= iv:
+                tgt = int(self.cfg.threshold(f"pbuff_{i}_target", 0) or 0)
+
+                def stamp(i=i): self._last_pbuff[i] = now
+                return (f"pbuff_{i}", bk, max(0, min(5, tgt)), f"periodic buff {i}", stamp)
+        return None
 
 
 async def serve(brain: Brain, host: str, port: int) -> asyncio.AbstractServer:

@@ -107,6 +107,26 @@ NAME_RE = re.compile(
 CHAT_HYSTERESIS_S = 3.0
 
 
+def _overlay_tunables() -> None:
+    """Everything above is a FALLBACK default — thresholds.yaml (detection knobs)
+    and calibration.yaml (healer_dom, eq2_log_template) override at startup
+    (REFACTOR P1.2/P1.5). Names come via CONFIG from the brain, not from here."""
+    global DOM, EQ2_LOG_TMPL, REZ_WINDOW, COMBAT_HP_DROP, COMBAT_DECAY_S
+    global CHAT_HYSTERESIS_S, COMBAT_LOG_POLL_S
+    from shared import tunables
+    th, cal = tunables.thresholds(), tunables.calibration()
+    DOM = cal.get("healer_dom") or DOM
+    EQ2_LOG_TMPL = cal.get("eq2_log_template") or EQ2_LOG_TMPL
+    REZ_WINDOW = float(th.get("rez_window_s", REZ_WINDOW))
+    COMBAT_HP_DROP = float(th.get("combat_hp_drop", COMBAT_HP_DROP))
+    COMBAT_DECAY_S = float(th.get("combat_decay_s", COMBAT_DECAY_S))
+    CHAT_HYSTERESIS_S = float(th.get("chat_hysteresis_s", CHAT_HYSTERESIS_S))
+    COMBAT_LOG_POLL_S = float(th.get("combat_log_poll_s", COMBAT_LOG_POLL_S))
+
+
+_overlay_tunables()
+
+
 def _poll_gpu(g: Guest) -> dict:
     """Run nvidia-smi IN the guest (the 4070 is passed through, so the host can't
     see it) via the qemu guest agent. Returns {} on any failure. Blocking; call

@@ -33,6 +33,30 @@ cure_priority:
   - arcane
   - curse
 
+# Command pacing (brain/server.py; hot-reloaded). GCD caps how often ANY command
+# goes out; per-action cooldowns block repeating the SAME (action,target) until it
+# had time to land + show on screen. Values are land+sensor-lag estimates per spell.
+gcd_s: 0.6
+cooldown_default_s: 1.5     # any action not in the table below
+cooldowns_s:
+  cure: 1.6                 # a multi-detriment member gets cleaned ~1.6s/cure
+  group_cure: 1.6
+  ward: 5.0
+  group_ward: 5.0
+  group_heal: 1.2
+  direct_heal: 1.0          # heal cadence: emergency ~0.7s, critical ~0.8s, std ~1.0s
+  critical_heal: 0.8
+  emergency_heal: 0.6
+  emergency_ward: 1.0
+prepull_debounce_s: 3.0     # min gap between pre_pull fires on repeated incoming-calls
+
+# Event/combat detection (host_agent at startup + pushed to the in-guest agent).
+rez_window_s: 240           # post-revive window: lit detriments = rez sickness, no cure
+combat_hp_drop: 0.02        # HP fraction lost between cycles that reads as "took a hit"
+combat_decay_s: 5.0         # in-combat decays to OOC this long after the last hit
+chat_hysteresis_s: 3.0      # any chat-input activity latches "busy" this long (cursor blink)
+combat_log_poll_s: 1.0      # host fallback combat-log poll period
+
 # Loop cadence.
 decision_hz: 12             # sense->decide->act loop rate (pixels carry it; 10-15 plenty)
 ward_heartbeat_s: 8.4

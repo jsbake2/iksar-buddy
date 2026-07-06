@@ -15,7 +15,10 @@ import time
 
 import numpy as np
 
-# ---- geometry (verbatim from host_sensor.py) --------------------------------
+# ---- geometry defaults (mirrors host_sensor.py; REFACTOR P1.3) ---------------
+# These are FALLBACKS. The live values arrive over the wire: the brain pushes
+# config/calibration.yaml (sensor: section) + thresholds.yaml in its CONFIG
+# message and client.py calls apply_calibration()/apply_tuning() below.
 SELF_TRACK = (19, 128)
 GRP_TRACK = (33, 139)
 PWR_BASE, PITCH, SLOTS = 128, 75, 6
@@ -29,18 +32,68 @@ IGNORE_TOL = 40
 CHAT_INPUT = (50, 1019, 208, 22)
 CHAT_BRIGHT_THRESH = 25
 SELF_SCAN = (30, 100)                 # y-range to find the own power row
+BLUE_MIN_PX = 12                      # min blue px in a row to call it a power bar
+BRIGHT_SUM = 90                       # r+g+b above this = lit bar px
+ICON_SUM = 120                        # r+g+b above this = lit icon px
+ICON_FRAC = 0.4                       # fraction of a cell lit => detriment
 
-# ---- event processing constants (from host_agent.py) ------------------------
+# ---- event processing defaults (mirrors host_agent.py) ----------------------
 NAMES = {0: "Jenskin", 1: "Robskin"}
 REZ_WINDOW = 240.0
 COMBAT_HP_DROP = 0.02
 COMBAT_DECAY_S = 5.0
 CHAT_HYSTERESIS_S = 3.0
 
+# calibration.sensor key -> (module global, cast). Tuples/lists cast so YAML
+# lists behave like the tuple constants they replace.
+_SENSOR_KEYS = {
+    "self_track": ("SELF_TRACK", tuple), "self_scan": ("SELF_SCAN", tuple),
+    "grp_track": ("GRP_TRACK", tuple), "pwr_base_y": ("PWR_BASE", int),
+    "pitch": ("PITCH", int), "slots": ("SLOTS", int), "search": ("SEARCH", int),
+    "hp_pwr_gap": ("HP_PWR_GAP", int), "row_dy": ("ROW_DY", int),
+    "cell_xc": ("CELL_XC", list), "inset": ("INSET", int),
+    "chat_input": ("CHAT_INPUT", tuple),
+    "chat_bright_thresh": ("CHAT_BRIGHT_THRESH", int),
+    "blue_min_px": ("BLUE_MIN_PX", int), "bright_sum": ("BRIGHT_SUM", int),
+    "icon_sum": ("ICON_SUM", int), "icon_frac": ("ICON_FRAC", float),
+}
+_TUNING_KEYS = {
+    "rez_window_s": ("REZ_WINDOW", float),
+    "combat_hp_drop": ("COMBAT_HP_DROP", float),
+    "combat_decay_s": ("COMBAT_DECAY_S", float),
+    "chat_hysteresis_s": ("CHAT_HYSTERESIS_S", float),
+}
+
+
+def _apply(section: dict, table: dict) -> None:
+    for key, (name, cast) in table.items():
+        if key in section and section[key] is not None:
+            try:
+                globals()[name] = cast(section[key])
+            except (TypeError, ValueError):
+                pass                   # keep the baked-in fallback
+
+
+def apply_calibration(cal: dict) -> None:
+    """Overlay the sensor geometry from calibration.yaml (pushed via CONFIG)."""
+    _apply((cal or {}).get("sensor") or {}, _SENSOR_KEYS)
+
+
+def apply_tuning(th: dict) -> None:
+    """Overlay event-detection tunables from thresholds.yaml (pushed via CONFIG)."""
+    _apply(th or {}, _TUNING_KEYS)
+
+
+def apply_names(names: dict) -> None:
+    """slot -> character name map from the active profile (pushed via CONFIG)."""
+    if names:
+        NAMES.clear()
+        NAMES.update({int(k): v for k, v in names.items()})
+
 
 def is_blue(c):  r, g, b = c; return b > 100 and b > r + 20 and b > g
-def is_bright(c): r, g, b = c; return (r + g + b) > 90
-def is_icon(c):  r, g, b = c; return (r + g + b) > 120
+def is_bright(c): r, g, b = c; return (r + g + b) > BRIGHT_SUM
+def is_icon(c):  r, g, b = c; return (r + g + b) > ICON_SUM
 
 
 def is_ignored(rgb):
@@ -81,7 +134,7 @@ def _power_row_scan(pix, track, y0, y1):
     r, g, b = strip[..., 0], strip[..., 1], strip[..., 2]
     counts = ((b > 100) & (b > r + 20) & (b > g)).sum(axis=1)   # is_blue per row
     best = int(counts.argmax())                                 # first max, like the loop
-    return (y0c + best) if int(counts[best]) >= 12 else None
+    return (y0c + best) if int(counts[best]) >= BLUE_MIN_PX else None
 
 
 def _power_row(pix, track, y_hint):
@@ -93,7 +146,7 @@ def _fill(pix, track, y) -> int:
     if not (0 <= y < pix.h):
         return 0
     row = pix.f[y, tx0:tx1].astype(np.int32)
-    filled = int((row.sum(axis=1) > 90).sum())                  # is_bright per px
+    filled = int((row.sum(axis=1) > BRIGHT_SUM).sum())          # is_bright per px
     return round(100 * filled / (tx1 - tx0))
 
 
@@ -103,8 +156,8 @@ def _detriments(pix, row_y):
     for ci, xc in enumerate(CELL_XC):
         box = pix.f[max(0, row_y - INSET):row_y + INSET + 1,
                     max(0, xc - INSET):xc + INSET + 1].reshape(-1, 3).astype(np.int32)
-        lit = box[box.sum(axis=1) > 120]                        # is_icon per px
-        if len(lit) > 0.4 * n_box:
+        lit = box[box.sum(axis=1) > ICON_SUM]                   # is_icon per px
+        if len(lit) > ICON_FRAC * n_box:
             avg = tuple(int(v) for v in lit.sum(axis=0) // len(lit))
             cells.append({"cell": ci, "rgb": list(avg), "ignored": is_ignored(avg)})
     cure = any(c["ignored"] is None for c in cells)
