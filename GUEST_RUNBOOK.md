@@ -11,7 +11,7 @@ most of it self-deploys. If a guest looks wrong, redeploy — never edit in-VM.
 | **self-deploy** (host_agent) | `keyd.ahk` + `ibkeyd` task | automatically, when the daemon heartbeat (`C:\ib\keydaemon.hb`) stops advancing |
 | **deploy_agent** (harvest `__main__`) | everything under `C:\ib\agent\` for harvest | on harvest launch (C:\ib is assumed reverted on boot) |
 | `infra/vm/host-helpers/sync_heal_ruleset.sh` | `C:\ib\agent\heal.json` (built from config/thresholds + calibration + active profile) | manually, after any keybind/calibration change |
-| `infra/vm/host-helpers/push_guest_file.sh` | any single file | manual utility (base64 → WriteAllBytes) |
+| `infra/vm/host-helpers/push_guest_file.sh` | any single SMALL file (base64 rides the guest-exec command line — fails silently past a few KB; use `shared.guest.Guest.push_file` for anything bigger) | manual utility (base64 → WriteAllBytes) |
 | forge deploy (`forge/guest.py` → shared Guest) | `ib_agent.py`, `craft_reflex.py`, `agent.json` | on forge worker start |
 
 ## Inventory
