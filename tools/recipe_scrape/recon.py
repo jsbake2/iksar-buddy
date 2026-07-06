@@ -6,7 +6,7 @@ Creds come from config/secrets.yaml (gitignored). Run from repo root:
     .venv/bin/python tools/recipe_scrape/recon.py
 """
 from __future__ import annotations
-import sys, pathlib, json
+import pathlib, json
 import yaml
 from playwright.sync_api import sync_playwright
 

@@ -22,3 +22,6 @@ tools/recipe_scrape/*.log
 tools/recipe_scrape/run.log
 tools/recipe_scrape/data/raw_books/
 tools/recipe_scrape/recon_out/
+
+# Claude Code session artifacts
+.claude/

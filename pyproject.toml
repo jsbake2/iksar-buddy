@@ -20,6 +20,7 @@ agent = [
 ]
 dev = [
     "pytest>=8.0",
+    "ruff>=0.5",
 ]
 
 [project.scripts]
@@ -37,3 +38,15 @@ packages = ["shared", "brain", "brain.web", "agent",
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+# guest-pushed AHK/ps1 live next to .py; only lint python
+extend-exclude = ["tools/recipe_scrape/data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+# House style: dense one-liners (x; y / if c: x), grouped imports, deliberate
+# broad excepts in sensor paths, late imports for optional deps. Keep the
+# correctness rules (F*, E9), skip the layout ones.
+ignore = ["E701", "E702", "E401", "E402", "E722", "E731", "E741", "E501"]

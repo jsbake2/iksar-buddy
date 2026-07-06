@@ -62,6 +62,8 @@ Things to capture (for me to track and some nice descriptions for you to read):
 8. Recipe area that filters when we search a name and press ENTER (this list should reduce down to one recipe with a good list)
 9. Quest journal area to look for writ (this is just an FYI until we actually start doing writs)
 
+(Screenshots below were moved out of the repo to `~/ib-data/archive/craft-vm1-screenshots/` on the workstation.)
+
 EQ2_000002.png
   - pink-input_white-recipe-list.png
 EQ2_000004.png

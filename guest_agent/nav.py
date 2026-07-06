@@ -93,7 +93,6 @@ def nav(pm, base, hwnd, tx, tz, keys, grace=GRACE):
         bearing = math.degrees(math.atan2(tx - x, tz - z)) % 360
         diff = signed_diff(bearing, h)               # -180..180, + = target is to our right
         ad = abs(diff)
-        dr = math.radians(diff)
         want = set()
         # SIMPLE: point heading at the node, then walk straight in (owner's model). No strafe.
         if ad > 20:

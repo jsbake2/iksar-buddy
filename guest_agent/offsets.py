@@ -1,9 +1,10 @@
 """EQ2 client-memory offsets — the ONE copy (REFACTOR P0.4).
 
-Every in-guest reader (harvest_agent, sense_push, sense_daemon, memory_read /
-harvest_read, spawns_live) imports these instead of carrying its own constants;
-before this module existed, sense_daemon shipped with STALE pre-recalibration
-offsets and read garbage position. A client patch now means: recalibrate
+Every in-guest reader (harvest_agent, sense_push, memory_read / harvest_read,
+spawns_live) imports these instead of carrying its own constants; before this
+module existed, the old sense_daemon (deleted — superseded by sense_push)
+shipped with STALE pre-recalibration offsets and read garbage position. A
+client patch now means: recalibrate
 (memory_read.py --recalibrate X Y Z, see sessions/2026-06-23), edit THIS file,
 redeploy — not a five-file hunt.
 

@@ -1,7 +1,7 @@
 """Find every object holding an EXACT world position (x,y,z), backtrack to its vtable.
 Used to isolate a stationary node after the player walks away.
 Usage: python find_at_pos.py X Y Z"""
-import pymem, pymem.process, ctypes, struct, json, sys, math
+import pymem, pymem.process, ctypes, struct, json, sys
 import ctypes.wintypes as w
 import numpy as np
 np.seterr(all="ignore")

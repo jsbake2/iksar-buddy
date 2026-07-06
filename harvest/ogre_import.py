@@ -11,7 +11,7 @@ Usage:
          --zone "The Thundering Steppes" [--data-dir ~/ib-data/harvest]
   (--zone defaults from --name; --suffix overrides the connection suffix, default = .lso stem)
 """
-import argparse, json, re, struct, sys, tempfile, zipfile
+import argparse, json, re, struct, sys, zipfile
 from pathlib import Path
 
 

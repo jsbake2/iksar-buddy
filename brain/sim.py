@@ -14,7 +14,6 @@ gets healed when it dips through wards.
 from __future__ import annotations
 
 import asyncio
-import math
 import random
 import time
 from typing import Any
@@ -149,7 +148,6 @@ class Simulator:
                 # bot refreshes the ward
                 m["ward"] = True
                 self._begin_cast()
-                role = "ward" if is_tank else "ward"
                 self.t.push_event("cast", f"ward -> {m['name']} ward refreshed")
 
             # Detriments appear in combat, get cured.

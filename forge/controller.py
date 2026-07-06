@@ -20,7 +20,7 @@ from shared.account_lock import AccountLock
 
 from . import recipes, sensors
 from shared.guest import Guest
-from shared.login import LoginDriver, WORLD, load_accounts
+from shared.login import LoginDriver, load_accounts
 from .telemetry import ForgeTelemetry
 from .worker import CraftWorker
 

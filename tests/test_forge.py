@@ -3,7 +3,6 @@ account interlock. No VMs / no I/O."""
 from __future__ import annotations
 
 import tempfile
-from pathlib import Path
 
 from forge.recipes import (clean_item_name, parse_crafted_log, parse_ocr_items,
                            parse_recipe_list, parse_scribed_recipes, search_name)

@@ -1,4 +1,4 @@
-import pymem, pymem.process, ctypes, struct, time, math
+import pymem, pymem.process, ctypes, struct, time
 import ctypes.wintypes as w
 pm=pymem.Pymem("EverQuest2.exe"); m=pymem.process.module_from_name(pm.process_handle,"EverQuest2.exe")
 base=m.lpBaseOfDll; VT=base+0x1782848; patt=struct.pack("<Q",VT)

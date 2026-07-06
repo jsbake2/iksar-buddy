@@ -1,6 +1,6 @@
 """Diff pre-harvest vs now: positions that VANISHED near the node spot = the despawned
 node's allocations. Backtrack each to its vtable to identify the harvest-node class."""
-import pymem, pymem.process, ctypes, struct, json, math
+import pymem, pymem.process, ctypes, struct, json
 import ctypes.wintypes as w
 import numpy as np
 np.seterr(all="ignore")

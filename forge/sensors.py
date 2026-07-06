@@ -17,7 +17,6 @@ import logging
 import re
 import subprocess
 import time
-from pathlib import Path
 
 from shared.guest import Guest
 from .recipes import parse_ocr_items

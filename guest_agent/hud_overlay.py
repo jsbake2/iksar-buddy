@@ -108,10 +108,9 @@ class HUD_App:
             col = accent(status)
             self.dot.configure(fg=col if self._blink else "#333")
             self.l_state.configure(text=status, fg=col)
-            ev = d.get("events") or []
             last = (d.get("named_nodes") or [{}])[-1].get("name") if d.get("named_nodes") else None
             self.l_node.configure(text=(f"node: {last}" if last else
-                                        (f"target node" if d.get("target") else "")))
+                                        ("target node" if d.get("target") else "")))
             t = d.get("target")
             extra = f"  lap {d.get('lap', '?')}/{d.get('anchors', '?')}wp" if d.get("mode") == "gather_loop" else ""
             self.l_tgt.configure(text=(f"@ {t[0]:.0f}, {t[1]:.0f}{extra}" if t else extra.strip()))

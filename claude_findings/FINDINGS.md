@@ -3,8 +3,9 @@
 Method worked well: each marked image = a clean original with a bold opaque fill
 over the target. I diffed marked-vs-original to recover the exact region, and the
 fill color + filename told me which element. Coords below are **guest pixels @
-1920×1080**. Overlay PNGs in this folder show MY boxes on the clean frames so you can
-sanity-check that I put them in the right place.
+1920×1080**. Overlay PNGs (moved out of the repo to `~/ib-data/archive/claude_findings/`
+on the workstation) show MY boxes on the clean frames so you can sanity-check that
+I put them in the right place.
 
 ## Coordinate table (what I extracted)
 
