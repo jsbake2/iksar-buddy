@@ -451,8 +451,9 @@ class HostAgent:
         Re-checks nothing here (the chat gate already passed in _on_command); keep
         the window between gate and press tiny by injecting immediately. The task's
         enabled-state is kept healthy off this path by _ensure_inject_task_loop."""
-        # DAEMON path is DISABLED pending debug (runSeq wasn't firing in-guest); the
-        # one-shot path below is the proven ~0.5s path. Flip _DAEMON_ENABLED to re-try.
+        # DAEMON path is LIVE (runSeq bug fixed in bddf41f, self-heal added in 3797982):
+        # keycmd.txt + persistent in-guest AHK watcher, ~<0.1s. The one-shot ibkey
+        # (~0.5s) and PS (~2s) paths below are FALLBACKS only. (REFACTOR P2.4)
         if _DAEMON_ENABLED and self._daemon_ok and self._inject_daemon(seq):
             log.info("INJECTED %s -> [%s]", role, seq)
             return

@@ -45,10 +45,21 @@ pydirectinput.FAILSAFE = False
 _MOD = {"alt": "alt", "ctrl": "ctrl", "control": "ctrl", "shift": "shift"}
 
 
-def _pixel(sct, x, y):
-    raw = sct.grab({"left": int(x), "top": int(y), "width": 1, "height": 1})
-    px = np.asarray(raw)[0, 0]            # BGRA
-    return (int(px[2]), int(px[1]), int(px[0]))
+class _Frame:
+    """ONE mss grab covering every ruleset pixel, indexed reads after (REFACTOR P2.1).
+    The old code did an sct.grab(1x1) per pixel — ~15-25 full mss round-trips per tick,
+    so the sense half of the tick was pure grab overhead. One bounding-rect grab is a
+    single round-trip; pixel() is then a free ndarray index."""
+
+    def __init__(self, sct, rect) -> None:
+        self.x0, self.y0 = rect[0], rect[1]
+        raw = sct.grab({"left": rect[0], "top": rect[1],
+                        "width": rect[2], "height": rect[3]})
+        self.arr = np.asarray(raw)            # rows x cols x BGRA
+
+    def pixel(self, x, y):
+        px = self.arr[int(y) - self.y0, int(x) - self.x0]
+        return (int(px[2]), int(px[1]), int(px[0]))
 
 
 def _near(rgb, expected, tol):
@@ -66,31 +77,60 @@ class HealReflex:
         self.tick = float(self.r.get("tick", 0.1))
         self.heals = 0
         self.cures = 0
+        self.rect = self._bounds()            # one-grab-per-tick rect over all locs
+
+    def _bounds(self):
+        """Bounding rect (x, y, w, h) over every pixel loc in the ruleset — group
+        bars, criticals, cure indicators, self-mana. Computed once; the monitor
+        grabs exactly this rect each tick."""
+        locs = []
+
+        def add(info):
+            loc = (info or {}).get("loc")
+            if loc:
+                locs.append((int(loc[0]), int(loc[1])))
+
+        add(self.px.get("self_mana"))
+        for d in (self.px.get("group_check") or {}).values():
+            add(d)
+        for d in (self.px.get("critical") or {}).values():
+            add(d)
+        for d in (self.px.get("standard") or {}).values():
+            add(d)
+            for ail in ("nox", "ele", "tra"):
+                loc = d.get(ail)
+                if loc:
+                    locs.append((int(loc[0]), int(loc[1])))
+        if not locs:
+            return None
+        xs = [p[0] for p in locs]
+        ys = [p[1] for p in locs]
+        return (min(xs), min(ys), max(xs) - min(xs) + 1, max(ys) - min(ys) + 1)
 
     # -- pixel predicates --------------------------------------------------
-    def _is(self, sct, info) -> bool:
+    def _is(self, frame, info) -> bool:
         """True if the pixel at info.loc matches info.clr (or alt_clr) — the dino's
         check_pixel_state. For a health bar: True = HEALTHY; for group_check: True = EMPTY."""
         loc = info.get("loc")
         if not loc:
             return True
-        rgb = _pixel(sct, loc[0], loc[1])
+        rgb = frame.pixel(loc[0], loc[1])
         if _near(rgb, info.get("clr", [0, 0, 0]), self.tol):
             return True
         alt = info.get("alt_clr")
         return bool(alt and _near(rgb, alt, self.tol))
 
-    def _group_size(self, sct) -> int:
+    def _group_size(self, frame) -> int:
         gc = self.px.get("group_check", {}) or {}
         # a slot is OCCUPIED when its pixel is NOT the empty color (dino: not check_pixel_state)
-        return sum(1 for k in gc if not self._is(sct, gc[k]))
+        return sum(1 for k in gc if not self._is(frame, gc[k]))
 
-    def _ailment(self, sct, loc) -> bool:
+    def _ailment(self, frame, loc) -> bool:
         """Cure indicator present = the nox/ele/tra pixel is NOT the 'clear' color."""
         if not loc:
             return False
         clr = self.r.get("cure_present_clr", [0, 0, 0])
-        return not _near(_pixel(sct, loc[0], loc[1]), clr, self.tol)
+        return not _near(frame.pixel(loc[0], loc[1]), clr, self.tol)
 
     # -- chat safety (optional, same as craft) -----------------------------
     def _safe(self, sct) -> bool:
@@ -150,12 +190,15 @@ class HealReflex:
 
     # -- the monitor tick (dino logic) -------------------------------------
     def _monitor(self, sct) -> None:
+        if self.rect is None:
+            return                            # no pixel locs configured
+        frame = _Frame(sct, self.rect)        # ONE grab; every read below is an index
         std = self.px.get("standard", {}) or {}
         crit = self.px.get("critical", {}) or {}
-        size = self._group_size(sct)
-        mana_ok = self._is(sct, self.px.get("self_mana", {}))
+        size = self._group_size(frame)
+        mana_ok = self._is(frame, self.px.get("self_mana", {}))
         idxs = sorted(int(k) for k in std)
-        damaged = [i for i in idxs if i < max(1, size) and not self._is(sct, std[str(i)])]
+        damaged = [i for i in idxs if i < max(1, size) and not self._is(frame, std[str(i)])]
 
         # 1/2: group heals
         if size > 1 and (len(damaged) == size or len(damaged) >= 3):
@@ -168,7 +211,7 @@ class HealReflex:
         healed = set()
         # 3: single critical heals
         for i in sorted(int(k) for k in crit):
-            if i < max(1, size) and not self._is(sct, crit[str(i)]):
+            if i < max(1, size) and not self._is(frame, crit[str(i)]):
                 if self._act(crit[str(i)].get("action", "")):
                     self.heals += 1; healed.add(i)
         # 4: single standard heals (mana-gated)
@@ -183,7 +226,7 @@ class HealReflex:
                 continue
             s = std[str(i)]
             for ail, base in (("nox", "cure_nox"), ("ele", "cure_ele"), ("tra", "cure_tra")):
-                if self._ailment(sct, s.get(ail)):
+                if self._ailment(frame, s.get(ail)):
                     cure_list.append((i, f"{base}_{i}"))
         cure_list.sort(key=lambda c: c[0] != 0)
         for _i, name in cure_list:

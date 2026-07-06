@@ -67,42 +67,45 @@ class FramePix:
         return default
 
 
-# ---- sensing (ported from HostSensor; pix-only, so identical math) ----------
-def _power_row(pix, track, y_hint):
-    tx0, tx1 = track
-    best_y, best_n = None, 0
-    for y in range(y_hint - SEARCH, y_hint + SEARCH + 1):
-        n = sum(1 for x in range(tx0, tx1) if is_blue(pix.get((x, y))))
-        if n > best_n:
-            best_y, best_n = y, n
-    return best_y if best_n >= 12 else None
-
-
+# ---- sensing (host_sensor math, VECTORIZED — REFACTOR P2.2) ------------------
+# Same predicates as is_blue/is_bright/is_icon, but applied to whole ndarray
+# strips instead of ~10^4 per-pixel Python calls per frame. Out-of-bounds pixels
+# in the old code read as (0,0,0) (never blue/bright/lit); slicing clamps them
+# away, which yields the same counts.
 def _power_row_scan(pix, track, y0, y1):
     tx0, tx1 = track
-    best_y, best_n = None, 0
-    for y in range(y0, y1):
-        n = sum(1 for x in range(tx0, tx1) if is_blue(pix.get((x, y))))
-        if n > best_n:
-            best_y, best_n = y, n
-    return best_y if best_n >= 12 else None
+    y0c, y1c = max(0, y0), min(pix.h, y1)
+    if y0c >= y1c:
+        return None
+    strip = pix.f[y0c:y1c, tx0:tx1].astype(np.int16)
+    r, g, b = strip[..., 0], strip[..., 1], strip[..., 2]
+    counts = ((b > 100) & (b > r + 20) & (b > g)).sum(axis=1)   # is_blue per row
+    best = int(counts.argmax())                                 # first max, like the loop
+    return (y0c + best) if int(counts[best]) >= 12 else None
+
+
+def _power_row(pix, track, y_hint):
+    return _power_row_scan(pix, track, y_hint - SEARCH, y_hint + SEARCH + 1)
 
 
 def _fill(pix, track, y) -> int:
     tx0, tx1 = track
-    filled = sum(1 for x in range(tx0, tx1) if is_bright(pix.get((x, y))))
+    if not (0 <= y < pix.h):
+        return 0
+    row = pix.f[y, tx0:tx1].astype(np.int32)
+    filled = int((row.sum(axis=1) > 90).sum())                  # is_bright per px
     return round(100 * filled / (tx1 - tx0))
 
 
 def _detriments(pix, row_y):
     cells = []
+    n_box = (2 * INSET + 1) ** 2          # full box size (old code counted OOB defaults)
     for ci, xc in enumerate(CELL_XC):
-        box = [pix.get((x, y))
-               for x in range(xc - INSET, xc + INSET + 1)
-               for y in range(row_y - INSET, row_y + INSET + 1)]
-        lit = [c for c in box if is_icon(c)]
-        if len(lit) > 0.4 * len(box):
-            avg = tuple(sum(c[i] for c in lit) // len(lit) for i in range(3))
+        box = pix.f[max(0, row_y - INSET):row_y + INSET + 1,
+                    max(0, xc - INSET):xc + INSET + 1].reshape(-1, 3).astype(np.int32)
+        lit = box[box.sum(axis=1) > 120]                        # is_icon per px
+        if len(lit) > 0.4 * n_box:
+            avg = tuple(int(v) for v in lit.sum(axis=0) // len(lit))
             cells.append({"cell": ci, "rgb": list(avg), "ignored": is_ignored(avg)})
     cure = any(c["ignored"] is None for c in cells)
     return cells, cure

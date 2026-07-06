@@ -82,6 +82,11 @@ class Agent:
         if self.no_act:
             log.info("cmd %s key=%r -> (sense-only, not pressed)", role, key)
             return
+        # guarded_press sleeps (tap gap, abort/ESC path) — run it off-loop so a
+        # blocked press can't stall the 12 Hz sense loop (REFACTOR P2.6).
+        asyncio.get_running_loop().run_in_executor(None, self._press, role, key)
+
+    def _press(self, role: str, key: str) -> None:
         sent = self.inj.guarded_press(key, self._sampler)
         log.info("cmd %s key=%r -> %s", role, key, "sent" if sent else "BLOCKED(chat-safety)")
 

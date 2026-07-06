@@ -46,11 +46,12 @@ class Capture:
         return [int(c) for c in box.reshape(-1, 3).mean(axis=0)]
 
     def fill_ratio(self, x0: int, x1: int, y: int, full_rgb, empty_rgb, tol: int = 40) -> float:
-        """Fraction of a horizontal scanline matching the 'full' color = HP%."""
+        """Fraction of a horizontal scanline matching the 'full' color = HP%.
+        Vectorized (REFACTOR P2.2) — one ndarray compare, no per-pixel Python."""
         if self._frame is None or x1 <= x0:
             return 0.0
-        line = self._frame[y, x0:x1]
-        full = sum(1 for px in line if all(abs(int(a) - int(b)) <= tol for a, b in zip(px, full_rgb)))
+        line = self._frame[y, x0:x1].astype(np.int32)
+        full = int(np.all(np.abs(line - np.asarray(full_rgb[:3])) <= tol, axis=1).sum())
         return full / max(1, (x1 - x0))
 
     def read_hp_bars(self, calibration: dict) -> list[dict]:
