@@ -17,19 +17,17 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import base64
-import json
 import logging
 import os
 import re
-import subprocess
 from pathlib import Path
 
 _DAEMON_ENABLED = True    # in-guest key daemon fast path (~<0.1s vs ~0.5s one-shot)
 
 # The daemon isn't in the VM base image, so a revert/reboot wipes it. The agent
-# self-deploys it (script + task) when the heartbeat stops advancing. Script lives
-# next to this module; runs from C:\ib\keyd.ahk via the 'ibkeyd' task in the
+# self-deploys it (script + task) when the heartbeat stops advancing. The ONE
+# canonical script is infra/vm/ahk/key_daemon.ahk (the agent/ copy was a dup —
+# REFACTOR P0.6); runs from C:\ib\keyd.ahk via the 'ibkeyd' task in the
 # interactive session (same principal as the one-shot 'ibkey' task).
 _DAEMON_GUEST_SCRIPT = r"C:\ib\keyd.ahk"
 _DAEMON_GUEST_XML = r"C:\ib\ibkeyd.xml"
@@ -54,6 +52,7 @@ _IBKEYD_XML = (
 import time
 
 from shared import protocol as proto
+from shared.guest import Guest
 from shared.protocol import Message
 
 from .host_sensor import HostSensor
@@ -108,27 +107,16 @@ NAME_RE = re.compile(
 CHAT_HYSTERESIS_S = 3.0
 
 
-def _poll_gpu() -> dict:
+def _poll_gpu(g: Guest) -> dict:
     """Run nvidia-smi IN the guest (the 4070 is passed through, so the host can't
     see it) via the qemu guest agent. Returns {} on any failure. Blocking; call
     from an executor and throttle (it's a ~1s guest round-trip)."""
-    def virsh(cmd):
-        r = subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
-                            "qemu-agent-command", DOM, json.dumps(cmd)],
-                           capture_output=True, text=True, timeout=8)
-        return json.loads(r.stdout)["return"]
     try:
-        pid = virsh({"execute": "guest-exec", "arguments": {
-            "path": NVSMI, "capture-output": True,
-            "arg": ["--query-gpu=utilization.gpu,memory.used,temperature.gpu",
-                    "--format=csv,noheader,nounits"]}})["pid"]
-        for _ in range(10):
-            st = virsh({"execute": "guest-exec-status", "arguments": {"pid": pid}})
-            if st.get("exited"):
-                out = base64.b64decode(st.get("out-data", "")).decode(errors="replace")
-                util, mem, temp = (p.strip() for p in out.split(",")[:3])
-                return {"gpu_util": int(util), "gpu_mem_mb": int(mem), "gpu_temp": int(temp)}
-            time.sleep(0.3)
+        out = g.exec_out(NVSMI,
+                         ["--query-gpu=utilization.gpu,memory.used,temperature.gpu",
+                          "--format=csv,noheader,nounits"], wait=3.5)
+        util, mem, temp = (p.strip() for p in out.split(",")[:3])
+        return {"gpu_util": int(util), "gpu_mem_mb": int(mem), "gpu_temp": int(temp)}
     except Exception:
         pass
     return {}
@@ -139,6 +127,7 @@ class HostAgent:
         self.host, self.port = host, port
         self.period = 1.0 / hz
         self.sensor = HostSensor()
+        self.g = Guest(DOM)         # the shared virsh/guest-agent I/O core
         self._cycles = 0
         self._t0 = time.time()
         self._gpu = {}
@@ -229,9 +218,9 @@ class HostAgent:
             # refresh GPU stats every ~12s (guest round-trip; don't do per cycle)
             if t - self._gpu_ts >= 12.0:
                 self._gpu_ts = t
-                g = await loop.run_in_executor(None, _poll_gpu)
-                if g:
-                    self._gpu = g
+                gpu = await loop.run_in_executor(None, _poll_gpu, self.g)
+                if gpu:
+                    self._gpu = gpu
             if world is not None:
                 await proto.write_message(writer, Message(proto.STATE_EVENT,
                                                           self._to_event(world)))
@@ -259,8 +248,9 @@ class HostAgent:
         loop = asyncio.get_running_loop()
         while True:
             # Rebuild each poll so the path follows the CURRENT character (names[0],
-            # set from CONFIG on every profile switch) — no restart needed.
-            log_path = self._log_path()
+            # set from CONFIG on every profile switch) — no restart needed. Double any
+            # ' so the config-owned path can't break out of the PS single-quotes.
+            log_path = self._log_path().replace("'", "''")
             ps = (
                 "Write-Output ('NOW=' + [int][double]::Parse((Get-Date -UFormat %s))); "
                 f"if (Test-Path -LiteralPath '{log_path}') "
@@ -327,29 +317,9 @@ class HostAgent:
             self._combat_until = time.time() + max(0.0, COMBAT_DECAY_S - (now_guest - newest))
 
     def _guest_read(self, ps: str) -> str | None:
-        """Run a PowerShell command in the guest and return its stdout (guest-exec
-        with output capture). Synchronous; call via run_in_executor."""
-        base = ["sudo", "-n", "virsh", "-c", "qemu:///system", "qemu-agent-command", DOM]
-        try:
-            r = subprocess.run(base + [json.dumps({"execute": "guest-exec", "arguments": {
-                "path": "powershell.exe",
-                "arg": ["-NoProfile", "-NonInteractive", "-Command", ps],
-                "capture-output": True}})], capture_output=True, text=True, timeout=8)
-            pid = json.loads(r.stdout)["return"]["pid"]
-        except Exception:
-            return None
-        for _ in range(30):
-            try:
-                s = subprocess.run(base + [json.dumps({"execute": "guest-exec-status",
-                                   "arguments": {"pid": pid}})],
-                                   capture_output=True, text=True, timeout=8)
-                st = json.loads(s.stdout)["return"]
-            except Exception:
-                return None
-            if st.get("exited"):
-                return base64.b64decode(st.get("out-data", "")).decode(errors="replace")
-            time.sleep(0.15)
-        return None
+        """Run a PowerShell command in the guest and return its stdout (shared
+        Guest.read_ps). Synchronous; call via run_in_executor."""
+        return self.g.read_ps(ps)
 
     async def _recv_loop(self, reader: asyncio.StreamReader) -> None:
         loop = asyncio.get_running_loop()
@@ -423,29 +393,14 @@ class HostAgent:
         finally:
             self._injecting = False
 
-    def _virsh(self, cmd: dict, timeout: float = 6.0) -> dict:
-        # retry on a transient empty/garbled reply (the guest-agent channel hiccups
-        # under concurrent load); a single miss otherwise fails a whole inject.
-        last = ""
-        for _ in range(4):
-            r = subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
-                                "qemu-agent-command", DOM, json.dumps(cmd)],
-                               capture_output=True, text=True, timeout=timeout)
-            last = r.stdout or r.stderr
-            if r.stdout.strip():
-                try:
-                    return json.loads(r.stdout)["return"]
-                except (ValueError, KeyError):
-                    pass
-            time.sleep(0.15)
-        raise RuntimeError(f"virsh agent-command failed: {last[:160]!r}")
-
     def _deploy_daemon(self) -> bool:
         """(Re)deploy the in-guest key daemon: push the script + 'ibkeyd' task and start
         it. Self-heals after a VM revert/reboot wipes it. Only called when the daemon is
         NOT running (so keyd.ahk isn't locked). Best-effort; never raises."""
+        script_path = (Path(__file__).resolve().parent.parent
+                       / "infra" / "vm" / "ahk" / "key_daemon.ahk")
         try:
-            script = (Path(__file__).resolve().parent / "key_daemon.ahk").read_bytes()
+            script = script_path.read_bytes()
         except OSError as e:
             log.warning("daemon self-deploy: script missing on host: %s", e)
             return False
@@ -453,13 +408,8 @@ class HostAgent:
             # fresh, writable target (a stale copy can become write-denied)
             self._guest_read(f"attrib -R {_DAEMON_GUEST_SCRIPT} 2>&1 | Out-Null; "
                              f"Remove-Item {_DAEMON_GUEST_SCRIPT} -Force -EA SilentlyContinue")
-            for path, data in ((_DAEMON_GUEST_SCRIPT, script),
-                               (_DAEMON_GUEST_XML, _IBKEYD_XML.encode("utf-16"))):
-                h = self._virsh({"execute": "guest-file-open",
-                                 "arguments": {"path": path, "mode": "w"}})
-                self._virsh({"execute": "guest-file-write", "arguments": {
-                    "handle": h, "buf-b64": base64.b64encode(data).decode()}})
-                self._virsh({"execute": "guest-file-close", "arguments": {"handle": h}})
+            self.g.file_write(_DAEMON_GUEST_SCRIPT, script)
+            self.g.file_write(_DAEMON_GUEST_XML, _IBKEYD_XML.encode("utf-16"))
             self._guest_read(
                 f"Register-ScheduledTask -TaskName ibkeyd -Xml (Get-Content '{_DAEMON_GUEST_XML}' -Raw) -Force | Out-Null; "
                 "Start-ScheduledTask -TaskName ibkeyd")
@@ -476,12 +426,7 @@ class HostAgent:
         task. False on any write failure so the caller falls back."""
         try:
             self._inject_tok += 1
-            payload = f"{self._inject_tok}|{seq}"
-            h = self._virsh({"execute": "guest-file-open",
-                             "arguments": {"path": "C:\\ib\\keycmd.txt", "mode": "w"}})
-            self._virsh({"execute": "guest-file-write", "arguments": {
-                "handle": h, "buf-b64": base64.b64encode(payload.encode()).decode()}})
-            self._virsh({"execute": "guest-file-close", "arguments": {"handle": h}})
+            self.g.file_write("C:\\ib\\keycmd.txt", f"{self._inject_tok}|{seq}".encode())
             return True
         except Exception as e:
             log.warning("daemon inject write failed (falling back): %s", e)
@@ -493,12 +438,8 @@ class HostAgent:
         ~2 PowerShell spawns (~0.5-1s) off the press-to-action path. False on any
         failure so the caller can fall back to the proven PowerShell path."""
         try:
-            h = self._virsh({"execute": "guest-file-open",
-                             "arguments": {"path": "C:\\ib\\keys.txt", "mode": "w"}})
-            self._virsh({"execute": "guest-file-write", "arguments": {
-                "handle": h, "buf-b64": base64.b64encode(seq.encode()).decode()}})
-            self._virsh({"execute": "guest-file-close", "arguments": {"handle": h}})
-            self._virsh({"execute": "guest-exec", "arguments": {
+            self.g.file_write("C:\\ib\\keys.txt", seq.encode())
+            self.g.agent_cmd({"execute": "guest-exec", "arguments": {
                 "path": "schtasks.exe", "arg": ["/Run", "/TN", "ibkey"]}})
             return True
         except Exception as e:
@@ -519,16 +460,14 @@ class HostAgent:
         if self._inject_fast(seq):
             log.info("INJECTED %s -> [%s]", role, seq)
             return
-        # fallback 2: the original PowerShell path (slowest but most proven)
-        ps = (f"Set-Content C:\\ib\\keys.txt '{seq}' -NoNewline; "
+        # fallback 2: the original PowerShell path (slowest but most proven).
+        # seq is bot-generated key specs (quotes stripped by press_keys' contract),
+        # but strip ' here too so nothing can break out of the PS single-quotes.
+        safe = seq.replace("'", "")
+        ps = (f"Set-Content C:\\ib\\keys.txt '{safe}' -NoNewline; "
               f"Start-ScheduledTask -TaskName ibkey")
         try:
-            subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
-                            "qemu-agent-command", DOM,
-                            json.dumps({"execute": "guest-exec", "arguments": {
-                                "path": "powershell.exe",
-                                "arg": ["-NoProfile", "-Command", ps]}})],
-                           capture_output=True, timeout=8)
+            self.g.exec_start("powershell.exe", ["-NoProfile", "-Command", ps])
             log.info("INJECTED(ps) %s -> [%s]", role, seq)
         except Exception as e:  # pragma: no cover
             log.warning("inject failed: %s", e)

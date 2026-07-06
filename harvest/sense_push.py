@@ -11,12 +11,12 @@ Read-only (pos/heading/zone/nodes); no input, no window — safe to run anytime.
 from __future__ import annotations
 import struct, time, math, json, urllib.request
 
-PROC = "EverQuest2.exe"
-POS_OFF = 0x1822b78          # recalibrated 2026-06-23 (was 0x1822b68; player struct shifted +0x10)
-HDG_OFF = 0x1822b84          # HDG = POS+0xC as before
-ZONE_PTR = 0x1826998         # zone ptr did NOT shift
-NODE_LO = 0x177bf00
-NODE_HI = 0x177c100
+# Offsets come from the ONE shared module (REFACTOR P0.4); deploy pushes it
+# alongside this file as C:\ib\agent\offsets.py.
+try:
+    from offsets import HDG_OFF, NODE_HI, NODE_LO, POS_OFF, PROC, ZONE_PTR  # in-guest sibling
+except ImportError:
+    from guest_agent.offsets import HDG_OFF, NODE_HI, NODE_LO, POS_OFF, PROC, ZONE_PTR
 HOST = "http://10.0.0.16:18082/api/ingest"
 HZ = 8.0
 

@@ -32,7 +32,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["shared", "brain", "brain.web", "agent"]
+packages = ["shared", "brain", "brain.web", "agent",
+            "forge", "forge.web", "harvest", "guest_agent"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

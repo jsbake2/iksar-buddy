@@ -1,6 +1,6 @@
 """Healer (brain) login + character switch.
 
-Uses forge.login.LoginDriver as the shared low-level login DRIVER (LaunchPad ->
+Uses shared.login.LoginDriver as the shared low-level login DRIVER (LaunchPad ->
 EQ2 -> game form -> in world), but the account model lives HERE in the brain:
 
   * roster        : config/characters.yaml (character -> account) -> account_of()
@@ -23,7 +23,7 @@ from typing import Callable
 
 import yaml
 
-from forge.login import LoginDriver, load_accounts, WORLD
+from shared.login import LoginDriver, load_accounts, WORLD
 
 HEALER_DOM = "iksar_buddy"
 Log = Callable[[str], None]

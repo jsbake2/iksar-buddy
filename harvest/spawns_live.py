@@ -3,11 +3,15 @@ and harvest-node candidates (vtable 0x14eb850, pos+0x60), within RADIUS of the p
 Emits JSON to stdout. ~5-6s; the host caches it on a background timer."""
 import pymem, pymem.process, ctypes, struct, json, math
 import ctypes.wintypes as w
-pm=pymem.Pymem("EverQuest2.exe"); m=pymem.process.module_from_name(pm.process_handle,"EverQuest2.exe")
+try:  # offsets from the ONE shared module (was a stale inline copy — REFACTOR P0.4)
+    import offsets as O                    # in-guest sibling
+except ImportError:
+    from guest_agent import offsets as O
+pm=pymem.Pymem(O.PROC); m=pymem.process.module_from_name(pm.process_handle,O.PROC)
 base=m.lpBaseOfDll
-ACTOR_VT=struct.pack("<Q",base+0x1782848)
-NODE_VT=struct.pack("<Q",base+0x14eb850)
-px=pm.read_float(base+0x1822b68); py=pm.read_float(base+0x1822b68+4); pz=pm.read_float(base+0x1822b68+8)
+ACTOR_VT=struct.pack("<Q",base+O.ACTOR_VT)
+NODE_VT=struct.pack("<Q",base+O.NODE_CLASSES[0][0])
+px=pm.read_float(base+O.POS_OFF); py=pm.read_float(base+O.POS_OFF+4); pz=pm.read_float(base+O.POS_OFF+8)
 RAD=120.0
 def u64(a):
     try: return struct.unpack("<Q",pm.read_bytes(a,8))[0]

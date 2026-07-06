@@ -23,7 +23,7 @@ from pathlib import Path
 import yaml
 
 from . import recipes, sensors
-from .guest import Guest
+from shared.guest import Guest
 from .recipes import prepare_search, search_name, trade_settings
 from .telemetry import ForgeTelemetry
 

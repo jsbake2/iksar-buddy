@@ -15,13 +15,12 @@ from __future__ import annotations
 import json, os, struct, threading, time
 import ctypes, ctypes.wintypes as w
 
-PROC = "EverQuest2.exe"
-POS_OFF = 0x1822b68
-HDG_OFF = 0x1822b74
-ACTOR_VT = 0x1782848            # mobs/NPCs/players; world pos at obj+0x20
-# harvest-node vtable family (per-type), (vtable_off, pos_off) — confirmed via despawn diffs
-NODE_CLASSES = [(0x14eb850, 0x60), (0x14a3238, 0x40), (0x14a32d8, 0x40),
-                (0x1493c58, 0x40), (0x149b2f8, 0x40)]
+# Offsets come from the ONE shared module (this file used to carry STALE
+# pre-recalibration values and read garbage position — REFACTOR P0.4).
+try:
+    from offsets import ACTOR_VT, HDG_OFF, NODE_CLASSES, POS_OFF, PROC  # in-guest sibling
+except ImportError:
+    from guest_agent.offsets import ACTOR_VT, HDG_OFF, NODE_CLASSES, POS_OFF, PROC
 OUT = r"C:\ib\sense.json"
 RADIUS = 200.0
 

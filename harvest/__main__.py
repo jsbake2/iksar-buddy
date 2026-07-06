@@ -8,7 +8,7 @@ process title 'ibh'.
 """
 from __future__ import annotations
 
-import argparse, asyncio, base64, contextlib, json, math, os, re, subprocess, time
+import argparse, asyncio, contextlib, json, math, os, re, subprocess, time
 from pathlib import Path
 
 import uvicorn
@@ -22,10 +22,8 @@ try:
 except ImportError:
     setproctitle = None
 
-import sys
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from forge.guest import Guest                      # reuse the proven host I/O core
-from forge.login import LoginDriver, load_accounts
+from shared.guest import VIRSH, Guest              # the shared host I/O core
+from shared.login import LoginDriver, load_accounts
 from harvest.nav_graph import Graph as NavGraph    # dense waypoint graph (OgreNav-style)
 
 
@@ -51,7 +49,6 @@ LAUNCH_AHK = (
     'EQDIR := "C:\\Users\\Public\\Daybreak Game Company\\Installed Games\\EverQuest II"\n'
     "Run('\"' EQDIR '\\EverQuest2.exe\"', EQDIR)\n"
 )
-VIRSH = ["sudo", "-n", "virsh", "-c", "qemu:///system"]
 # Game login form (EQ2 fullscreen 1920x1080): click the username field to set focus, OCR it to
 # verify the username actually changed (the silent-stale-username bug). Measured 2026-06-24.
 USER_CLICK = (743, 442)
@@ -145,60 +142,27 @@ class Harvest:
                 return c.get("user", ""), self._user_pw().get(c.get("user", ""), "")
         return "", ""
 
-    # --- guest exec helper -------------------------------------------------
+    # --- guest exec helper (shared Guest core) -------------------------------
     def _gx(self, path: str, args: list[str], wait: float = 8.0) -> str:
-        j = json.dumps({"execute": "guest-exec", "arguments":
-                        {"path": path, "arg": args, "capture-output": True}})
-        r = subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
-                            "qemu-agent-command", DOM, j], capture_output=True, text=True)
-        try:
-            pid = json.loads(r.stdout)["return"]["pid"]
-        except Exception:
-            return ""
-        out = ""
-        t0 = time.time()
-        while time.time() - t0 < wait:
-            time.sleep(0.3)
-            s = json.dumps({"execute": "guest-exec-status", "arguments": {"pid": pid}})
-            r2 = subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system",
-                                 "qemu-agent-command", DOM, s], capture_output=True, text=True)
-            try:
-                d = json.loads(r2.stdout)["return"]
-            except Exception:
-                continue
-            if d.get("exited"):
-                for k in ("out-data", "err-data"):
-                    if d.get(k):
-                        out += base64.b64decode(d[k]).decode("utf-8", "replace")
-                break
-        return out
+        if path == "powershell":                    # legacy spelling from the inline era
+            path = "powershell.exe"
+        return self.g.exec_out(path, args, wait=wait)
+
+    def _push_offsets(self) -> None:
+        """Push the shared offsets module next to every in-guest reader (they all
+        `import offsets` as a sibling — guest_agent/offsets.py is the ONE copy)."""
+        src = Path(__file__).resolve().parent.parent / "guest_agent" / "offsets.py"
+        self.g.push_text(r"C:\ib\agent\offsets.py", src.read_text())
 
     def deploy_reader(self) -> None:
         """Push memory_read.py into the guest as the reader."""
-        src = (Path(__file__).resolve().parent / "memory_read.py").read_bytes()
-        b64 = base64.b64encode(src).decode()
-        # chunk to be safe on arg length
-        # remove BOTH the .py and the staging .b64 — Add-Content appends, so a stale
-        # .b64 would concatenate a second copy and corrupt the file (double __future__).
-        self._gx("powershell", ["-NoProfile", "-Command",
-                                f"Remove-Item '{GUEST_READER}','{GUEST_READER}.b64' -EA SilentlyContinue"])
-        for i in range(0, len(b64), 6000):
-            self._gx("powershell", ["-NoProfile", "-Command",
-                                    f"Add-Content -Path '{GUEST_READER}.b64' -Value '{b64[i:i+6000]}' -NoNewline"])
-        self._gx("powershell", ["-NoProfile", "-Command",
-                 f"[IO.File]::WriteAllBytes('{GUEST_READER}',[Convert]::FromBase64String((Get-Content -Raw '{GUEST_READER}.b64')))"])
+        self._push_offsets()
+        self.g.push_file(Path(__file__).resolve().parent / "memory_read.py", GUEST_READER)
 
     def deploy_spawns(self) -> None:
         """Push spawns_live.py (vtable nearby-entity scanner) into the guest."""
-        src = (Path(__file__).resolve().parent / "spawns_live.py").read_bytes()
-        b64 = base64.b64encode(src).decode()
-        self._gx("powershell", ["-NoProfile", "-Command",
-                                f"Remove-Item '{GUEST_SPAWNS}','{GUEST_SPAWNS}.b64' -EA SilentlyContinue"])
-        for i in range(0, len(b64), 6000):
-            self._gx("powershell", ["-NoProfile", "-Command",
-                                    f"Add-Content -Path '{GUEST_SPAWNS}.b64' -Value '{b64[i:i+6000]}' -NoNewline"])
-        self._gx("powershell", ["-NoProfile", "-Command",
-                 f"[IO.File]::WriteAllBytes('{GUEST_SPAWNS}',[Convert]::FromBase64String((Get-Content -Raw '{GUEST_SPAWNS}.b64')))"])
+        self._push_offsets()
+        self.g.push_file(Path(__file__).resolve().parent / "spawns_live.py", GUEST_SPAWNS)
 
     def read_spawns(self) -> dict:
         """Run the in-guest vtable scan (~5-6s). Player self is the dist~0 actor; mark it."""
@@ -309,15 +273,8 @@ class Harvest:
     def start_sensor(self) -> None:
         """Deploy + (re)start the persistent in-guest sensor (reads at ~8Hz, pushes via HTTP).
         Read-only; safe. Kills only the prior sense_push instance, not the nav agent."""
-        src = (Path(__file__).resolve().parent / "sense_push.py").read_bytes()
-        b64 = base64.b64encode(src).decode()
-        self._gx("powershell", ["-NoProfile", "-Command",
-                                f"Remove-Item '{GUEST_PUSH}','{GUEST_PUSH}.b64' -EA SilentlyContinue"])
-        for i in range(0, len(b64), 6000):
-            self._gx("powershell", ["-NoProfile", "-Command",
-                                    f"Add-Content -Path '{GUEST_PUSH}.b64' -Value '{b64[i:i+6000]}' -NoNewline"])
-        self._gx("powershell", ["-NoProfile", "-Command",
-                 f"[IO.File]::WriteAllBytes('{GUEST_PUSH}',[Convert]::FromBase64String((Get-Content -Raw '{GUEST_PUSH}.b64')))"])
+        self._push_offsets()
+        self.g.push_file(Path(__file__).resolve().parent / "sense_push.py", GUEST_PUSH)
         # restart: kill any prior sense_push, launch detached
         self._gx("powershell", ["-NoProfile", "-Command",
             "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | "
@@ -491,16 +448,8 @@ class Harvest:
 
     # --- guest helpers for the agent-driven login ----------------------------
     def _push_text(self, path: str, text: str) -> None:
-        """Write a UTF-8 text file in the guest via base64 (handles quotes/JSON safely)."""
-        b = base64.b64encode(text.encode()).decode()
-        self._gx("powershell", ["-NoProfile", "-Command",
-                                f"Remove-Item '{path}','{path}.b64' -EA SilentlyContinue"])
-        for i in range(0, len(b), 6000):
-            self._gx("powershell", ["-NoProfile", "-Command",
-                                    f"Add-Content -Path '{path}.b64' -Value '{b[i:i+6000]}' -NoNewline"])
-        self._gx("powershell", ["-NoProfile", "-Command",
-                 f"[IO.File]::WriteAllBytes('{path}',[Convert]::FromBase64String((Get-Content -Raw '{path}.b64')));"
-                 f"Remove-Item '{path}.b64' -EA SilentlyContinue"])
+        """Write a UTF-8 text file in the guest (shared Guest.push_text)."""
+        self.g.push_text(path, text)
 
     def _fire_agent(self, target: dict) -> None:
         """Hand the in-guest agent (ibharv) a one-shot job via nav_target.json."""
@@ -601,18 +550,23 @@ class Harvest:
 
     def deploy_agent(self) -> None:
         """Push the current agent code into the guest. C:\\ib reverts to a baseline on VM reboot,
-        so a cold-start launch must redeploy or the login_form/agent code won't exist."""
-        src = Path(__file__).parent
-        files = {"_agent.py": r"C:\ib\agent\harvest_agent.py",
-                 "nav_graph.py": r"C:\ib\agent\nav_graph.py",
-                 "sense_push.py": r"C:\ib\agent\sense_push.py",
-                 "memory_read.py": r"C:\ib\agent\memory_read.py",
-                 "hud_overlay.py": r"C:\ib\agent\hud_overlay.py"}
+        so a cold-start launch must redeploy or the login_form/agent code won't exist.
+        NOTE: the old map pointed harvest_agent.py/hud_overlay.py at harvest/ paths that
+        don't exist (they live in guest_agent/) — those two were silently never pushed."""
+        hv = Path(__file__).resolve().parent
+        ga = hv.parent / "guest_agent"
+        files = {ga / "harvest_agent.py": r"C:\ib\agent\harvest_agent.py",
+                 ga / "hud_overlay.py": r"C:\ib\agent\hud_overlay.py",
+                 ga / "offsets.py": r"C:\ib\agent\offsets.py",
+                 hv / "nav_graph.py": r"C:\ib\agent\nav_graph.py",
+                 hv / "sense_push.py": r"C:\ib\agent\sense_push.py",
+                 hv / "memory_read.py": r"C:\ib\agent\memory_read.py"}
+        missing = [p.name for p in files if not p.exists()]
         for local, remote in files.items():
-            p = src / local
-            if p.exists():
-                self._push_text(remote, p.read_text())
-        self.log.append("launch: agent code redeployed")
+            if local.exists():
+                self._push_text(remote, local.read_text())
+        self.log.append("launch: agent code redeployed"
+                        + (f" (MISSING: {', '.join(missing)})" if missing else ""))
 
     def _agent_type_login(self, user, password, character, world):
         """Fill the login form with the agent (keybd_event: Shift+Tab to username, Ctrl+A clear,
@@ -648,8 +602,7 @@ class Harvest:
 
     def shutdown_vm(self) -> dict:
         self.log.append("shutdown: powering off VM")
-        r = subprocess.run(VIRSH + ["shutdown", DOM], capture_output=True, text=True)
-        return {"ok": r.returncode == 0, "msg": (r.stdout + r.stderr).strip()}
+        return {"ok": self.g.shutdown_vm()}
 
     def shutdown(self) -> dict:
         """Web 'Shutdown' (owner standard): /camp desktop -> wait 25s for the camp countdown +
@@ -703,8 +656,7 @@ class Harvest:
     def frame_jpeg(self) -> bytes:
         """Live VM screen for the console preview panel. b'' if not grabbable."""
         ppm = f"/tmp/ibh_{DOM}.ppm"
-        r = subprocess.run(["sudo", "-n", "virsh", "-c", "qemu:///system", "screenshot",
-                            DOM, ppm], capture_output=True)
+        r = subprocess.run(VIRSH + ["screenshot", DOM, ppm], capture_output=True)
         if r.returncode != 0:
             return b""
         m = subprocess.run(["magick", ppm, "-resize", "960", "-quality", "55", "jpg:-"],

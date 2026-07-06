@@ -255,9 +255,12 @@ def type_chat(hwnd, text):
     _tap(0x0D)                                    # Enter -> send
 
 
-POS_OFF = 0x1822b78          # recalibrated 2026-06-23 (was 0x1822b68; player struct shifted +0x10
-HDG_OFF = 0x1822b84          # after a client update). HDG = POS+0xC as before. ZONE ptr unchanged.
-PROC = "EverQuest2.exe"
+# Offsets come from the ONE shared module (REFACTOR P0.4); deploy pushes it
+# alongside this file as C:\ib\agent\offsets.py.
+try:
+    from offsets import HDG_OFF, POS_OFF, PROC  # in-guest sibling
+except ImportError:
+    from guest_agent.offsets import HDG_OFF, POS_OFF, PROC
 TARGET = r"C:\ib\nav_target.json"
 STATUS = r"C:\ib\nav_status.json"
 HUD = r"C:\ib\hud.json"            # clean, uncontended status mirror for the on-screen overlay

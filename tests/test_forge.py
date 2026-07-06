@@ -26,7 +26,8 @@ def test_ocr_no_count_defaults_one():
 def test_scribe_prefix_strip_and_suffix():
     name = clean_item_name("Apprentice IV: Minor Healing", "sage")
     assert name == "Minor Healing"
-    assert search_name("Minor Healing", "sage") == "Minor Healing (App"
+    # sage suffix is now "" — the owner's never-type-parens rule killed " (App"
+    assert search_name("Minor Healing", "sage") == "Minor Healing"
 
 
 def test_recipe_list_plain_and_log():

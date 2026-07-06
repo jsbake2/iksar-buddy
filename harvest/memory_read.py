@@ -12,17 +12,13 @@ client update via `--recalibrate X Y Z` (scan the module range for the /loc trip
 from __future__ import annotations
 import json, sys
 
-POS_OFF = 0x1822b78            # [EverQuest2.exe + POS_OFF] = float32 X,Y,Z. Recalibrated
-                              # 2026-06-23 (was 0x1822b68; player struct shifted +0x10 after a
-                              # client update — re-derive via --recalibrate after each update).
-HDG_OFF = 0x1822b84            # +0xC after XYZ = heading in degrees; 0-360 mirror at 0x1822af8.
-PROC = "EverQuest2.exe"
-# The game's LIVE nearby-harvestable array (module-static). Pointers to harvest-node objects
-# (vtable in the 0x149x-0x14ex family); world position at obj+0x60. Found via current-target
-# diff — it's the list the gather skill walks, so REAL nodes only (no decorative bushes).
-NODE_LO = 0x177bf00
-NODE_HI = 0x177c100
-ZONE_PTR = 0x1826998          # [EverQuest2.exe + ZONE_PTR] -> zone-name string ("The Thundering Steppes")
+# Offsets come from the ONE shared module (REFACTOR P0.4); deploy pushes it
+# alongside this file as C:\ib\agent\offsets.py. Re-derive POS via --recalibrate
+# after each client update, then edit guest_agent/offsets.py.
+try:
+    from offsets import HDG_OFF, NODE_HI, NODE_LO, POS_OFF, PROC, ZONE_PTR  # in-guest sibling
+except ImportError:
+    from guest_agent.offsets import HDG_OFF, NODE_HI, NODE_LO, POS_OFF, PROC, ZONE_PTR
 
 
 def _pm():

@@ -19,8 +19,8 @@ import yaml
 from shared.account_lock import AccountLock
 
 from . import recipes, sensors
-from .guest import Guest
-from .login import LoginDriver, WORLD, load_accounts
+from shared.guest import Guest
+from shared.login import LoginDriver, WORLD, load_accounts
 from .telemetry import ForgeTelemetry
 from .worker import CraftWorker
 

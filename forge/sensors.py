@@ -19,7 +19,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from .guest import Guest
+from shared.guest import Guest
 from .recipes import parse_ocr_items
 
 log = logging.getLogger("forge.sensors")

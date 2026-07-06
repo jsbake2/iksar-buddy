@@ -584,7 +584,7 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     @app.post("/api/launch")
     async def launch():
         """Launch Bot: power on the VM and log DIRECTLY into the active profile's
-        character (forge.login.LoginDriver — same path as the crafters). No more
+        character (shared.login.LoginDriver — same path as the crafters). No more
         char-select OCR pick; the EQ2 login form takes the character by name."""
         from ..charswitch import healer_login
         telemetry.update(vm={**telemetry.snapshot.get("vm", {}), "running": True})
