@@ -3,36 +3,8 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ib · harvest</title>
-<link rel="stylesheet" href="/static/themes.css">
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
-header{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
-header b{color:var(--accent);font-size:15px;letter-spacing:.5px}
-.zone{color:var(--good)} .pos{color:var(--muted)}
-.pill{padding:2px 8px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}
-.pill.live{color:var(--accent);border-color:var(--accent)}
-main{display:grid;grid-template-columns:360px minmax(0,1fr) 320px;gap:12px;padding:12px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px;min-width:0}
-.panel h3{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
-.pending{color:var(--warn);font-style:italic;font-size:12px}
-button,select,input{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;cursor:pointer;font:inherit;max-width:100%}
-select{width:100%}
-button:hover{border-color:var(--accent)} .btnrow{display:flex;flex-wrap:wrap;gap:6px}
-.seg{display:flex;gap:0;margin-bottom:8px}
-.seg button{flex:1;border-radius:0;border-right:0}
-.seg button:first-child{border-radius:6px 0 0 6px} .seg button:last-child{border-radius:0 6px 6px 0;border-right:1px solid var(--line)}
-.seg button.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
-.charlist button{padding:3px 8px}
-#frame.big{aspect-ratio:16/10}
-table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:400}
-tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
-.rec{color:var(--bad)} .muted{color:var(--muted);font-size:12px}
-.dpad{display:grid;grid-template-columns:repeat(3,46px);gap:5px;justify-content:center}
-.dpad button{height:34px}
-.mon-row{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:3px 0}
-#frame{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--bg);aspect-ratio:16/9;object-fit:cover}
-</style>
+<link rel="stylesheet" href="/static/themes.css?v=20260706a">
+<link rel="stylesheet" href="/static/harvest.css?v=20260706a">
 </head>
 <body>
 <header>
@@ -40,8 +12,8 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
   <span class="zone" id="zone">zone: —</span>
   <span class="pos" id="pos">pos: —</span>
   <span class="pill" id="link">●</span>
-  <span style="flex:1"></span>
-  <button id="phoneBtn" title="phone alerts" style="margin-right:8px">🔕 phone</button>
+  <span class="spacer"></span>
+  <button id="phoneBtn" title="phone alerts" class="mr8">🔕 phone</button>
   <select id="theme" title="theme">
     <option value="iksar">iksar</option><option value="midnight">midnight</option>
     <option value="grafana">grafana</option><option value="amber">amber</option>
@@ -53,67 +25,67 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
   <div>
     <div class="panel"><h3>⚡ session</h3>
       <div class="btnrow">
-        <button onclick="launch()">🚀 launch + login</button>
-        <button onclick="camp()">⏏ camp to desktop</button>
-        <button onclick="shutdownVM()">⏻ shut down VM</button></div>
+        <button id="launchBtn">🚀 launch + login</button>
+        <button id="campBtn">⏏ camp to desktop</button>
+        <button id="vmoffBtn">⏻ shut down VM</button></div>
       <div class="muted" id="sessmsg"></div>
     </div>
     <div class="panel"><h3>🌿 harvest</h3>
       <div class="btnrow">
-        <select id="gridsel" style="flex:1" title="recorded grid (route) to harvest on"></select>
-        <input id="laps" type="number" value="40" min="1" style="width:52px" title="laps around the grid">
+        <select id="gridsel" class="grow" title="recorded grid (route) to harvest on"></select>
+        <input id="laps" type="number" value="40" min="1" class="w52" title="laps around the grid">
       </div>
-      <div class="btnrow" style="margin-top:6px">
-        <button onclick="startHarvest()" id="harvbtn">▶ start harvesting</button>
-        <button onclick="stopHarvest()">⏹ stop</button></div>
+      <div class="btnrow mt6">
+        <button id="harvbtn">▶ start harvesting</button>
+        <button id="stopharvBtn">⏹ stop</button></div>
       <div class="muted" id="harvmsg">pick a grid, then start — the bot tours it and harvests</div>
     </div>
     <div class="panel"><h3>① / ⑥ character — login only</h3>
       <div class="seg">
-        <button id="acc1" onclick="setAcct('meatwad33w')">acct 1 · meatwad33w</button>
-        <button id="acc2" onclick="setAcct('robskin2004')">acct 2 · robskin2004</button></div>
+        <button id="acc1">acct 1 · meatwad33w</button>
+        <button id="acc2">acct 2 · robskin2004</button></div>
       <div id="charlist" class="charlist btnrow"></div>
       <div class="muted" id="charmsg">picks an account → logs that character in &amp; stops (never auto-harvests)</div>
     </div>
     <div class="panel"><h3>⌨ keymap</h3>
       <table><thead><tr><th>key</th><th>action</th></tr></thead><tbody id="keymaprows"></tbody></table>
-      <div class="btnrow" style="margin-top:6px"><a href="/static/keymap.html"><button>✎ edit keymap</button></a></div>
+      <div class="btnrow mt6"><a href="/static/keymap.html"><button>✎ edit keymap</button></a></div>
     </div>
     <div class="panel"><h3>③ zone</h3><div id="zone2" class="muted">—</div>
       <div class="muted">players in zone: <span id="pcount" class="pending">RE pending</span></div></div>
     <div class="panel"><h3>🗺 record map (grid)</h3>
-      <select id="recgrid" onchange="recGridChange()"></select>
-      <input id="recname" placeholder="new grid name — e.g. Thundering Steppes SE Station" style="display:none;margin-top:6px">
-      <div class="btnrow" style="margin-top:6px">
-        <button id="recbtn" onclick="toggleGridRec()">⏺ record map</button>
+      <select id="recgrid"></select>
+      <input id="recname" placeholder="new grid name — e.g. Thundering Steppes SE Station" class="mt6" hidden>
+      <div class="btnrow mt6">
+        <button id="recbtn">⏺ record map</button>
         <span id="recinfo" class="muted"></span></div>
       <div class="muted">walk the area while recording — builds the grid the harvester tours</div></div>
     <div class="panel"><h3>④ manual control</h3>
       <div class="dpad">
-        <span></span><button onclick="mv('forward')">▲</button><span></span>
-        <button onclick="mv('strafeL')">◄</button><button onclick="post('/api/stop')">■</button><button onclick="mv('strafeR')">►</button>
-        <button onclick="mv('left')">↺</button><button onclick="mv('back')">▼</button><button onclick="mv('right')">↻</button></div>
-      <div class="btnrow" style="margin-top:8px;justify-content:center">
-        <button onclick="mv('jump',300)">jump</button>
-        <button onclick="post('/api/harvest')">harvest</button>
-        <button onclick="unstuck()">② unstuck</button></div></div>
+        <span></span><button data-mv="forward">▲</button><span></span>
+        <button data-mv="strafeL">◄</button><button data-post="/api/stop">■</button><button data-mv="strafeR">►</button>
+        <button data-mv="left">↺</button><button data-mv="back">▼</button><button data-mv="right">↻</button></div>
+      <div class="btnrow mt8 center">
+        <button data-mv="jump" data-ms="300">jump</button>
+        <button data-post="/api/harvest">harvest</button>
+        <button id="unstuckBtn">② unstuck</button></div></div>
   </div>
   <!-- CENTER -->
   <div>
     <div class="panel"><h3>▣ console</h3>
       <img id="frame" class="big" alt="live console preview">
-      <div class="btnrow" style="margin-top:8px">
-        <button onclick="webConsole()">▣ web console</button>
+      <div class="btnrow mt8">
+        <button id="webconBtn">▣ web console</button>
         <a href="ibconsole://open?port=5900"><button>⧉ native viewer</button></a></div>
       <div class="muted">live preview above · same SPICE method as forge/iksar (5900)</div></div>
     <div class="panel"><h3>⊙ real-time monitor</h3>
-      <div class="mon-row"><span>player position</span><b id="m_pos" style="color:var(--accent)">—</b></div>
+      <div class="mon-row"><span>player position</span><b id="m_pos" class="accent">—</b></div>
       <div class="mon-row"><span>heading</span><span id="m_hdg">—</span></div></div>
     <div class="panel"><h3>① harvestables nearby <span id="nodeage" class="muted"></span></h3>
       <div id="nodes" class="muted">scanning…</div>
-      <div class="muted" style="font-size:11px">vtable 0x14eb850 · type/name via ID — decode pending</div></div>
+      <div class="muted small">vtable 0x14eb850 · type/name via ID — decode pending</div></div>
     <div class="panel"><h3>⑤ harvested items</h3>
-      <div class="btnrow"><button onclick="setTab('session')" id="tabS">session</button><button onclick="setTab('all')" id="tabA">all-time</button></div>
+      <div class="btnrow"><button id="tabS">session</button><button id="tabA">all-time</button></div>
       <table><thead><tr><th>resource</th><th>from</th><th>qty</th></tr></thead>
         <tbody id="harvrows"><tr><td class="muted" colspan=3>nothing harvested yet</td></tr></tbody></table></div>
   </div>
@@ -124,116 +96,14 @@ tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
     <div class="panel"><h3>⚑ alerts</h3>
       <div id="alerts" class="muted">clear</div></div>
     <div class="panel"><h3>⌁ controller log</h3>
-      <div id="clog" class="muted" style="max-height:180px;overflow:auto"></div></div>
+      <div id="clog" class="muted scrolly"></div></div>
     <div class="panel"><h3>⚙ memory</h3>
-      <button onclick="recal()">re-calibrate offset</button>
+      <button id="recalBtn">re-calibrate offset</button>
       <div class="muted">after a client update (uses /loc seed)</div></div>
   </div>
 </main>
-<script src="/static/toast.js"></script>
-<script>
-// theme
-const th=document.getElementById('theme'); const sv=localStorage.getItem('ibh-theme');
-if(sv){document.documentElement.dataset.theme=sv;th.value=sv}
-th.onchange=()=>{document.documentElement.dataset.theme=th.value;localStorage.setItem('ibh-theme',th.value)};
-let grecording=false, lastZone=null, tab='session';
-async function post(u,b){return (await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})})).json()}
-function mv(dir,ms){post('/api/move',{dir,ms:ms||450})}
-function unstuck(){post('/api/move',{dir:'jump',ms:300});setTimeout(()=>post('/api/move',{dir:'back',ms:600}),350)}
-function setTab(t){tab=t}
-function webConsole(){window.open(location.origin+'/static/spice/console.html?port=5900','ibhcon','width=1040,height=620')}
-async function loadRecGrids(){
-  try{const d=await (await fetch('/api/grids')).json();const sel=document.getElementById('recgrid');
-    sel.innerHTML=(d.grids||[]).map(g=>`<option value="${g.file}">extend: ${g.name} (${g.points} pts)</option>`).join('')+'<option value="__new__">＋ new grid…</option>';
-    recGridChange();}catch(e){}
-}
-function recGridChange(){document.getElementById('recname').style.display=document.getElementById('recgrid').value==='__new__'?'block':'none';}
-async function toggleGridRec(){
-  const btn=document.getElementById('recbtn');
-  if(!grecording){
-    const sel=document.getElementById('recgrid').value; let body={action:'start'};
-    if(sel==='__new__'){const nm=document.getElementById('recname').value.trim();if(!nm){alert('name the new grid first');return;}body.name=nm;}
-    else if(sel){body.grid=sel;}
-    await post('/api/graph',body);grecording=true;btn.textContent='⏹ stop & save';btn.classList.add('rec');
-  } else {
-    const r=await post('/api/graph',{action:'stop'});grecording=false;btn.textContent='⏺ record map';btn.classList.remove('rec');
-    alert('saved '+(r.name||'grid')+' — '+(r.points||0)+' pts, '+(r.edges||0)+' edges');
-    loadGrids();loadRecGrids();
-  }
-}
-loadRecGrids();
-let chars=[], acct='robskin2004';
-async function loadChars(){try{chars=await (await fetch('/api/characters')).json()}catch(e){chars=[]}renderChars();}
-function setAcct(u){acct=u;document.getElementById('acc1').classList.toggle('on',u==='meatwad33w');document.getElementById('acc2').classList.toggle('on',u==='robskin2004');renderChars();}
-function renderChars(){const list=chars.filter(c=>c.user===acct);document.getElementById('charlist').innerHTML=list.length?list.map(c=>`<button onclick="loginChar('${c.character}')">${c.character}</button>`).join(''):'<span class="muted">no characters for this account</span>';}
-async function loginChar(ch){document.getElementById('charmsg').textContent='launching + logging in '+ch+'… (boots VM ~3-5 min) — watch the controller log';await post('/api/launch',{character:ch});}
-loadChars(); setAcct('robskin2004');
-const sessmsg=()=>document.getElementById('sessmsg');
-async function launch(){sessmsg().textContent='launching + logging in (boots VM, ~3-5 min)… watch the controller log';await post('/api/launch',{})}
-async function camp(){sessmsg().textContent='camping to desktop…';const r=await post('/api/camp',{});sessmsg().textContent=r.ok?'camped (client closing)':'camp failed'}
-async function shutdownVM(){if(!confirm('Shut down the VM?'))return;sessmsg().textContent='shutting down VM…';const r=await post('/api/shutdown',{});sessmsg().textContent=r.ok?'VM shutting down':'shutdown failed'}
-async function loadKeymap(){try{const k=await (await fetch('/api/keymap')).json();document.getElementById('keymaprows').innerHTML=(k.binds||[]).map(b=>`<tr><td><b>${b.key}</b></td><td>${b.action}${b.note?` <span class="muted">(${b.note})</span>`:''}</td></tr>`).join('')}catch(e){}}
-loadKeymap();
-async function loadGrids(){try{const d=await (await fetch('/api/grids')).json();const sel=document.getElementById('gridsel');sel.innerHTML=(d.grids||[]).map(g=>`<option value="${g.file}">${g.name} — ${g.points} pts</option>`).join('')||'<option value="">no grid recorded</option>';}catch(e){}}
-loadGrids();
-const harvmsg=()=>document.getElementById('harvmsg');
-async function startHarvest(){const grid=document.getElementById('gridsel').value;const laps=parseInt(document.getElementById('laps').value)||40;harvmsg().textContent='starting harvest…';const r=await post('/api/gather',{action:'start',grid,laps});harvmsg().textContent=r.ok?`harvesting ${r.grid} (${r.laps} laps)`:`start failed: ${r.err||'?'}`;}
-async function stopHarvest(){harvmsg().textContent='stopping…';await post('/api/gather',{action:'stop'});harvmsg().textContent='stopped';}
-async function recal(){const p=document.getElementById('m_pos').textContent.split(',').map(Number);if(p.length<3||isNaN(p[0]))return alert('no live position');const r=await post('/api/recalibrate',{x:p[0],y:p[1],z:p[2]});alert('offset '+(r.primary||'not found'))}
-function refreshFrame(){const f=document.getElementById('frame');const img=new Image();img.onload=()=>{f.src=img.src};img.src='/api/frame.jpg?t='+Date.now()}
-async function tick(){
-  let d; try{d=await (await fetch('/api/state')).json()}catch(e){document.getElementById('link').className='pill';return}
-  const st=d.state||{}, live=st.ok&&st.pos;
-  document.getElementById('link').className='pill '+(live?'live':'');
-  document.getElementById('zone').textContent='zone: '+(d.zone||'—');
-  document.getElementById('zone2').textContent=d.zone||'(RE pending — zone name)';
-  document.getElementById('pos').textContent=live?('pos: '+st.pos.join(', ')):'pos: '+(st.err||'—');
-  document.getElementById('m_pos').textContent=live?st.pos.join(', '):'—';
-  document.getElementById('m_hdg').textContent=(live&&st.heading!=null)?(st.heading+'° '+(st.compass||'')):'—';
-  const g=d.graph||{};
-  document.getElementById('recinfo').textContent=g.recording?('● '+(g.points||0)+' pts · '+(g.edges||0)+' edges'):'';
-  document.getElementById('clog').innerHTML=(d.log||[]).slice(-30).reverse().map(l=>'<div>'+l.replace(/</g,'&lt;')+'</div>').join('');
-  // nearby NODES — live from the game's harvestable array (fast, every poll, REAL nodes only)
-  const nodes=st.nodes||[];
-  document.getElementById('nodeage').textContent=live?('· '+nodes.length+' tracked'):'';
-  document.getElementById('nodes').innerHTML=(live&&nodes.length)?nodes.slice(0,14).map(n=>
-    `<div class="mon-row"><span class="zone">⛏ ${(n.name||'unknown/too far').replace(/</g,'&lt;')}</span><span>${n.dist} m · ${n.xyz[0]}, ${n.xyz[2]}</span></div>`).join('')
-    :(live?'<span class="muted">no harvestables within 220 m</span>':'<span class="pending">…</span>');
-  // harvested-items table (session / all-time) — resource name · source node · qty
-  const hv=d.harvest||{session:{},all_time:{}}; const tbl=hv[tab==='all'?'all_time':'session']||{};
-  document.getElementById('tabS').style.borderColor=tab==='session'?'var(--accent)':'';
-  document.getElementById('tabA').style.borderColor=tab==='all'?'var(--accent)':'';
-  const rows=Object.entries(tbl).sort((a,b)=>b[1].qty-a[1].qty);
-  document.getElementById('harvrows').innerHTML=rows.length?rows.map(([item,e])=>
-    `<tr><td>${e.rare?'<span class="rec" title="rare">★ </span>':''}${item.replace(/</g,'&lt;')}</td><td class="muted">${(e.node||'').replace(/</g,'&lt;')}</td><td>${e.qty}</td></tr>`).join('')
-    :'<tr><td class="muted" colspan=3>nothing harvested yet</td></tr>';
-  // chat monitor (tells)
-  const tells=hv.tells||[];
-  document.getElementById('chatmon').innerHTML=tells.length?tells.slice(-8).reverse().map(t=>
-    `<div><b class="zone">${(t.from||'?').replace(/</g,'&lt;')}</b>: ${(t.msg||'').replace(/</g,'&lt;')}</div>`).join(''):'no tells yet';
-  // alerts
-  const al=d.alerts||[]; const col={combat:'var(--bad)',pm:'var(--accent)',rare:'var(--good)',stuck:'var(--warn)',bags:'var(--warn)'};
-  document.getElementById('alerts').innerHTML=al.length?al.map(a=>
-    `<div style="color:${col[a.kind]||'var(--fg)'}">● ${a.kind.toUpperCase()} — ${(a.msg||'').replace(/</g,'&lt;')}</div>`).join(''):'<span class="muted">clear</span>';
-  // toasts + OS notifications for new rares / tells (diff by newest timestamp)
-  notifyNew((d.harvest&&d.harvest.rares)||[], 'rare', r=>['Rare harvest found!', r.item+(r.node?` (${r.node})`:''), 'good']);
-  notifyNew((d.harvest&&d.harvest.tells)||[], 'tell', t=>[`Tell from ${t.from}`, t.msg, 'warn']);
-  notifyNew((d.harvest&&d.harvest.bagsfull)||[], 'bags', ()=>['Bags full', 'inventory full — harvesting is blocked', 'error']);
-}
-const _seen={};
-function notifyNew(arr, key, fmt){
-  if(!arr.length) return;
-  const newest=Math.max(...arr.map(x=>x.t||0));
-  if(_seen[key]===undefined){_seen[key]=newest;return;}  // prime: skip backlog on load
-  if(newest<=_seen[key]) return;
-  arr.filter(x=>(x.t||0)>_seen[key]).forEach(x=>{
-    const[t,dt,lv]=fmt(x); ibNotify.show(t,dt,lv);
-    if(typeof Notification!=='undefined'&&Notification.permission==='granted'){try{new Notification(t,{body:dt||''})}catch(e){}}
-  });
-  _seen[key]=newest;
-}
-ibNotify.phone(document.getElementById('phoneBtn'));
-loadChars();setInterval(tick,1500);tick();setInterval(refreshFrame,1500);refreshFrame();
-</script>
+<script src="/static/toast.js?v=20260706a"></script>
+<script src="/static/ui-core.js?v=20260706a"></script>
+<script src="/static/app.js?v=20260706a"></script>
 </body>
 </html>

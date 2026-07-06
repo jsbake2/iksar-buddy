@@ -1,12 +1,9 @@
 // ib · forge — crafter roster editor: character + tradeskill class + VM.
 "use strict";
-const $ = (id) => document.getElementById(id);
+const { $ } = ibUI;   // ui-core.js (web_common, P5.4)
 
 // theme (shared with the dashboard)
-const ts = $("theme");
-const saved = localStorage.getItem("ibf-theme");
-if (saved) { document.documentElement.dataset.theme = saved; ts.value = saved; }
-ts.onchange = () => { document.documentElement.dataset.theme = ts.value; localStorage.setItem("ibf-theme", ts.value); };
+ibUI.theme($("theme"), "ibf-theme");
 
 let trades = [];
 let vms = [];          // [{vm, label, dom}]

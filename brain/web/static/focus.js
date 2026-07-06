@@ -1,6 +1,6 @@
 // ib focus — configurable pop-out quick-action overlay.
 "use strict";
-const $ = (id) => document.getElementById(id);
+const { $ } = ibUI;      // shared helpers from ui-core.js (web_common, P5.4)
 
 // Full catalog. kind 'group' -> POST /api/act/<action>. kind 'role' -> resolve
 // the slot of <role> from live telemetry, then POST /api/act/<action>/<slot>.
@@ -155,13 +155,7 @@ async function loadServerLayout() {
 }
 
 // theme (shared with dashboard)
-const savedTheme = localStorage.getItem("ib-theme");
-if (savedTheme) document.documentElement.dataset.theme = savedTheme;
-$("theme").value = savedTheme || "midnight";
-$("theme").onchange = () => {
-  document.documentElement.dataset.theme = $("theme").value;
-  localStorage.setItem("ib-theme", $("theme").value);
-};
+ibUI.theme($("theme"), "ib-theme", "midnight");
 
 // ---- live state ----------------------------------------------------------
 let state = { running: false, chat_safe: null, roleSlot: {} };
@@ -340,14 +334,8 @@ function toggleEditor(force) {
 editBtn.onclick = () => toggleEditor();          // same button toggles on/off
 const doneBtn = $("doneBtn"); if (doneBtn) doneBtn.onclick = () => toggleEditor(false);
 
-// ---- websocket (live status) ---------------------------------------------
-function connect() {
-  const proto = location.protocol === "https:" ? "wss" : "ws";
-  const ws = new WebSocket(`${proto}://${location.host}/ws`);
-  ws.onmessage = (e) => { try { applyState(JSON.parse(e.data)); } catch (_) {} };
-  ws.onclose = () => setTimeout(connect, 1500);
-  ws.onerror = () => ws.close();
-}
+// ---- websocket (live status; ui-core auto-reconnect) -----------------------
+const connect = () => ibUI.wsReconnect(applyState);
 // HTTP snapshot poll — the WS doesn't reliably reach this popout through Cloudflare,
 // so drive state (incl. the profile kind) off a cache-busted GET as the source of
 // truth. Cheap, and it makes the window correct even if the WS never connects.

@@ -1,8 +1,8 @@
 // ib dashboard — live websocket telemetry + manual control surface.
+// Shared helpers ($, fmt, pct, cap, post/postJSON, theme, ws-reconnect) come from
+// ui-core.js (web_common, REFACTOR P5.4) — loaded before this file by index.html.
 "use strict";
-const $ = (id) => document.getElementById(id);
-const fmt = (v, s = "") => (v === null || v === undefined ? "—" : v + s);
-const pct = (v) => Math.round((v ?? 0) * 100);
+const { $, fmt, pct, cap, post, postJSON } = ibUI;
 
 const CURES = ["noxious", "elemental", "trauma", "arcane", "curse"];
 const CURE_ABBR = { noxious: "nox", elemental: "ele", trauma: "tra", arcane: "arc", curse: "cur" };
@@ -20,20 +20,8 @@ let dirgeActions = {};
 let dirgeSig = "";
 
 // ---- theme persistence ----------------------------------------------------
-const themeSel = $("theme");
-const savedTheme = localStorage.getItem("ib-theme");
-if (savedTheme) { document.documentElement.dataset.theme = savedTheme; themeSel.value = savedTheme; }
-themeSel.onchange = () => {
-  document.documentElement.dataset.theme = themeSel.value;
-  localStorage.setItem("ib-theme", themeSel.value);
-};
+ibUI.theme($("theme"), "ib-theme");
 
-// ---- action helpers -------------------------------------------------------
-function post(url) { fetch(url, { method: "POST" }).catch(() => {}); }
-function postJSON(url, body) {
-  fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body) }).catch(() => {});
-}
 // live tunables (ward heartbeat). Load current value, save on change.
 const wardHb = document.getElementById("wardHb");
 if (wardHb) {
@@ -114,7 +102,6 @@ if ($("recastPanel")) { pollRecast(); setInterval(pollRecast, 3000); setInterval
 
 // ---- healer profile selector (top bar) ------------------------------------
 const profileSel = $("profile");
-const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 let profileSig = "";
 function renderProfile(p) {
   if (!p || !profileSel) return;
@@ -628,12 +615,5 @@ if (spiceRestartBtn) spiceRestartBtn.onclick = () => {
     .finally(() => setTimeout(() => { spiceRestartBtn.disabled = false; }, 2500));
 };
 
-// ---- websocket with auto-reconnect ---------------------------------------
-function connect() {
-  const proto = location.protocol === "https:" ? "wss" : "ws";
-  const ws = new WebSocket(`${proto}://${location.host}/ws`);
-  ws.onmessage = (e) => { try { render(JSON.parse(e.data)); } catch (_) {} };
-  ws.onclose = () => { $("conn").classList.remove("on"); setTimeout(connect, 1500); };
-  ws.onerror = () => ws.close();
-}
-connect();
+// ---- websocket with auto-reconnect (ui-core) ------------------------------
+ibUI.wsReconnect(render, { onClose: () => $("conn").classList.remove("on") });

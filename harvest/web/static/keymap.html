@@ -19,15 +19,17 @@ th{color:var(--muted);font-weight:400;font-size:11px;text-transform:uppercase;le
 td input{width:100%}
 .k{width:130px} .del{width:34px;text-align:center}
 .btnrow{display:flex;gap:8px;align-items:center;margin-top:10px}
+.spacer{flex:1} .panel h3{margin:0 0 4px}
 .muted{color:var(--muted);font-size:12px}
 .status.good{color:var(--good)} .status.bad{color:var(--bad)}
+button.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 a{color:var(--accent);text-decoration:none}
 </style>
 </head>
 <body>
 <header>
   <b>ib · harvest</b><span class="muted">keymap editor</span>
-  <span style="flex:1"></span>
+  <span class="spacer"></span>
   <a href="/">← back to dashboard</a>
   <select id="theme" title="theme">
     <option value="iksar">iksar</option><option value="midnight">midnight</option>
@@ -37,29 +39,27 @@ a{color:var(--accent);text-decoration:none}
 </header>
 <main>
   <div class="panel">
-    <h3 style="margin:0 0 4px">⌨ in-game keybinds</h3>
+    <h3>⌨ in-game keybinds</h3>
     <div class="muted">Reference of the keys the bot + owner use in-world. Saved to
       ib-data/harvest/keymap.yaml; also shown on the dashboard.</div>
     <table><thead><tr><th class="k">key</th><th>action</th><th>note</th><th class="del"></th></tr></thead>
       <tbody id="rows"></tbody></table>
     <div class="btnrow">
-      <button onclick="addRow()">＋ add bind</button>
-      <button onclick="save()" style="background:var(--accent);color:var(--bg);border-color:var(--accent)">save</button>
+      <button id="addBtn">＋ add bind</button>
+      <button id="saveBtn" class="primary">save</button>
       <span id="status" class="status"></span>
     </div>
   </div>
 </main>
+<script src="/static/ui-core.js?v=20260706a"></script>
 <script>
-const $=(id)=>document.getElementById(id);
-const th=$('theme'),sv=localStorage.getItem('ibh-theme');
-if(sv){document.documentElement.dataset.theme=sv;th.value=sv}
-th.onchange=()=>{document.documentElement.dataset.theme=th.value;localStorage.setItem('ibh-theme',th.value)};
-const esc=(s)=>String(s||'').replace(/"/g,'&quot;');
+const {$,esc}=ibUI;
+ibUI.theme($('theme'),'ibh-theme');
 function row(b){b=b||{};return `<tr>`+
   `<td><input class="k bk" value="${esc(b.key)}" placeholder="Ctrl+0"></td>`+
   `<td><input class="ba" value="${esc(b.action)}" placeholder="what it does"></td>`+
   `<td><input class="bn" value="${esc(b.note)}" placeholder="optional note"></td>`+
-  `<td class="del"><button onclick="this.closest('tr').remove()">✕</button></td></tr>`;}
+  `<td class="del"><button class="delBtn">✕</button></td></tr>`;}
 function addRow(){$('rows').insertAdjacentHTML('beforeend',row());}
 async function load(){
   let d={}; try{d=await (await fetch('/api/keymap')).json()}catch(e){}
@@ -77,6 +77,9 @@ async function save(){
   }catch(e){s.textContent='save failed';s.className='status bad'}
   setTimeout(()=>{s.textContent=''},2500);
 }
+$('addBtn').onclick=addRow;
+$('saveBtn').onclick=save;
+$('rows').onclick=(e)=>{if(e.target.classList.contains('delBtn'))e.target.closest('tr').remove()};
 load();
 </script>
 </body>

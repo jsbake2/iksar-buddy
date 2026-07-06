@@ -114,6 +114,16 @@ body {
    left-column panels (group, graph, self...) stack UNDER the console instead of
    leaving dead space. */
 .control-panel { grid-row:span 3; }
+/* panel ordering (was inline style="order:N" on each <section> — REFACTOR P5.3) */
+.live-panel { order:1; }
+.control-panel, .recast-panel { order:2; }
+.staterun-panel { order:3; }
+.graph-panel { order:4; }
+.self-panel { order:5; }
+.sensors-panel { order:6; }
+.status-panel { order:7; }
+.events-panel { order:9; }
+#tMana { width:60px; }
 .panel {
   background:linear-gradient(var(--panel),var(--panel2));
   border:1px solid var(--line); border-radius:14px; padding:15px 17px;

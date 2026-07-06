@@ -2,12 +2,9 @@
 // box on the live VM frame to capture pixels / regions / clicks / templates into
 // craft.yaml. Coords map display->guest via the frame's natural size (1920x1080).
 "use strict";
-const $ = (id) => document.getElementById(id);
+const { $ } = ibUI;   // ui-core.js (web_common, P5.4)
 
-const ts = $("theme");
-const savedTheme = localStorage.getItem("ibf-theme");
-if (savedTheme) { document.documentElement.dataset.theme = savedTheme; ts.value = savedTheme; }
-ts.onchange = () => { document.documentElement.dataset.theme = ts.value; localStorage.setItem("ibf-theme", ts.value); };
+ibUI.theme($("theme"), "ibf-theme");
 
 // Capture targets. kind: pixel (loc+color) | click (point) | pixelclick (both) |
 // region {x,y,w,h} | template (drag a box -> POST as <name>.png).

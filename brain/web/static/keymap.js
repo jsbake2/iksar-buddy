@@ -1,15 +1,9 @@
 // ib keymap editor — view + edit the ability->key map, save back to YAML.
 "use strict";
-const $ = (id) => document.getElementById(id);
+const { $ } = ibUI;      // shared helpers from ui-core.js (web_common, P5.4)
 
 // theme (shared with the dashboard)
-const themeSel = $("theme");
-const saved = localStorage.getItem("ib-theme");
-if (saved) { document.documentElement.dataset.theme = saved; themeSel.value = saved; }
-themeSel.onchange = () => {
-  document.documentElement.dataset.theme = themeSel.value;
-  localStorage.setItem("ib-theme", themeSel.value);
-};
+ibUI.theme($("theme"), "ib-theme");
 
 let km = null;   // the loaded keymap object (mutated in place on save)
 

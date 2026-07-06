@@ -2,18 +2,11 @@
 // panels built from a <template>, per-bot craft controls. Mirrors the healer
 // app.js conventions (theme persistence, post helpers, ws auto-reconnect).
 "use strict";
-const $ = (id) => document.getElementById(id);
-const pct = (v) => Math.round((v ?? 0) * 100);
+const { $, pct } = ibUI;   // shared helpers from ui-core.js (web_common, P5.4)
 const clamp = (v) => Math.max(0, Math.min(1, v ?? 0));
 
 // ---- theme persistence ----------------------------------------------------
-const themeSel = $("theme");
-const savedTheme = localStorage.getItem("ibf-theme");
-if (savedTheme) { document.documentElement.dataset.theme = savedTheme; themeSel.value = savedTheme; }
-themeSel.onchange = () => {
-  document.documentElement.dataset.theme = themeSel.value;
-  localStorage.setItem("ibf-theme", themeSel.value);
-};
+ibUI.theme($("theme"), "ibf-theme");
 
 // ---- action helpers -------------------------------------------------------
 function post(url, body) {

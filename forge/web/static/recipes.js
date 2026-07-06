@@ -4,14 +4,11 @@
 "use strict";
 const DATA = "/recipedata";
 const DV = "?v=20260616d";   // cache-bust the data JSON (bump when the scrape regenerates)
-const $ = (id) => document.getElementById(id);
+const { $ } = ibUI;   // ui-core.js (web_common, P5.4)
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
 // theme: shared key with the dashboard so the choice carries across pages
-const themeSel = $("theme");
-const savedTheme = localStorage.getItem("ibf-theme");
-if (savedTheme) { document.documentElement.dataset.theme = savedTheme; themeSel.value = savedTheme; }
-themeSel.onchange = () => { document.documentElement.dataset.theme = themeSel.value; localStorage.setItem("ibf-theme", themeSel.value); };
+ibUI.theme($("theme"), "ibf-theme");
 
 const state = {
   manifest: null, cls: null, isSide: false, items: [], cache: {},

@@ -1,11 +1,7 @@
 // ib · forge — keymap editor: camp command + counter#×mode art keys.
 "use strict";
-const $ = (id) => document.getElementById(id);
-
-const ts = $("theme");
-const saved = localStorage.getItem("ibf-theme");
-if (saved) { document.documentElement.dataset.theme = saved; ts.value = saved; }
-ts.onchange = () => { document.documentElement.dataset.theme = ts.value; localStorage.setItem("ibf-theme", ts.value); };
+const { $ } = ibUI;      // shared helpers from ui-core.js (web_common, P5.4)
+ibUI.theme($("theme"), "ibf-theme");
 
 function renderGrid(arts) {
   const dur = arts.durability || [];

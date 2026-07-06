@@ -1,0 +1,35 @@
+/* harvest dashboard layout (REFACTOR P5.2 — moved out of index.html's inline
+   <style>). Theme variables come from themes.css; this file is structure only. */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+header{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header b{color:var(--accent);font-size:15px;letter-spacing:.5px}
+.zone{color:var(--good)} .pos{color:var(--muted)}
+.pill{padding:2px 8px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}
+.pill.live{color:var(--accent);border-color:var(--accent)}
+main{display:grid;grid-template-columns:360px minmax(0,1fr) 320px;gap:12px;padding:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px;min-width:0}
+.panel h3{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.pending{color:var(--warn);font-style:italic;font-size:12px}
+button,select,input{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;cursor:pointer;font:inherit;max-width:100%}
+select{width:100%}
+button:hover{border-color:var(--accent)} .btnrow{display:flex;flex-wrap:wrap;gap:6px}
+.seg{display:flex;gap:0;margin-bottom:8px}
+.seg button{flex:1;border-radius:0;border-right:0}
+.seg button:first-child{border-radius:6px 0 0 6px} .seg button:last-child{border-radius:0 6px 6px 0;border-right:1px solid var(--line)}
+.seg button.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.charlist button{padding:3px 8px}
+#frame.big{aspect-ratio:16/10}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:400}
+tr.sel{cursor:pointer} tr.sel:hover{background:var(--bg)}
+.rec{color:var(--bad)} .muted{color:var(--muted);font-size:12px}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);gap:5px;justify-content:center}
+.dpad button{height:34px}
+.mon-row{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:3px 0}
+#frame{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--bg);aspect-ratio:16/9;object-fit:cover}
+/* utilities (replacing the old inline style="" attributes) */
+.spacer{flex:1} .grow{flex:1}
+.mr8{margin-right:8px} .mt6{margin-top:6px} .mt8{margin-top:8px}
+.w52{width:52px} .center{justify-content:center}
+.scrolly{max-height:180px;overflow:auto}
+.accent{color:var(--accent)} .small{font-size:11px}

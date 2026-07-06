@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ib</title>
-  <link rel="stylesheet" href="themes.css?v=20260701n" />
+  <link rel="stylesheet" href="themes.css?v=20260706a" />
 </head>
 <body>
   <!-- top bar -->
@@ -50,7 +50,7 @@
 
   <main class="grid">
     <!-- LIVE VIEW -->
-    <section class="panel span-2 live-panel" style="order:1">
+    <section class="panel span-2 live-panel">
       <h2>Live view <span class="sub" id="liveAge">—</span></h2>
       <div class="live-wrap">
         <img id="liveFrame" class="live-frame" alt="live VM view" />
@@ -64,7 +64,7 @@
     </section>
 
     <!-- STATE & RUN -->
-    <section class="panel span-2 staterun-panel" style="order:3">
+    <section class="panel span-2 staterun-panel">
       <h2>State &amp; run</h2>
       <div class="combat-toggle">
         <button id="resetCombatBtn" class="big-combat reset">⟲ RESET COMBAT</button>
@@ -94,14 +94,14 @@
       <!-- Dirge mana-feed threshold (shown only for a support/Dirge profile) -->
       <div class="tune-row dirge-only" hidden>
         <label class="tune" title="power fraction below which pos 2/3/4 get a mana feed; 0 = off">
-          mana feed &lt;<input type="number" id="tMana" min="0" max="1" step="0.05" style="width:60px" /></label>
+          mana feed &lt;<input type="number" id="tMana" min="0" max="1" step="0.05" /></label>
         <span class="tune-hint">reactive mana feed on group positions 2/3/4 · 0 = off</span>
       </div>
     </section>
 
     <!-- RECAST BUFFS (Dirge only) — one row per periodic buff: name, interval, target,
          live countdown, and a manual cast that resets that timer. Filled by app.js. -->
-    <section class="panel dirge-only recast-panel" id="recastPanel" hidden style="order:2">
+    <section class="panel dirge-only recast-panel" id="recastPanel" hidden>
       <h2>Recast buffs <span class="sub">auto-recast in combat · ▶ casts now &amp; resets</span></h2>
       <div class="recast-head">
         <span>buff</span><span>every</span><span>target</span><span>next</span><span></span>
@@ -112,13 +112,13 @@
     <!-- GROUP panel removed from the main page (cluttered) — use the ⊟ group pop-out -->
 
     <!-- GROUP HP HISTORY (right side, next to State & run) -->
-    <section class="panel span-2 graph-panel" style="order:4">
+    <section class="panel span-2 graph-panel">
       <h2>Group HP — recent <span class="sub" id="graphLegend"></span></h2>
       <canvas id="hpGraph" class="hp-graph" width="640" height="150"></canvas>
     </section>
 
     <!-- SELF -->
-    <section class="panel" style="order:5">
+    <section class="panel self-panel">
       <h2>Self <span class="sub" id="selfClass">Defiler</span></h2>
       <div class="metric">
         <div class="metric-head"><span>Power</span><b id="powerPct">—</b></div>
@@ -135,7 +135,7 @@
     </section>
 
     <!-- SENSORS -->
-    <section class="panel" style="order:6">
+    <section class="panel sensors-panel">
       <h2>Sensors</h2>
       <div class="sensors">
         <div class="sensor"><span>latency</span><b id="latency">—</b><div class="bar-mini"><i id="latBar"></i></div></div>
@@ -150,7 +150,7 @@
     </section>
 
     <!-- MANUAL CONTROL -->
-    <section class="panel span-2 control-panel" style="order:2">
+    <section class="panel span-2 control-panel">
       <h2>Manual control</h2>
 
       <div class="ctl-grid" id="actionGrid"></div>
@@ -232,7 +232,7 @@
     </section>
 
     <!-- STATUS -->
-    <section class="panel" style="order:7">
+    <section class="panel status-panel">
       <h2>Status</h2>
       <div class="kv"><span>state machine</span><b id="stateK">—</b></div>
       <div class="kv"><span>override</span><b id="override">none</b></div>
@@ -243,7 +243,7 @@
     </section>
 
     <!-- EVENT STREAM -->
-    <section class="panel events-panel" style="order:9">
+    <section class="panel events-panel">
       <h2>Event stream</h2>
       <ul id="events" class="events"></ul>
     </section>
@@ -281,6 +281,7 @@
   </div>
 
   <script src="toast.js?v=20260701b"></script>
-  <script src="app.js?v=20260703a"></script>
+  <script src="ui-core.js?v=20260706a"></script>
+  <script src="app.js?v=20260706a"></script>
 </body>
 </html>

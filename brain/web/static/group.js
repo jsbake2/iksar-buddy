@@ -1,9 +1,7 @@
 // ib group — pop-out per-member control: manually top off / pre-ward / cure / rez
 // any group member during a long fight, without waiting for the auto loop.
 "use strict";
-const $ = (id) => document.getElementById(id);
-const pct = (v) => Math.round((v ?? 0) * 100);
-const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const { $, pct, cap } = ibUI;   // shared helpers from ui-core.js (web_common, P5.4)
 const FALLBACK_NAMES = ["self", "slot1", "slot2", "slot3", "slot4", "slot5"];
 let maintRole = "ward";   // 'ward' (Defiler) | 'hot' (Fury) — from the active profile
 let kind = "healer";      // 'healer' (heal/ward/cure) | 'dirge' (per-member buffs)
@@ -32,13 +30,7 @@ let BTNS = HEALER_BTNS;
 let buffSig = "";         // (kind + button set) signature — rebuild cards when it changes
 
 // theme (shared with dashboard/focus)
-const savedTheme = localStorage.getItem("ib-theme");
-if (savedTheme) document.documentElement.dataset.theme = savedTheme;
-$("theme").value = savedTheme || "midnight";
-$("theme").onchange = () => {
-  document.documentElement.dataset.theme = $("theme").value;
-  localStorage.setItem("ib-theme", $("theme").value);
-};
+ibUI.theme($("theme"), "ib-theme", "midnight");
 
 let running = false;
 function post(url, btn) {
@@ -130,13 +122,7 @@ function render(s) {
   });
 }
 
-function connect() {
-  const proto = location.protocol === "https:" ? "wss" : "ws";
-  const ws = new WebSocket(`${proto}://${location.host}/ws`);
-  ws.onmessage = (e) => { try { render(JSON.parse(e.data)); } catch (_) {} };
-  ws.onclose = () => setTimeout(connect, 1500);
-  ws.onerror = () => ws.close();
-}
+const connect = () => ibUI.wsReconnect(render);   // ui-core auto-reconnect
 // HTTP snapshot poll (unique path defeats the CF edge cache) — the WS doesn't reliably
 // reach this popout through Cloudflare, so drive state off a cache-busted GET too.
 async function poll() {
