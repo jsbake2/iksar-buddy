@@ -84,6 +84,7 @@ def main():
                 print(f"[dry] would click {w[0]} @ {cx},{cy}")
                 return
             sh("python3", os.path.expanduser("~/ib-build/gexec.py"),
+               "Enable-ScheduledTask -TaskName ibgclick -ErrorAction SilentlyContinue | Out-Null; "
                f"Set-Content C:\\ib\\click.txt '{cx} {cy}' -NoNewline; Start-ScheduledTask -TaskName ibgclick")
             print(f"CLICKED {w[0]} @ {cx},{cy}")
             return

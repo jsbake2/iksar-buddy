@@ -95,6 +95,7 @@ def clusters(xs: list[int], gap: int = 22) -> list[tuple[int, int]]:
 
 def click(x: int, y: int) -> None:
     sh("python3", GEXEC,
+       "Enable-ScheduledTask -TaskName ibgclick -ErrorAction SilentlyContinue | Out-Null; "
        f"Set-Content C:\\ib\\click.txt '{x} {y}' -NoNewline; Start-ScheduledTask -TaskName ibgclick")
 
 

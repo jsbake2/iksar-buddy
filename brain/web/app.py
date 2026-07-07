@@ -642,10 +642,11 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
     # background watching). Each entry is the helper's argv. quest passes --accept
     # so the manual button accepts whatever quest is shown (the policy allowlist is
     # for autonomous use only, which isn't wired).
+    # trade omitted on purpose: trade_accept.py's gate was never tuned to a real
+    # trade window, so the button was removed from the UI (2026-07-07).
     _ACCEPT = {"invite": ["invite_accept.py"],
                "quest": ["quest_accept.py", "--accept"],
-               "revive": ["revive_accept.py"],
-               "trade": ["trade_accept.py"]}
+               "revive": ["revive_accept.py"]}
 
     async def _run_helper(argv: list, label: str):
         path = str(Path.home() / "ib-build" / argv[0])
