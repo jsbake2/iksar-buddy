@@ -48,7 +48,10 @@ const DIRGE_TUNES = { tMana: "mana_heal_floor", tPb1: "pbuff_1_interval_s",
   }));
 })();
 
-// ---- Dirge recast-buffs panel: rows (name/interval/target) + live countdown + cast ----
+// ---- Recast-buffs panel: rows (name/interval/target) + live countdown + cast ----
+// Shown for BOTH the Dirge (support buffs) and healers (HoTs, e.g. a Fury's Fury
+// Flatulence). Backend endpoints stay /api/dirge/* — they read pbuff_* from whatever
+// profile is active, so they serve any kind. ----
 let recastSig = "";
 const recastState = {};        // n -> { next_at (epoch s), interval }
 function buildRecast(buffs) {
@@ -81,7 +84,7 @@ function buildRecast(buffs) {
   });
 }
 async function pollRecast() {
-  if (profileKind !== "dirge") return;               // only for a Dirge profile
+  // Runs for every profile kind — Dirge buffs AND healer HoTs use the same panel.
   let d;
   try { d = await (await fetch("/api/dirge/buffs")).json(); } catch (_) { return; }
   if (!d || !Array.isArray(d.buffs)) return;

@@ -382,8 +382,10 @@ class Brain:
         return None
 
     def _hb_pbuffs(self, world: WorldState, now: float):
-        """DIRGE periodic buffs: recast up to 4 maintenance buffs on their own
-        timers, IN_COMBAT only (owner's call). pbuff_N_interval_s = 0 disables a
+        """Periodic recast buffs / HoTs: recast up to 4 maintenance buffs on their
+        own timers, IN_COMBAT only (owner's call). Serves the Dirge's support buffs
+        AND a healer's HoTs (e.g. a Fury's Fury Flatulence) — same machinery, keyed
+        off whatever the active profile maps. pbuff_N_interval_s = 0 disables a
         slot; one buff per GCD. Target is the GROUP SLOT directly: 0 = self (F1),
         1 = next member (F2), ... 5 = 6th (F6) — matches EQ2's F-key order."""
         if self.sm.state != State.IN_COMBAT:

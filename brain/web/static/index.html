@@ -99,9 +99,11 @@
       </div>
     </section>
 
-    <!-- RECAST BUFFS (Dirge only) — one row per periodic buff: name, interval, target,
-         live countdown, and a manual cast that resets that timer. Filled by app.js. -->
-    <section class="panel dirge-only recast-panel" id="recastPanel" hidden>
+    <!-- RECAST BUFFS (Dirge + healers) — one row per periodic buff / HoT: name,
+         interval, target, live countdown, and a manual cast that resets that timer.
+         A Fury runs HoTs (e.g. Fury Flatulence) here just like the Dirge runs buffs.
+         Always shown; rows with no key mapped render as ".unset". Filled by app.js. -->
+    <section class="panel recast-panel" id="recastPanel">
       <h2>Recast buffs <span class="sub">auto-recast in combat · ▶ casts now &amp; resets</span></h2>
       <div class="recast-head">
         <span>buff</span><span>every</span><span>target</span><span>next</span><span></span>

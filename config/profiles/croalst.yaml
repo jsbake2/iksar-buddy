@@ -139,6 +139,29 @@ abilities:
     desc: emergency reactive heal
     key: ''
     mode: auto
+  # PERIODIC RECAST buffs (Recast-buffs panel): up to 4 named buffs auto-recast in
+  # combat on their own timers with a per-buff target. Set key+name in the ⌨ keymap,
+  # interval/target on the panel.
+  pbuff_1:
+    key: ''
+    mode: auto
+    name: ''
+    desc: periodic recast buff 1
+  pbuff_2:
+    key: ''
+    mode: auto
+    name: ''
+    desc: periodic recast buff 2
+  pbuff_3:
+    key: ''
+    mode: auto
+    name: ''
+    desc: periodic recast buff 3
+  pbuff_4:
+    key: ''
+    mode: auto
+    name: ''
+    desc: periodic recast buff 4
 group_target_keys:
 - F1
 - F2

@@ -66,10 +66,13 @@ assist_heartbeat_s: 4   # re-send pet + assist (attack key) every N s while in c
 debuff_cycle_s: 10
 debuff_power_floor: 0.50
 
-# Dirge automation (only fires when the Dirge profile maps the keys).
+# Periodic recast buffs / HoTs + Dirge mana feed (fire only when the active profile
+# maps the keys). pbuff_* drive the Recast-buffs panel: the Dirge's support buffs AND
+# a healer's HoTs (e.g. a Fury's Fury Flatulence). Global, like ward_heartbeat_s —
+# tuned against whichever profile is active. mana feed is Dirge-only.
 mana_heal_floor:   0.0      # power fraction below which a pos-2/3/4 member gets a mana feed; 0 = off
 mana_heal_recast_s: 6       # min seconds between mana feeds on the same target
-pbuff_1_interval_s: 0       # recast periodic buff 1 every N s in combat; 0 = off
+pbuff_1_interval_s: 0       # recast periodic buff / HoT 1 every N s in combat; 0 = off
 pbuff_2_interval_s: 0
 pbuff_3_interval_s: 0
 pbuff_4_interval_s: 0
