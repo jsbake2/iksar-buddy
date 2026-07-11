@@ -66,10 +66,17 @@ def main():
             if dry:
                 print(f"[dry] would click Accept @ {cx},{cy}")
                 return
-            sh("python3", os.path.expanduser("~/ib-build/gexec.py"),
-               "Enable-ScheduledTask -TaskName ibgclick -ErrorAction SilentlyContinue | Out-Null; "
-               f"Set-Content C:\\ib\\click.txt '{cx} {cy}' -NoNewline; Start-ScheduledTask -TaskName ibgclick")
-            print(f"CLICKED Accept @ {cx},{cy}")
+            # Fire the click, wait for the guest AHK to run, then read its log back
+            # (pos.logf gets "ev-click x y @..." on success or "gclick: no EQ2 window"
+            # if the client wasn't focused/running). That readback is the definitive
+            # signal for WHICH stage failed when "accept invite doesn't work".
+            r = sh("python3", os.path.expanduser("~/ib-build/gexec.py"),
+                   "Enable-ScheduledTask -TaskName ibgclick -ErrorAction SilentlyContinue | Out-Null; "
+                   f"Set-Content C:\\ib\\click.txt '{cx} {cy}' -NoNewline; "
+                   "Start-ScheduledTask -TaskName ibgclick; Start-Sleep -Milliseconds 1600; "
+                   "Get-Content C:\\ib\\pos.logf -Tail 1 -ErrorAction SilentlyContinue")
+            tail = " ".join(l for l in r.stdout.splitlines() if "click" in l.lower())
+            print(f"CLICKED Accept @ {cx},{cy} | guest: {tail.strip()[:80] or '(no pos.logf line)'}")
             return
         if attempt < RETRIES:
             time.sleep(RETRY_GAP_S)
