@@ -693,6 +693,11 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
         await websocket.accept()
         q = telemetry.subscribe()
         try:
+            # Re-seed the profile block on every connect so a profile file ADDED while
+            # the brain is running (e.g. a new healer profile dropped into config/
+            # profiles/) shows up on a page refresh — otherwise `available` stays the
+            # stale list captured at startup and the new profile never appears.
+            telemetry.update(profile=_profile_state())
             await websocket.send_json(telemetry.snapshot)  # prime
             while True:
                 snap = await q.get()
