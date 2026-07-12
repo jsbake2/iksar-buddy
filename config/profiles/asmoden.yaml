@@ -1,0 +1,83 @@
+# Healer-tool profile: ASMODEN (Conjuror — summoner/mage DPS + pet, NOT a healer).
+# Same SUPPORT-style controls as the Dirge (Joar): maintenance_role/group_maintenance_role
+# = none -> the dashboard renders the DIRGE layout (buff matrix x group members + utility
+# on the main page; combat — nukes/debuffs/aoe/deaggro + utility — on the focus window).
+# policy.py skips absent roles, so Asmoden queues no auto actions (like the Dirge).
+#
+# Account: account3 (matte123) — SAME account as Joar, so Joar<->Asmoden is a same-account
+# /camp <name> switch. Owner fills keys via the ⌨ keymap page. attack_1 = pet attack /
+# assist; the rest are the conjuror's nukes. Buff roles carry a `name:` set in the keymap.
+
+healer: conjuror
+abilities:
+  # === BUFFS — cast on a group member from the main-page matrix (named in keymap) ===
+  # temp buffs (re-applied often)
+  temp_buff_1: { key: '', mode: manual, name: '', desc: 'temp buff 1' }
+  temp_buff_2: { key: '', mode: manual, name: '', desc: 'temp buff 2' }
+  temp_buff_3: { key: '', mode: manual, name: '', desc: 'temp buff 3' }
+  temp_buff_4: { key: '', mode: manual, name: '', desc: 'temp buff 4' }
+  # individual (permanent) buffs
+  ind_buff_1:  { key: '', mode: manual, name: '', desc: 'individual buff 1' }
+  ind_buff_2:  { key: '', mode: manual, name: '', desc: 'individual buff 2' }
+  ind_buff_3:  { key: '', mode: manual, name: '', desc: 'individual buff 3' }
+  ind_buff_4:  { key: '', mode: manual, name: '', desc: 'individual buff 4' }
+
+  # === COMBAT — on the focus window ===
+  debuff_1:     { key: '', mode: manual, desc: 'debuff 1' }
+  debuff_2:     { key: '', mode: manual, desc: 'debuff 2' }
+  attack_1:     { key: '', mode: manual, desc: 'pet attack / assist' }
+  attack_2:     { key: '', mode: manual, desc: 'nuke 1' }
+  enc_attack_1: { key: '', mode: manual, desc: 'encounter nuke 1' }
+  enc_attack_2: { key: '', mode: manual, desc: 'encounter nuke 2' }
+  aoe_attack:   { key: '', mode: manual, desc: 'aoe nuke' }
+  deaggro:      { key: '=', mode: manual, desc: 'de-aggro / drop threat' }
+
+  # === AUTOMATION (host loop; owner sets keys + timings in the tuning panel) ===
+  # Power feed — reactive on group positions 2/3/4 power (mana_heal_floor). Group when 2+
+  # low, else individual on the lowest. (Conjuror pet power-transfer, if mapped.)
+  mana_heal:       { key: '', mode: auto, desc: 'power feed (single target)' }
+  group_mana_heal: { key: '', mode: auto, desc: 'power feed (group)' }
+  # 4 periodic recast buffs — recast in combat on their own timers (Recast-buffs panel).
+  # Each carries a NAME (shown on the panel) + an optional target slot 1-6 (pbuff_N_target;
+  # blank/1 = self). For a conjuror: maintained pet/self buffs or procs.
+  pbuff_1:  { key: '', mode: auto, name: '', desc: 'periodic recast buff 1' }
+  pbuff_2:  { key: '', mode: auto, name: '', desc: 'periodic recast buff 2' }
+  pbuff_3:  { key: '', mode: auto, name: '', desc: 'periodic recast buff 3' }
+  pbuff_4:  { key: '', mode: auto, name: '', desc: 'periodic recast buff 4' }
+
+  # === UTILITY / MOVEMENT ===
+  follow:      { key: Alt+=,  mode: manual, desc: 'auto-follow toggle' }
+  stop_follow: { key: Ctrl+=, mode: manual, desc: 'stop following' }
+  jump:        { key: Space,  mode: manual, desc: 'jump (un-stick / pathing)' }
+  sow:         { key: '',     mode: manual, desc: 'run-speed buff' }
+  call_home:   { key: Alt+-,  mode: manual, desc: 'call to home' }
+  evac:        { key: '',     mode: manual, desc: 'emergency evac' }
+  hail:        { key: '',     mode: manual, desc: 'hail NPC' }
+  item_use:    { key: '',     mode: manual, desc: 'use item (totem / temp buff)' }
+  camp:        { key: Ctrl+-, mode: manual, desc: 'camp (/camp desktop) — used by Stop Bot' }
+
+group_target_keys:
+- F1
+- F2
+- F3
+- F4
+- F5
+- F6
+slot_roles:
+- dps
+- tank
+- dps
+- dps
+- healer
+- support
+tank_slot: 1
+maintenance_role: none
+group_maintenance_role: none
+names:
+  '0': Asmoden
+  '1': ''
+  '2': ''
+  '3': ''
+  '4': ''
+  '5': ''
+select_character: Asmoden

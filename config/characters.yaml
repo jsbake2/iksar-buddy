@@ -21,3 +21,4 @@ characters:
   Paraphon: { account: account1, adventure: "",           tradeskill: "" }          # tank (croalst profile)
   Joar:     { account: account3, adventure: dirge,        tradeskill: "" }          # support (bard) — buffs/follow, no heals/wards
   Furyflatulence: { account: account4, adventure: fury,   tradeskill: "" }          # healer (furyflatulence profile) — HoTs, own account meatwad33w
+  Asmoden:  { account: account3, adventure: conjuror,    tradeskill: "" }          # support/DPS (asmoden profile) — Dirge-style controls; SAME account as Joar (matte123)
