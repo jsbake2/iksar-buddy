@@ -25,12 +25,14 @@ abilities:
   # === COMBAT — on the focus window ===
   debuff_1:     { key: '', mode: manual, desc: 'debuff 1' }
   debuff_2:     { key: '', mode: manual, desc: 'debuff 2' }
-  attack_1:     { key: '', mode: manual, desc: 'pet attack / assist' }
-  attack_2:     { key: '', mode: manual, desc: 'nuke 1' }
-  enc_attack_1: { key: '', mode: manual, desc: 'encounter nuke 1' }
-  enc_attack_2: { key: '', mode: manual, desc: 'encounter nuke 2' }
-  aoe_attack:   { key: '', mode: manual, desc: 'aoe nuke' }
-  deaggro:      { key: '=', mode: manual, desc: 'de-aggro / drop threat' }
+  # Combat keys mirrored from Joar (Dirge) 2026-07-12 to unblock; verify vs Asmoden's
+  # actual conjuror hotbar in the ⌨ keymap (different char = slots may differ).
+  attack_1:     { key: '1,2',         mode: manual, desc: 'pet attack / assist' }
+  attack_2:     { key: '3,4',         mode: manual, desc: 'nuke 1' }
+  enc_attack_1: { key: 'Alt+1,Alt+2', mode: manual, desc: 'encounter nuke 1' }
+  enc_attack_2: { key: 'Alt+3,Alt+4', mode: manual, desc: 'encounter nuke 2' }
+  aoe_attack:   { key: 'Ctrl+-',      mode: manual, desc: 'aoe nuke' }
+  deaggro:      { key: 'Alt+6',       mode: manual, desc: 'de-aggro / drop threat' }
 
   # === AUTOMATION (host loop; owner sets keys + timings in the tuning panel) ===
   # Power feed — reactive on group positions 2/3/4 power (mana_heal_floor). Group when 2+
@@ -40,7 +42,7 @@ abilities:
   # 4 periodic recast buffs — recast in combat on their own timers (Recast-buffs panel).
   # Each carries a NAME (shown on the panel) + an optional target slot 1-6 (pbuff_N_target;
   # blank/1 = self). For a conjuror: maintained pet/self buffs or procs.
-  pbuff_1:  { key: '', mode: auto, name: '', desc: 'periodic recast buff 1' }
+  pbuff_1:  { key: 'Ctrl+-', mode: auto, name: '', desc: 'periodic recast buff 1' }
   pbuff_2:  { key: '', mode: auto, name: '', desc: 'periodic recast buff 2' }
   pbuff_3:  { key: '', mode: auto, name: '', desc: 'periodic recast buff 3' }
   pbuff_4:  { key: '', mode: auto, name: '', desc: 'periodic recast buff 4' }
@@ -52,7 +54,7 @@ abilities:
   sow:         { key: '',     mode: manual, desc: 'run-speed buff' }
   call_home:   { key: Alt+-,  mode: manual, desc: 'call to home' }
   evac:        { key: '',     mode: manual, desc: 'emergency evac' }
-  hail:        { key: '',     mode: manual, desc: 'hail NPC' }
+  hail:        { key: '-',    mode: manual, desc: 'hail NPC' }
   item_use:    { key: '',     mode: manual, desc: 'use item (totem / temp buff)' }
   camp:        { key: Ctrl+-, mode: manual, desc: 'camp (/camp desktop) — used by Stop Bot' }
 
