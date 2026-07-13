@@ -50,7 +50,12 @@ _IBKEYD_XML = (
     '<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>'
     '<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>'
     '<UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine></Settings>\n'
-    '  <Triggers />\n'
+    # LogonTrigger: Windows auto-starts the daemon at the user's logon (which the VM does
+    # at every boot via auto-login), so a reboot self-recovers with NO host redeploy — the
+    # task persists in Task Scheduler and the script persists on C:\. The host only /Run's
+    # it for an immediate start and health-checks it thereafter. (2026-07-13 reboot-proofing)
+    '  <Triggers><LogonTrigger><Enabled>true</Enabled>'
+    '<UserId>S-1-5-21-1061650457-3563521756-761907317-1000</UserId></LogonTrigger></Triggers>\n'
     '  <Actions Context="Author"><Exec>'
     '<Command>C:\\ib\\ahk\\AutoHotkey64.exe</Command>'
     '<Arguments>C:\\ib\\ahk\\keyd.ahk</Arguments></Exec></Actions>\n'
@@ -450,22 +455,27 @@ class HostAgent:
             log.warning("daemon self-deploy: script missing on host: %s", e)
             return False
         try:
-            # Write via push_bytes (guest-exec WriteAllBytes) — CREATE-capable. The guest
-            # FILE API (file_write / guest-file-open) can only OVERWRITE existing files on
-            # this guest, not CREATE new ones, so a wiped script could never be restored and
-            # the fast path stayed dead (2026-07-12 outage). push_bytes uses [IO.File]::
-            # WriteAllBytes, which creates fine under C:\ib\ahk\.
-            if not self.g.push_bytes(script, _DAEMON_GUEST_SCRIPT):
+            # Only (re)write the SCRIPT if it's actually MISSING. push_bytes does a
+            # Remove-then-write; under guest-agent load the write can fail AFTER the remove,
+            # which would delete a perfectly good script (that's how the 2026-07-12 outage
+            # kept re-killing itself). A present script persists on C:\ across reboots, so
+            # leave it alone. CREATE (when missing) needs push_bytes ([IO.File]::WriteAllBytes)
+            # — the guest FILE API (guest-file-open) can only overwrite, not create new files.
+            exists = (self._guest_read(f"Test-Path -LiteralPath '{_DAEMON_GUEST_SCRIPT}'")
+                      or "").strip().lower().startswith("true")
+            if not exists and not self.g.push_bytes(script, _DAEMON_GUEST_SCRIPT):
                 log.warning("daemon self-deploy: script write failed")
                 return False
+            # (Re)register the AUTO-START task. The XML carries a LogonTrigger, so once this
+            # lands the task persists in Task Scheduler and Windows restarts the daemon on
+            # every boot with NO host redeploy. Overwrite the tiny XML so trigger updates
+            # propagate; /Create /F + /Run (IgnoreNew = harmless no-op if already alive).
             self.g.push_bytes(_IBKEYD_XML.encode("utf-16"), _DAEMON_GUEST_XML)
-            # schtasks /Create /XML is more reliable than Register-ScheduledTask -Xml here
-            # (the latter returned '' and was misread as a failure). MultipleInstancesPolicy
-            # = IgnoreNew, so a spurious /Run while it's already alive is a harmless no-op.
             self._guest_read(
                 f"schtasks.exe /Create /TN ibkeyd /XML '{_DAEMON_GUEST_XML}' /F | Out-Null; "
                 "schtasks.exe /Run /TN ibkeyd | Out-Null; 'ok'")
-            log.info("self-deployed in-guest key daemon (was missing/dead)")
+            log.info("ensured in-guest key daemon (script %s, auto-start task set)",
+                     "present" if exists else "written")
             return True
         except Exception as e:
             log.warning("daemon self-deploy failed: %s", e)
