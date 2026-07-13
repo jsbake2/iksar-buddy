@@ -29,8 +29,14 @@ _DAEMON_ENABLED = True    # in-guest key daemon fast path (~<0.1s vs ~0.5s one-s
 # canonical script is infra/vm/ahk/key_daemon.ahk (the agent/ copy was a dup —
 # REFACTOR P0.6); runs from C:\ib\keyd.ahk via the 'ibkeyd' task in the
 # interactive session (same principal as the one-shot 'ibkey' task).
-_DAEMON_GUEST_SCRIPT = r"C:\ib\keyd.ahk"
-_DAEMON_GUEST_XML = r"C:\ib\ibkeyd.xml"
+# NOTE: deploy under C:\ib\ahk\ (NOT C:\ib\ directly). On 2026-07-12 C:\ib\keyd.ahk
+# became create-denied (a stale lock/deny on that exact path — SYSTEM has Full on the
+# dir yet CreateFile there fails), so the self-heal could never rewrite the script once
+# a VM reboot wiped it, stranding the fast path on the slow one-shot fallback forever.
+# C:\ib\ahk\ (where AutoHotkey64.exe lives) writes fine. The daemon's keycmd/heartbeat
+# paths are absolute inside the script, so its location doesn't matter.
+_DAEMON_GUEST_SCRIPT = r"C:\ib\ahk\keyd.ahk"
+_DAEMON_GUEST_XML = r"C:\ib\ahk\ibkeyd.xml"
 _IBKEYD_XML = (
     '<?xml version="1.0" encoding="UTF-16"?>\n'
     '<Task version="1.3" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">\n'
@@ -47,7 +53,7 @@ _IBKEYD_XML = (
     '  <Triggers />\n'
     '  <Actions Context="Author"><Exec>'
     '<Command>C:\\ib\\ahk\\AutoHotkey64.exe</Command>'
-    '<Arguments>C:\\ib\\keyd.ahk</Arguments></Exec></Actions>\n'
+    '<Arguments>C:\\ib\\ahk\\keyd.ahk</Arguments></Exec></Actions>\n'
     '</Task>')
 import time
 
@@ -177,6 +183,7 @@ class HostAgent:
                                               # a stale token it already ran
         self._daemon_ok = False     # is the in-guest key daemon alive? (health-checked)
         self._hb_prev = None        # last heartbeat mtime — alive = it ADVANCED (clock-jump safe)
+        self._hb_misses = 0         # consecutive genuine stale reads (blank reads don't count)
 
     async def _ensure_inject_task_loop(self) -> None:
         """Health-check the persistent in-guest key DAEMON (fast path, ~<0.1s) and keep
@@ -193,21 +200,32 @@ class HostAgent:
                 # healthy daemon while it was actually dead (fed a corpse, nothing injected).
                 ticks = (await loop.run_in_executor(None, self._guest_read,
                     "(Get-Item C:\\ib\\keydaemon.hb -EA SilentlyContinue).LastWriteTime.Ticks") or "").strip()
-                alive = bool(ticks) and self._hb_prev is not None and ticks != self._hb_prev
-                self._hb_prev = ticks
-                if alive:
-                    if not self._daemon_ok:
-                        log.info("key daemon healthy (hb advancing) — fast path on")
-                    self._daemon_ok = True
-                else:
-                    if self._daemon_ok:
-                        log.warning("key daemon not advancing — redeploy + one-shot fallback")
-                    self._daemon_ok = False
-                    # (re)deploy the task+script (handles a VM revert that wiped it), then
-                    # nudge it in case it exists but exited.
-                    await loop.run_in_executor(None, self._deploy_daemon)
-                    await loop.run_in_executor(None, self._guest_read,
-                        "schtasks.exe /Run /TN ibkeyd 2>&1 | Out-Null; 'ok'")
+                # A blank read is the guest-agent hiccuping under load (guest-exec returns
+                # '' / '\n'), NOT proof the daemon died. Treating it as death made the health
+                # check FLAP — one bad read dropped us to the slow one-shot fallback for that
+                # cycle, and rapid presses got mutex-dropped (2026-07-12). Ignore blanks:
+                # keep the current verdict and don't compare/advance _hb_prev.
+                if ticks:                       # skip blank reads (guest-agent noise)
+                    alive = self._hb_prev is not None and ticks != self._hb_prev
+                    self._hb_prev = ticks
+                    if alive:
+                        if not self._daemon_ok:
+                            log.info("key daemon healthy (hb advancing) — fast path on")
+                        self._daemon_ok = True
+                        self._hb_misses = 0
+                    else:
+                        # Require TWO consecutive genuine (non-blank) stale reads before
+                        # declaring the daemon dead — one stale sample is within noise.
+                        self._hb_misses += 1
+                        if self._hb_misses >= 2:
+                            if self._daemon_ok:
+                                log.warning("key daemon not advancing — redeploy + one-shot fallback")
+                            self._daemon_ok = False
+                            # (re)deploy the task+script (handles a VM revert that wiped it),
+                            # then nudge it in case it exists but exited.
+                            await loop.run_in_executor(None, self._deploy_daemon)
+                            await loop.run_in_executor(None, self._guest_read,
+                                "schtasks.exe /Run /TN ibkeyd 2>&1 | Out-Null; 'ok'")
                 await loop.run_in_executor(None, self._guest_read,
                     "Enable-ScheduledTask -TaskName ibkey -EA SilentlyContinue | Out-Null; 'ok'")
             except Exception as e:
@@ -422,8 +440,8 @@ class HostAgent:
 
     def _deploy_daemon(self) -> bool:
         """(Re)deploy the in-guest key daemon: push the script + 'ibkeyd' task and start
-        it. Self-heals after a VM revert/reboot wipes it. Only called when the daemon is
-        NOT running (so keyd.ahk isn't locked). Best-effort; never raises."""
+        it. Self-heals after a VM revert/reboot wipes it. Idempotent — safe to call while
+        the daemon is alive (IgnoreNew makes the /Run a no-op). Best-effort; never raises."""
         script_path = (Path(__file__).resolve().parent.parent
                        / "infra" / "vm" / "ahk" / "key_daemon.ahk")
         try:
@@ -432,14 +450,21 @@ class HostAgent:
             log.warning("daemon self-deploy: script missing on host: %s", e)
             return False
         try:
-            # fresh, writable target (a stale copy can become write-denied)
-            self._guest_read(f"attrib -R {_DAEMON_GUEST_SCRIPT} 2>&1 | Out-Null; "
-                             f"Remove-Item {_DAEMON_GUEST_SCRIPT} -Force -EA SilentlyContinue")
-            self.g.file_write(_DAEMON_GUEST_SCRIPT, script)
-            self.g.file_write(_DAEMON_GUEST_XML, _IBKEYD_XML.encode("utf-16"))
+            # Write via push_bytes (guest-exec WriteAllBytes) — CREATE-capable. The guest
+            # FILE API (file_write / guest-file-open) can only OVERWRITE existing files on
+            # this guest, not CREATE new ones, so a wiped script could never be restored and
+            # the fast path stayed dead (2026-07-12 outage). push_bytes uses [IO.File]::
+            # WriteAllBytes, which creates fine under C:\ib\ahk\.
+            if not self.g.push_bytes(script, _DAEMON_GUEST_SCRIPT):
+                log.warning("daemon self-deploy: script write failed")
+                return False
+            self.g.push_bytes(_IBKEYD_XML.encode("utf-16"), _DAEMON_GUEST_XML)
+            # schtasks /Create /XML is more reliable than Register-ScheduledTask -Xml here
+            # (the latter returned '' and was misread as a failure). MultipleInstancesPolicy
+            # = IgnoreNew, so a spurious /Run while it's already alive is a harmless no-op.
             self._guest_read(
-                f"Register-ScheduledTask -TaskName ibkeyd -Xml (Get-Content '{_DAEMON_GUEST_XML}' -Raw) -Force | Out-Null; "
-                "Start-ScheduledTask -TaskName ibkeyd")
+                f"schtasks.exe /Create /TN ibkeyd /XML '{_DAEMON_GUEST_XML}' /F | Out-Null; "
+                "schtasks.exe /Run /TN ibkeyd | Out-Null; 'ok'")
             log.info("self-deployed in-guest key daemon (was missing/dead)")
             return True
         except Exception as e:
