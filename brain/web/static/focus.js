@@ -71,7 +71,7 @@ const DIRGE_CATALOG = [
 ];
 
 // active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).
-const FOCUS_BUILD = "b10";        // bump on focus.js changes — shown in the header for verification
+const FOCUS_BUILD = "b11";        // bump on focus.js changes — shown in the header for verification
 let kind = "healer";
 // DYN = catalog entries generated LIVE from the active profile's keymap, so ANY mapped role
 // (except the buff-matrix temp/ind buffs — those are cast per-member on the main page) can be
@@ -142,7 +142,8 @@ const ENSURE_BY_KIND = {
 let ENSURE = ENSURE_BY_KIND.healer;
 function mergeLayout(s) {
   if (!s || !Array.isArray(s.ids)) return { ids: DEFAULT.slice(), cols: 3, ensured: ENSURE.slice(), colors: {} };
-  s.ids = s.ids.filter((id) => BY_ID[id] || id.startsWith("km_"));   // keep dynamic ids (resolve once the keymap loads); drop wrong-kind curated ids
+  // keep dynamic (km_) + divider (div_) ids; drop wrong-kind curated ids
+  s.ids = s.ids.filter((id) => BY_ID[id] || id.startsWith("km_") || id.startsWith("div_"));
   if (!s.ids.length) s.ids = DEFAULT.slice();       // file was all wrong-kind ids -> use this kind's default
   const ensured = new Set(s.ensured || []);
   for (const id of ENSURE) {
@@ -151,6 +152,7 @@ function mergeLayout(s) {
   s.ensured = [...ensured];
   if (typeof s.cols !== "number") s.cols = 3;
   if (!s.colors || typeof s.colors !== "object") s.colors = {};   // per-button custom colors
+  if (!s.divLabels || typeof s.divLabels !== "object") s.divLabels = {};   // divider id -> label
   return s;
 }
 function loadLocal() {
@@ -286,6 +288,14 @@ function render() {
   grid.style.gridTemplateColumns = `repeat(${layout.cols}, 1fr)`;
   grid.innerHTML = "";
   layout.ids.forEach((id) => {
+    if (id.startsWith("div_")) {                      // divider row: spans all columns
+      const lbl = (layout.divLabels || {})[id] || "";
+      const d = document.createElement("div");
+      d.className = lbl ? "fdiv" : "fdiv plain";
+      if (lbl) d.innerHTML = `<span class="fdiv-lbl">${lbl}</span>`;
+      grid.appendChild(d);
+      return;
+    }
     const c = resolved(BY_ID[id]); if (!BY_ID[id]) return;
     const b = document.createElement("button");
     b.className = "fbtn" + (c.danger ? " danger" : "") + (c.big ? " big" : "");
@@ -317,29 +327,56 @@ function jumpId(id, top) {                      // move to the top / bottom of t
   if (top) layout.ids.unshift(id); else layout.ids.push(id);
   saveLayout(); render(); renderEditor();
 }
+function moveHTML(pos, len) {                   // ▲▼ one step + ⤒⤓ to the ends (bounds -> disabled)
+  const first = pos <= 0, last = pos >= len - 1;
+  return `<span class="ed-move">` +
+    `<button class="ed-mv ed-up" title="up" ${first ? "disabled" : ""}>▲</button>` +
+    `<button class="ed-mv ed-dn" title="down" ${last ? "disabled" : ""}>▼</button>` +
+    `<button class="ed-mv ed-top" title="to top" ${first ? "disabled" : ""}>⤒</button>` +
+    `<button class="ed-mv ed-bot" title="to bottom" ${last ? "disabled" : ""}>⤓</button>` +
+    `</span>`;
+}
+function wireMove(li, id) {
+  const q = (s) => li.querySelector(s);
+  if (q(".ed-up")) q(".ed-up").onclick = () => moveId(id, -1);
+  if (q(".ed-dn")) q(".ed-dn").onclick = () => moveId(id, +1);
+  if (q(".ed-top")) q(".ed-top").onclick = () => jumpId(id, true);
+  if (q(".ed-bot")) q(".ed-bot").onclick = () => jumpId(id, false);
+}
 function renderEditor() {
   const list = $("edList");
   list.innerHTML = "";
-  const enabled = layout.ids.filter((id) => BY_ID[id]);      // current on-window order
-  // enabled first (in order), then the rest of the catalog
+  const N = layout.ids.length;
+  // enabled first (in window order, incl. dividers), then the rest of the catalog
   const order = [...layout.ids, ...CATALOG.map((c) => c.id).filter((i) => !layout.ids.includes(i))];
   order.forEach((id) => {
-    const c = BY_ID[id]; if (!c) return;
-    const on = layout.ids.includes(id);
-    const pos = enabled.indexOf(id);
+    const pos = layout.ids.indexOf(id);
     const li = document.createElement("li");
-    li.className = "ed-item" + (on ? " on" : "");
     li.dataset.id = id;
+    if (id.startsWith("div_")) {                 // divider row: label + move + delete (no toggle/color)
+      li.className = "ed-item on ed-divider";
+      li.innerHTML = moveHTML(pos, N) +
+        `<span class="ed-name">divider</span>` +
+        `<input class="ed-divlabel" placeholder="label (optional)" value="${(layout.divLabels || {})[id] || ""}" />` +
+        `<button class="ed-del" title="remove divider">✕</button>`;
+      wireMove(li, id);
+      li.querySelector(".ed-divlabel").oninput = (e) => {
+        (layout.divLabels = layout.divLabels || {})[id] = e.target.value;
+        saveLayout(); render();
+      };
+      li.querySelector(".ed-del").onclick = () => {
+        layout.ids = layout.ids.filter((x) => x !== id);
+        if (layout.divLabels) delete layout.divLabels[id];
+        saveLayout(); render(); renderEditor();
+      };
+      list.appendChild(li);
+      return;
+    }
+    const c = BY_ID[id]; if (!c) return;
+    const on = pos >= 0;
+    li.className = "ed-item" + (on ? " on" : "");
     const col = (layout.colors || {})[id] || "#3a4150";
-    // reorder controls only for enabled items (disabled ones have no position on the window)
-    const move = on
-      ? `<span class="ed-move">` +
-          `<button class="ed-mv ed-up" title="up" ${pos <= 0 ? "disabled" : ""}>▲</button>` +
-          `<button class="ed-mv ed-dn" title="down" ${pos >= enabled.length - 1 ? "disabled" : ""}>▼</button>` +
-          `<button class="ed-mv ed-top" title="to top" ${pos <= 0 ? "disabled" : ""}>⤒</button>` +
-          `<button class="ed-mv ed-bot" title="to bottom" ${pos >= enabled.length - 1 ? "disabled" : ""}>⤓</button>` +
-        `</span>`
-      : `<span class="ed-move ed-move-off"></span>`;
+    const move = on ? moveHTML(pos, N) : `<span class="ed-move ed-move-off"></span>`;
     li.innerHTML = move +
       `<input type="checkbox" class="ed-on" ${on ? "checked" : ""} />` +
       `<span class="ed-name">${c.label}</span>` +
@@ -352,10 +389,7 @@ function renderEditor() {
       else layout.ids = layout.ids.filter((x) => x !== id);
       saveLayout(); render(); renderEditor();
     };
-    if (q(".ed-up")) q(".ed-up").onclick = () => moveId(id, -1);
-    if (q(".ed-dn")) q(".ed-dn").onclick = () => moveId(id, +1);
-    if (q(".ed-top")) q(".ed-top").onclick = () => jumpId(id, true);
-    if (q(".ed-bot")) q(".ed-bot").onclick = () => jumpId(id, false);
+    if (on) wireMove(li, id);
     q(".ed-color").oninput = (e) => {
       (layout.colors = layout.colors || {})[id] = e.target.value;
       saveLayout(); render();
@@ -366,6 +400,13 @@ function renderEditor() {
     };
     list.appendChild(li);
   });
+}
+// add a divider row (unique id) at the end of the enabled list
+let divSeq = 0;
+function addDivider() {
+  const id = "div_" + Date.now() + "_" + (divSeq++);
+  layout.ids.push(id);
+  saveLayout(); render(); renderEditor();
 }
 $("cols").value = String(layout.cols);
 $("cols").onchange = () => { layout.cols = parseInt($("cols").value, 10); saveLayout(); render(); };
@@ -380,6 +421,7 @@ function toggleEditor(force) {
 }
 editBtn.onclick = () => toggleEditor();          // same button toggles on/off
 const doneBtn = $("doneBtn"); if (doneBtn) doneBtn.onclick = () => toggleEditor(false);
+const addDivBtn = $("addDivBtn"); if (addDivBtn) addDivBtn.onclick = () => addDivider();
 
 // ---- websocket (live status; ui-core auto-reconnect) -----------------------
 const connect = () => ibUI.wsReconnect(applyState);

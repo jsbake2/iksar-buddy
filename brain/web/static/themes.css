@@ -550,6 +550,17 @@ button.launch:hover { filter:brightness(1.08); }
 .ed-mv:hover:not(:disabled) { color:var(--fg); border-color:var(--accent); }
 .ed-mv:disabled { opacity:.28; cursor:default; }
 .ed-name { font-weight:600; }
+/* focus-window dividers (grid rows that group buttons) */
+.fdiv { grid-column:1 / -1; display:flex; align-items:center; gap:10px; margin:3px 2px; }
+.fdiv::before, .fdiv::after { content:""; flex:1; height:2px; border-radius:2px; background:var(--line); }
+.fdiv-lbl { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:1px; white-space:nowrap; }
+.fdiv.plain { display:block; height:2px; background:var(--line); border-radius:2px; margin:6px 2px; }
+.ed-divider .ed-name { color:var(--faint); font-style:italic; text-transform:uppercase; font-size:10px; letter-spacing:1px; }
+.ed-divlabel { flex:1; min-width:80px; background:var(--panel); color:var(--fg); border:1px solid var(--line);
+  border-radius:6px; padding:4px 7px; font-size:12px; }
+.ed-del { width:26px; height:24px; padding:0; border:1px solid var(--line); border-radius:6px;
+  background:var(--panel2); color:var(--muted); cursor:pointer; font-size:12px; }
+.ed-del:hover { color:#e06b6b; border-color:#e06b6b; }
 .ed-kind { margin-left:auto; font-size:9px; text-transform:uppercase; color:var(--accent2); letter-spacing:.5px; }
 .ed-color { width:30px; height:24px; padding:0; border:1px solid var(--line); border-radius:6px;
   background:none; cursor:pointer; }
