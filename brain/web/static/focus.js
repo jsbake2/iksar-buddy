@@ -71,20 +71,48 @@ const DIRGE_CATALOG = [
 ];
 
 // active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).
-const FOCUS_BUILD = "b9";        // bump on focus.js changes — shown in the header for verification
+const FOCUS_BUILD = "b10";        // bump on focus.js changes — shown in the header for verification
 let kind = "healer";
-let CATALOG = HEALER_CATALOG;
+// DYN = catalog entries generated LIVE from the active profile's keymap, so ANY mapped role
+// (except the buff-matrix temp/ind buffs — those are cast per-member on the main page) can be
+// added to the focus window, not just the curated lists above. Owner adds them via the ⚙ editor.
+let DYN = [];
+const catalogBase = () => (kind === "dirge" ? DIRGE_CATALOG : HEALER_CATALOG);
+let CATALOG = catalogBase();
 let BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
 let DEFAULT = CATALOG.filter((c) => c.hot).map((c) => c.id);
+function rebuildCatalog() {
+  CATALOG = [...catalogBase(), ...DYN];
+  BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
+  DEFAULT = catalogBase().filter((c) => c.hot).map((c) => c.id);
+}
 function setKind(k) {
   kind = k;
-  CATALOG = k === "dirge" ? DIRGE_CATALOG : HEALER_CATALOG;
-  BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
-  DEFAULT = CATALOG.filter((c) => c.hot).map((c) => c.id);
+  rebuildCatalog();
   ENSURE = ENSURE_BY_KIND[k] || [];
   layout = loadLocal();     // this kind's cached layout (or its default); server overrides
   const b = document.querySelector(".focus-brand");   // show detected kind + build (diagnostic)
   if (b) b.textContent = "ib focus · " + k + " · " + FOCUS_BUILD;
+}
+// Build DYN from the active profile's keymap. Skip the buff-matrix roles and anything already
+// in the curated catalog (matched by action) so there are no duplicates. Fired as a plain
+// key-press (kind 'group' -> /api/act/<role>), same as the other single-key buttons.
+const SKIP_RE = /^(temp_buff|ind_buff)/;
+const PRETTY = (r) => r.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+async function refreshCatalog() {
+  let ab = {};
+  try { ab = ((await (await fetch("/api/keymap?t=" + Date.now())).json()) || {}).abilities || {}; }
+  catch (_) { return; }
+  const covered = new Set(catalogBase().flatMap((c) => (c.action ? [c.action] : [])));
+  ["hot", "group_hot", "emergency_hot"].forEach((r) => covered.add(r));  // rendered via MAINT_MAP off ward_*
+  DYN = Object.keys(ab)
+    .filter((r) => !SKIP_RE.test(r) && !covered.has(r))
+    .sort()
+    .map((r) => ({ id: "km_" + r, kind: "group", action: r,
+                   label: (ab[r] && ab[r].name) || PRETTY(r) }));
+  rebuildCatalog();
+  render();
+  if (!$("editor").hidden) renderEditor();
 }
 // kind from the live profile: prefer the explicit `kind` (what the main page uses),
 // fall back to deriving from maint_role.
@@ -114,7 +142,7 @@ const ENSURE_BY_KIND = {
 let ENSURE = ENSURE_BY_KIND.healer;
 function mergeLayout(s) {
   if (!s || !Array.isArray(s.ids)) return { ids: DEFAULT.slice(), cols: 3, ensured: ENSURE.slice(), colors: {} };
-  s.ids = s.ids.filter((id) => BY_ID[id]);          // drop actions not in THIS kind's catalog
+  s.ids = s.ids.filter((id) => BY_ID[id] || id.startsWith("km_"));   // keep dynamic ids (resolve once the keymap loads); drop wrong-kind curated ids
   if (!s.ids.length) s.ids = DEFAULT.slice();       // file was all wrong-kind ids -> use this kind's default
   const ensured = new Set(s.ensured || []);
   for (const id of ENSURE) {
@@ -159,6 +187,7 @@ ibUI.theme($("theme"), "ib-theme", "midnight");
 
 // ---- live state ----------------------------------------------------------
 let state = { running: false, chat_safe: null, roleSlot: {} };
+let activeProfile = null;      // reload the dynamic catalog when the active profile changes
 // the arm chip is the on/off button: tap to arm/disarm the bot
 const armChip = $("fArm");
 if (armChip) armChip.onclick = () =>
@@ -171,6 +200,9 @@ function applyState(s) {
   if (s.profile) {
     const k = kindOf(s.profile);
     if (k !== kind) { setKind(k); render(); loadServerLayout(); }   // repaint in the new kind
+    if (s.profile.active && s.profile.active !== activeProfile) {   // profile switched -> rebuild dynamic catalog
+      activeProfile = s.profile.active; refreshCatalog();
+    }
     const mr = s.profile.maint_role || "ward";
     if (mr !== maintRole) { maintRole = mr; render(); }
   }
@@ -352,7 +384,9 @@ async function init() {
   try {
     const p = await (await fetch("/api/profiles?t=" + Date.now())).json();
     setKind(kindOf(p));
+    activeProfile = p.active || null;
   } catch (_) {}
+  await refreshCatalog();   // populate DYN before first paint so saved dynamic ids resolve
   render();
   connect();
   loadServerLayout();   // override the local cache with the server-saved layout for this kind
