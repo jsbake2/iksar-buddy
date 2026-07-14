@@ -71,11 +71,16 @@ sendKey(spec) {
 }
 
 runSeq(seq) {
-    if !WinActive("EverQuest II") {          ; agent only writes when game is foreground,
-        if !WinExist("EverQuest II")         ; so this is usually already true (no settle cost)
+    ; Match the game by its EXECUTABLE, not its title. In (borderless) fullscreen the EQ2
+    ; window title is EMPTY, so the old WinActive("EverQuest II") title match failed and the
+    ; daemon silently dropped every key (2026-07-14). ahk_exe works regardless of title and
+    ; lets us bring the game foreground before injecting.
+    eqwin := "ahk_exe EverQuest2.exe"
+    if !WinActive(eqwin) {
+        if !WinExist(eqwin)
             return
-        WinActivate("EverQuest II")
-        Sleep 20
+        WinActivate(eqwin)
+        Sleep 40
     }
     Send("{Alt up}{Ctrl up}{Shift up}{LWin up}")   ; clear a stray/stuck modifier (fast now)
     parts := StrSplit(seq, ",")
