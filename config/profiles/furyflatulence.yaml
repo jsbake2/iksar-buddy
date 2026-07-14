@@ -84,7 +84,7 @@ abilities:
   group_cure:
     cast_ms: 800
     desc: no dedicated group cure -> single-target cure (0) per member
-    key: none
+    key: ''
     mode: auto
   group_heal:
     cast_ms: 1500
@@ -163,6 +163,42 @@ abilities:
     key: ''
     mode: auto
     name: ''
+  poc:
+    desc: POC (manual button)
+    key: ''
+    mode: manual
+  group_direct_heal:
+    desc: group direct heal
+    key: ''
+    mode: manual
+  group_emergency_hot:
+    desc: group emergency HoT
+    key: ''
+    mode: manual
+  group_rez:
+    desc: group rez / mass revive
+    key: ''
+    mode: manual
+  group_invis:
+    desc: group invisibility
+    key: ''
+    mode: manual
+  direct_heal_small:
+    desc: direct heal (small)
+    key: ''
+    mode: manual
+  direct_heal_big:
+    desc: direct heal (big)
+    key: ''
+    mode: manual
+  aoe_attack:
+    desc: AOE attack
+    key: ''
+    mode: manual
+  enc_aoe:
+    desc: encounter AOE
+    key: ''
+    mode: manual
 group_target_keys:
 - F1
 - F2

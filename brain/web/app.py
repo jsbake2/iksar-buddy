@@ -539,6 +539,19 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
             await brain.send("command", role="buff", key=",pause_1.5,".join(keys),
                              target_slot=None, manual=True, reason="manual buff combo")
             return {"ok": True, "action": action}
+        # group cure: use a DEDICATED group-cure spell if the profile maps one (Fury), else
+        # fall back to single-target cure (Defiler/Inquisitor have no group cure). Keeps the
+        # existing behavior for profiles that leave group_cure = none/blank.
+        if action == "group_cure":
+            gk = brain.cfg.key_for("group_cure")
+            role, key = (("group_cure", gk) if gk and gk != "none"
+                         else ("cure", brain.cfg.key_for("cure")))
+            if not key or key == "none":
+                return JSONResponse({"error": "no cure key mapped"}, status_code=400)
+            telemetry.push_event("manual", "group cure")
+            await brain.send("command", role=role, key=key, target_slot=None,
+                             manual=True, reason="manual group cure")
+            return {"ok": True, "action": action}
         # targeted buffs: pick the member, target their F-key, then cast.
         if action in _BUFF_TARGET_ROLE:
             slot = _slot_for_role(_BUFF_TARGET_ROLE[action])
