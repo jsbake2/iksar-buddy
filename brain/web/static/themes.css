@@ -541,9 +541,14 @@ button.launch:hover { filter:brightness(1.08); }
 .ed-hint { color:var(--faint); text-transform:none; letter-spacing:0; margin-left:8px; }
 .ed-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:3px; }
 .ed-item { display:flex; align-items:center; gap:9px; padding:6px 8px; border-radius:8px;
-  background:var(--panel2); border:1px solid var(--line); cursor:grab; }
-.ed-item.drag { opacity:.5; }
-.ed-grip { color:var(--faint); cursor:grab; }
+  background:var(--panel2); border:1px solid var(--line); }
+.ed-item.on { border-color:color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.ed-move { display:flex; gap:2px; min-width:100px; }
+.ed-move-off { min-width:100px; }
+.ed-mv { width:22px; height:24px; padding:0; border:1px solid var(--line); border-radius:6px;
+  background:var(--panel); color:var(--muted); cursor:pointer; font-size:11px; line-height:1; }
+.ed-mv:hover:not(:disabled) { color:var(--fg); border-color:var(--accent); }
+.ed-mv:disabled { opacity:.28; cursor:default; }
 .ed-name { font-weight:600; }
 .ed-kind { margin-left:auto; font-size:9px; text-transform:uppercase; color:var(--accent2); letter-spacing:.5px; }
 .ed-color { width:30px; height:24px; padding:0; border:1px solid var(--line); border-radius:6px;

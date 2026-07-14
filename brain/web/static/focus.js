@@ -303,52 +303,67 @@ function render() {
   applyState(state);
 }
 
-// ---- editor (pick + drag-reorder) ----------------------------------------
+// ---- editor (pick + reorder) ---------------------------------------------
+// Reorder is CLICK-based (▲/▼ one step, ⤒/⤓ to the ends) and SAVES on every click. The old
+// HTML5 drag was fiddly on trackpads and frequently didn't stick — this always does.
+function moveId(id, dir) {                     // dir -1 = up, +1 = down (within the enabled list)
+  const i = layout.ids.indexOf(id), j = i + dir;
+  if (i < 0 || j < 0 || j >= layout.ids.length) return;
+  [layout.ids[i], layout.ids[j]] = [layout.ids[j], layout.ids[i]];
+  saveLayout(); render(); renderEditor();
+}
+function jumpId(id, top) {                      // move to the top / bottom of the enabled list
+  layout.ids = layout.ids.filter((x) => x !== id);
+  if (top) layout.ids.unshift(id); else layout.ids.push(id);
+  saveLayout(); render(); renderEditor();
+}
 function renderEditor() {
   const list = $("edList");
   list.innerHTML = "";
-  // enabled first (in order), then the rest
+  const enabled = layout.ids.filter((id) => BY_ID[id]);      // current on-window order
+  // enabled first (in order), then the rest of the catalog
   const order = [...layout.ids, ...CATALOG.map((c) => c.id).filter((i) => !layout.ids.includes(i))];
   order.forEach((id) => {
-    const c = BY_ID[id];
+    const c = BY_ID[id]; if (!c) return;
     const on = layout.ids.includes(id);
+    const pos = enabled.indexOf(id);
     const li = document.createElement("li");
-    li.className = "ed-item"; li.draggable = true; li.dataset.id = id;
+    li.className = "ed-item" + (on ? " on" : "");
+    li.dataset.id = id;
     const col = (layout.colors || {})[id] || "#3a4150";
-    li.innerHTML = `<span class="ed-grip">⋮⋮</span>` +
+    // reorder controls only for enabled items (disabled ones have no position on the window)
+    const move = on
+      ? `<span class="ed-move">` +
+          `<button class="ed-mv ed-up" title="up" ${pos <= 0 ? "disabled" : ""}>▲</button>` +
+          `<button class="ed-mv ed-dn" title="down" ${pos >= enabled.length - 1 ? "disabled" : ""}>▼</button>` +
+          `<button class="ed-mv ed-top" title="to top" ${pos <= 0 ? "disabled" : ""}>⤒</button>` +
+          `<button class="ed-mv ed-bot" title="to bottom" ${pos >= enabled.length - 1 ? "disabled" : ""}>⤓</button>` +
+        `</span>`
+      : `<span class="ed-move ed-move-off"></span>`;
+    li.innerHTML = move +
       `<input type="checkbox" class="ed-on" ${on ? "checked" : ""} />` +
       `<span class="ed-name">${c.label}</span>` +
       `<span class="ed-kind">${c.kind === "role" ? c.role : ""}</span>` +
       `<input type="color" class="ed-color" value="${col}" title="button color" />` +
       `<button class="ed-colreset" title="reset color">↺</button>`;
-    li.querySelector(".ed-on").onchange = (e) => {
+    const q = (s) => li.querySelector(s);
+    q(".ed-on").onchange = (e) => {
       if (e.target.checked) { if (!layout.ids.includes(id)) layout.ids.push(id); }
       else layout.ids = layout.ids.filter((x) => x !== id);
-      saveLayout(); render();
+      saveLayout(); render(); renderEditor();
     };
-    li.querySelector(".ed-color").oninput = (e) => {
+    if (q(".ed-up")) q(".ed-up").onclick = () => moveId(id, -1);
+    if (q(".ed-dn")) q(".ed-dn").onclick = () => moveId(id, +1);
+    if (q(".ed-top")) q(".ed-top").onclick = () => jumpId(id, true);
+    if (q(".ed-bot")) q(".ed-bot").onclick = () => jumpId(id, false);
+    q(".ed-color").oninput = (e) => {
       (layout.colors = layout.colors || {})[id] = e.target.value;
       saveLayout(); render();
     };
-    li.querySelector(".ed-colreset").onclick = () => {
+    q(".ed-colreset").onclick = () => {
       if (layout.colors) delete layout.colors[id];
       saveLayout(); render(); renderEditor();
     };
-    // drag reorder
-    li.addEventListener("dragstart", (e) => { e.dataTransfer.setData("id", id); li.classList.add("drag"); });
-    li.addEventListener("dragend", () => li.classList.remove("drag"));
-    li.addEventListener("dragover", (e) => e.preventDefault());
-    li.addEventListener("drop", (e) => {
-      e.preventDefault();
-      const from = e.dataTransfer.getData("id");
-      if (!from || from === id) return;
-      // ensure both enabled, then reorder within ids
-      [from, id].forEach((x) => { if (!layout.ids.includes(x)) layout.ids.push(x); });
-      layout.ids = layout.ids.filter((x) => x !== from);
-      const at = layout.ids.indexOf(id);
-      layout.ids.splice(at, 0, from);
-      saveLayout(); render(); renderEditor();
-    });
     list.appendChild(li);
   });
 }
