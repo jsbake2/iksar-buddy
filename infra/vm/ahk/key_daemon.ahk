@@ -17,7 +17,18 @@ SetTitleMatchMode 2
 CMD := "C:\ib\keycmd.txt"
 HB  := "C:\ib\keydaemon.hb"
 lastToken := ""
-beat := 0
+
+; Heartbeat on an INDEPENDENT timer, not the main loop. AHK timers fire during any Sleep(),
+; including the Sleeps inside runSeq() while a key sequence is injecting — so the heartbeat
+; stays fresh even during a heavy burst of hotkeys. The old inline "beat every 1s in the loop"
+; went stale whenever runSeq was busy, which made the host health-check think the daemon had
+; died and DESTRUCTIVELY redeploy it (2026-07-13). Keep it well under the host's ~8s check.
+try FileAppend("", HB)          ; ensure the file exists so FileSetTime has a target
+SetTimer(Beat, 500)
+Beat(*) {
+    global HB
+    try FileSetTime(, HB)
+}
 
 OnExit(ReleaseMods)
 ReleaseMods(*) {
@@ -99,12 +110,7 @@ readAll(path) {
 }
 
 Loop {
-    Sleep 12
-    if (A_TickCount - beat > 1000) {              ; heartbeat ~1/s for host health-check
-        beat := A_TickCount
-        try FileAppend("", HB)
-        try FileSetTime(, HB)
-    }
+    Sleep 12                                      ; heartbeat runs on SetTimer(Beat) above
     line := readAll(CMD)
     if (line = "")
         continue

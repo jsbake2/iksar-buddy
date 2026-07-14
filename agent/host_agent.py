@@ -29,13 +29,13 @@ _DAEMON_ENABLED = True    # in-guest key daemon fast path (~<0.1s vs ~0.5s one-s
 # canonical script is infra/vm/ahk/key_daemon.ahk (the agent/ copy was a dup —
 # REFACTOR P0.6); runs from C:\ib\keyd.ahk via the 'ibkeyd' task in the
 # interactive session (same principal as the one-shot 'ibkey' task).
-# NOTE: deploy under C:\ib\ahk\ (NOT C:\ib\ directly). On 2026-07-12 C:\ib\keyd.ahk
-# became create-denied (a stale lock/deny on that exact path — SYSTEM has Full on the
-# dir yet CreateFile there fails), so the self-heal could never rewrite the script once
-# a VM reboot wiped it, stranding the fast path on the slow one-shot fallback forever.
-# C:\ib\ahk\ (where AutoHotkey64.exe lives) writes fine. The daemon's keycmd/heartbeat
-# paths are absolute inside the script, so its location doesn't matter.
-_DAEMON_GUEST_SCRIPT = r"C:\ib\ahk\keyd.ahk"
+# NOTE on the path: deploy under C:\ib\ahk\ (where AutoHotkey64.exe lives — writes fine)
+# and use the name ibkd.ahk, NOT keyd.ahk. Both C:\ib\keyd.ahk (07-12) and C:\ib\ahk\keyd.ahk
+# (07-13) became un-writable — CreateFile fails even as SYSTEM with the file absent and no AHK
+# running — while a FRESH filename in the same dir writes instantly. Cause unconfirmed (a
+# poisoned path entry / filter keyed on that exact name), so we sidestep it with ibkd.ahk.
+# The daemon's keycmd/heartbeat paths are absolute inside the script, so its location is free.
+_DAEMON_GUEST_SCRIPT = r"C:\ib\ahk\ibkd.ahk"
 _DAEMON_GUEST_XML = r"C:\ib\ahk\ibkeyd.xml"
 _IBKEYD_XML = (
     '<?xml version="1.0" encoding="UTF-16"?>\n'
@@ -58,7 +58,7 @@ _IBKEYD_XML = (
     '<UserId>S-1-5-21-1061650457-3563521756-761907317-1000</UserId></LogonTrigger></Triggers>\n'
     '  <Actions Context="Author"><Exec>'
     '<Command>C:\\ib\\ahk\\AutoHotkey64.exe</Command>'
-    '<Arguments>C:\\ib\\ahk\\keyd.ahk</Arguments></Exec></Actions>\n'
+    '<Arguments>C:\\ib\\ahk\\ibkd.ahk</Arguments></Exec></Actions>\n'
     '</Task>')
 import time
 
@@ -461,11 +461,24 @@ class HostAgent:
             # kept re-killing itself). A present script persists on C:\ across reboots, so
             # leave it alone. CREATE (when missing) needs push_bytes ([IO.File]::WriteAllBytes)
             # — the guest FILE API (guest-file-open) can only overwrite, not create new files.
-            exists = (self._guest_read(f"Test-Path -LiteralPath '{_DAEMON_GUEST_SCRIPT}'")
-                      or "").strip().lower().startswith("true")
-            if not exists and not self.g.push_bytes(script, _DAEMON_GUEST_SCRIPT):
-                log.warning("daemon self-deploy: script write failed")
-                return False
+            # Script size: -1 = missing. A blank/failed read (guest-agent hiccup) parses to -2
+            # -> assume PRESENT and never rewrite (its Remove-then-write would delete a good
+            # script if the rewrite then failed — the self-inflicted daemon-kill loop, 2026-07-13).
+            sz = (self._guest_read(
+                f"if(Test-Path -LiteralPath '{_DAEMON_GUEST_SCRIPT}')"
+                f"{{(Get-Item -LiteralPath '{_DAEMON_GUEST_SCRIPT}').Length}}else{{-1}}") or "").strip()
+            try:
+                n = int(sz)
+            except ValueError:
+                n = -2
+            # Rewrite only when missing (-1) or truncated/corrupt (0..499 bytes). AHK holds its
+            # OWN script file open while running, so overwriting a live script fails with a lock
+            # — kill AHK first to release it, then push. (Full script is ~4.6 KB.)
+            if n == -1 or (0 <= n < 500):
+                self._guest_read("taskkill /IM AutoHotkey64.exe /F 2>&1 | Out-Null; 'ok'")
+                if not self.g.push_bytes(script, _DAEMON_GUEST_SCRIPT):
+                    log.warning("daemon self-deploy: script write failed")
+                    return False
             # (Re)register the AUTO-START task. The XML carries a LogonTrigger, so once this
             # lands the task persists in Task Scheduler and Windows restarts the daemon on
             # every boot with NO host redeploy. Overwrite the tiny XML so trigger updates
@@ -474,8 +487,7 @@ class HostAgent:
             self._guest_read(
                 f"schtasks.exe /Create /TN ibkeyd /XML '{_DAEMON_GUEST_XML}' /F | Out-Null; "
                 "schtasks.exe /Run /TN ibkeyd | Out-Null; 'ok'")
-            log.info("ensured in-guest key daemon (script %s, auto-start task set)",
-                     "present" if exists else "written")
+            log.info("ensured in-guest key daemon (script len=%s, auto-start task set)", sz)
             return True
         except Exception as e:
             log.warning("daemon self-deploy failed: %s", e)
