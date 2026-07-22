@@ -478,9 +478,9 @@ button.launch:hover { filter:brightness(1.08); }
 .focus-edit:hover { color:var(--fg); border-color:var(--accent); }
 .focus-edit.done { color:var(--bg); background:var(--good); border-color:var(--good); font-weight:700; }
 
-.focus-grid { display:grid; gap:8px; padding:10px; }
-.fbtn { position:relative; min-height:62px; border-radius:12px; cursor:pointer;
-  border:1px solid var(--line); color:var(--fg); font-weight:800; font-size:14px;
+.focus-grid { --fscale:1; display:grid; gap:calc(8px * var(--fscale)); padding:calc(10px * var(--fscale)); }
+.fbtn { position:relative; min-height:calc(62px * var(--fscale)); border-radius:calc(12px * var(--fscale)); cursor:pointer;
+  border:1px solid var(--line); color:var(--fg); font-weight:800; font-size:calc(14px * var(--fscale));
   letter-spacing:.4px; background:linear-gradient(var(--panel),var(--panel2));
   box-shadow:0 4px 14px -10px #000, 0 1px 0 color-mix(in srgb,var(--fg) 6%,transparent) inset;
   transition:transform .06s, box-shadow .12s, filter .12s; }
@@ -488,7 +488,7 @@ button.launch:hover { filter:brightness(1.08); }
 .fbtn:active { transform:translateY(2px); }
 .fbtn.danger { background:linear-gradient(color-mix(in srgb,var(--bad) 60%,#000),color-mix(in srgb,var(--bad) 38%,#000));
   border-color:var(--bad); color:#fff; }
-.fbtn.big { grid-column:1 / -1; min-height:56px; font-size:16px; letter-spacing:1px;
+.fbtn.big { grid-column:1 / -1; min-height:calc(56px * var(--fscale)); font-size:calc(16px * var(--fscale)); letter-spacing:1px;
   background:linear-gradient(color-mix(in srgb,var(--accent) 24%,var(--panel)),var(--panel2));
   border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); color:var(--accent2); }
 .fbtn.big.danger { background:linear-gradient(color-mix(in srgb,var(--bad) 32%,var(--panel)),var(--panel2));
@@ -569,6 +569,9 @@ button.launch:hover { filter:brightness(1.08); }
 .ed-colreset:hover { color:var(--fg); border-color:var(--accent); }
 .ed-actions { display:flex; align-items:center; gap:14px; margin-top:12px; }
 .ed-cols { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.ed-scale { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.ed-scale input[type=range] { width:96px; accent-color:var(--accent); cursor:pointer; }
+.ed-scale #scaleVal { font-variant-numeric:tabular-nums; color:var(--fg); min-width:34px; }
 .ed-cols select, .focus-editor .theme select { background:var(--panel2); color:var(--fg);
   border:1px solid var(--line); border-radius:6px; padding:4px 7px; }
 .focus-editor .ed-actions .done { margin-left:auto; }

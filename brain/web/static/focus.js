@@ -71,7 +71,7 @@ const DIRGE_CATALOG = [
 ];
 
 // active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).
-const FOCUS_BUILD = "b11";        // bump on focus.js changes — shown in the header for verification
+const FOCUS_BUILD = "b12";        // bump on focus.js changes — shown in the header for verification
 let kind = "healer";
 // DYN = catalog entries generated LIVE from the active profile's keymap, so ANY mapped role
 // (except the buff-matrix temp/ind buffs — those are cast per-member on the main page) can be
@@ -151,6 +151,7 @@ function mergeLayout(s) {
   }
   s.ensured = [...ensured];
   if (typeof s.cols !== "number") s.cols = 3;
+  if (typeof s.scale !== "number") s.scale = 1;      // button size multiplier (editor slider)
   if (!s.colors || typeof s.colors !== "object") s.colors = {};   // per-button custom colors
   if (!s.divLabels || typeof s.divLabels !== "object") s.divLabels = {};   // divider id -> label
   return s;
@@ -286,6 +287,7 @@ function flash(btn, msg) {
 function render() {
   const grid = $("grid");
   grid.style.gridTemplateColumns = `repeat(${layout.cols}, 1fr)`;
+  applyScale();                         // sync --fscale + the editor slider/readout to layout.scale
   grid.innerHTML = "";
   layout.ids.forEach((id) => {
     if (id.startsWith("div_")) {                      // divider row: spans all columns
@@ -410,6 +412,20 @@ function addDivider() {
 }
 $("cols").value = String(layout.cols);
 $("cols").onchange = () => { layout.cols = parseInt($("cols").value, 10); saveLayout(); render(); };
+// button SIZE — a --fscale multiplier on the grid so the overlay can be shrunk to fit
+// over the game window. applyScale() just paints the var + syncs the control (cheap, no
+// button rebuild) so it's smooth while dragging; the value persists per kind on release.
+function applyScale() {
+  const s = layout.scale || 1;
+  const g = $("grid"); if (g) g.style.setProperty("--fscale", s);
+  const si = $("scale"); if (si && document.activeElement !== si) si.value = String(s);
+  const out = $("scaleVal"); if (out) out.textContent = Math.round(s * 100) + "%";
+}
+const scaleIn = $("scale");
+if (scaleIn) {
+  scaleIn.oninput = () => { layout.scale = parseFloat(scaleIn.value); applyScale(); };
+  scaleIn.onchange = () => { layout.scale = parseFloat(scaleIn.value); applyScale(); saveLayout(); };
+}
 const editBtn = $("editBtn");
 function toggleEditor(force) {
   const ed = $("editor");
