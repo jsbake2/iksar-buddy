@@ -333,10 +333,11 @@ _WRAP_SPAN_PX = 28
 _ROW_TOP_GAP = 26
 
 
-def _ocr_words(guest: Guest, region: dict) -> list[dict]:
-    """OCR a region -> [{text,x,y,w,h,conf}] in GUEST coords. [] on failure."""
+def _ocr_words(guest: Guest, region: dict, fresh: bool = True) -> list[dict]:
+    """OCR a region -> [{text,x,y,w,h,conf}] in GUEST coords. [] on failure. fresh=False
+    reuses the last grab() (so a multi-region read stays on ONE consistent frame)."""
     r = region or {}
-    if not r or not guest.grab():
+    if not r or (fresh and not guest.grab()):
         return []
     try:
         pre = subprocess.run(
@@ -405,18 +406,20 @@ def find_character(guest: Guest, cfg: dict, target: str) -> tuple[int, int] | No
     return (row_x, pick["y"] + pick["h"] // 2)
 
 
-def _ocr_line(guest: Guest, region: dict) -> str:
+def _ocr_line(guest: Guest, region: dict, fresh: bool = True) -> str:
     """OCR a result-row box, trying BOTH polarities and keeping the longer result. Recipe
     rows zebra-stripe (fixed threshold leaves some white-on-black, unreadable in isolation —
     negating recovers them), and a long recipe name WRAPS to 2 lines, so we OCR as a block
-    (psm 6) over a box tall enough for 2 lines and concat. Returns the alpha blob
-    ('aggressivedefenseiijourneyman')."""
+    (psm 6) over a box tall enough for 2 lines and concat. Returns the RAW lowercased text
+    with spaces intact ('song of magic iii journeyman') — the caller strips to an alpha blob
+    AND extracts the roman tier (which needs the word boundary). fresh=False reuses the last
+    grab() so every slot in one match reads the SAME frame."""
     r = region or {}
-    if not r or not guest.grab():
+    if not r or (fresh and not guest.grab()):
         return ""
     base = ["magick", guest.ppm, "-crop", f"{r['w']}x{r['h']}+{r['x']}+{r['y']}", "+repage",
             "-colorspace", "Gray", "-resize", f"{_OCR_SCALE * 100}%", "-threshold", "43%"]
-    best = ""
+    best, best_len = "", -1
     for neg in ([], ["-negate"]):
         try:
             pre = subprocess.run(base + neg + ["png:-"], capture_output=True, timeout=6).stdout
@@ -424,20 +427,19 @@ def _ocr_line(guest: Guest, region: dict) -> str:
                 continue
             txt = subprocess.run(["tesseract", "stdin", "stdout", "--psm", "6"],
                                  input=pre, capture_output=True, timeout=8).stdout.decode(errors="replace")
-            blob = _alpha(txt)
-            if len(blob) > len(best):
-                best = blob
+            if len(_alpha(txt)) > best_len:               # pick the polarity that read the most
+                best, best_len = txt.strip().lower(), len(_alpha(txt))
         except (OSError, subprocess.SubprocessError) as e:
             log.warning("row OCR failed: %s", e)
     return best
 
 
-def _recipe_rows(guest: Guest, cfg: dict) -> list[list]:
+def _recipe_rows(guest: Guest, cfg: dict, fresh: bool = True) -> list[list]:
     """OCR the recipe-list region -> rows (each a list of word dicts), name column only.
     Rows render at a variable Y (result count / 2-line name wrap), so we group words by Y."""
     rs = cfg.get("recipe_select", {})
     region = rs.get("list_region") or {"x": 225, "y": 195, "w": 320, "h": 485}
-    words = [w for w in _ocr_words(guest, region) if w["x"] < region["x"] + 230]  # name col, skip difficulty
+    words = [w for w in _ocr_words(guest, region, fresh=fresh) if w["x"] < region["x"] + 230]  # name col, skip difficulty
     if not words:
         return []
     words.sort(key=lambda w: w["y"])
@@ -457,6 +459,23 @@ def _recipe_rows(guest: Guest, cfg: dict) -> list[list]:
 
 
 _QUALITY_WORDS = ("apprentice", "journeyman", "adept", "expert", "master", "grandmaster")
+
+# EQ2 crafting-window CHROME that bleeds into the row OCR box (the filter dropdown, the
+# column headers, and the recipe-description panel that renders 'Fetching description…'
+# over/under the list). None of it appears in a real recipe name, so strip it from every
+# row blob before matching — otherwise a stray 'fetchingdescription' trips the extra-word
+# reject and the recipe intermittently fails to match (armorer 'Fulginate Kite Shield').
+_UI_NOISE = ("fetchingdescription", "fetching", "description", "unfiltered",
+             "difficulty", "showhidden", "scrollbar")
+# A row whose ENTIRE blob is one of these chrome words is a phantom (header/dropdown), not
+# a recipe — drop it. 'recipe' only as a whole word (a real name could contain it).
+_CHROME_ROWS = frozenset(_UI_NOISE) | {"recipe", "filter", "search", "craft", "name"}
+
+
+def _strip_noise(blob: str) -> str:
+    for n in _UI_NOISE:
+        blob = blob.replace(n, "")
+    return blob
 
 
 def _is_quality_tail(ws: list) -> bool:
@@ -489,22 +508,37 @@ def _merge_quality_tails(grouped: list[list]) -> tuple[list[list], bool]:
     return out, merged
 
 
-def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int]]]:
-    """[(name_blob, click_xy)] for each result row. Prefers EXPLICIT per-row OCR boxes +
-    click points (recipe_select.result_rows — owner-calibrated, one box/click per fixed row
-    slot); falls back to OCRing one tall region and grouping words by Y (click = icon_x at
-    the row's center). The per-row mode is deterministic: fixed box per slot, fixed click."""
+def _clean_row(text: str) -> tuple[str, str]:
+    """Raw OCR row text -> (alpha_blob_noise_stripped, roman_tier). The roman is pulled from
+    the SPACED text (needs the word boundary; a space-stripped blob can't tell the 'i' in
+    'magic' from the tier). '' blob = drop (phantom chrome row)."""
+    roman = _roman_tier(text)
+    blob = _strip_noise(_alpha(text))
+    if blob in _CHROME_ROWS:                     # a header/dropdown phantom, not a recipe
+        return "", roman
+    return blob, roman
+
+
+def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int], str]]:
+    """[(name_blob, click_xy, roman)] for each result row. Prefers EXPLICIT per-row OCR
+    boxes + click points (recipe_select.result_rows — owner-calibrated, one box/click per
+    fixed row slot); falls back to OCRing one tall region and grouping words by Y (click =
+    icon_x at the row's center). ONE grab() for the whole call so every row is read off the
+    SAME frame (mixing frames made matches flap as the list/description repainted)."""
     rs = cfg.get("recipe_select", {})
     slots = rs.get("result_rows") or []
     icon_x = int(rs.get("icon_x", 244))
+    try:
+        guest.grab()                             # ONE frame -> every row read off it (fresh=False below)
+    except AttributeError:
+        pass                                     # tests monkeypatch _ocr_words and pass guest=None
 
     # DYNAMIC grouped rows: OCR the whole list, group words by Y (merging a wrapped 2-line
     # recipe name into ONE row) and click the row's true center. Robust to variable row
-    # height. Built first so we can detect whether any row WRAPS. Best-effort: if this OCR
-    # path is unavailable, we just don't detect wrap and use the fixed slots.
+    # height. Built first so we can detect whether any row WRAPS.
     dyn, wrapped = [], False
     try:
-        grouped = _recipe_rows(guest, cfg)
+        grouped = _recipe_rows(guest, cfg, fresh=False)
     except Exception:
         grouped = []
     # Fold a '(Quality)' that rendered on its OWN line (full row-pitch below a short name,
@@ -515,12 +549,14 @@ def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int]]
     if tail_merged:
         wrapped = True
     for ws in grouped:
-        blob = _alpha(" ".join(w["text"] for w in ws))
+        text = " ".join(w["text"] for w in ws)
+        blob, roman = _clean_row(text)
         span = max(w["y"] + w["h"] for w in ws) - min(w["y"] for w in ws)
         if span > _WRAP_SPAN_PX:                 # words on two lines -> a wrapped name
             wrapped = True
         y = sum(w["y"] + w["h"] // 2 for w in ws) // len(ws)
-        dyn.append((blob, (icon_x, y)))
+        if blob:
+            dyn.append((blob, (icon_x, y), roman))
 
     # Fixed per-slot boxes are calibrated + deterministic, but ONLY when every result is a
     # single line. A wrapped 2-line name shifts every row below it, so the fixed boxes
@@ -532,7 +568,9 @@ def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int]]
         for s in slots:
             ocr, click = s.get("ocr"), s.get("click")
             if ocr and click:
-                out.append((_ocr_line(guest, ocr), (int(click[0]), int(click[1]))))
+                blob, roman = _clean_row(_ocr_line(guest, ocr, fresh=False))
+                if blob:
+                    out.append((blob, (int(click[0]), int(click[1])), roman))
         return out
     return dyn
 
@@ -540,7 +578,7 @@ def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int]]
 def recipe_row_blobs(guest: Guest, cfg: dict) -> list[str]:
     """Diagnostic: the OCR'd text of each result row, as seen by the matcher. Logged on a
     failed match so 'not found' is never silent (wrong name? unfiltered list? focus race?)."""
-    return [blob for blob, _ in _row_candidates(guest, cfg)]
+    return [blob for blob, _, _ in _row_candidates(guest, cfg)]
 
 
 _ROMAN_RE = re.compile(r"\b([ivxl]{1,4})\b", re.IGNORECASE)
@@ -595,8 +633,17 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
     # are already part of `want` for tier'd names, so this targets prefix/suffix variants.
     max_extra = int(rs.get("max_extra_chars", 4))
     scored = []   # (score, is_target_quality, extra, click)
-    for blob, click in _row_candidates(guest, cfg):
+    for blob, click, roman in _row_candidates(guest, cfg):
         if not blob:
+            continue
+        # WRONG-TIER reject (exact roman compare). EQ2's search filter is a SUBSTRING match,
+        # so a search for 'Song of Magic II' also returns the III/IV rows ('II' ⊂ 'III'), and
+        # coverage can't tell them apart (`_contains(blob,'ii')` is true for a 'iii' blob).
+        # The roman is read as a whole token per row (see _clean_row), so compare it EXACTLY:
+        # a row whose tier is present AND differs from the target's is a different spell. When
+        # the row's roman OCR'd blank we can't tell — fall through to coverage/quality.
+        if target_roman and roman and roman != target_roman:
+            log.debug("recipe row click=%s REJECT (tier %s != %s) blob=%r", click, roman, target_roman, blob)
             continue
         if any(_contains(blob, f) for f in forbidden):
             log.debug("recipe row click=%s REJECT (variant) blob=%r", click, blob)

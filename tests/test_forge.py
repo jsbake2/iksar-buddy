@@ -104,7 +104,7 @@ def test_match_recipe_row_rejects_imbued_variant(monkeypatch):
     from forge import sensors
     fake = _row(["Imbued", "Iron", "Chainmail", "Coat"], y=210) + \
            _row(["Iron", "Chainmail", "Coat"], y=250)
-    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region, **k: fake)
     pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Iron Chainmail Coat")
     assert pt is not None, "exact row should match"
     assert abs(pt[1] - 250) <= 8, f"should click the plain row (~y=250), got {pt}"
@@ -115,7 +115,7 @@ def test_match_recipe_row_prefers_exact_over_suffix(monkeypatch):
     from forge import sensors
     fake = _row(["Sapphire", "Ring", "of", "Power"], y=210) + \
            _row(["Sapphire", "Ring"], y=250)
-    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region, **k: fake)
     pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Sapphire Ring")
     assert pt is not None and abs(pt[1] - 250) <= 8, f"should pick exact 'Sapphire Ring', got {pt}"
 
@@ -125,7 +125,7 @@ def test_match_recipe_row_keeps_modifier_when_target_has_it(monkeypatch):
     from forge import sensors
     fake = _row(["Imbued", "Iron", "Chainmail", "Coat"], y=210) + \
            _row(["Iron", "Chainmail", "Coat"], y=250)
-    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region, **k: fake)
     pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Imbued Iron Chainmail Coat")
     assert pt is not None and abs(pt[1] - 210) <= 8, f"should pick the imbued row, got {pt}"
 
@@ -135,7 +135,7 @@ def test_match_recipe_row_sole_result_partial_ocr(monkeypatch):
     still taken — the sole-result fast path. Regression for '1 obvious result, dismissed'."""
     from forge import sensors
     fake = _row(["Iron", "Revenan", "Mantle"], y=240)   # 'revenant' OCR'd as 'revenan'
-    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region, **k: fake)
     pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Iron Revenant Mantle")
     assert pt is not None and abs(pt[1] - 240) <= 8, f"sole result should be taken, got {pt}"
 
@@ -149,7 +149,7 @@ def test_match_recipe_row_standalone_quality_line(monkeypatch):
     from forge import sensors
     fake = (_row(["Master", "of", "the", "Hunt", "II"], y=210) + _row(["(Adept)"], y=243) +
             _row(["Master", "of", "the", "Hunt", "II"], y=276) + _row(["(Journeyman)"], y=309))
-    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region, **k: fake)
     pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}},
                                   name="Master of the Hunt II (Journeyman)")
     assert pt is not None, "the Journeyman row should match once its own-line quality merges up"
@@ -164,10 +164,51 @@ def test_is_quality_tail_only_matches_bare_quality(monkeypatch):
     assert not q(["Sapphire", "Ring"])
 
 
+def test_match_recipe_row_rejects_wrong_roman_tier(monkeypatch):
+    """Jeweler II/III bug: EQ2's search filter is substring, so 'Song of Magic II' also
+    returns the III rows ('II' ⊂ 'III') and coverage can't tell them apart. The roman is
+    compared EXACTLY per row — III target must pick III, II target must pick II."""
+    from forge import sensors
+    fake = (_row(["Song", "of", "Magic", "II", "(Journeyman)"], y=210) +
+            _row(["Song", "of", "Magic", "III", "(Journeyman)"], y=250))
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region, **k: fake)
+    p3 = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}},
+                                  name="Song of Magic III (Journeyman)")
+    assert p3 is not None and abs(p3[1] - 250) <= 8, f"III target should pick the III row, got {p3}"
+    p2 = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}},
+                                  name="Song of Magic II (Journeyman)")
+    assert p2 is not None and abs(p2[1] - 210) <= 8, f"II target should pick the II row, got {p2}"
+
+
+def test_match_recipe_row_strips_description_bleed(monkeypatch):
+    """Armorer bug: the recipe-description panel's 'Fetching description…' bled into the row
+    OCR box ('fulginatekiteshieldfetchingdescription'), tripping the extra-word reject. The
+    UI-chrome noise is stripped so the exact recipe still matches."""
+    from forge import sensors
+    fake = (_row(["Fulginate", "Kite", "Shield", "Fetching", "description"], y=210) +
+            _row(["Imbued", "Fulginate", "Kite", "Shield"], y=250))
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region, **k: fake)
+    pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Fulginate Kite Shield")
+    assert pt is not None and abs(pt[1] - 210) <= 8, f"noise-stripped exact row should match, got {pt}"
+
+
+def test_match_recipe_row_drops_chrome_header_row(monkeypatch):
+    """A phantom row that OCRs to a chrome word ('Recipe' column header, 'Unfiltered'
+    dropdown) is dropped, not treated as a candidate recipe."""
+    from forge import sensors
+    fake = (_row(["Unfiltered"], y=180) + _row(["Recipe"], y=195) +
+            _row(["Fulginate", "Kite", "Shield"], y=225))
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region, **k: fake)
+    blobs = sensors.recipe_row_blobs(guest=None, cfg={"recipe_select": {}})
+    assert "unfiltered" not in blobs and "recipe" not in blobs, f"chrome rows should be dropped: {blobs}"
+    pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Fulginate Kite Shield")
+    assert pt is not None and abs(pt[1] - 225) <= 8
+
+
 def test_match_recipe_row_no_rows_returns_none(monkeypatch):
     """No OCR rows (unfiltered/empty) -> None, not a crash."""
     from forge import sensors
-    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: [])
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region, **k: [])
     assert sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}}, name="Iron Coat") is None
 
 
@@ -223,7 +264,7 @@ def test_match_recipe_row_per_row_slots(monkeypatch):
         {"ocr": {"x": 258, "y": 356, "w": 207, "h": 30}, "click": [245, 368]},  # superset
     ]}}
     texts = {268: "imbuedironcoat", 313: "ironcoat", 356: "ironcoatofdoom"}
-    monkeypatch.setattr(sensors, "_ocr_line", lambda guest, r: texts.get(r["y"], ""))
+    monkeypatch.setattr(sensors, "_ocr_line", lambda guest, r, **k: texts.get(r["y"], ""))
     assert sensors.match_recipe_row(None, cfg, "Iron Coat") == (244, 326)
     # blobs diagnostic reflects the per-row boxes (one entry per slot)
     assert sensors.recipe_row_blobs(None, cfg) == ["imbuedironcoat", "ironcoat", "ironcoatofdoom"]
@@ -235,7 +276,7 @@ def test_match_recipe_row_per_row_target_is_imbued(monkeypatch):
         {"ocr": {"x": 258, "y": 313, "w": 207, "h": 30}, "click": [244, 326]},
     ]}}
     texts = {268: "imbuedironcoat", 313: "ironcoat"}
-    monkeypatch.setattr(sensors, "_ocr_line", lambda guest, r: texts.get(r["y"], ""))
+    monkeypatch.setattr(sensors, "_ocr_line", lambda guest, r, **k: texts.get(r["y"], ""))
     assert sensors.match_recipe_row(None, cfg, "Imbued Iron Coat") == (245, 291)
 
 
@@ -303,7 +344,7 @@ def test_match_recipe_row_rejects_extra_word_picks_exact(monkeypatch):
     """'Burlap Pantaloons' must pick the exact row, NOT 'Tranquil Burlap Pantaloons'."""
     from forge import sensors
     fake = _row(["Tranquil", "Burlap", "Pantaloons"], y=210) + _row(["Burlap", "Pantaloons"], y=250)
-    monkeypatch.setattr(sensors, "_ocr_words", lambda g, r: fake)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda g, r, **k: fake)
     pt = sensors.match_recipe_row(None, {"recipe_select": {}}, "Burlap Pantaloons")
     assert pt is not None and abs(pt[1] - 250) <= 8, f"should pick exact Burlap Pantaloons, got {pt}"
 
@@ -311,7 +352,7 @@ def test_match_recipe_row_extra_word_only_variant_skips(monkeypatch):
     """If ONLY the extra-word variant is present, skip (None) — never craft the wrong recipe."""
     from forge import sensors
     fake = _row(["Tranquil", "Burlap", "Pantaloons"], y=210)
-    monkeypatch.setattr(sensors, "_ocr_words", lambda g, r: fake)
+    monkeypatch.setattr(sensors, "_ocr_words", lambda g, r, **k: fake)
     assert sensors.match_recipe_row(None, {"recipe_select": {}}, "Burlap Pantaloons") is None
 
 
@@ -348,7 +389,7 @@ def test_match_recipe_row_wrapped_two_line_name(monkeypatch):
                   W(360, 266, "Broadcloth"), W(260, 284, "Pantaloons")]
     # row 2 = the plain target, wrapped across y=311 and y=329
     row_plain = [W(260, 311, "Tranquil"), W(320, 311, "Broadcloth"), W(260, 329, "Pantaloons")]
-    monkeypatch.setattr(sensors, "_recipe_rows", lambda g, c: [row_imbued, row_plain])
+    monkeypatch.setattr(sensors, "_recipe_rows", lambda g, c, **k: [row_imbued, row_plain])
     # cfg HAS fixed slots — the wrap must override them and use the dynamic rows.
     cfg = {"recipe_select": {"result_rows": [{"ocr": {"x": 0, "y": 0, "w": 1, "h": 1}, "click": [9, 9]}],
                              "icon_x": 244}}
