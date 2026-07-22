@@ -456,6 +456,39 @@ def _recipe_rows(guest: Guest, cfg: dict) -> list[list]:
     return rows
 
 
+_QUALITY_WORDS = ("apprentice", "journeyman", "adept", "expert", "master", "grandmaster")
+
+
+def _is_quality_tail(ws: list) -> bool:
+    """True if this grouped row is JUST a '(Quality)' tag — e.g. a '(Journeyman)' that
+    rendered on its OWN line under a short recipe name (full row-pitch below it, so
+    _recipe_rows didn't merge it). Such a line is never its own recipe; it's the tail of
+    the row above and must merge UP, or the name row loses its quality (breaking quality
+    disambiguation) and the un-merged split keeps `wrapped` false (fixed slots misalign).
+    Matches when the row's alpha blob closely equals a single quality word and is about
+    that length — a real name row is longer, so 'Master of the Hunt' won't false-trip."""
+    blob = _alpha(" ".join(w.get("text", "") for w in ws))
+    if not blob:
+        return False
+    return any(abs(len(blob) - len(q)) <= 2
+               and difflib.SequenceMatcher(None, blob, q).ratio() >= 0.82
+               for q in _QUALITY_WORDS)
+
+
+def _merge_quality_tails(grouped: list[list]) -> tuple[list[list], bool]:
+    """Fold each standalone '(Quality)' row into the preceding recipe row. Returns the
+    rewritten rows + whether anything merged (a merge means a 2-line recipe -> wrapped)."""
+    out: list[list] = []
+    merged = False
+    for ws in grouped:
+        if out and _is_quality_tail(ws):
+            out[-1].extend(ws)
+            merged = True
+        else:
+            out.append(list(ws))
+    return out, merged
+
+
 def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int]]]:
     """[(name_blob, click_xy)] for each result row. Prefers EXPLICIT per-row OCR boxes +
     click points (recipe_select.result_rows — owner-calibrated, one box/click per fixed row
@@ -474,6 +507,13 @@ def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int]]
         grouped = _recipe_rows(guest, cfg)
     except Exception:
         grouped = []
+    # Fold a '(Quality)' that rendered on its OWN line (full row-pitch below a short name,
+    # so _recipe_rows left it separate) back into the recipe above it. A merge means that
+    # recipe is really 2 lines tall -> force `wrapped` so the fixed slots (which misalign
+    # under any 2-line row) are abandoned for the dynamic rows we just reunited.
+    grouped, tail_merged = _merge_quality_tails(grouped)
+    if tail_merged:
+        wrapped = True
     for ws in grouped:
         blob = _alpha(" ".join(w["text"] for w in ws))
         span = max(w["y"] + w["h"] for w in ws) - min(w["y"] for w in ws)
@@ -534,8 +574,15 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
     # higher quality was also scribed (Adept III), both rows carry the same base name. The
     # target's quality is the tiebreaker: reject rows whose OCR shows a DIFFERENT quality, and
     # on a pure tie prefer the row carrying the target's quality -> always the writ's version.
-    qualities = ("apprentice", "journeyman", "adept", "expert", "master", "grandmaster")
-    target_q = next((q for q in qualities if q in name_l), None)
+    qualities = _QUALITY_WORDS
+    # The disambiguating quality is the TRAILING (parenthetical) tag — NOT any quality word
+    # that happens to be part of the recipe NAME. 'Master of the Hunt (Journeyman)' has base
+    # word 'master' AND quality tag 'journeyman'; scanning the whole name for the first
+    # quality word would mis-read, and the wrong-quality reject would self-reject on 'master'.
+    tail_q = re.search(r"\(?\b(" + "|".join(qualities) + r")\b\)?[^a-z]*$", name_l)
+    target_q = tail_q.group(1) if tail_q else None
+    base_l = name_l[:tail_q.start()] if tail_q else name_l   # name minus the quality tag
+    name_qualities = {q for q in qualities if q in base_l}   # quality words that are NAME tokens
     target_roman = _roman_tier(name_l)         # '' for a base recipe; reject rows with a diff tier
     # On a pure tie, prefer Journeyman: explicit when the target names it, else the default
     # (jeweler/scholar writs are always Journeyman). Harmless for gear (no quality rows).
@@ -555,13 +602,19 @@ def match_recipe_row(guest: Guest, cfg: dict, name: str) -> tuple[int, int] | No
             log.debug("recipe row click=%s REJECT (variant) blob=%r", click, blob)
             continue
         # Wrong-quality reject: target wants one quality, this row's OCR shows a different one.
-        if target_q and any(_contains(blob, q) for q in qualities if q != target_q):
+        # Skip quality words that are part of the NAME itself ('master' in 'Master of the
+        # Hunt') — they aren't a quality signal and would wrongly reject every row.
+        if target_q and any(_contains(blob, q) for q in qualities
+                            if q != target_q and q not in name_qualities):
             log.debug("recipe row click=%s REJECT (wrong quality, want %s) blob=%r", click, target_q, blob)
             continue
         score = sum(1 for t in want if _contains(blob, t)) / len(want)
         # Surplus = extra LETTERS only (ignore spaces/parens, which inflated the count and rejected
-        # legit tier'd names); a whole extra word still trips it (Tranquil/Imbued/of-X).
-        extra = max(0, sum(len(t) for t in re.findall(r"[a-z]+", blob)) - want_len)
+        # legit tier'd names); a whole extra word still trips it (Tranquil/Imbued/of-X). EVERY row
+        # carries a '(Quality)' tag, so a recognized quality the TARGET omits (owner passed the base
+        # name) is free, not surplus — else 'Master of the Hunt' rejects on its own '(Journeyman)'.
+        qfree = next((len(q) for q in qualities if q not in want and _contains(blob, q)), 0)
+        extra = max(0, sum(len(t) for t in re.findall(r"[a-z]+", blob)) - want_len - qfree)
         if extra > max_extra:                  # extra word -> different recipe (Tranquil/of-X)
             log.debug("recipe row click=%s REJECT (extra word, %d) blob=%r", click, extra, blob)
             continue

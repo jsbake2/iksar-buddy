@@ -140,6 +140,30 @@ def test_match_recipe_row_sole_result_partial_ocr(monkeypatch):
     assert pt is not None and abs(pt[1] - 240) <= 8, f"sole result should be taken, got {pt}"
 
 
+def test_match_recipe_row_standalone_quality_line(monkeypatch):
+    """The Prax/Sage 'Master of the Hunt II' bug: '(Journeyman)' rendered on its OWN line
+    (full row-pitch below the name), so it split into a separate row and the name row lost
+    its quality. With two qualities scribed (Adept listed FIRST), the un-merged split can't
+    disambiguate and mis-picks Adept. The quality-tail must merge UP so the Journeyman row
+    matches and the Adept row is quality-rejected."""
+    from forge import sensors
+    fake = (_row(["Master", "of", "the", "Hunt", "II"], y=210) + _row(["(Adept)"], y=243) +
+            _row(["Master", "of", "the", "Hunt", "II"], y=276) + _row(["(Journeyman)"], y=309))
+    monkeypatch.setattr(sensors, "_ocr_words", lambda guest, region: fake)
+    pt = sensors.match_recipe_row(guest=None, cfg={"recipe_select": {}},
+                                  name="Master of the Hunt II (Journeyman)")
+    assert pt is not None, "the Journeyman row should match once its own-line quality merges up"
+    assert pt[1] > 260, f"should pick the Journeyman recipe (~y=288), not the Adept one (~y=216); got {pt}"
+
+
+def test_is_quality_tail_only_matches_bare_quality(monkeypatch):
+    from forge import sensors
+    q = lambda words: sensors._is_quality_tail(_row(words, y=0))
+    assert q(["(Journeyman)"]) and q(["Adept"]) and q(["(Expert)"])
+    assert not q(["Master", "of", "the", "Hunt"])   # a name that CONTAINS 'master' isn't a tail
+    assert not q(["Sapphire", "Ring"])
+
+
 def test_match_recipe_row_no_rows_returns_none(monkeypatch):
     """No OCR rows (unfiltered/empty) -> None, not a crash."""
     from forge import sensors
