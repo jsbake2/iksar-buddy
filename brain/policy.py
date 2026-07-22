@@ -140,6 +140,32 @@ def decide(world: WorldState, cfg, state: State) -> list[Action]:
         add("emergency_ward", tank_slot, "EMERGENCY ward")
         add(mr,               tank_slot, f"emergency {mr}")
 
+    # 1b) AUTO-REZ — a group member is DOWN: revive them ASAP (owner: "rez
+    #     immediately"). Fires in ANY state (combat, wipe-recovery, or OOC) the moment
+    #     someone's dead, with two guards:
+    #       * NOT while a LIVING member is in emergency — a locked ~6s rez cast over a
+    #         teammate who's about to die wipes the group; living emergencies take the
+    #         tick and the rez slots into the first gap.
+    #       * NOT mid-cast — don't interrupt an in-flight heal; the rez lands next tick.
+    #     Target order = rez_priority (role list, tank first). The 6s cast is anti-
+    #     spammed by the rez cooldown in server.py; the rezzed member accepts the revive
+    #     via the revive-accept path. auto_rez=false disables. Ranks above cures/heals
+    #     below (added before the not-casting block) so it's near the top of the burst.
+    dead = [m for m in world.members if m.dead]
+    if dead and not emergency and not world.casting and bool(th.get("auto_rez", True)):
+        slot_roles = cfg.ability_map.get("slot_roles") or []
+        order = list(th.get("rez_priority", ["tank", "healer", "support", "dps"]))
+
+        def _role_of(m):
+            return slot_roles[m.slot] if m.slot < len(slot_roles) else ""
+
+        def _rank(m):
+            r = _role_of(m)
+            return (order.index(r) if r in order else len(order), m.slot != tank_slot, m.slot)
+
+        t = min(dead, key=_rank)
+        add("rez", t.slot, f"REZ s{t.slot} ({_role_of(t) or 'member'} down)")
+
     # Cures + lower tiers respect an in-progress (non-emergency) cast.
     if not world.casting:
         # 2) CURES — generic, tank first (group cure if many afflicted).

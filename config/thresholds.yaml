@@ -18,6 +18,7 @@ ward_absent_recast:   true  # recast immediately if ward icon absent
 group_ward_on_ae: true      # cast group ward when AE-incoming signal present
 
 # Rez loop.
+auto_rez: true              # a member down -> auto-cast rez immediately (held only while a LIVING member is in emergency)
 rez_wait_for_inzone_s: 30   # bot dead: wait this long for an in-zone rez before self-revive at stone
 rez_priority:               # bot alive, others dead: rez order by role. Tank ALWAYS first.
   - tank
@@ -48,6 +49,7 @@ cooldowns_s:
   critical_heal: 0.8
   emergency_heal: 0.6
   emergency_ward: 1.0
+  rez: 10.0                 # ~6s locked cast + accept latency; don't stutter-recast our own rez
 prepull_debounce_s: 3.0     # min gap between pre_pull fires on repeated incoming-calls
 
 # Event/combat detection (host_agent at startup + pushed to the in-guest agent).

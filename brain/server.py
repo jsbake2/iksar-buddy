@@ -36,6 +36,9 @@ ACTION_COOLDOWN_S = {
     "ward": 5.0, "group_ward": 5.0,
     "group_heal": 1.2, "direct_heal": 1.0, "critical_heal": 0.8,
     "emergency_heal": 0.6, "emergency_ward": 1.0,
+    # rez is a ~6s locked cast + accept latency; hold off recasting until it could
+    # have landed so we don't stutter-interrupt our own rez. Tune via cooldowns_s.rez.
+    "rez": 10.0,
 }
 DEFAULT_COOLDOWN_S = 1.5
 PREPULL_DEBOUNCE_S = 3.0

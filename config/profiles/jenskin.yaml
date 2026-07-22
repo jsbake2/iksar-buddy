@@ -54,9 +54,9 @@ abilities:
     desc: GENERIC cure (any detriment type)
   rez:
     key: Ctrl+1
-    mode: manual
+    mode: auto
     cast_ms: 6000
-    desc: revive a dead member (target via group_target_keys first)
+    desc: revive a dead member -- AUTO-cast on death (targets via group_target_keys); auto_rez=false in thresholds to disable
   follow:
     key: Alt+=
     mode: manual

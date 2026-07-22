@@ -17,7 +17,8 @@ def _cfg(tank_slot=0, **override_keys):
                      "abilities": {k: {"key": v} for k, v in keys.items()}}
     c.thresholds = {"hp_standard": 0.85, "hp_critical": 0.5, "hp_emergency": 0.25,
                     "mana_floor": 0.3, "group_heal_count": 2, "group_critical_count": 3,
-                    "group_ward_on_ae": True}
+                    "group_ward_on_ae": True, "auto_rez": True,
+                    "rez_priority": ["tank", "healer", "support", "dps"]}
     return c
 
 
@@ -105,6 +106,68 @@ def test_burst_stacks_heals_and_wards_when_critical():
     roles = [a.role for a in decide(w, _cfg(critical_heal="3", emergency_ward="Alt+7"), State.IN_COMBAT)]
     assert "critical_heal" in roles and "direct_heal" in roles
     assert "emergency_ward" in roles or "ward" in roles
+
+
+def _rez_cfg(**kw):
+    c = _cfg(**kw)
+    c.ability_map["abilities"]["rez"] = {"key": "Ctrl+1"}
+    c.ability_map["slot_roles"] = ["healer", "tank", "dps", "dps", "support", "support"]
+    c.ability_map["group_target_keys"] = ["F1", "F2", "F3", "F4", "F5", "F6"]
+    return c
+
+
+def test_auto_rez_fires_on_dead_member():
+    # a downed DPS + everyone else fine -> rez it, targeting its slot.
+    w = WorldState(members=[Member(0, hp=1.0, ward=True), Member(2, dead=True)],
+                   group_ward_up=True)
+    a = decide(w, _rez_cfg(), State.IN_COMBAT)
+    assert a[0].role == "rez" and a[0].target_slot == 2
+
+
+def test_auto_rez_prefers_tank_by_priority():
+    # tank (slot 1) and a dps (slot 2) both down -> rez the TANK first (rez_priority).
+    w = WorldState(members=[Member(0, hp=1.0, ward=True), Member(1, dead=True),
+                            Member(2, dead=True)], group_ward_up=True)
+    a = decide(w, _rez_cfg(), State.IN_COMBAT)
+    assert a[0].role == "rez" and a[0].target_slot == 1
+
+
+def test_living_emergency_blocks_rez():
+    # someone's down BUT a living member is in emergency -> heal the living one, hold
+    # the rez (a locked cast over a dying teammate wipes the group).
+    w = WorldState(members=[Member(0, hp=0.15, ward=True), Member(2, dead=True)],
+                   group_ward_up=True)
+    a = decide(w, _rez_cfg(), State.IN_COMBAT)
+    assert a[0].role != "rez"
+    assert not any(x.role == "rez" for x in a)
+
+
+def test_auto_rez_outranks_routine_heal():
+    # a hurt (non-emergency) living member AND a dead member -> rez ranks first.
+    w = WorldState(members=[Member(0, hp=0.7, ward=True), Member(2, dead=True)],
+                   own_power=1.0, group_ward_up=True)
+    a = decide(w, _rez_cfg(), State.IN_COMBAT)
+    assert a[0].role == "rez"
+
+
+def test_auto_rez_fires_out_of_combat():
+    # post-wipe, OOC, a member down -> still rez (rez isn't combat-gated).
+    w = WorldState(members=[Member(0, hp=1.0, ward=True), Member(1, dead=True)],
+                   group_ward_up=True)
+    assert decide(w, _rez_cfg(), State.OOC)[0].role == "rez"
+
+
+def test_auto_rez_disabled_by_flag():
+    w = WorldState(members=[Member(0, hp=1.0, ward=True), Member(2, dead=True)],
+                   group_ward_up=True)
+    c = _rez_cfg()
+    c.thresholds["auto_rez"] = False
+    assert not any(x.role == "rez" for x in decide(w, c, State.IN_COMBAT))
+
+
+def test_no_rez_when_nobody_dead():
+    w = WorldState(members=[Member(0, hp=1.0, ward=True)], group_ward_up=True)
+    assert not any(x.role == "rez" for x in decide(w, _rez_cfg(), State.IN_COMBAT))
 
 
 def test_burst_dedups_shared_key():
