@@ -48,6 +48,7 @@ const HEALER_CATALOG = [
 // control. NO heals/wards/cures and NO buffs (buffs are cast per-member on the MAIN
 // page's buff matrix). Roles match config/profiles/joar.yaml.
 const DIRGE_CATALOG = [
+  { id: "st_heal", label: "Heal Tank", kind: "role", action: "st_heal", role: "tank", hot: 1 },
   { id: "attack_1", label: "Attack 1", kind: "group", action: "attack_1", hot: 1 },
   { id: "attack_2", label: "Attack 2", kind: "group", action: "attack_2", hot: 1 },
   { id: "enc_attack_1", label: "Enc Attack 1", kind: "group", action: "enc_attack_1", hot: 1 },
@@ -71,7 +72,7 @@ const DIRGE_CATALOG = [
 ];
 
 // active catalog swaps with the profile kind (healer heal-grid vs dirge buffs).
-const FOCUS_BUILD = "b12";        // bump on focus.js changes — shown in the header for verification
+const FOCUS_BUILD = "b13";        // bump on focus.js changes — shown in the header for verification
 let kind = "healer";
 // DYN = catalog entries generated LIVE from the active profile's keymap, so ANY mapped role
 // (except the buff-matrix temp/ind buffs — those are cast per-member on the main page) can be
@@ -137,7 +138,7 @@ const LS = () => "ib-focus-layout-" + kind;    // cache key per profile kind
 // a later manual delete still sticks. Per kind — the Dirge catalog is all-new.
 const ENSURE_BY_KIND = {
   healer: ["reset_combat", "force_in", "force_out", "auto_combat", "follow_tank", "follow_dps", "buff_self", "buff_tank", "buff_dps", "buff", "spell_attack", "reengage", "food"],
-  dirge: [],
+  dirge: ["st_heal"],
 };
 let ENSURE = ENSURE_BY_KIND.healer;
 function mergeLayout(s) {

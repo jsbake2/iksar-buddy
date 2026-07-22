@@ -33,6 +33,11 @@ abilities:
   deaggro:      { key: '=', mode: manual, desc: 'de-aggro / drop threat' }
 
   # === AUTOMATION (host loop; owner sets keys + timings in the Dirge tuning panel) ===
+  # Single-target backup heal — a Dirge top-off. AUTO-cast on the lowest-hp member below
+  # dirge_heal_hp (thresholds), tank-first, in or out of combat; also a manual "Heal Tank"
+  # button on the focus window. DISTINCT role from the healer's direct_heal so it uses its
+  # OWN threshold and never trips the healer priority loop. dirge_heal_hp=0 disables auto.
+  st_heal:         { key: '', mode: auto, desc: 'single-target heal (backup top-off)' }
   # Mana feed — reactive on group positions 2/3/4 power (mana_heal_floor). Group when 2+
   # low, else individual on the lowest.
   mana_heal:       { key: '', mode: auto, desc: 'mana feed (single target)' }

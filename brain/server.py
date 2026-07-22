@@ -303,8 +303,8 @@ class Brain:
     # exactly the old hand-rolled blocks' behavior. Adding the next Dirge/Fury
     # automation = adding one spec method to the tuple below.
     async def _run_heartbeats(self, world: WorldState, now: float) -> None:
-        for spec in (self._hb_maint, self._hb_assist, self._hb_debuff,
-                     self._hb_mana_feed, self._hb_pbuffs):
+        for spec in (self._hb_dirge_heal, self._hb_maint, self._hb_assist,
+                     self._hb_debuff, self._hb_mana_feed, self._hb_pbuffs):
             if self.sm.override is not None or now < self._next_action_at:
                 return
             cmd = spec(world, now)
@@ -319,6 +319,26 @@ class Brain:
 
     def _tank_slot(self) -> int:
         return int(self.cfg.ability_map.get("tank_slot", 0))
+
+    def _hb_dirge_heal(self, world: WorldState, now: float):
+        """DIRGE backup single-target heal: a support toon with a weak heal tops off the
+        lowest-hp LIVING member below dirge_heal_hp (tank-first tiebreak), in or out of
+        combat, per-target cooldown so it never spams. Role-gated: only the Dirge maps
+        `st_heal`, so healer profiles leave key_for('st_heal') empty and this no-ops (their
+        real healing runs through decide()). dirge_heal_hp 0/absent disables."""
+        floor = float(self.cfg.threshold("dirge_heal_hp", 0) or 0)
+        hk = self.cfg.key_for("st_heal")
+        if floor <= 0 or not hk or hk == "none":
+            return None
+        low = [m for m in world.members if not m.dead and m.hp < floor]
+        if not low:
+            return None
+        t = min(low, key=lambda m: (m.hp, m.slot != self._tank_slot()))
+        recast = float(self.cfg.threshold("dirge_heal_recast_s", 2.5) or 2.5)
+        if now >= self._cooldowns.get(("st_heal", t.slot), 0.0):
+            def stamp(): self._cooldowns[("st_heal", t.slot)] = now + recast
+            return ("st_heal", hk, t.slot, f"dirge heal s{t.slot} {t.hp:.0%}", stamp)
+        return None
 
     def _hb_maint(self, world: WorldState, now: float):
         """Ward/HoT heartbeat: with no ward-bar sensing, recast the tank ward on a
