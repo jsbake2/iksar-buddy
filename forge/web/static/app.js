@@ -157,6 +157,10 @@ function buildBotPanel(bot, tradeClasses) {
     camp: q(".bot-camp"),
     switch: q(".bot-switch"),
     shutdown: q(".bot-shutdown"),
+    debug: q(".bot-debug"),
+    debugWrap: q(".bot-debug-wrap"),
+    debugList: q(".bot-debug-list"),
+    debugOn: false,
     log: q(".bot-log"),
     vm: bot.vm || "",
     uiMode: bot.mode || "single",
@@ -231,6 +235,42 @@ function buildBotPanel(bot, tradeClasses) {
     const c = selectedCrafter(refs);   // send the dropdown's crafter so the backend
     post(`/api/bot/${id}/launch`, c ? { character: c.character, trade_class: c.class } : {});
   };
+  // --- OCR debug: toggle capture + browse the ring buffer -------------------
+  function renderDebug(st) {
+    refs.debugOn = !!(st && st.enabled);
+    refs.debug.textContent = "🐞 Debug: " + (refs.debugOn ? "ON" : "off");
+    refs.debug.classList.toggle("on", refs.debugOn);
+    refs.debugWrap.hidden = !refs.debugOn;
+    if (!refs.debugOn) return;
+    const rows = (st.log || []).slice().reverse();       // newest first
+    refs.debugList.innerHTML = rows.length ? "" : "<li class=\"dbg-empty\">no captures yet — run a recipe</li>";
+    rows.forEach((line) => {
+      const li = document.createElement("li");
+      li.className = "dbg-row";
+      const m = line.match(/->\s*(\S+\.png)/);            // pull the screenshot name out of the log line
+      li.textContent = line;
+      if (m) {
+        li.classList.add("has-shot");
+        li.title = "open frame " + m[1];
+        li.onclick = () => window.open(`/api/bot/${id}/debug/shot/${encodeURIComponent(m[1])}`, "_blank");
+      }
+      refs.debugList.appendChild(li);
+    });
+  }
+  async function loadDebug() {
+    try { renderDebug(await (await fetch(`/api/bot/${id}/debug`)).json()); } catch (_) {}
+  }
+  refs.debug.onclick = async () => {
+    try {
+      const r = await (await fetch(`/api/bot/${id}/debug`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ on: !refs.debugOn }) })).json();
+      refs.debugOn = !!r.enabled;
+    } catch (_) {}
+    loadDebug();
+  };
+  loadDebug();                                           // reflect persisted state on load
+  refs._debugTimer = setInterval(() => { if (refs.debugOn) loadDebug(); }, 4000);
   refs.camp.onclick = () => post(`/api/bot/${id}/camp`);
   refs.switch.onclick = () => post(`/api/bot/${id}/switch`);
   refs.shutdown.onclick = () => {

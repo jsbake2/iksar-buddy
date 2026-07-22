@@ -22,7 +22,7 @@ from pathlib import Path
 
 import yaml
 
-from . import recipes, sensors
+from . import debug, recipes, sensors
 from shared.guest import Guest
 from .recipes import prepare_search, search_name, trade_settings
 from .telemetry import ForgeTelemetry
@@ -392,6 +392,10 @@ class CraftWorker:
                 if row_click:
                     break
             if row_click:
+                if debug.is_enabled(self.id):
+                    seen = await self._ex(sensors.recipe_row_blobs, self.guest, self.cfg)
+                    await self._ex(debug.capture, self.id, self.guest, "recipe-match",
+                                   f"'{name}' q='{query}' click={row_click} rows={seen}")
                 break
             # No match. Now that the box has had time to render, distinguish a FOCUS RACE
             # (query never reached the box -> retype helps) from a genuine not-in-list
@@ -406,6 +410,8 @@ class CraftWorker:
             seen = await self._ex(sensors.recipe_row_blobs, self.guest, self.cfg)
             self.t.push_log(self.id, f"'{name}' not in filtered list (attempt {i}/{attempts}) "
                                      f"— rows seen: {seen or '[]'} — retrying")
+            await self._ex(debug.capture, self.id, self.guest, "recipe-miss",
+                           f"'{name}' q='{query}' NOT matched (attempt {i}/{attempts}) rows={seen}")
         if not row_click:
             self.t.push_log(self.id, f"recipe '{name}' not matched after {attempts} tries — skipping")
             self.t.notify(self.id, "Recipe not found",

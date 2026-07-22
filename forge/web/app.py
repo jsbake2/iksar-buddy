@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 import web_common
 
+from .. import debug
 from ..sim import ForgeSim
 from ..telemetry import ForgeTelemetry
 
@@ -328,6 +329,28 @@ def create_app(tele: ForgeTelemetry, sim: ForgeSim) -> FastAPI:
         _ride_crafter(bot_id, payload)
         sim.scribe_read(bot_id)
         return {"ok": True}
+
+    # -- per-bot OCR debug capture (screenshot + log ring buffer, dashboard toggle) --
+    @app.get("/api/bot/{bot_id}/debug")
+    async def debug_status(bot_id: str):
+        if not _bot_ok(bot_id):
+            return JSONResponse({"error": "unknown bot"}, status_code=404)
+        return debug.status(bot_id)
+
+    @app.post("/api/bot/{bot_id}/debug")
+    async def debug_toggle(bot_id: str, payload: dict = Body(default={})):
+        if not _bot_ok(bot_id):
+            return JSONResponse({"error": "unknown bot"}, status_code=404)
+        on = bool(payload.get("on", not debug.is_enabled(bot_id)))
+        return {"ok": True, "enabled": debug.set_enabled(bot_id, on)}
+
+    @app.get("/api/bot/{bot_id}/debug/shot/{name}")
+    async def debug_shot(bot_id: str, name: str):
+        p = debug.shot_path(name)
+        if not p:
+            return Response(status_code=404)
+        return Response(content=p.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "no-store"})
 
     # -- in-guest reflex agent channel (the agent is an outbound-only HTTP client) --
     @app.get("/api/agent/{bot_id}/command")

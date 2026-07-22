@@ -195,6 +195,17 @@
 .bot-sysrow .bot-shutdown { color:var(--bad); border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }
 .bot-sysrow .bot-shutdown:hover { background:var(--bad); color:#fff; border-color:var(--bad); }
 
+/* per-bot OCR debug toggle + captures ring buffer */
+.bot-sysrow .bot-debug.on { color:var(--warn); border-color:color-mix(in srgb,var(--warn) 55%,var(--line)); background:color-mix(in srgb,var(--warn) 14%,transparent); }
+.bot-debug-wrap { border-top:1px solid var(--line); padding-top:9px; margin-top:9px; }
+.dbg-hint { text-transform:none; letter-spacing:0; color:var(--faint); font-size:9px; margin-left:6px; }
+.bot-debug-list { list-style:none; margin:0; padding:0; max-height:150px; overflow:auto;
+  font-family:ui-monospace,monospace; font-size:11px; display:flex; flex-direction:column; gap:1px; }
+.bot-debug-list li { color:var(--muted); padding:1px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bot-debug-list li.has-shot { cursor:pointer; }
+.bot-debug-list li.has-shot:hover { color:var(--fg); background:color-mix(in srgb,var(--accent) 14%,transparent); }
+.bot-debug-list li.dbg-empty { color:var(--faint); }
+
 /* per-bot console */
 .bot-console-wrap { border-top:1px solid var(--line); padding-top:9px; }
 .console-head { font-size:9px; text-transform:uppercase; letter-spacing:1.2px; color:var(--faint); margin-bottom:5px; }

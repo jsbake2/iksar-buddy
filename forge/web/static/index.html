@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ib · forge</title>
   <link rel="stylesheet" href="themes.css?v=20260614" />
-  <link rel="stylesheet" href="forge.css?v=20260701a" />
+  <link rel="stylesheet" href="forge.css?v=20260722a" />
 </head>
 <body>
   <!-- top bar -->
@@ -164,6 +164,13 @@
         <button class="util bot-camp" title="camp out to char-select (/camp)">⏏ Camp</button>
         <button class="util bot-switch" title="camp + switch to the other crafter on this account">⇄ Switch</button>
         <button class="util bot-shutdown" title="quit EQ2 and power off this VM">⏻ Shutdown</button>
+        <button class="util bot-debug" title="save a screenshot + log line on every recipe OCR match/miss (last 200), to pin down mis-matches">🐞 Debug: off</button>
+      </div>
+
+      <!-- per-bot OCR debug captures (screenshot + log ring buffer) -->
+      <div class="bot-debug-wrap" hidden>
+        <div class="console-head">🐞 OCR captures <span class="dbg-hint">newest first · click a row to view the frame</span></div>
+        <ul class="bot-debug-list"></ul>
       </div>
 
       <!-- per-bot console -->
@@ -204,6 +211,6 @@
 
   <script src="toast.js?v=20260706a"></script>
   <script src="ui-core.js?v=20260706a"></script>
-  <script src="app.js?v=20260706a"></script>
+  <script src="app.js?v=20260722a"></script>
 </body>
 </html>
