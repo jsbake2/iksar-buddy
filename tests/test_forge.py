@@ -22,6 +22,16 @@ def test_ocr_no_count_defaults_one():
     assert items.get("Minor Healing") == 1
 
 
+def test_provisioner_container_prefix_strip():
+    # the serving-container prefix is not part of the recipe name (owner rule)
+    assert clean_item_name("Glass of White Grape Juice", "provisioner") == "White Grape Juice"
+    assert clean_item_name("Tumbler of Milk", "provisioner") == "Milk"
+    assert clean_item_name("Mug of Ale", "provisioner") == "Ale"
+    assert clean_item_name("Cup of Browncap Mushroom Tea", "provisioner") == "Browncap Mushroom Tea"
+    # only for provisioner — a gear class must NOT strip a legit leading word
+    assert clean_item_name("Glass of White Grape Juice", "armorer") == "Glass of White Grape Juice"
+
+
 def test_scribe_prefix_strip_and_suffix():
     name = clean_item_name("Apprentice IV: Minor Healing", "sage")
     assert name == "Minor Healing"

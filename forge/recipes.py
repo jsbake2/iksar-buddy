@@ -321,7 +321,9 @@ _SCRIBE_PREFIX_RE = re.compile(r"^(?:Apprentice\s*IV[:\s]*)?", re.IGNORECASE)
 _PROVISIONER_PREFIX_RE = re.compile(
     # 'bott[il1]e'/'g[li1|]ass' tolerate the OCR l->i/1 misread ("bottle"->"bottie", "glass"->"giass")
     # — clean spellings already matched; this catches the leaked misreads the owner saw.
-    r"^\s*(?:plate|serving|cup|shot|stein|flask|g[li1|]ass|bowl|pot|bott[il1]e)\s+of\s+", re.IGNORECASE)
+    r"^\s*(?:plate|serving|cup|shot|stein|flask|g[li1|]ass|bowl|pot|bott[il1]e"
+    r"|tumbler|mug|flagon|tankard|jug|goblet|chalice|pitcher|pint|keg|carafe|decanter|glass)\s+of\s+",
+    re.IGNORECASE)
 # Some provisioner writs also TAIL the objective with the category word ("Mountain Man drink" ->
 # recipe "Mountain Man"). Strip a trailing 'drink'/'food'. Owner-curated; add more if they appear.
 _PROVISIONER_SUFFIX_RE = re.compile(r"\s+(?:drink|food)\s*$", re.IGNORECASE)

@@ -8,6 +8,7 @@ slow (OCR, launch) is scheduled as an asyncio task so the dashboard never blocks
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import subprocess
 import time
@@ -75,6 +76,43 @@ class ForgeController:
             # label "send to <account>" — the selected character drifts (resets on restart, doesn't
             # follow /camp swaps), the account does not.
             self.t.update_bot(bid, account=(self.accounts.get(bot["dom"]) or {}).get("user", ""))
+        # RESTORE the per-bot crafter selection (character + trade_class) saved last session.
+        # A forge restart otherwise blanks it, and a journal read with an empty trade_class
+        # silently skips the class cleanup ('Glass of X' unstripped) AND the batch collapse
+        # (6 items shown instead of 3 combines). Persisting it kills that whole class of bug.
+        sel = self._load_selection()
+        for bid in self.stations:
+            s = sel.get(bid) or {}
+            fields = {}
+            if s.get("character"):
+                self.stations[bid]["character"] = s["character"]
+                fields["character"] = s["character"]
+            if s.get("trade_class"):
+                fields["trade_class"] = s["trade_class"]
+            if fields:
+                self.t.update_bot(bid, **fields)
+
+    # -- per-bot crafter selection persistence (survives forge restarts) ----
+    def _selection_path(self) -> Path:
+        return self.profile_dir / "selection.json"
+
+    def _load_selection(self) -> dict:
+        try:
+            return json.loads(self._selection_path().read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {}
+
+    def _save_selection(self) -> None:
+        sel = {}
+        for bid in self.stations:
+            b = self.t.bot(bid) or {}
+            c, tc = (b.get("character") or ""), (b.get("trade_class") or "")
+            if c or tc:
+                sel[bid] = {"character": c, "trade_class": tc}
+        try:
+            self._selection_path().write_text(json.dumps(sel), encoding="utf-8")
+        except OSError as e:
+            log.warning("could not persist crafter selection: %s", e)
 
     def _creds(self, bot_id: str) -> tuple[str, str]:
         dom = self.stations.get(bot_id, {}).get("dom", "")
@@ -138,6 +176,8 @@ class ForgeController:
             self.t.update_bot(bot_id, character=fields["character"])
         if clean:
             self.t.update_bot(bot_id, **clean)
+        if "character" in fields or "trade_class" in fields:
+            self._save_selection()                 # remember the pick across a forge restart
 
     def start(self, bot_id: str, mode: str, trade_class: str,
               recipe: str = "", count: int = 1, search: str = "", station: str = "",
@@ -226,6 +266,10 @@ class ForgeController:
         queue, unverified, flagged = [], 0, 0
         w = self.workers.get(bot_id)
         tc = b.get("trade_class", "")
+        if not tc:
+            self.t.push_log(bot_id, "⚠ no crafter selected — names won't be class-cleaned "
+                                    "('Glass of X' left in) and batch counts won't collapse "
+                                    "(6 shown, not 3). Pick the crafter, then re-read.")
         for rawname, resolved, verified, count, warn in recipes.resolve_writ(
                 raw, flavor_prefixes=self.cfg_profile.get("writ_flavor_prefixes"),
                 pristine_items=self.cfg_profile.get("pristine_prefix_items")):
