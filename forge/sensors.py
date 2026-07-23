@@ -528,17 +528,20 @@ def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int],
     rs = cfg.get("recipe_select", {})
     slots = rs.get("result_rows") or []
     icon_x = int(rs.get("icon_x", 244))
+    # ONE frame for the whole call so every row reads off the same screenshot. If that grab
+    # FAILS (guest-agent hiccup under crafting load), fall back to a fresh grab per read —
+    # never reuse a STALE ppm (that would match the PREVIOUS recipe's screen / miss this one).
     try:
-        guest.grab()                             # ONE frame -> every row read off it (fresh=False below)
+        _fresh = not guest.grab()
     except AttributeError:
-        pass                                     # tests monkeypatch _ocr_words and pass guest=None
+        _fresh = False                           # tests monkeypatch _ocr_words and pass guest=None
 
     # DYNAMIC grouped rows: OCR the whole list, group words by Y (merging a wrapped 2-line
     # recipe name into ONE row) and click the row's true center. Robust to variable row
     # height. Built first so we can detect whether any row WRAPS.
     dyn, wrapped = [], False
     try:
-        grouped = _recipe_rows(guest, cfg, fresh=False)
+        grouped = _recipe_rows(guest, cfg, fresh=_fresh)
     except Exception:
         grouped = []
     # Fold a '(Quality)' that rendered on its OWN line (full row-pitch below a short name,
@@ -568,7 +571,7 @@ def _row_candidates(guest: Guest, cfg: dict) -> list[tuple[str, tuple[int, int],
         for s in slots:
             ocr, click = s.get("ocr"), s.get("click")
             if ocr and click:
-                blob, roman = _clean_row(_ocr_line(guest, ocr, fresh=False))
+                blob, roman = _clean_row(_ocr_line(guest, ocr, fresh=_fresh))
                 if blob:
                     out.append((blob, (int(click[0]), int(click[1])), roman))
         return out

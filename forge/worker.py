@@ -405,6 +405,23 @@ class CraftWorker:
             if not await self._ex(sensors.search_landed, self.guest, self.cfg, query):
                 self.t.push_log(self.id, f"search '{query}' did NOT land (focus race) — retyping (attempt {i}/{attempts})")
                 continue
+            # Search LANDED (the list is filtered to this recipe) but the poll didn't catch a
+            # match — the row can take an extra beat to settle (selection-highlight pulse, late
+            # filter render, OCR flap under load). The row IS there, so DON'T retype-and-refilter
+            # (that just restarts the settle); instead keep re-matching the settled frame a few
+            # more times. Fixes recipes that lose the poll race (e.g. 'Browncap Mushroom Tea').
+            for _ in range(int(rs.get("settled_match_retries", 6))):
+                if self._stop.is_set():
+                    return False
+                await asyncio.sleep(float(timings.get("settle_poll", 0.4)))
+                row_click = await self._ex(sensors.match_recipe_row, self.guest, self.cfg, name)
+                if row_click:
+                    break
+            if row_click:
+                if debug.is_enabled(self.id):
+                    await self._ex(debug.capture, self.id, self.guest, "recipe-match-settled",
+                                   f"'{name}' q='{query}' click={row_click} (settled retry)")
+                break
             # Search landed but no row matched — log what the OCR actually SAW so this is
             # never silent (wrong name vs unfiltered list vs OCR miss).
             seen = await self._ex(sensors.recipe_row_blobs, self.guest, self.cfg)
