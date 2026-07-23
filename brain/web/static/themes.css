@@ -304,7 +304,7 @@ button.launch:hover { filter:brightness(1.08); }
 .act.rez { border-left:3px solid var(--bad); }
 
 /* Dirge recast-buffs panel: one row per periodic buff */
-.recast-head, .recast-row { display:grid; grid-template-columns:1.5fr 74px 52px 46px 40px;
+.recast-head, .recast-row { display:grid; grid-template-columns:1.4fr 70px minmax(150px,1.2fr) 46px 40px;
   gap:8px; align-items:center; }
 .recast-head { color:var(--faint); font-size:10px; text-transform:uppercase; letter-spacing:.6px;
   padding:2px 2px 6px; border-bottom:1px solid var(--line); margin-bottom:4px; }
@@ -315,6 +315,7 @@ button.launch:hover { filter:brightness(1.08); }
 .rc-int, .rc-tgt { width:100%; background:var(--panel2); border:1px solid var(--line); color:var(--fg);
   border-radius:6px; padding:5px 6px; font-size:12px; }
 .rc-int:focus, .rc-tgt:focus { outline:none; border-color:var(--accent); }
+select.rc-tgt { cursor:pointer; }
 .rc-count { font-variant-numeric:tabular-nums; font-weight:700; font-size:13px; text-align:right; color:var(--accent2,#7aa2ff); }
 .rc-exec { background:color-mix(in srgb,var(--good) 22%,var(--panel2)); border:1px solid color-mix(in srgb,var(--good) 55%,var(--line));
   color:var(--fg); border-radius:7px; padding:6px 0; cursor:pointer; font-weight:800; }

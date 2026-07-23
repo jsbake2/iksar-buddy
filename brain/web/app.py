@@ -392,7 +392,12 @@ def create_app(brain: Brain, telemetry: Telemetry) -> FastAPI:
                         "interval_s": iv,
                         "target": int(brain.cfg.threshold(f"pbuff_{i}_target", 0) or 0),
                         "next_in_s": round(next_in, 1)})
-        return {"buffs": out}
+        # group slots so the UI can label the target dropdown (0 = self/F1 … 5 = 6th/F6)
+        nm = brain.cfg.names
+        roles = brain.cfg.ability_map.get("slot_roles") or []
+        slots = [{"slot": s, "name": nm.get(s, nm.get(str(s), "")),
+                  "role": roles[s] if s < len(roles) else ""} for s in range(6)]
+        return {"buffs": out, "slots": slots}
 
     @app.post("/api/dirge/buff/{n}/execute")
     async def dirge_buff_execute(n: int):

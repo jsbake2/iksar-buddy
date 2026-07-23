@@ -53,7 +53,16 @@ const DIRGE_TUNES = { tMana: "mana_heal_floor", tPb1: "pbuff_1_interval_s",
 // Flatulence). Backend endpoints stay /api/dirge/* — they read pbuff_* from whatever
 // profile is active, so they serve any kind. ----
 let recastSig = "";
+let recastSlots = [];          // [{slot,name,role}] — labels the target dropdown
 const recastState = {};        // n -> { next_at (epoch s), interval }
+// A target option's label: "0 · self", "1 · Foxyman (tank)", "2 · slot 3" … always with
+// the EQ2 F-key it maps to (F1 = self). Uses the character name when the profile has one.
+function tgtLabel(s) {
+  const info = recastSlots[s] || {};
+  const who = s === 0 ? "self" : (info.name || `slot ${s + 1}`);
+  const role = info.role && s !== 0 ? ` (${info.role})` : "";
+  return `${s} · ${who}${role} · F${s + 1}`;
+}
 function buildRecast(buffs) {
   const box = $("recastRows"); if (!box) return;
   box.innerHTML = "";
@@ -61,10 +70,12 @@ function buildRecast(buffs) {
     const nm = b.name || b.label;
     const row = document.createElement("div");
     row.className = "recast-row" + (b.key_set ? "" : " unset");
+    const opts = [0, 1, 2, 3, 4, 5].map((s) =>
+      `<option value="${s}"${s === b.target ? " selected" : ""}>${tgtLabel(s)}</option>`).join("");
     row.innerHTML =
       `<span class="rc-name" title="${nm}${b.key_set ? "" : " — set a key in ⌨ keymap"}">${nm}</span>` +
       `<label class="rc-cell"><input class="rc-int" type="number" min="0" max="600" step="1" value="${b.interval_s}" title="recast interval (s); 0 = off"/><span>s</span></label>` +
-      `<label class="rc-cell"><input class="rc-tgt" type="number" min="0" max="5" step="1" value="${b.target}" title="target group slot: 0 = self, 1 = next member … 5 = 6th"/></label>` +
+      `<label class="rc-cell"><select class="rc-tgt" title="who to cast on — 0/self = F1 (you), 1 = 2nd group member (F2) … 5 = 6th (F6)">${opts}</select></label>` +
       `<span class="rc-count" id="rcCount${b.n}">—</span>` +
       `<button class="rc-exec" title="cast now + reset the timer">▶</button>`;
     row.querySelector(".rc-int").onchange = (e) => {
@@ -88,8 +99,10 @@ async function pollRecast() {
   let d;
   try { d = await (await fetch("/api/dirge/buffs")).json(); } catch (_) { return; }
   if (!d || !Array.isArray(d.buffs)) return;
-  const sig = d.buffs.map((b) => b.n + (b.name || b.label) + b.key_set).join("|");
-  if (sig !== recastSig) { recastSig = sig; buildRecast(d.buffs); }   // rebuild only when names/keys change
+  recastSlots = d.slots || [];
+  const sig = d.buffs.map((b) => b.n + (b.name || b.label) + b.key_set).join("|")
+    + "|" + recastSlots.map((s) => s.name + s.role).join(",");
+  if (sig !== recastSig) { recastSig = sig; buildRecast(d.buffs); }   // rebuild on name/key/slot change
   d.buffs.forEach((b) => (recastState[b.n] = { next_at: Date.now() / 1000 + b.next_in_s, interval: b.interval_s }));
 }
 function tickRecast() {

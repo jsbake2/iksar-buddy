@@ -43,8 +43,8 @@ abilities:
   mana_heal:       { key: '', mode: auto, desc: 'mana feed (single target)' }
   group_mana_heal: { key: '', mode: auto, desc: 'mana feed (group)' }
   # 4 periodic buffs — recast in combat on their own timers (Recast-buffs panel). Each
-  # carries a NAME (shown on the panel) + an optional target slot 1-6 (pbuff_N_target;
-  # blank/1 = self).
+  # carries a NAME (shown on the panel) + an optional target group slot (pbuff_N_target,
+  # 0-indexed: 0/blank = self/F1, 1 = 2nd member/F2 … 5 = 6th/F6).
   pbuff_1:  { key: '', mode: auto, name: '', desc: 'periodic buff 1' }
   pbuff_2:  { key: '', mode: auto, name: '', desc: 'periodic buff 2' }
   pbuff_3:  { key: '', mode: auto, name: '', desc: 'periodic buff 3' }
